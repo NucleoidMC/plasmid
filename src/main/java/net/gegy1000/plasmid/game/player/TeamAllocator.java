@@ -62,7 +62,7 @@ public final class TeamAllocator<K, V> {
 
         for (K key : this.keys) {
             Collection<V> bucket = map.get(key);
-            if (smallestBucket == null || bucket.size() > smallestBucket.size()) {
+            if (smallestBucket == null || bucket.size() < smallestBucket.size()) {
                 smallestBucket = bucket;
             }
         }

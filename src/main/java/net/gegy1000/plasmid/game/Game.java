@@ -38,6 +38,8 @@ public final class Game {
     private final ServerWorld world;
     private final GameRuleSet rules;
 
+    private boolean closed;
+
     private Game(GameMap map, GameRuleSet rules, Map<EventType<?>, Object> invokers) {
         this.map = map;
         this.world = map.getWorld();
@@ -137,6 +139,12 @@ public final class Game {
     }
 
     public void close() {
+        if (this.closed) {
+            return;
+        }
+
+        this.closed = true;
+
         this.invoker(GameCloseListener.EVENT).close(this);
 
         for (Map.Entry<UUID, PlayerSnapshot> entry : this.players.entrySet()) {
@@ -166,6 +174,10 @@ public final class Game {
 
     public RuleResult testRule(GameRule rule) {
         return this.rules.test(rule);
+    }
+
+    public boolean isClosed() {
+        return this.closed;
     }
 
     public static class Builder {

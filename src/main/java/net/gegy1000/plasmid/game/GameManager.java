@@ -31,6 +31,7 @@ public final class GameManager {
 
     @Nullable
     public static Open open() {
+        validateOpenState();
         if (state instanceof Open) {
             return (Open) state;
         } else {
@@ -40,10 +41,20 @@ public final class GameManager {
 
     @Nullable
     public static Game openGame() {
+        validateOpenState();
         if (state instanceof Open) {
             return ((Open) state).game;
         } else {
             return null;
+        }
+    }
+
+    private static void validateOpenState() {
+        if (state instanceof Open) {
+            Game open = ((Open) state).game;
+            if (open.isClosed()) {
+                state = new Closed();
+            }
         }
     }
 

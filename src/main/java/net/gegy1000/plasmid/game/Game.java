@@ -24,8 +24,10 @@ import net.minecraft.util.math.BlockPos;
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public final class Game {
     private final Map<EventType<?>, Object> invokers;
@@ -116,8 +118,14 @@ public final class Game {
         return this.players.size();
     }
 
-    public Set<UUID> getPlayers() {
+    public Set<UUID> getPlayerIds() {
         return this.players.keySet();
+    }
+
+    public Stream<ServerPlayerEntity> onlinePlayers() {
+        return this.players.keySet().stream()
+                .map(uuid -> (ServerPlayerEntity) this.world.getPlayerByUuid(uuid))
+                .filter(Objects::nonNull);
     }
 
     public boolean containsPlayer(PlayerEntity player) {

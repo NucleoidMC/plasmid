@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.gegy1000.plasmid.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "custom.EntityMixin",
+    "custom.ServerPlayNetworkHandlerMixin",
+    "event.ExplosionMixin",
+    "event.ServerPlayerEntityMixin",
+    "event.ServerPlayerInteractionManagerMixin",
+    "event.ServerWorldMixin",
+    "map.ServerPlayerEntityMixin",
+    "rule.CraftingResultInventoryMixin",
+    "rule.NetherPortalBlockMixin",
+    "rule.ServerPlayerEntityMixin",
+    "rule.TntBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "plasmid",
+  "version": "${version}",
+  "name": "Plasmid",
+  "description": "Server-side minigames library based on Fabric",
+  "authors": ["gegy1000", "Supercoder79"],
+  "license": "LGPLv3",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["net.gegy1000.plasmid.Plasmid"]
+  },
+  "mixins": ["plasmid.mixins.json"],
+  "accessWidener": "plasmid.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.8.9",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  }
+}

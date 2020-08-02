@@ -2,6 +2,8 @@ package net.gegy1000.plasmid.util;
 
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
+import net.minecraft.item.DyeableItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -15,12 +17,16 @@ import net.minecraft.util.registry.Registry;
 public final class ItemStackBuilder {
     private final ItemStack stack;
 
-    private ItemStackBuilder(ItemConvertible item) {
-        this.stack = new ItemStack(item);
+    private ItemStackBuilder(ItemStack stack) {
+        this.stack = stack;
     }
 
     public static ItemStackBuilder of(ItemConvertible item) {
-        return new ItemStackBuilder(item);
+        return new ItemStackBuilder(new ItemStack(item));
+    }
+
+    public static ItemStackBuilder of(ItemStack stack) {
+        return new ItemStackBuilder(stack);
     }
 
     public ItemStackBuilder setCount(int count) {
@@ -67,6 +73,14 @@ public final class ItemStackBuilder {
     public ItemStackBuilder setUnbreakable() {
         CompoundTag tag = this.stack.getOrCreateTag();
         tag.putBoolean("Unbreakable", true);
+        return this;
+    }
+
+    public ItemStackBuilder setColor(int color) {
+        Item item = this.stack.getItem();
+        if (item instanceof DyeableItem) {
+            ((DyeableItem) item).setColor(this.stack, color);
+        }
         return this;
     }
 

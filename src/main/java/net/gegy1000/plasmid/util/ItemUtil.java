@@ -1,9 +1,7 @@
 package net.gegy1000.plasmid.util;
 
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.DyeableItem;
 import net.minecraft.item.FireworkItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
@@ -30,14 +28,6 @@ public final class ItemUtil {
         fireworks.putByte("Flight", (byte) flight);
 
         return rocket;
-    }
-
-    public static ItemStack dye(ItemStack stack, int color) {
-        Item item = stack.getItem();
-        if (item instanceof DyeableItem) {
-            ((DyeableItem) item).setColor(stack, color);
-        }
-        return stack;
     }
 
     public static int getEnchantLevel(ItemStack stack, Enchantment enchantment) {

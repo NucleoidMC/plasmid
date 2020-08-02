@@ -1,5 +1,3 @@
-rootProject.name = 'plasmid'
-
 pluginManagement {
   repositories {
     jcenter()
@@ -10,3 +8,5 @@ pluginManagement {
     gradlePluginPortal()
   }
 }
+
+rootProject.name = 'plasmid'

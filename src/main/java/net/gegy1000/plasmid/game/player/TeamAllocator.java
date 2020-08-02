@@ -46,27 +46,32 @@ public final class TeamAllocator<K, V> {
             V value = request.getSecond();
 
             if (!this.tryInsertInto(map, keyCapacity, key, value)) {
-                this.insertAnywhere(map, keyCapacity, value);
+                this.insertIntoSmallest(map, value);
             }
         }
 
         for (V value : this.withoutRequest) {
-            this.insertAnywhere(map, keyCapacity, value);
+            this.insertIntoSmallest(map, value);
         }
 
         return map;
     }
 
-    private void insertAnywhere(Multimap<K, V> map, int keyCapacity, V value) {
+    private void insertIntoSmallest(Multimap<K, V> map, V value) {
+        Collection<V> smallestBucket = null;
+
         for (K key : this.keys) {
             Collection<V> bucket = map.get(key);
-            if (bucket.size() < keyCapacity) {
-                bucket.add(value);
-                return;
+            if (smallestBucket == null || bucket.size() > smallestBucket.size()) {
+                smallestBucket = bucket;
             }
         }
 
-        throw new Error("no available buckets!");
+        if (smallestBucket == null) {
+            throw new Error("no available buckets");
+        }
+
+        smallestBucket.add(value);
     }
 
     private boolean tryInsertInto(Multimap<K, V> map, int keyCapacity, K key, V value) {

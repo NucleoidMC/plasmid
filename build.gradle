@@ -65,6 +65,10 @@ jar {
 publishing {
   publications {
     mavenJava(MavenPublication) {
+      groupId project.group
+      artifactId project.name
+      version project.version
+
       artifact(remapJar) {
         builtBy remapJar
       }

@@ -12,6 +12,7 @@
     "event.ServerWorldMixin",
     "map.ServerPlayerEntityMixin",
     "rule.CraftingResultInventoryMixin",
+    "rule.HungerManagerMixin",
     "rule.NetherPortalBlockMixin",
     "rule.PlayerEntityMixin",
     "rule.ServerPlayerEntityMixin",

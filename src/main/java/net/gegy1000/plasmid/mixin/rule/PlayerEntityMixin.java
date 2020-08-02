@@ -16,7 +16,7 @@ public class PlayerEntityMixin {
     @Inject(method = "isInvulnerableTo", at = @At("HEAD"), cancellable = true)
     private void isInvulnerableTo(DamageSource source, CallbackInfoReturnable<Boolean> ci) {
         PlayerEntity self = (PlayerEntity) (Object) this;
-        if (self.world.isClient) {
+        if (self.world.isClient || source != DamageSource.FALL) {
             return;
         }
 
@@ -24,9 +24,9 @@ public class PlayerEntityMixin {
         if (game != null && game.containsPlayer(self)) {
             RuleResult result = game.testRule(GameRule.FALL_DAMAGE);
             if (result == RuleResult.ALLOW) {
-                ci.setReturnValue(true);
-            } else if (result == RuleResult.DENY) {
                 ci.setReturnValue(false);
+            } else if (result == RuleResult.DENY) {
+                ci.setReturnValue(true);
             }
         }
     }

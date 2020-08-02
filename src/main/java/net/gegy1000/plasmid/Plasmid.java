@@ -33,7 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public final class Plasmid implements ModInitializer {
-    public static final String ID = "plsamid";
+    public static final String ID = "plasmid";
     public static final Logger LOGGER = LogManager.getLogger(ID);
 
     @Override

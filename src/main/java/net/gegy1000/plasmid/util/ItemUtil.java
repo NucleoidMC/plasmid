@@ -12,12 +12,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 public final class ItemUtil {
-    public static ItemStack unbreakable(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.putBoolean("Unbreakable", true);
-        return stack;
-    }
-
     public static ItemStack createFirework(int color, int flight, FireworkItem.Type type) {
         ItemStack rocket = new ItemStack(Items.FIREWORK_ROCKET, 1);
 

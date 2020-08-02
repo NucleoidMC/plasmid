@@ -13,6 +13,7 @@
     "map.ServerPlayerEntityMixin",
     "rule.CraftingResultInventoryMixin",
     "rule.NetherPortalBlockMixin",
+    "rule.PlayerEntityMixin",
     "rule.ServerPlayerEntityMixin",
     "rule.ServerPlayerInteractionManagerMixin",
     "rule.TntBlockMixin"

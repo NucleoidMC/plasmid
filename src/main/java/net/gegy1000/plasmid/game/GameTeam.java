@@ -2,6 +2,7 @@ package net.gegy1000.plasmid.game;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.gegy1000.plasmid.util.ItemStackBuilder;
 import net.gegy1000.plasmid.util.ItemUtil;
 import net.minecraft.item.FireworkItem;
 import net.minecraft.item.ItemStack;
@@ -57,7 +58,9 @@ public final class GameTeam {
     }
 
     public ItemStack dye(ItemStack stack) {
-        return ItemUtil.dye(stack, this.getColor());
+        return ItemStackBuilder.of(stack)
+                .setColor(this.getColor())
+                .build();
     }
 
     public int getColor() {

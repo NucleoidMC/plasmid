@@ -14,7 +14,7 @@ public final class ShopInventory implements Inventory {
     private static final int PADDING = 1;
     private static final int PADDED_WIDTH = WIDTH - PADDING * 2;
 
-    private final ShopUi.Element[] elements = new ShopUi.Element[this.size()];
+    private final ShopEntry[] elements = new ShopEntry[this.size()];
 
     private final ServerPlayerEntity player;
     private final Consumer<ShopBuilder> builder;
@@ -26,27 +26,27 @@ public final class ShopInventory implements Inventory {
     }
 
     private void buildGrid() {
-        ShopBuilder builder = new ShopBuilder(this.player);
+        ShopBuilder builder = new ShopBuilder();
         this.builder.accept(builder);
 
-        this.buildGrid(builder.elements.toArray(new ShopUi.Element[0]));
+        this.buildGrid(builder.elements.toArray(new ShopEntry[0]));
     }
 
-    private void buildGrid(ShopUi.Element[] elements) {
+    private void buildGrid(ShopEntry[] elements) {
         Arrays.fill(this.elements, null);
 
         int rows = MathHelper.ceil((double) elements.length / PADDED_WIDTH);
         for (int row = 0; row < rows; row++) {
-            ShopUi.Element[] resolved = this.resolveRow(elements, row);
+            ShopEntry[] resolved = this.resolveRow(elements, row);
             int minColumn = (WIDTH - resolved.length) / 2;
             for (int column = 0; column < resolved.length; column++) {
-                ShopUi.Element element = resolved[column];
+                ShopEntry element = resolved[column];
                 this.elements[(column + minColumn) + row * WIDTH] = element;
             }
         }
     }
 
-    private ShopUi.Element[] resolveRow(ShopUi.Element[] elements, int row) {
+    private ShopEntry[] resolveRow(ShopEntry[] elements, int row) {
         int minId = Integer.MAX_VALUE;
         int maxId = Integer.MIN_VALUE;
         int rowStart = row * PADDED_WIDTH;
@@ -61,7 +61,7 @@ public final class ShopInventory implements Inventory {
                 }
             }
         }
-        ShopUi.Element[] resolved = new ShopUi.Element[(maxId - minId) + 1];
+        ShopEntry[] resolved = new ShopEntry[(maxId - minId) + 1];
         System.arraycopy(elements, minId, resolved, 0, resolved.length);
         return resolved;
     }
@@ -83,11 +83,11 @@ public final class ShopInventory implements Inventory {
 
     @Override
     public ItemStack getStack(int index) {
-        ShopUi.Element element = this.elements[index];
+        ShopEntry element = this.elements[index];
         if (element == null) {
             return ItemStack.EMPTY;
         }
-        return element.getIcon(this.player);
+        return element.createIcon(this.player);
     }
 
     @Override
@@ -106,7 +106,7 @@ public final class ShopInventory implements Inventory {
         this.player.inventory.setCursorStack(ItemStack.EMPTY);
         this.player.updateCursorStack();
 
-        ShopUi.Element element = this.elements[index];
+        ShopEntry element = this.elements[index];
         if (element != null) {
             element.onClick(this.player);
         }

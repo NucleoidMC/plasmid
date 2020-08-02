@@ -142,6 +142,6 @@ public final class ItemStackBuilder {
     }
 
     public ItemStack build() {
-        return this.stack;
+        return this.stack.copy();
     }
 }

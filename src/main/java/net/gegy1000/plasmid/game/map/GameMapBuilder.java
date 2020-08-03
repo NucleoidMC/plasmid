@@ -97,4 +97,13 @@ public final class GameMapBuilder {
         BlockBounds bounds = this.localToGlobal(this.bounds);
         return new GameMap(this.world, this.tickets, bounds, regions, this.standardBlocks);
     }
+
+    // TODO: temporary until we can figure out a better abstraction such that we don't need to access these internals
+    public ServerWorld getWorld() {
+        return this.world;
+    }
+
+    public BlockPos getOrigin() {
+        return this.origin;
+    }
 }

@@ -68,6 +68,10 @@ public final class GameMapBuilder {
         this.world.setBlockEntity(globalPos, blockEntity);
     }
 
+    public BlockEntity getBlockEntity(BlockPos pos) {
+        return this.world.getBlockEntity(this.localToGlobal(pos));
+    }
+
     public void addRegion(String marker, BlockBounds bounds) {
         bounds = this.localToGlobal(bounds);
         this.regions.add(new GameRegion(marker, bounds));

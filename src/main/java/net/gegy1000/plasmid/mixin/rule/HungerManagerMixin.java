@@ -17,13 +17,17 @@ public class HungerManagerMixin {
     @Shadow
     private float exhaustion;
 
+    @Shadow
+    private float foodSaturationLevel;
+
     @Inject(method = "update", at = @At("HEAD"))
     private void update(PlayerEntity player, CallbackInfo ci) {
-        if (this.exhaustion > 4.0F) {
+        if (this.exhaustion > 4.0F || this.foodSaturationLevel > 0.0F) {
             Game game = GameManager.openGame();
             if (game != null && game.containsPlayer(player)) {
                 if (game.testRule(GameRule.ENABLE_HUNGER) == RuleResult.DENY) {
                     this.exhaustion = 0.0F;
+                    this.foodSaturationLevel = 0.0F;
                 }
             }
         }

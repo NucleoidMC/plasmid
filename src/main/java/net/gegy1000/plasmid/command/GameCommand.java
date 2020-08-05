@@ -47,10 +47,6 @@ public final class GameCommand {
             new LiteralText("Game not recruiting!")
     );
 
-    public static final SimpleCommandExceptionType NOT_ACTIVE = new SimpleCommandExceptionType(
-            new LiteralText("Game not currently running!")
-    );
-
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
@@ -128,7 +124,6 @@ public final class GameCommand {
         }
 
         JoinResult joinResult = open.offerPlayer(player);
-
         if (joinResult.isErr()) {
             Text error = joinResult.getError();
             throw new SimpleCommandExceptionType(error).create();

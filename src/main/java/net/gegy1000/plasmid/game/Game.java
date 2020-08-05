@@ -16,6 +16,7 @@ import net.gegy1000.plasmid.game.player.PlayerSnapshot;
 import net.gegy1000.plasmid.game.rule.GameRule;
 import net.gegy1000.plasmid.game.rule.GameRuleSet;
 import net.gegy1000.plasmid.game.rule.RuleResult;
+import net.gegy1000.plasmid.util.PlayerRef;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -26,13 +27,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 public final class Game {
     private final Map<EventType<?>, Object> invokers;
 
-    private final Map<UUID, PlayerSnapshot> players = new HashMap<>();
+    private final Map<PlayerRef, PlayerSnapshot> players = new HashMap<>();
 
     private final GameMap map;
     private final ServerWorld world;
@@ -61,16 +61,13 @@ public final class Game {
     public void copyPlayersFrom(Game game) {
         ServerWorld world = game.getWorld();
 
-        for (Map.Entry<UUID, PlayerSnapshot> entry : game.players.entrySet()) {
-            UUID uuid = entry.getKey();
+        for (Map.Entry<PlayerRef, PlayerSnapshot> entry : game.players.entrySet()) {
+            PlayerRef playerRef = entry.getKey();
             PlayerSnapshot snapshot = entry.getValue();
 
-            this.players.put(uuid, snapshot);
+            this.players.put(playerRef, snapshot);
 
-            ServerPlayerEntity player = (ServerPlayerEntity) world.getPlayerByUuid(uuid);
-            if (player != null) {
-                this.notifyAddPlayer(player);
-            }
+            playerRef.ifOnline(world, this::notifyAddPlayer);
         }
     }
 
@@ -92,8 +89,10 @@ public final class Game {
     }
 
     public boolean addPlayer(ServerPlayerEntity player) {
-        if (!this.players.containsKey(player.getUuid())) {
-            this.players.put(player.getUuid(), PlayerSnapshot.take(player));
+        PlayerRef reference = PlayerRef.of(player);
+
+        if (!this.players.containsKey(reference)) {
+            this.players.put(reference, PlayerSnapshot.take(player));
             this.notifyAddPlayer(player);
 
             return true;
@@ -106,13 +105,14 @@ public final class Game {
         this.invoker(PlayerAddListener.EVENT).onAddPlayer(this, player);
     }
 
-    public void removePlayer(ServerPlayerEntity player) {
-        PlayerSnapshot snapshot = this.players.remove(player.getUuid());
+    public void removePlayer(PlayerRef playerRef) {
+        PlayerSnapshot snapshot = this.players.remove(playerRef);
 
         if (snapshot != null) {
-            this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(this, player);
-
-            snapshot.restore(player);
+            playerRef.ifOnline(this.world, player -> {
+                this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(this, player);
+                snapshot.restore(player);
+            });
         }
     }
 
@@ -120,18 +120,18 @@ public final class Game {
         return this.players.size();
     }
 
-    public Set<UUID> getPlayerIds() {
+    public Set<PlayerRef> getPlayers() {
         return this.players.keySet();
     }
 
     public Stream<ServerPlayerEntity> onlinePlayers() {
         return this.players.keySet().stream()
-                .map(uuid -> (ServerPlayerEntity) this.world.getPlayerByUuid(uuid))
+                .map(reference -> reference.getEntity(this.world))
                 .filter(Objects::nonNull);
     }
 
     public boolean containsPlayer(PlayerEntity player) {
-        return this.players.containsKey(player.getUuid());
+        return this.players.containsKey(PlayerRef.of(player));
     }
 
     public boolean containsPos(BlockPos pos) {
@@ -147,12 +147,11 @@ public final class Game {
 
         this.invoker(GameCloseListener.EVENT).close(this);
 
-        for (Map.Entry<UUID, PlayerSnapshot> entry : this.players.entrySet()) {
+        for (Map.Entry<PlayerRef, PlayerSnapshot> entry : this.players.entrySet()) {
             // TODO: restoring offline players
-            ServerPlayerEntity player = (ServerPlayerEntity) this.world.getPlayerByUuid(entry.getKey());
-            if (player != null) {
+            entry.getKey().ifOnline(this.world, player -> {
                 entry.getValue().restore(player);
-            }
+            });
         }
 
         this.map.delete();

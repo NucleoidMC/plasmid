@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.gegy1000.plasmid.command.CustomizeCommand;
 import net.gegy1000.plasmid.command.GameCommand;
 import net.gegy1000.plasmid.command.MapCommand;
+import net.gegy1000.plasmid.command.PartyCommand;
 import net.gegy1000.plasmid.entity.CustomEntity;
 import net.gegy1000.plasmid.game.Game;
 import net.gegy1000.plasmid.game.GameManager;
@@ -50,6 +51,7 @@ public final class Plasmid implements ModInitializer {
             CustomizeCommand.register(dispatcher);
             MapCommand.register(dispatcher);
             GameCommand.register(dispatcher);
+            PartyCommand.register(dispatcher);
         });
 
         UseItemCallback.EVENT.register((player, world, hand) -> {

@@ -41,7 +41,9 @@ public final class GameMapBuilder {
     public void setBlockState(BlockPos pos, BlockState state, boolean addToStandardBlocks) {
         BlockPos globalPos = this.localToGlobal(pos);
 
-        this.world.setBlockState(globalPos, state, GameMap.SET_BLOCK_FLAGS);
+        BlockState oldState = world.getBlockState(globalPos);
+        this.world.getWorldChunk(globalPos).setBlockState(globalPos, state, false);
+        this.world.updateListeners(globalPos, oldState, state, 0);
 
         long key = globalPos.asLong();
         if (!state.isAir() && addToStandardBlocks) {

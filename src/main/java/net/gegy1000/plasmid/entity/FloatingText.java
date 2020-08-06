@@ -24,7 +24,7 @@ public final class FloatingText {
             return null;
         }
 
-        entity.setPos(position.x, position.y - entity.getHeight(), position.z);
+        entity.setPos(position.x, position.y, position.z);
 
         entity.setInvisible(true);
         entity.setInvulnerable(true);

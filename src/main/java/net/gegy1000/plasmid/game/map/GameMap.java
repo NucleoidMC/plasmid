@@ -103,7 +103,9 @@ public final class GameMap {
                 ((LootableContainerBlockEntity) entity).clear();
             }
 
-            this.world.setBlockState(pos, AIR, SET_BLOCK_FLAGS);
+            BlockState oldState = world.getBlockState(pos);
+            this.world.getWorldChunk(pos).setBlockState(pos, AIR, false);
+            this.world.updateListeners(pos, oldState, AIR, 0);
         });
     }
 

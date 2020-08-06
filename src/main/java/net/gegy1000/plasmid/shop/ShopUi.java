@@ -7,6 +7,7 @@ import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
@@ -37,9 +38,22 @@ public final class ShopUi implements NamedScreenHandlerFactory {
         return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X5, syncId, playerInventory, inventory, 5) {
             @Override
             public ItemStack transferSlot(PlayerEntity player, int invSlot) {
-                // resend inventory to avoid duplication
-                serverPlayer.onHandlerRegistered(this, this.getStacks());
+                this.resendInventory();
                 return ItemStack.EMPTY;
+            }
+
+            @Override
+            public ItemStack onSlotClick(int slot, int data, SlotActionType action, PlayerEntity player) {
+                if (action == SlotActionType.SWAP || action == SlotActionType.THROW || action == SlotActionType.CLONE) {
+                    this.resendInventory();
+                    return ItemStack.EMPTY;
+                }
+
+                return super.onSlotClick(slot, data, action, player);
+            }
+
+            private void resendInventory() {
+                serverPlayer.onHandlerRegistered(this, this.getStacks());
             }
         };
     }

@@ -52,12 +52,19 @@ public final class GameCommand {
         dispatcher.register(
             literal("game")
                 .then(literal("open")
+                    .requires(source -> source.hasPermissionLevel(2))
                     .then(argument("game_type", IdentifierArgumentType.identifier()).suggests(gameSuggestions())
                     .executes(GameCommand::openGame)
                 ))
+                .then(literal("start")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .executes(GameCommand::startGame)
+                )
+                .then(literal("stop")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .executes(GameCommand::stopGame)
+                )
                 .then(literal("join").executes(GameCommand::joinGame))
-                .then(literal("start").executes(GameCommand::startGame))
-                .then(literal("stop").executes(GameCommand::stopGame))
                 .then(literal("list").executes(GameCommand::listGames))
         );
     }

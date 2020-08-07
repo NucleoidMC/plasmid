@@ -52,7 +52,7 @@ public final class MapCommand {
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-            literal("map")
+            literal("map").requires(source -> source.hasPermissionLevel(4))
                 .then(literal("stage")
                     .then(argument("identifier", IdentifierArgumentType.identifier()).suggests(stagingSuggestions())
                     .then(argument("min", BlockPosArgumentType.blockPos())

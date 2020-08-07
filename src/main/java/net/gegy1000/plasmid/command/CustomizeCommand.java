@@ -27,6 +27,7 @@ public final class CustomizeCommand {
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literal("customize")
+            .requires(source -> source.hasPermissionLevel(4))
             .then(argument("custom", IdentifierArgumentType.identifier()).suggests(customSuggestions())
                 .executes(CustomizeCommand::customizeHeld)
             )

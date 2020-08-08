@@ -5,18 +5,25 @@ import net.gegy1000.plasmid.game.world.view.VoidBlockView;
 import net.gegy1000.plasmid.util.BlockBounds;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.structure.StructureManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.biome.source.BiomeAccess;
+import net.minecraft.world.biome.source.FixedBiomeSource;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.ProtoChunk;
+import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.StructureAccessor;
+import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class TemplateChunkGenerator extends GameChunkGenerator {
@@ -25,9 +32,23 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     private final BlockPos origin;
 
     public TemplateChunkGenerator(MapTemplate map, BlockPos origin) {
+        super(new FixedBiomeSource(map.getBiome()), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
+
         this.map = map;
         this.worldBounds = map.getBounds().offset(origin);
         this.origin = origin;
+    }
+
+    @Override
+    public void setStructureStarts(StructureAccessor structureAccessor, Chunk chunk, StructureManager structureManager, long l) {
+    }
+
+    @Override
+    public void addStructureReferences(WorldAccess world, StructureAccessor accessor, Chunk chunk) {
+    }
+
+    @Override
+    public void carve(long seed, BiomeAccess access, Chunk chunk, GenerationStep.Carver carver) {
     }
 
     @Override

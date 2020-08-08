@@ -7,16 +7,16 @@ import net.minecraft.util.math.ChunkPos;
 
 import java.util.stream.Stream;
 
-final class MapTickets {
+public final class MapTickets {
     private final ChunkPos minChunk;
     private final ChunkPos maxChunk;
 
-    MapTickets(ChunkPos minChunk, ChunkPos maxChunk) {
+    private MapTickets(ChunkPos minChunk, ChunkPos maxChunk) {
         this.minChunk = minChunk;
         this.maxChunk = maxChunk;
     }
 
-    static MapTickets acquire(ServerWorld world, BlockBounds bounds) {
+    public static MapTickets acquire(ServerWorld world, BlockBounds bounds) {
         ChunkPos minChunk = new ChunkPos(bounds.getMin());
         ChunkPos maxChunk = new ChunkPos(bounds.getMax());
 
@@ -34,7 +34,7 @@ final class MapTickets {
         });
     }
 
-    void release(ServerWorld world) {
+    public void release(ServerWorld world) {
         ServerChunkManager chunkManager = world.getChunkManager();
         this.stream().forEach(ticketPos -> {
             chunkManager.setChunkForced(ticketPos, false);

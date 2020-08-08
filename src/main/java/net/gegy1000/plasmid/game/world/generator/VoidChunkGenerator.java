@@ -10,6 +10,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.biome.source.FixedBiomeSource;
@@ -24,12 +25,16 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Optional;
 
-public final class VoidChunkGenerator extends ChunkGenerator {
+public class VoidChunkGenerator extends ChunkGenerator {
     public static final VoidChunkGenerator INSTANCE = new VoidChunkGenerator();
     public static final Codec<VoidChunkGenerator> CODEC = Codec.unit(VoidChunkGenerator.INSTANCE);
 
     private VoidChunkGenerator() {
-        super(new FixedBiomeSource(Biomes.THE_VOID), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
+        this(Biomes.THE_VOID);
+    }
+
+    protected VoidChunkGenerator(Biome biome) {
+        super(new FixedBiomeSource(biome), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
     }
 
     @Override

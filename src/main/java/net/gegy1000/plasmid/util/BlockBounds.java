@@ -6,6 +6,8 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 
+import javax.annotation.Nullable;
+
 public final class BlockBounds {
     public static final BlockBounds EMPTY = BlockBounds.of(BlockPos.ORIGIN);
 
@@ -52,6 +54,23 @@ public final class BlockBounds {
         return this.max.getX() >= bounds.min.getX() && this.min.getX() <= bounds.max.getX()
                 && this.max.getY() >= bounds.min.getY() && this.min.getY() <= bounds.max.getY()
                 && this.max.getZ() >= bounds.min.getZ() && this.min.getZ() <= bounds.max.getZ();
+    }
+
+    @Nullable
+    public BlockBounds intersection(BlockBounds bounds) {
+        if (!this.intersects(bounds)) {
+            return null;
+        }
+
+        BlockPos min = max(this.getMin(), bounds.getMin());
+        BlockPos max = min(this.getMax(), bounds.getMax());
+        return new BlockBounds(min, max);
+    }
+
+    public BlockBounds union(BlockBounds bounds) {
+        BlockPos min = min(this.getMin(), bounds.getMin());
+        BlockPos max = max(this.getMax(), bounds.getMax());
+        return new BlockBounds(min, max);
     }
 
     public BlockPos getMin() {

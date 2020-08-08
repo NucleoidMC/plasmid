@@ -10,6 +10,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.gegy1000.plasmid.Plasmid;
 import net.gegy1000.plasmid.game.map.template.MapTemplate;
+import net.gegy1000.plasmid.game.map.template.MapTemplateSerializer;
 import net.gegy1000.plasmid.game.map.template.TemplateRegion;
 import net.gegy1000.plasmid.game.map.template.MapTemplateViewer;
 import net.gegy1000.plasmid.game.map.template.StagingMapTemplate;
@@ -157,9 +158,9 @@ public final class MapCommand {
             throw MAP_NOT_FOUND.create(identifier);
         }
 
-        MapTemplate map = stagingMap.compile();
+        MapTemplate template = stagingMap.compile();
         try {
-            map.save(stagingMap.getIdentifier());
+            MapTemplateSerializer.save(template, stagingMap.getIdentifier());
 
             source.sendFeedback(new LiteralText("Compiled and saved map '" + identifier + "'"), false);
         } catch (IOException e) {

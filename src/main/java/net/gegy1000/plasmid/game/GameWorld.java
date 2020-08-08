@@ -69,11 +69,11 @@ public final class GameWorld {
         this.invokers = game.getInvokers();
         this.rules = game.getRules();
 
-        this.invoker(GameOpenListener.EVENT).onOpen();
-
         for (ServerPlayerEntity player : this.players.keySet()) {
             this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
         }
+
+        this.invoker(GameOpenListener.EVENT).onOpen();
     }
 
     public void closeGame() {

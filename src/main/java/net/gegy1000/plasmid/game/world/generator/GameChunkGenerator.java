@@ -44,6 +44,10 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
     }
 
     @Override
+    public void populateEntities(ChunkRegion region) {
+    }
+
+    @Override
     public int getHeight(int x, int z, Heightmap.Type heightmapType) {
         return 0;
     }

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.stream.Stream;
 
 public final class MapTemplate {
     private static final Path MAP_ROOT = Paths.get(Plasmid.ID, "map");
@@ -175,6 +176,17 @@ public final class MapTemplate {
 
     public void addRegion(TemplateRegion region) {
         this.regions.add(region);
+    }
+
+    public Stream<BlockBounds> getRegions(String marker) {
+        return this.regions.stream()
+                .filter(region -> region.getMarker().equals(marker))
+                .map(TemplateRegion::getBounds);
+    }
+
+    @Nullable
+    public BlockBounds getFirstRegion(String marker) {
+        return this.getRegions(marker).findFirst().orElse(null);
     }
 
     public boolean containsBlock(BlockPos pos) {

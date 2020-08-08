@@ -19,7 +19,7 @@ import net.minecraft.world.gen.chunk.VerticalBlockSample;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-public final class TemplateChunkGenerator extends GameChunkGenerator {
+public class TemplateChunkGenerator extends GameChunkGenerator {
     private final MapTemplate map;
     private final BlockBounds worldBounds;
     private final BlockPos origin;

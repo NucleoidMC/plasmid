@@ -13,17 +13,15 @@ import net.gegy1000.plasmid.command.GameCommand;
 import net.gegy1000.plasmid.command.MapCommand;
 import net.gegy1000.plasmid.command.PartyCommand;
 import net.gegy1000.plasmid.entity.CustomEntity;
-import net.gegy1000.plasmid.game.Game;
-import net.gegy1000.plasmid.game.GameManager;
+import net.gegy1000.plasmid.game.GameWorld;
 import net.gegy1000.plasmid.game.config.GameConfigs;
 import net.gegy1000.plasmid.game.event.AttackEntityListener;
 import net.gegy1000.plasmid.game.event.UseBlockListener;
 import net.gegy1000.plasmid.game.event.UseItemListener;
-import net.gegy1000.plasmid.game.map.StagingBoundRenderer;
-import net.gegy1000.plasmid.game.map.provider.PlasmidMapProviders;
+import net.gegy1000.plasmid.game.map.template.StagingBoundRenderer;
+import net.gegy1000.plasmid.game.world.generator.DynamicChunkGenerator;
 import net.gegy1000.plasmid.item.CustomItem;
 import net.gegy1000.plasmid.item.PlasmidCustomItems;
-import net.gegy1000.plasmid.world.VoidChunkGenerator;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
@@ -41,9 +39,7 @@ public final class Plasmid implements ModInitializer {
     public void onInitialize() {
         Reflection.initialize(PlasmidCustomItems.class);
 
-        Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "void"), VoidChunkGenerator.CODEC);
-
-        PlasmidMapProviders.register();
+        Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "dynamic"), DynamicChunkGenerator.CODEC);
 
         GameConfigs.register();
 
@@ -65,10 +61,10 @@ public final class Plasmid implements ModInitializer {
                     }
                 }
 
-                Game game = GameManager.openGame();
-                if (game != null && game.containsPlayer(player)) {
+                GameWorld game = GameWorld.forWorld(world);
+                if (game != null && game.containsPlayer((ServerPlayerEntity) player)) {
                     UseItemListener invoker = game.invoker(UseItemListener.EVENT);
-                    return invoker.onUseItem(game, (ServerPlayerEntity) player, hand);
+                    return invoker.onUseItem((ServerPlayerEntity) player, hand);
                 }
             }
 
@@ -77,10 +73,10 @@ public final class Plasmid implements ModInitializer {
 
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (!world.isClient) {
-                Game game = GameManager.openGame();
-                if (game != null && game.containsPlayer(player)) {
-                    UseBlockListener invoker = game.invoker(UseBlockListener.EVENT);
-                    return invoker.onUseBlock(game, (ServerPlayerEntity) player, hand, hitResult);
+                GameWorld gameWorld = GameWorld.forWorld(world);
+                if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
+                    UseBlockListener invoker = gameWorld.invoker(UseBlockListener.EVENT);
+                    return invoker.onUseBlock((ServerPlayerEntity) player, hand, hitResult);
                 }
             }
 
@@ -89,10 +85,12 @@ public final class Plasmid implements ModInitializer {
 
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (!world.isClient) {
-                Game game = GameManager.openGame();
-                if (game != null && game.containsPlayer(player)) {
-                    AttackEntityListener invoker = game.invoker(AttackEntityListener.EVENT);
-                    return invoker.onAttackEntity(game, (ServerPlayerEntity) player, hand, entity, hitResult);
+                ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+
+                GameWorld gameWorld = GameWorld.forWorld(world);
+                if (gameWorld != null && gameWorld.containsPlayer(serverPlayer)) {
+                    AttackEntityListener invoker = gameWorld.invoker(AttackEntityListener.EVENT);
+                    return invoker.onAttackEntity(serverPlayer, hand, entity, hitResult);
                 }
             }
 
@@ -109,8 +107,8 @@ public final class Plasmid implements ModInitializer {
             return ActionResult.PASS;
         });
 
-        ServerTickEvents.START_SERVER_TICK.register(server -> {
-            Game game = GameManager.openGame();
+        ServerTickEvents.END_WORLD_TICK.register(world -> {
+            GameWorld game = GameWorld.forWorld(world);
             if (game != null) {
                 game.tick();
             }

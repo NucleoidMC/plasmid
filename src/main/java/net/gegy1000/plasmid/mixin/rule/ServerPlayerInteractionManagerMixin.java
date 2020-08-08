@@ -1,7 +1,6 @@
 package net.gegy1000.plasmid.mixin.rule;
 
-import net.gegy1000.plasmid.game.Game;
-import net.gegy1000.plasmid.game.GameManager;
+import net.gegy1000.plasmid.game.GameWorld;
 import net.gegy1000.plasmid.game.rule.GameRule;
 import net.gegy1000.plasmid.game.rule.RuleResult;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -32,9 +31,9 @@ public class ServerPlayerInteractionManagerMixin {
             return;
         }
 
-        Game game = GameManager.openGame();
-        if (game != null && game.containsPlayer(this.player) && game.containsPos(pos)) {
-            RuleResult result = game.testRule(GameRule.BLOCK_DROPS);
+        GameWorld gameWorld = GameWorld.forWorld(this.player.world);
+        if (gameWorld != null && gameWorld.containsPlayer(this.player)) {
+            RuleResult result = gameWorld.testRule(GameRule.BLOCK_DROPS);
             if (result == RuleResult.DENY) {
                 ci.setReturnValue(true);
             }

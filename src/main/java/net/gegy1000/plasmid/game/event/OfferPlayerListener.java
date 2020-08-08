@@ -1,14 +1,13 @@
 package net.gegy1000.plasmid.game.event;
 
-import net.gegy1000.plasmid.game.Game;
-import net.gegy1000.plasmid.game.JoinResult;
+import net.gegy1000.plasmid.game.player.JoinResult;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public interface OfferPlayerListener {
     EventType<OfferPlayerListener> EVENT = EventType.create(OfferPlayerListener.class, listeners -> {
-        return (game, player) -> {
+        return player -> {
             for (OfferPlayerListener listener : listeners) {
-                JoinResult result = listener.offerPlayer(game, player);
+                JoinResult result = listener.offerPlayer(player);
                 if (result.isErr()) {
                     return result;
                 }
@@ -17,5 +16,5 @@ public interface OfferPlayerListener {
         };
     });
 
-    JoinResult offerPlayer(Game game, ServerPlayerEntity player);
+    JoinResult offerPlayer(ServerPlayerEntity player);
 }

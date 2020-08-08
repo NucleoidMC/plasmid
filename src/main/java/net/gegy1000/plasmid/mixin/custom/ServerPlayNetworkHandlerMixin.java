@@ -1,7 +1,6 @@
 package net.gegy1000.plasmid.mixin.custom;
 
-import net.gegy1000.plasmid.game.Game;
-import net.gegy1000.plasmid.game.GameManager;
+import net.gegy1000.plasmid.game.GameWorld;
 import net.gegy1000.plasmid.game.event.HandSwingListener;
 import net.gegy1000.plasmid.item.CustomItem;
 import net.minecraft.item.ItemStack;
@@ -30,9 +29,9 @@ public class ServerPlayNetworkHandlerMixin {
             custom.onSwingHand(this.player, hand);
         }
 
-        Game game = GameManager.openGame();
-        if (game != null && game.containsPlayer(this.player)) {
-            game.invoker(HandSwingListener.EVENT).onSwingHand(game, this.player, hand);
+        GameWorld gameWorld = GameWorld.forWorld(this.player.world);
+        if (gameWorld != null && gameWorld.containsPlayer(this.player)) {
+            gameWorld.invoker(HandSwingListener.EVENT).onSwingHand(this.player, hand);
         }
     }
 }

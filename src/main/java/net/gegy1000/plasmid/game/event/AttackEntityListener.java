@@ -1,6 +1,5 @@
 package net.gegy1000.plasmid.game.event;
 
-import net.gegy1000.plasmid.game.Game;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
@@ -9,9 +8,9 @@ import net.minecraft.util.hit.EntityHitResult;
 
 public interface AttackEntityListener {
     EventType<AttackEntityListener> EVENT = EventType.create(AttackEntityListener.class, listeners -> {
-        return (game, attacker, hand, attacked, hitResult) -> {
+        return (attacker, hand, attacked, hitResult) -> {
             for (AttackEntityListener listener : listeners) {
-                ActionResult result = listener.onAttackEntity(game, attacker, hand, attacked, hitResult);
+                ActionResult result = listener.onAttackEntity(attacker, hand, attacked, hitResult);
                 if (result != ActionResult.PASS) {
                     return result;
                 }
@@ -20,5 +19,5 @@ public interface AttackEntityListener {
         };
     });
 
-    ActionResult onAttackEntity(Game game, ServerPlayerEntity attacker, Hand hand, Entity attacked, EntityHitResult hitResult);
+    ActionResult onAttackEntity(ServerPlayerEntity attacker, Hand hand, Entity attacked, EntityHitResult hitResult);
 }

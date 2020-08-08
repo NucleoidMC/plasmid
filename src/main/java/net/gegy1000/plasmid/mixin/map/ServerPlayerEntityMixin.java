@@ -1,11 +1,11 @@
 package net.gegy1000.plasmid.mixin.map;
 
 import com.mojang.authlib.GameProfile;
-import net.gegy1000.plasmid.game.map.MapViewer;
-import net.gegy1000.plasmid.game.map.StagingMap;
-import net.gegy1000.plasmid.game.map.trace.PartialRegion;
-import net.gegy1000.plasmid.game.map.trace.RegionTraceMode;
-import net.gegy1000.plasmid.game.map.trace.RegionTracer;
+import net.gegy1000.plasmid.game.map.template.MapTemplateViewer;
+import net.gegy1000.plasmid.game.map.template.StagingMapTemplate;
+import net.gegy1000.plasmid.game.map.template.trace.PartialRegion;
+import net.gegy1000.plasmid.game.map.template.trace.RegionTraceMode;
+import net.gegy1000.plasmid.game.map.template.trace.RegionTracer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -15,8 +15,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import javax.annotation.Nullable;
 
 @Mixin(ServerPlayerEntity.class)
-public abstract class ServerPlayerEntityMixin extends PlayerEntity implements MapViewer, RegionTracer {
-    private StagingMap viewing;
+public abstract class ServerPlayerEntityMixin extends PlayerEntity implements MapTemplateViewer, RegionTracer {
+    private StagingMapTemplate viewing;
 
     private PartialRegion tracing;
     private PartialRegion ready;
@@ -28,13 +28,13 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Ma
     }
 
     @Override
-    public void setViewing(StagingMap map) {
+    public void setViewing(StagingMapTemplate map) {
         this.viewing = map;
     }
 
     @Nullable
     @Override
-    public StagingMap getViewing() {
+    public StagingMapTemplate getViewing() {
         return this.viewing;
     }
 

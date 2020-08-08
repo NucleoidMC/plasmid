@@ -3,7 +3,6 @@ package net.gegy1000.plasmid.game;
 import com.mojang.serialization.Codec;
 import net.gegy1000.plasmid.game.config.GameConfig;
 import net.gegy1000.plasmid.registry.TinyRegistry;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 
 import javax.annotation.Nullable;
@@ -28,8 +27,8 @@ public final class GameType<C extends GameConfig> {
         return type;
     }
 
-    public CompletableFuture<Game> open(MinecraftServer server, C config) {
-        return this.open.open(server, config);
+    public CompletableFuture<Void> open(GameWorldState worldState, C config) {
+        return this.open.open(worldState, config);
     }
 
     public Identifier getIdentifier() {
@@ -62,6 +61,6 @@ public final class GameType<C extends GameConfig> {
     }
 
     public interface Open<C extends GameConfig> {
-        CompletableFuture<Game> open(MinecraftServer server, C config);
+        CompletableFuture<Void> open(GameWorldState state, C config);
     }
 }

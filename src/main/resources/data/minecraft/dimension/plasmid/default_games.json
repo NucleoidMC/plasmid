@@ -1,6 +1,6 @@
 {
   "generator": {
-    "type": "plasmid:void"
+    "type": "plasmid:dynamic"
   },
   "type": "minecraft:overworld"
 }

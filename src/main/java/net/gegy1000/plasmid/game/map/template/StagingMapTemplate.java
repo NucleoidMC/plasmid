@@ -1,6 +1,6 @@
-package net.gegy1000.plasmid.game.map;
+package net.gegy1000.plasmid.game.map.template;
 
-import net.gegy1000.plasmid.world.BlockBounds;
+import net.gegy1000.plasmid.util.BlockBounds;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.CompoundTag;
@@ -13,14 +13,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public final class StagingMap {
+public final class StagingMapTemplate {
     private final ServerWorld world;
     private final Identifier identifier;
     private final BlockBounds bounds;
 
-    private final List<GameRegion> regions = new ArrayList<>();
+    private final List<TemplateRegion> regions = new ArrayList<>();
 
-    public StagingMap(ServerWorld world, Identifier identifier, BlockBounds bounds) {
+    public StagingMapTemplate(ServerWorld world, Identifier identifier, BlockBounds bounds) {
         this.world = world;
         this.identifier = identifier;
         this.bounds = bounds;
@@ -31,11 +31,11 @@ public final class StagingMap {
     }
 
     public void addRegion(String marker, BlockBounds bounds) {
-        this.regions.add(new GameRegion(marker, bounds));
+        this.regions.add(new TemplateRegion(marker, bounds));
         this.setDirty();
     }
 
-    public void removeRegion(GameRegion region) {
+    public void removeRegion(TemplateRegion region) {
         this.regions.remove(region);
         this.setDirty();
     }
@@ -48,7 +48,7 @@ public final class StagingMap {
         return this.bounds;
     }
 
-    public Collection<GameRegion> getRegions() {
+    public Collection<TemplateRegion> getRegions() {
         return this.regions;
     }
 
@@ -57,7 +57,7 @@ public final class StagingMap {
         this.bounds.serialize(root);
 
         ListTag regionList = new ListTag();
-        for (GameRegion region : this.regions) {
+        for (TemplateRegion region : this.regions) {
             regionList.add(region.serialize(new CompoundTag()));
         }
         root.put("regions", regionList);
@@ -65,46 +65,42 @@ public final class StagingMap {
         return root;
     }
 
-    public static StagingMap deserialize(ServerWorld world, CompoundTag root) {
+    public static StagingMapTemplate deserialize(ServerWorld world, CompoundTag root) {
         Identifier identifier = new Identifier(root.getString("identifier"));
 
         BlockBounds bounds = BlockBounds.deserialize(root);
 
-        StagingMap map = new StagingMap(world, identifier, bounds);
+        StagingMapTemplate map = new StagingMapTemplate(world, identifier, bounds);
         ListTag regionList = root.getList("regions", 10);
         for (int i = 0; i < regionList.size(); i++) {
             CompoundTag regionRoot = regionList.getCompound(i);
-            map.regions.add(GameRegion.deserialize(regionRoot));
+            map.regions.add(TemplateRegion.deserialize(regionRoot));
         }
 
         return map;
     }
 
-    public GameMapData compile() {
-        GameMapData map = new GameMapData(this.identifier);
+    public MapTemplate compile() {
+        MapTemplate map = MapTemplate.createEmpty();
         map.bounds = this.globalToLocal(this.bounds);
 
-        for (GameRegion region : this.regions) {
-            map.regions.add(new GameRegion(
+        for (TemplateRegion region : this.regions) {
+            map.addRegion(
                     region.getMarker(),
                     this.globalToLocal(region.getBounds())
-            ));
+            );
         }
 
         for (BlockPos pos : this.bounds.iterate()) {
             BlockPos localPos = this.globalToLocal(pos);
 
-            BlockEntity entity = this.world.getBlockEntity(pos);
-            if (entity != null) {
-                CompoundTag entityTag = entity.toTag(new CompoundTag());
-                entityTag.putInt("x", localPos.getX());
-                entityTag.putInt("y", localPos.getY());
-                entityTag.putInt("z", localPos.getZ());
-                map.blockEntities.put(localPos.asLong(), entityTag);
-            }
-
             BlockState state = this.world.getBlockState(pos);
             map.setBlockState(localPos, state);
+
+            BlockEntity entity = this.world.getBlockEntity(pos);
+            if (entity != null) {
+                map.setBlockEntity(localPos, entity);
+            }
         }
 
         return map;

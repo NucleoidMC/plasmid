@@ -1,10 +1,14 @@
 package net.gegy1000.plasmid.game.rule;
 
-import java.util.HashMap;
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 public final class GameRuleSet {
-    private final Map<GameRule, RuleResult> rules = new HashMap<>();
+    private final Reference2ObjectMap<GameRule, RuleResult> rules = new Reference2ObjectOpenHashMap<>();
+
+    public static GameRuleSet empty() {
+        return new GameRuleSet();
+    }
 
     public void put(GameRule rule, RuleResult value) {
         this.rules.put(rule, value);

@@ -1,14 +1,13 @@
 package net.gegy1000.plasmid.game.event;
 
-import net.gegy1000.plasmid.game.Game;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 
 public interface BreakBlockListener {
     EventType<BreakBlockListener> EVENT = EventType.create(BreakBlockListener.class, listeners -> {
-        return (game, player, pos) -> {
+        return (player, pos) -> {
             for (BreakBlockListener listener : listeners) {
-                if (listener.onBreak(game, player, pos)) {
+                if (listener.onBreak(player, pos)) {
                     return true;
                 }
             }
@@ -16,5 +15,5 @@ public interface BreakBlockListener {
         };
     });
 
-    boolean onBreak(Game game, ServerPlayerEntity player, BlockPos pos);
+    boolean onBreak(ServerPlayerEntity player, BlockPos pos);
 }

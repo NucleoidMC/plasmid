@@ -1,13 +1,13 @@
-package net.gegy1000.plasmid.game.map;
+package net.gegy1000.plasmid.game.map.template;
 
-import net.gegy1000.plasmid.world.BlockBounds;
+import net.gegy1000.plasmid.util.BlockBounds;
 import net.minecraft.nbt.CompoundTag;
 
-public final class GameRegion {
+public final class TemplateRegion {
     private final String marker;
     private final BlockBounds bounds;
 
-    public GameRegion(String marker, BlockBounds bounds) {
+    public TemplateRegion(String marker, BlockBounds bounds) {
         this.marker = marker;
         this.bounds = bounds;
     }
@@ -26,12 +26,8 @@ public final class GameRegion {
         return tag;
     }
 
-    public static GameRegion deserialize(CompoundTag tag) {
+    public static TemplateRegion deserialize(CompoundTag tag) {
         String marker = tag.getString("marker");
-        if (marker.startsWith("minecraft:")) {
-            // TODO: temporary fix for legacy map files
-            marker = marker.substring("minecraft:".length());
-        }
-        return new GameRegion(marker, BlockBounds.deserialize(tag));
+        return new TemplateRegion(marker, BlockBounds.deserialize(tag));
     }
 }

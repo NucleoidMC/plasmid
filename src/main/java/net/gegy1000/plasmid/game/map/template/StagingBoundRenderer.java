@@ -1,9 +1,9 @@
-package net.gegy1000.plasmid.game.map;
+package net.gegy1000.plasmid.game.map.template;
 
-import net.gegy1000.plasmid.game.map.trace.PartialRegion;
-import net.gegy1000.plasmid.game.map.trace.RegionTraceMode;
-import net.gegy1000.plasmid.game.map.trace.RegionTracer;
-import net.gegy1000.plasmid.world.BlockBounds;
+import net.gegy1000.plasmid.game.map.template.trace.PartialRegion;
+import net.gegy1000.plasmid.game.map.template.trace.RegionTraceMode;
+import net.gegy1000.plasmid.game.map.template.trace.RegionTracer;
+import net.gegy1000.plasmid.util.BlockBounds;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.server.MinecraftServer;
@@ -20,9 +20,9 @@ public final class StagingBoundRenderer {
         }
 
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            if (player instanceof MapViewer) {
-                MapViewer viewer = (MapViewer) player;
-                StagingMap viewing = viewer.getViewing();
+            if (player instanceof MapTemplateViewer) {
+                MapTemplateViewer viewer = (MapTemplateViewer) player;
+                StagingMapTemplate viewing = viewer.getViewing();
                 if (viewing != null) {
                     StagingBoundRenderer.renderMap(player, viewing);
                 }
@@ -35,11 +35,11 @@ public final class StagingBoundRenderer {
         }
     }
 
-    private static void renderMap(ServerPlayerEntity player, StagingMap viewing) {
+    private static void renderMap(ServerPlayerEntity player, StagingMapTemplate viewing) {
         BlockBounds bounds = viewing.getBounds();
         renderOutline(player, bounds.getMin(), bounds.getMax(), 1.0F, 0.0F, 0.0F);
 
-        for (GameRegion region : viewing.getRegions()) {
+        for (TemplateRegion region : viewing.getRegions()) {
             BlockBounds regionBounds = region.getBounds();
             BlockPos min = regionBounds.getMin();
             BlockPos max = regionBounds.getMax();

@@ -1,12 +1,13 @@
-package net.gegy1000.plasmid.world;
+package net.gegy1000.plasmid.util;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 
 public final class BlockBounds {
-    public static final BlockBounds EMPTY = new BlockBounds(BlockPos.ORIGIN, BlockPos.ORIGIN);
+    public static final BlockBounds EMPTY = BlockBounds.of(BlockPos.ORIGIN);
 
     private final BlockPos min;
     private final BlockPos max;
@@ -16,8 +17,15 @@ public final class BlockBounds {
         this.max = max(min, max);
     }
 
-    public BlockBounds(BlockPos pos) {
-        this(pos, pos);
+    public static BlockBounds of(BlockPos pos) {
+        return new BlockBounds(pos, pos);
+    }
+
+    public static BlockBounds of(ChunkPos chunk) {
+        return new BlockBounds(
+                new BlockPos(chunk.getStartX(), 0, chunk.getStartZ()),
+                new BlockPos(chunk.getEndX(), 255, chunk.getEndZ())
+        );
     }
 
     public BlockBounds offset(BlockPos pos) {
@@ -28,14 +36,22 @@ public final class BlockBounds {
     }
 
     public boolean contains(BlockPos pos) {
-        return pos.getX() >= this.min.getX() && pos.getY() >= this.min.getY() && pos.getZ() >= this.min.getZ()
-                && pos.getX() <= this.max.getX() && pos.getY() <= this.max.getY() && pos.getZ() <= this.max.getZ();
+        return this.contains(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public boolean contains(int x, int y, int z) {
+        return x >= this.min.getX() && y >= this.min.getY() && z >= this.min.getZ()
+                && x <= this.max.getX() && y <= this.max.getY() && z <= this.max.getZ();
+    }
+
+    public boolean contains(int x, int z) {
+        return x >= this.min.getX() && z >= this.min.getZ() && x <= this.max.getX() && z <= this.max.getZ();
     }
 
     public boolean intersects(BlockBounds bounds) {
         return this.max.getX() >= bounds.min.getX() && this.min.getX() <= bounds.max.getX()
-                && this.max.getZ() >= bounds.min.getY() && this.min.getX() <= bounds.max.getY()
-                && this.max.getZ() >= bounds.min.getZ() && this.min.getX() <= bounds.max.getZ();
+                && this.max.getY() >= bounds.min.getY() && this.min.getY() <= bounds.max.getY()
+                && this.max.getZ() >= bounds.min.getZ() && this.min.getZ() <= bounds.max.getZ();
     }
 
     public BlockPos getMin() {

@@ -2,7 +2,6 @@ package net.gegy1000.plasmid.game;
 
 import com.mojang.serialization.Codec;
 import net.gegy1000.plasmid.game.config.GameConfig;
-import net.minecraft.server.MinecraftServer;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -23,8 +22,8 @@ public final class ConfiguredGame<C extends GameConfig> {
         this.config = config;
     }
 
-    public CompletableFuture<Game> open(MinecraftServer server) {
-        return this.type.open(server, this.config);
+    public CompletableFuture<Void> open(GameWorldState state) {
+        return this.type.open(state, this.config);
     }
 
     public GameType<C> getType() {

@@ -1,7 +1,6 @@
 package net.gegy1000.plasmid.mixin.event;
 
-import net.gegy1000.plasmid.game.Game;
-import net.gegy1000.plasmid.game.GameManager;
+import net.gegy1000.plasmid.game.GameWorld;
 import net.gegy1000.plasmid.game.event.BreakBlockListener;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
@@ -23,9 +22,9 @@ public class ServerPlayerInteractionManagerMixin {
             return;
         }
 
-        Game game = GameManager.openGame();
-        if (game != null && game.containsPos(pos)) {
-            boolean cancel = game.invoker(BreakBlockListener.EVENT).onBreak(game, this.player, pos);
+        GameWorld gameWorld = GameWorld.forWorld(this.player.world);
+        if (gameWorld != null && gameWorld.containsPlayer(this.player)) {
+            boolean cancel = gameWorld.invoker(BreakBlockListener.EVENT).onBreak(this.player, pos);
             if (cancel) {
                 ci.setReturnValue(false);
             }

@@ -1,4 +1,4 @@
-package net.gegy1000.plasmid.game;
+package net.gegy1000.plasmid.game.player;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.text.LiteralText;

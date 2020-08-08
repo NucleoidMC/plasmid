@@ -1,6 +1,6 @@
-package net.gegy1000.plasmid.game.map.trace;
+package net.gegy1000.plasmid.game.map.template.trace;
 
-import net.gegy1000.plasmid.world.BlockBounds;
+import net.gegy1000.plasmid.util.BlockBounds;
 import net.minecraft.util.math.BlockPos;
 
 public class PartialRegion {

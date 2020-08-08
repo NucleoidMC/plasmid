@@ -7,22 +7,19 @@ import net.minecraft.text.Text;
 import javax.annotation.Nullable;
 
 public final class StartResult {
-    private final Game ok;
     private final Text error;
 
-    private StartResult(Game ok, Text error) {
-        this.ok = ok;
+    private StartResult(Text error) {
         this.error = error;
     }
 
-    public static StartResult ok(Game game) {
-        Preconditions.checkNotNull(game, "game must not be null");
-        return new StartResult(game, null);
+    public static StartResult ok() {
+        return new StartResult(null);
     }
 
     public static StartResult err(Text error) {
         Preconditions.checkNotNull(error, "error must not be null");
-        return new StartResult(null, error);
+        return new StartResult(error);
     }
 
     public static StartResult notEnoughPlayers() {
@@ -39,11 +36,6 @@ public final class StartResult {
 
     public boolean isErr() {
         return this.error != null;
-    }
-
-    @Nullable
-    public Game getGame() {
-        return this.ok;
     }
 
     @Nullable

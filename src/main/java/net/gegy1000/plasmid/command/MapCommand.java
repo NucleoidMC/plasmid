@@ -9,14 +9,14 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.gegy1000.plasmid.Plasmid;
-import net.gegy1000.plasmid.game.map.GameMapData;
-import net.gegy1000.plasmid.game.map.GameRegion;
-import net.gegy1000.plasmid.game.map.MapViewer;
-import net.gegy1000.plasmid.game.map.StagingMap;
-import net.gegy1000.plasmid.game.map.StagingMapManager;
-import net.gegy1000.plasmid.game.map.trace.PartialRegion;
-import net.gegy1000.plasmid.game.map.trace.RegionTracer;
-import net.gegy1000.plasmid.world.BlockBounds;
+import net.gegy1000.plasmid.game.map.template.MapTemplate;
+import net.gegy1000.plasmid.game.map.template.TemplateRegion;
+import net.gegy1000.plasmid.game.map.template.MapTemplateViewer;
+import net.gegy1000.plasmid.game.map.template.StagingMapTemplate;
+import net.gegy1000.plasmid.game.map.template.StagingMapManager;
+import net.gegy1000.plasmid.game.map.template.trace.PartialRegion;
+import net.gegy1000.plasmid.game.map.template.trace.RegionTracer;
+import net.gegy1000.plasmid.util.BlockBounds;
 import net.minecraft.command.arguments.BlockPosArgumentType;
 import net.minecraft.command.arguments.IdentifierArgumentType;
 import net.minecraft.server.command.CommandSource;
@@ -112,13 +112,13 @@ public final class MapCommand {
         Identifier identifier = IdentifierArgumentType.getIdentifier(context, "identifier");
 
         StagingMapManager stagingMapManager = StagingMapManager.get(world);
-        StagingMap map = stagingMapManager.get(identifier);
+        StagingMapTemplate map = stagingMapManager.get(identifier);
         if (map == null) {
             throw MAP_NOT_FOUND.create(identifier);
         }
 
-        if (player instanceof MapViewer) {
-            MapViewer viewer = (MapViewer) player;
+        if (player instanceof MapTemplateViewer) {
+            MapTemplateViewer viewer = (MapTemplateViewer) player;
             viewer.setViewing(map);
             source.sendFeedback(new LiteralText("Viewing: '" + identifier + "'"), false);
         }
@@ -130,9 +130,9 @@ public final class MapCommand {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        if (player instanceof MapViewer) {
-            MapViewer viewer = (MapViewer) player;
-            StagingMap viewing = viewer.getViewing();
+        if (player instanceof MapTemplateViewer) {
+            MapTemplateViewer viewer = (MapTemplateViewer) player;
+            StagingMapTemplate viewing = viewer.getViewing();
 
             if (viewing != null) {
                 viewer.setViewing(null);
@@ -152,14 +152,14 @@ public final class MapCommand {
         Identifier identifier = IdentifierArgumentType.getIdentifier(context, "identifier");
 
         StagingMapManager stagingMapManager = StagingMapManager.get(world);
-        StagingMap stagingMap = stagingMapManager.get(identifier);
+        StagingMapTemplate stagingMap = stagingMapManager.get(identifier);
         if (stagingMap == null) {
             throw MAP_NOT_FOUND.create(identifier);
         }
 
-        GameMapData map = stagingMap.compile();
+        MapTemplate map = stagingMap.compile();
         try {
-            map.save();
+            map.save(stagingMap.getIdentifier());
 
             source.sendFeedback(new LiteralText("Compiled and saved map '" + identifier + "'"), false);
         } catch (IOException e) {
@@ -178,12 +178,12 @@ public final class MapCommand {
         String marker = StringArgumentType.getString(context, "marker");
         BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
         BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
-        Optional<StagingMap> mapOpt = stagingMapManager.getStagingMaps().stream()
+        Optional<StagingMapTemplate> mapOpt = stagingMapManager.getStagingMaps().stream()
                 .filter(stagingMap -> stagingMap.getBounds().contains(min) && stagingMap.getBounds().contains(max))
                 .findFirst();
 
         if (mapOpt.isPresent()) {
-            StagingMap map = mapOpt.get();
+            StagingMapTemplate map = mapOpt.get();
             map.addRegion(marker, new BlockBounds(min, max));
             source.sendFeedback(new LiteralText("Added region '" + marker + "' to '" + map.getIdentifier() + "'"), false);
         } else {
@@ -200,18 +200,18 @@ public final class MapCommand {
 
         StagingMapManager stagingMapManager = StagingMapManager.get(world);
 
-        Optional<StagingMap> mapOpt = stagingMapManager.getStagingMaps().stream()
+        Optional<StagingMapTemplate> mapOpt = stagingMapManager.getStagingMaps().stream()
                 .filter(stagingMap -> stagingMap.getBounds().contains(pos))
                 .findFirst();
 
         if (mapOpt.isPresent()) {
-            StagingMap map = mapOpt.get();
+            StagingMapTemplate map = mapOpt.get();
 
-            List<GameRegion> regions = map.getRegions().stream()
+            List<TemplateRegion> regions = map.getRegions().stream()
                     .filter(region -> region.getBounds().contains(pos))
                     .collect(Collectors.toList());
 
-            for (GameRegion region : regions) {
+            for (TemplateRegion region : regions) {
                 map.removeRegion(region);
             }
 
@@ -243,12 +243,12 @@ public final class MapCommand {
             BlockPos min = region.getMin();
             BlockPos max = region.getMax();
 
-            Optional<StagingMap> mapOpt = stagingMapManager.getStagingMaps().stream()
+            Optional<StagingMapTemplate> mapOpt = stagingMapManager.getStagingMaps().stream()
                     .filter(stagingMap -> stagingMap.getBounds().contains(min) && stagingMap.getBounds().contains(max))
                     .findFirst();
 
             if (mapOpt.isPresent()) {
-                StagingMap map = mapOpt.get();
+                StagingMapTemplate map = mapOpt.get();
                 map.addRegion(marker, new BlockBounds(min, max));
                 source.sendFeedback(new LiteralText("Added region '" + marker + "' to '" + map.getIdentifier() + "'"), false);
             } else {

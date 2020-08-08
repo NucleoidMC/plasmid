@@ -1,6 +1,6 @@
 package net.gegy1000.plasmid.game.map;
 
-import net.gegy1000.plasmid.world.BlockBounds;
+import net.gegy1000.plasmid.util.BlockBounds;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;

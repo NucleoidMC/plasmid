@@ -1,11 +1,11 @@
 package net.gegy1000.plasmid.mixin.rule;
 
-import net.gegy1000.plasmid.game.Game;
-import net.gegy1000.plasmid.game.GameManager;
+import net.gegy1000.plasmid.game.GameWorld;
 import net.gegy1000.plasmid.game.rule.GameRule;
 import net.gegy1000.plasmid.game.rule.RuleResult;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,9 +20,9 @@ public class PlayerEntityMixin {
             return;
         }
 
-        Game game = GameManager.openGame();
-        if (game != null && game.containsPlayer(self)) {
-            RuleResult result = game.testRule(GameRule.FALL_DAMAGE);
+        GameWorld gameWorld = GameWorld.forWorld(self.world);
+        if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) self)) {
+            RuleResult result = gameWorld.testRule(GameRule.FALL_DAMAGE);
             if (result == RuleResult.ALLOW) {
                 ci.setReturnValue(false);
             } else if (result == RuleResult.DENY) {

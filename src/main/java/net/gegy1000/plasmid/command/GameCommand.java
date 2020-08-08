@@ -9,10 +9,12 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.gegy1000.plasmid.Plasmid;
 import net.gegy1000.plasmid.game.ConfiguredGame;
-import net.gegy1000.plasmid.game.GameManager;
-import net.gegy1000.plasmid.game.JoinResult;
+import net.gegy1000.plasmid.game.GameWorld;
+import net.gegy1000.plasmid.game.GameWorldState;
 import net.gegy1000.plasmid.game.StartResult;
 import net.gegy1000.plasmid.game.config.GameConfigs;
+import net.gegy1000.plasmid.game.player.JoinResult;
+import net.minecraft.command.arguments.DimensionArgumentType;
 import net.minecraft.command.arguments.IdentifierArgumentType;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
@@ -30,6 +32,8 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.World;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -47,6 +51,10 @@ public final class GameCommand {
             new LiteralText("Game not recruiting!")
     );
 
+    public static final SimpleCommandExceptionType UNSUPPORTED_WORLD = new SimpleCommandExceptionType(
+            new LiteralText("This dimension does not support running games!")
+    );
+
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
@@ -54,56 +62,65 @@ public final class GameCommand {
                 .then(literal("open")
                     .requires(source -> source.hasPermissionLevel(2))
                     .then(argument("game_type", IdentifierArgumentType.identifier()).suggests(gameSuggestions())
+                    .then(argument("dimension", DimensionArgumentType.dimension())
                     .executes(GameCommand::openGame)
-                ))
+                )))
                 .then(literal("start")
                     .requires(source -> source.hasPermissionLevel(2))
+                    .then(argument("dimension", DimensionArgumentType.dimension())
                     .executes(GameCommand::startGame)
-                )
+                ))
                 .then(literal("stop")
                     .requires(source -> source.hasPermissionLevel(2))
+                    .then(argument("dimension", DimensionArgumentType.dimension())
                     .executes(GameCommand::stopGame)
-                )
-                .then(literal("join").executes(GameCommand::joinGame))
+                ))
+                .then(literal("join")
+                    .then(argument("dimension", DimensionArgumentType.dimension())
+                    .executes(GameCommand::joinGame)
+                ))
                 .then(literal("list").executes(GameCommand::listGames))
         );
     }
     // @formatter:on
 
     private static int openGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        MinecraftServer server = context.getSource().getMinecraftServer();
+        ServerCommandSource source = context.getSource();
+        MinecraftServer server = source.getMinecraftServer();
 
         Identifier gameTypeId = IdentifierArgumentType.getIdentifier(context, "game_type");
-
         ConfiguredGame<?> game = GameConfigs.get(gameTypeId);
         if (game == null) {
             throw GAME_NOT_FOUND.create(gameTypeId);
         }
 
-        GameManager.Closed closed = GameManager.closed();
-        if (closed == null) {
+        GameWorldState gameState = getGameState(context, source);
+        if (gameState.isOpen()) {
             throw ALREADY_OPEN.create();
         }
 
         PlayerManager playerManager = server.getPlayerManager();
-        playerManager.broadcastChatMessage(new LiteralText("Game is opening! Hold tight.."), MessageType.SYSTEM, Util.NIL_UUID);
 
-        closed.open(server, game)
-                .handle((gameAndConfig, throwable) -> {
-                    if (throwable == null) {
-                        onOpenSuccess(game, playerManager);
-                    } else {
-                        onOpenError(playerManager, throwable);
-                    }
-                    return null;
-                });
+        LiteralText announcement = new LiteralText("Game is opening! Hold tight..");
+        playerManager.broadcastChatMessage(announcement.formatted(Formatting.GRAY), MessageType.SYSTEM, Util.NIL_UUID);
+
+        game.open(gameState).handle((v, throwable) -> {
+            if (throwable == null) {
+                onOpenSuccess(playerManager, gameState.getDimension());
+            } else {
+                onOpenError(playerManager, throwable);
+            }
+            return null;
+        });
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(ConfiguredGame<?> game, PlayerManager playerManager) {
-        ClickEvent joinClick = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game join");
-        HoverEvent joinHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("/game join"));
+    private static void onOpenSuccess(PlayerManager playerManager, RegistryKey<World> dimension) {
+        String command = "/game join " + dimension.getValue();
+
+        ClickEvent joinClick = new ClickEvent(ClickEvent.Action.RUN_COMMAND, command);
+        HoverEvent joinHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(command));
         Style joinStyle = Style.EMPTY
                 .withFormatting(Formatting.UNDERLINE)
                 .withColor(Formatting.BLUE)
@@ -125,12 +142,14 @@ public final class GameCommand {
         ServerPlayerEntity player = source.getPlayer();
         PlayerManager playerManager = source.getMinecraftServer().getPlayerManager();
 
-        GameManager.Open open = GameManager.open();
-        if (open == null) {
+        GameWorldState gameState = getGameState(context, source);
+        GameWorld openWorld = gameState.getOpenWorld();
+
+        if (openWorld == null) {
             throw NOT_RECRUITING.create();
         }
 
-        JoinResult joinResult = open.offerPlayer(player);
+        JoinResult joinResult = openWorld.offerPlayer(player);
         if (joinResult.isErr()) {
             Text error = joinResult.getError();
             throw new SimpleCommandExceptionType(error).create();
@@ -147,12 +166,14 @@ public final class GameCommand {
     private static int startGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
 
-        GameManager.Open open = GameManager.open();
-        if (open == null) {
+        GameWorldState gameState = getGameState(context, source);
+        GameWorld openWorld = gameState.getOpenWorld();
+
+        if (openWorld == null) {
             throw NOT_RECRUITING.create();
         }
 
-        StartResult startResult = open.requestStart();
+        StartResult startResult = openWorld.requestStart();
         if (startResult.isErr()) {
             Text error = startResult.getError();
             throw new SimpleCommandExceptionType(error).create();
@@ -166,12 +187,14 @@ public final class GameCommand {
     }
 
     private static int stopGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameManager.Open open = GameManager.open();
-        if (open == null) {
+        GameWorldState gameState = getGameState(context, context.getSource());
+        GameWorld openWorld = gameState.getOpenWorld();
+
+        if (openWorld == null) {
             throw NOT_RECRUITING.create();
         }
 
-        open.close();
+        openWorld.closeWorld();
 
         MinecraftServer server = context.getSource().getMinecraftServer();
 
@@ -209,5 +232,16 @@ public final class GameCommand {
                     builder
             );
         };
+    }
+
+    private static GameWorldState getGameState(CommandContext<ServerCommandSource> context, ServerCommandSource source) throws CommandSyntaxException {
+        World dimension = DimensionArgumentType.getDimensionArgument(context, "dimension");
+
+        GameWorldState gameWorld = GameWorldState.forWorld(dimension);
+        if (gameWorld == null) {
+            throw UNSUPPORTED_WORLD.create();
+        }
+
+        return gameWorld;
     }
 }

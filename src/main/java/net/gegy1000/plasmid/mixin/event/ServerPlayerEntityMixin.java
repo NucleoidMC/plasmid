@@ -1,7 +1,6 @@
 package net.gegy1000.plasmid.mixin.event;
 
-import net.gegy1000.plasmid.game.Game;
-import net.gegy1000.plasmid.game.GameManager;
+import net.gegy1000.plasmid.game.GameWorld;
 import net.gegy1000.plasmid.game.event.PlayerDamageListener;
 import net.gegy1000.plasmid.game.event.PlayerDeathListener;
 import net.minecraft.entity.damage.DamageSource;
@@ -21,9 +20,9 @@ public class ServerPlayerEntityMixin {
             return;
         }
 
-        Game game = GameManager.openGame();
-        if (game != null && game.containsPlayer(player)) {
-            boolean cancel = game.invoker(PlayerDeathListener.EVENT).onDeath(game, player, source);
+        GameWorld gameWorld = GameWorld.forWorld(player.world);
+        if (gameWorld != null && gameWorld.containsPlayer(player)) {
+            boolean cancel = gameWorld.invoker(PlayerDeathListener.EVENT).onDeath(player, source);
             if (cancel) {
                 ci.cancel();
             }
@@ -37,9 +36,9 @@ public class ServerPlayerEntityMixin {
             return;
         }
 
-        Game game = GameManager.openGame();
-        if (game != null && game.containsPlayer(player)) {
-            boolean cancel = game.invoker(PlayerDamageListener.EVENT).onDamage(game, player, source, amount);
+        GameWorld gameWorld = GameWorld.forWorld(player.world);
+        if (gameWorld != null && gameWorld.containsPlayer(player)) {
+            boolean cancel = gameWorld.invoker(PlayerDamageListener.EVENT).onDamage(player, source, amount);
             if (cancel) {
                 ci.cancel();
             }

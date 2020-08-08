@@ -1,7 +1,6 @@
 package net.gegy1000.plasmid.mixin.rule;
 
-import net.gegy1000.plasmid.game.Game;
-import net.gegy1000.plasmid.game.GameManager;
+import net.gegy1000.plasmid.game.GameWorld;
 import net.gegy1000.plasmid.game.rule.GameRule;
 import net.gegy1000.plasmid.game.rule.RuleResult;
 import net.minecraft.block.BlockState;
@@ -17,9 +16,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class TntBlockMixin {
     @Inject(method = "onBlockAdded", at = @At("HEAD"))
     private void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean moved, CallbackInfo ci) {
-        Game game = GameManager.openGame();
-        if (game != null && game.containsPos(pos)) {
-            RuleResult result = game.testRule(GameRule.INSTANT_LIGHT_TNT);
+        GameWorld gameWorld = GameWorld.forWorld(world);
+        if (gameWorld != null) {
+            RuleResult result = gameWorld.testRule(GameRule.INSTANT_LIGHT_TNT);
             if (result == RuleResult.ALLOW) {
                 TntBlock.primeTnt(world, pos);
                 world.removeBlock(pos, false);

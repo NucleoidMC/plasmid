@@ -1,4 +1,4 @@
-package net.gegy1000.plasmid.game;
+package net.gegy1000.plasmid.game.player;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

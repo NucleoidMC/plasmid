@@ -1,8 +1,8 @@
 package net.gegy1000.plasmid.item;
 
 import net.gegy1000.plasmid.Plasmid;
-import net.gegy1000.plasmid.game.map.trace.RegionTraceMode;
-import net.gegy1000.plasmid.game.map.trace.RegionTracer;
+import net.gegy1000.plasmid.game.map.template.trace.RegionTraceMode;
+import net.gegy1000.plasmid.game.map.template.trace.RegionTracer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.LiteralText;

@@ -1,6 +1,5 @@
 package net.gegy1000.plasmid.game.event;
 
-import net.gegy1000.plasmid.game.Game;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
@@ -9,9 +8,9 @@ import net.minecraft.util.TypedActionResult;
 
 public interface UseItemListener {
     EventType<UseItemListener> EVENT = EventType.create(UseItemListener.class, listeners -> {
-        return (game, player, hand) -> {
+        return (player, hand) -> {
             for (UseItemListener listener : listeners) {
-                TypedActionResult<ItemStack> result = listener.onUseItem(game, player, hand);
+                TypedActionResult<ItemStack> result = listener.onUseItem(player, hand);
                 if (result.getResult() != ActionResult.PASS) {
                     return result;
                 }
@@ -20,5 +19,5 @@ public interface UseItemListener {
         };
     });
 
-    TypedActionResult<ItemStack> onUseItem(Game game, ServerPlayerEntity player, Hand hand);
+    TypedActionResult<ItemStack> onUseItem(ServerPlayerEntity player, Hand hand);
 }

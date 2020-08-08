@@ -1,11 +1,10 @@
-package net.gegy1000.plasmid.game.map;
+package net.gegy1000.plasmid.game.map.template;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.gegy1000.plasmid.Plasmid;
-import net.gegy1000.plasmid.game.GameManager;
-import net.gegy1000.plasmid.world.BlockBounds;
+import net.gegy1000.plasmid.util.BlockBounds;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -14,17 +13,18 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.chunk.IdListPalette;
 import net.minecraft.world.chunk.Palette;
 import net.minecraft.world.chunk.PalettedContainer;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import javax.annotation.Nullable;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,35 +33,36 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-public final class GameMapData {
+public final class MapTemplate {
     private static final Path MAP_ROOT = Paths.get(Plasmid.ID, "map");
 
     private static final BlockState AIR = Blocks.AIR.getDefaultState();
 
-    private final Identifier identifier;
-
     final Long2ObjectMap<MapChunk> chunks = new Long2ObjectOpenHashMap<>();
     final Long2ObjectMap<CompoundTag> blockEntities = new Long2ObjectOpenHashMap<>();
-    final List<GameRegion> regions = new ArrayList<>();
+    final List<TemplateRegion> regions = new ArrayList<>();
 
-    BlockBounds bounds = new BlockBounds(BlockPos.ORIGIN, BlockPos.ORIGIN);
+    BlockBounds bounds = null;
 
-    GameMapData(Identifier identifier) {
-        this.identifier = identifier;
+    private MapTemplate() {
     }
 
-    public static CompletableFuture<GameMapData> load(Identifier identifier) {
+    public static MapTemplate createEmpty() {
+        return new MapTemplate();
+    }
+
+    public static CompletableFuture<MapTemplate> load(Identifier identifier) {
         return CompletableFuture.supplyAsync(() -> {
             Path path = getPathFor(identifier).resolve("map.nbt");
 
-            try (DataInputStream input = new DataInputStream(new BufferedInputStream(Files.newInputStream(path)))) {
-                GameMapData map = new GameMapData(identifier);
-                map.load(NbtIo.read(input));
+            try (InputStream input = Files.newInputStream(path)) {
+                MapTemplate map = new MapTemplate();
+                map.load(NbtIo.readCompressed(input));
                 return map;
             } catch (IOException e) {
                 throw new CompletionException(e);
             }
-        }, GameManager.EXECUTOR);
+        }, Util.method_27958());
     }
 
     private void load(CompoundTag root) {
@@ -84,7 +85,7 @@ public final class GameMapData {
         ListTag regionList = root.getList("regions", 10);
         for (int i = 0; i < regionList.size(); i++) {
             CompoundTag regionRoot = regionList.getCompound(i);
-            this.regions.add(GameRegion.deserialize(regionRoot));
+            this.regions.add(TemplateRegion.deserialize(regionRoot));
         }
 
         ListTag blockEntityList = root.getList("block_entities", 10);
@@ -101,13 +102,13 @@ public final class GameMapData {
         this.bounds = BlockBounds.deserialize(root.getCompound("bounds"));
     }
 
-    public void save() throws IOException {
+    public void save(Identifier identifier) throws IOException {
         CompoundTag root = new CompoundTag();
 
         ListTag chunkList = new ListTag();
 
         for (Long2ObjectMap.Entry<MapChunk> entry : Long2ObjectMaps.fastIterable(this.chunks)) {
-            BlockPos pos = BlockPos.fromLong(entry.getLongKey());
+            ChunkSectionPos pos = ChunkSectionPos.from(entry.getLongKey());
             MapChunk chunk = entry.getValue();
 
             CompoundTag chunkRoot = new CompoundTag();
@@ -121,7 +122,7 @@ public final class GameMapData {
         root.put("chunks", chunkList);
 
         ListTag regionList = new ListTag();
-        for (GameRegion region : this.regions) {
+        for (TemplateRegion region : this.regions) {
             regionList.add(region.serialize(new CompoundTag()));
         }
         root.put("regions", regionList);
@@ -132,22 +133,22 @@ public final class GameMapData {
 
         root.put("bounds", this.bounds.serialize(new CompoundTag()));
 
-        Path parent = getPathFor(this.identifier);
+        Path parent = getPathFor(identifier);
         Files.createDirectories(parent);
 
         Path path = parent.resolve("map.nbt");
 
-        try (DataOutputStream output = new DataOutputStream(Files.newOutputStream(path))) {
-            NbtIo.write(root, output);
+        try (OutputStream output = Files.newOutputStream(path)) {
+            NbtIo.writeCompressed(root, output);
         }
     }
 
-    void setBlockState(BlockPos pos, BlockState state) {
+    public void setBlockState(BlockPos pos, BlockState state) {
         MapChunk chunk = this.chunks.computeIfAbsent(chunkPos(pos), p -> new MapChunk());
         chunk.set(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15, state);
     }
 
-    BlockState getBlockState(BlockPos pos) {
+    public BlockState getBlockState(BlockPos pos) {
         MapChunk chunk = this.chunks.get(chunkPos(pos));
         if (chunk != null) {
             return chunk.get(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15);
@@ -155,41 +156,78 @@ public final class GameMapData {
         return AIR;
     }
 
+    public void setBlockEntity(BlockPos pos, @Nullable BlockEntity entity) {
+        if (entity != null) {
+            CompoundTag entityTag = entity.toTag(new CompoundTag());
+            entityTag.putInt("x", pos.getX());
+            entityTag.putInt("y", pos.getY());
+            entityTag.putInt("z", pos.getZ());
+
+            this.blockEntities.put(pos.asLong(), entityTag);
+        } else {
+            this.blockEntities.remove(pos.asLong());
+        }
+    }
+
+    public void addRegion(String marker, BlockBounds bounds) {
+        this.regions.add(new TemplateRegion(marker, bounds));
+    }
+
+    public void addRegion(TemplateRegion region) {
+        this.regions.add(region);
+    }
+
+    public boolean containsBlock(BlockPos pos) {
+        return this.getBlockState(pos) != AIR;
+    }
+
     private static long chunkPos(BlockPos pos) {
-        return BlockPos.asLong(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
+        return ChunkSectionPos.asLong(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
     }
 
     private static Path getPathFor(Identifier identifier) {
         return MAP_ROOT.resolve(identifier.getNamespace()).resolve(identifier.getPath());
     }
 
-    public GameMap addToWorld(ServerWorld world, BlockPos origin) {
-        GameMapBuilder builder = GameMapBuilder.open(world, origin, this.bounds);
-
-        for (BlockPos pos : this.bounds.iterate()) {
-            BlockState state = this.getBlockState(pos);
-            if (!state.isAir()) {
-                builder.setBlockState(pos, state);
-            }
-
-            CompoundTag beTag = this.blockEntities.get(pos.asLong());
-            if (beTag != null) {
-                BlockEntity blockEntity = BlockEntity.createFromTag(state, beTag);
-                if (blockEntity != null) {
-                    builder.setBlockEntity(pos, blockEntity);
-                }
-            }
+    public BlockBounds getBounds() {
+        if (this.bounds == null) {
+            this.bounds = this.computeBounds();
         }
-
-        for (GameRegion region : this.regions) {
-            builder.addRegion(region);
-        }
-
-        return builder.build();
+        return this.bounds;
     }
 
-    public BlockBounds getBounds() {
-        return this.bounds;
+    private BlockBounds computeBounds() {
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int minZ = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        int maxZ = Integer.MIN_VALUE;
+
+        for (Long2ObjectMap.Entry<MapChunk> entry : Long2ObjectMaps.fastIterable(this.chunks)) {
+            ChunkSectionPos chunkPos = ChunkSectionPos.from(entry.getLongKey());
+
+            int minChunkX = chunkPos.getMinX();
+            int minChunkY = chunkPos.getMinY();
+            int minChunkZ = chunkPos.getMinZ();
+
+            int maxChunkX = chunkPos.getMaxX();
+            int maxChunkY = chunkPos.getMaxY();
+            int maxChunkZ = chunkPos.getMaxZ();
+
+            if (minChunkX < minX) minX = minChunkX;
+            if (minChunkY < minY) minY = minChunkY;
+            if (minChunkZ < minZ) minZ = minChunkZ;
+
+            if (maxChunkX > maxX) maxX = maxChunkX;
+            if (maxChunkY > maxY) maxY = maxChunkY;
+            if (maxChunkZ > maxZ) maxZ = maxChunkZ;
+        }
+
+        return new BlockBounds(
+                new BlockPos(minX, minY, minZ),
+                new BlockPos(maxX, maxY, maxZ)
+        );
     }
 
     private static class MapChunk {

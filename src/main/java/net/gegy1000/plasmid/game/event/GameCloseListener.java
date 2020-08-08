@@ -1,15 +1,13 @@
 package net.gegy1000.plasmid.game.event;
 
-import net.gegy1000.plasmid.game.Game;
-
 public interface GameCloseListener {
     EventType<GameCloseListener> EVENT = EventType.create(GameCloseListener.class, listeners -> {
-        return game -> {
+        return () -> {
             for (GameCloseListener listener : listeners) {
-                listener.close(game);
+                listener.onClose();
             }
         };
     });
 
-    void close(Game game);
+    void onClose();
 }

@@ -1,7 +1,6 @@
 package net.gegy1000.plasmid.mixin.rule;
 
-import net.gegy1000.plasmid.game.Game;
-import net.gegy1000.plasmid.game.GameManager;
+import net.gegy1000.plasmid.game.GameWorld;
 import net.gegy1000.plasmid.game.rule.GameRule;
 import net.gegy1000.plasmid.game.rule.RuleResult;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -16,9 +15,9 @@ public abstract class ServerPlayerEntityMixin {
     private void testPvpEnabled(CallbackInfoReturnable<Boolean> ci) {
         ServerPlayerEntity self = (ServerPlayerEntity) (Object) this;
 
-        Game game = GameManager.openGame();
-        if (game != null && game.containsPlayer(self)) {
-            RuleResult result = game.testRule(GameRule.ALLOW_PVP);
+        GameWorld gameWorld = GameWorld.forWorld(self.world);
+        if (gameWorld != null && gameWorld.containsPlayer(self)) {
+            RuleResult result = gameWorld.testRule(GameRule.ALLOW_PVP);
             if (result == RuleResult.ALLOW) {
                 ci.setReturnValue(true);
             } else if (result == RuleResult.DENY) {

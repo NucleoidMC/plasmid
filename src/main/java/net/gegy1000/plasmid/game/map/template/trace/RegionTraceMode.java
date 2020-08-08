@@ -1,4 +1,4 @@
-package net.gegy1000.plasmid.game.map.trace;
+package net.gegy1000.plasmid.game.map.template.trace;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.LiteralText;

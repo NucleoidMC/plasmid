@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+// TODO: maps should be stored as apart of datapack
 public final class MapTemplateSerializer {
     private static final Path MAP_ROOT = Paths.get(Plasmid.ID, "map");
 
@@ -51,10 +52,10 @@ public final class MapTemplateSerializer {
                 continue;
             }
 
-            BlockPos pos = new BlockPos(posArray[0], posArray[1], posArray[2]);
+            long pos = ChunkSectionPos.asLong(posArray[0], posArray[1], posArray[2]);
             MapTemplate.Chunk chunk = MapTemplate.Chunk.deserialize(chunkRoot);
 
-            template.chunks.put(pos.asLong(), chunk);
+            template.chunks.put(pos, chunk);
         }
 
         ListTag regionList = root.getList("regions", 10);

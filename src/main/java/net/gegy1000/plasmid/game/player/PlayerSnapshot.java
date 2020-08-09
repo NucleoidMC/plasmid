@@ -68,6 +68,9 @@ public final class PlayerSnapshot {
 
         player.teleport(world, this.position.x, this.position.y, this.position.z, 0.0F, 0.0F);
         player.setGameMode(this.gameMode);
+
+        player.setFireTicks(0);
+        player.stopFallFlying();
     }
 
     private void restoreInventory(Inventory inventory, DefaultedList<ItemStack> from) {

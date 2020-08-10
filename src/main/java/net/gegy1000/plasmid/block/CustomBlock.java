@@ -8,6 +8,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.Set;
@@ -45,7 +46,7 @@ public class CustomBlock {
         return false;
     }
 
-    public boolean setBlock(BlockPos pos, BlockState state, ServerWorld world) {
+    public boolean setBlock(BlockPos pos, BlockState state, World world) {
         if (this.name != null && !BLOCK_MAP.containsKey(pos.asLong())) {
             BLOCK_MAP.put(pos.asLong(), this);
             world.setBlockState(pos, state);

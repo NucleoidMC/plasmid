@@ -88,6 +88,10 @@ public final class CustomItem {
         }
     }
 
+    public Identifier getIdentifier() {
+        return id;
+    }
+
     public static class Builder {
         private Identifier id;
         private Text name;

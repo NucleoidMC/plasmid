@@ -3,17 +3,18 @@ package net.gegy1000.plasmid.block;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
 import net.gegy1000.plasmid.registry.TinyRegistry;
+import net.minecraft.block.BlockState;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 import java.util.Set;
 
 public class CustomBlock {
     private static final TinyRegistry<CustomBlock> REGISTRY = TinyRegistry.newStable();
-    private static final Map<BlockPos, CustomBlock> BLOCK_MAP = new Long2ObjectArrayMap();
+    private static final Long2ObjectArrayMap<CustomBlock> BLOCK_MAP = new Long2ObjectArrayMap<>();
 
     private final Identifier id;
     private final Text name;
@@ -21,6 +22,10 @@ public class CustomBlock {
     private CustomBlock(Identifier identifier, Text name) {
         this.id = identifier;
         this.name = name;
+    }
+
+    public Identifier getId() {
+        return id;
     }
 
     public static Set<Identifier> getIds() {
@@ -33,8 +38,17 @@ public class CustomBlock {
     }
 
     public boolean setBlock(BlockPos pos) {
-        if (this.name != null && !BLOCK_MAP.containsKey(pos)) {
-            BLOCK_MAP.put(pos, this);
+        if (this.name != null && !BLOCK_MAP.containsKey(pos.asLong())) {
+            BLOCK_MAP.put(pos.asLong(), this);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean setBlock(BlockPos pos, BlockState state, ServerWorld world) {
+        if (this.name != null && !BLOCK_MAP.containsKey(pos.asLong())) {
+            BLOCK_MAP.put(pos.asLong(), this);
+            world.setBlockState(pos, state);
             return true;
         }
         return false;
@@ -42,7 +56,7 @@ public class CustomBlock {
 
     @Nullable
     public static CustomBlock matches(BlockPos pos) {
-        return BLOCK_MAP.get(pos);
+        return BLOCK_MAP.get(pos.asLong());
     }
 
     public static CustomBlock.Builder builder() {

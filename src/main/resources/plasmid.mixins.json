@@ -10,7 +10,6 @@
     "event.ServerPlayerEntityMixin",
     "event.ServerPlayerInteractionManagerMixin",
     "event.ServerWorldMixin",
-    "map.ChunkTicketManagerMixin",
     "map.ServerChunkManagerMixin",
     "map.ServerPlayerEntityMixin",
     "map.ThreadedAnvilChunkStorageMixin",

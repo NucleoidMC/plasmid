@@ -2,6 +2,7 @@ package net.gegy1000.plasmid.block;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.gegy1000.plasmid.game.event.BreakBlockListener;
 import net.gegy1000.plasmid.registry.TinyRegistry;
 import net.minecraft.block.BlockState;
@@ -16,7 +17,7 @@ import java.util.Set;
 
 public class CustomBlock {
     private static final TinyRegistry<CustomBlock> REGISTRY = TinyRegistry.newStable();
-    private static final Long2ObjectArrayMap<CustomBlock> BLOCK_MAP = new Long2ObjectArrayMap<>();
+    private static final Long2ObjectOpenHashMap<CustomBlock> BLOCK_MAP = new Long2ObjectOpenHashMap<>();
 
     private final Identifier id;
     private final Text name;

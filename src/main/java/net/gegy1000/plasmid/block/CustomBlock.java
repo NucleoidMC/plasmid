@@ -1,19 +1,19 @@
 package net.gegy1000.plasmid.block;
 
 import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
 import net.gegy1000.plasmid.registry.TinyRegistry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class CustomBlock {
     private static final TinyRegistry<CustomBlock> REGISTRY = TinyRegistry.newStable();
-    private static final Map<BlockPos, CustomBlock> BLOCK_MAP = new HashMap<>();
+    private static final Map<BlockPos, CustomBlock> BLOCK_MAP = new Long2ObjectArrayMap();
 
     private final Identifier id;
     private final Text name;
@@ -23,7 +23,7 @@ public class CustomBlock {
         this.name = name;
     }
 
-    public static Set<Identifier> getKeys() {
+    public static Set<Identifier> getIds() {
         return REGISTRY.keySet();
     }
 
@@ -32,7 +32,7 @@ public class CustomBlock {
         return REGISTRY.get(identifier);
     }
 
-    public boolean applyTo(BlockPos pos) {
+    public boolean setBlock(BlockPos pos) {
         if (this.name != null && !BLOCK_MAP.containsKey(pos)) {
             BLOCK_MAP.put(pos, this);
             return true;
@@ -40,23 +40,13 @@ public class CustomBlock {
         return false;
     }
 
-    public boolean setBlock(BlockPos pos) {
-        return this.applyTo(pos);
-    }
-
     @Nullable
     public static CustomBlock match(BlockPos pos) {
         return BLOCK_MAP.get(pos);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if(obj instanceof CustomBlock){
-            CustomBlock block = (CustomBlock) obj;
-            return block.id == this.id;
-        }else{
-            return super.equals(obj);
-        }
+    public static CustomBlock.Builder builder() {
+        return new CustomBlock.Builder();
     }
 
     public static class Builder {

@@ -38,8 +38,7 @@ public class CustomBlockItem {
     private ActionResult onUse(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHitResult) {
         if(!world.isClient){
             ItemStack stack = playerEntity.getStackInHand(hand);
-            CompoundTag tag = stack.getOrCreateTag();
-            if(tag.getString(Plasmid.ID + ":custom_item").equals(item.getIdentifier().toString())){
+            if(CustomItem.match(stack) == item){
                 stack.setCount(stack.getCount()-1);
                 playerEntity.playSound(SoundEvents.BLOCK_STONE_BREAK, 100, 1);
                 block.setBlock(blockHitResult.getBlockPos().offset(blockHitResult.getSide().getOpposite().getOpposite()), vanillaState, world);// Based code

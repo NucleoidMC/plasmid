@@ -43,16 +43,12 @@ public class CustomBlockItem {
             if(tag.getString(Plasmid.ID + ":custom_item").equals(item.getIdentifier().toString())){
                 stack.setCount(stack.getCount()-1);
                 playerEntity.playSound(SoundEvents.BLOCK_STONE_BREAK, 100, 1);
-                block.setBlock(calcBlockPos(blockHitResult), vanillaState, world);
+                block.setBlock(blockHitResult.getBlockPos().offset(blockHitResult.getSide().getOpposite().getOpposite()), vanillaState, world);// Based code
+                return ActionResult.FAIL;
             }
         }
         return ActionResult.PASS;
     }
-
-    private BlockPos calcBlockPos(BlockHitResult blockHitResult) {
-        return blockHitResult.getBlockPos();//TODO: make it use the side it was clicked on to return where a new block should be placed
-    }
-
     public CustomItem getItem(){
         return item;
     }

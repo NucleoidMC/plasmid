@@ -41,7 +41,7 @@ public class CustomBlock {
     }
 
     @Nullable
-    public static CustomBlock match(BlockPos pos) {
+    public static CustomBlock matches(BlockPos pos) {
         return BLOCK_MAP.get(pos);
     }
 

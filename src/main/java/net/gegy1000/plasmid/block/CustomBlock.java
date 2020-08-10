@@ -2,9 +2,10 @@ package net.gegy1000.plasmid.block;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
+import net.gegy1000.plasmid.game.event.BreakBlockListener;
 import net.gegy1000.plasmid.registry.TinyRegistry;
 import net.minecraft.block.BlockState;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -25,8 +26,22 @@ public class CustomBlock {
         this.name = name;
     }
 
+    public static void playerBreakBlock(BlockPos pos) {
+        if(BLOCK_MAP.containsKey(pos.asLong())){
+            BLOCK_MAP.remove(pos.asLong());
+        }
+    }
+
     public Identifier getId() {
         return id;
+    }
+
+    public void clearMap(){
+        BLOCK_MAP.clear();
+    }
+
+    public void removeEntry(BlockPos pos){
+        BLOCK_MAP.remove(pos.asLong());
     }
 
     public static Set<Identifier> getIds() {

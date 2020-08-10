@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.gegy1000.plasmid.Plasmid;
 import net.gegy1000.plasmid.block.CustomBlock;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -14,7 +13,6 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class CustomBlockItem {
@@ -33,6 +31,7 @@ public class CustomBlockItem {
                 .name(name)
                 .register();
         this.vanillaState = vanillaState;
+
         UseBlockCallback.EVENT.register(this::onUse);
     }
 

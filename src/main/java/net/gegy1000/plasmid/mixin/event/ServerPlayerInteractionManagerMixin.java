@@ -1,5 +1,6 @@
 package net.gegy1000.plasmid.mixin.event;
 
+import net.gegy1000.plasmid.block.CustomBlock;
 import net.gegy1000.plasmid.game.GameWorld;
 import net.gegy1000.plasmid.game.event.BreakBlockListener;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -24,6 +25,7 @@ public class ServerPlayerInteractionManagerMixin {
 
         GameWorld gameWorld = GameWorld.forWorld(this.player.world);
         if (gameWorld != null && gameWorld.containsPlayer(this.player)) {
+            CustomBlock.playerBreakBlock(pos);
             boolean cancel = gameWorld.invoker(BreakBlockListener.EVENT).onBreak(this.player, pos);
             if (cancel) {
                 ci.setReturnValue(false);

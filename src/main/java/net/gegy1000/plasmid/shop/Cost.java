@@ -38,7 +38,7 @@ public final class Cost {
 
     public static Cost free(){
         return new Cost()
-                .take(Items.AIR, 0)
+                .take((player, simulate) -> true)
                 .display(new LiteralText("Free"));
     }
 

@@ -125,6 +125,10 @@ public final class BubbleWorld implements AutoCloseable {
         player.fallDistance = 0.0F;
         player.clearStatusEffects();
 
+        player.setFireTicks(0);
+        player.inLava = false;
+        player.stopFallFlying();
+
         player.setGameMode(this.config.getDefaultGameMode());
 
         Vec3d spawnPos = this.config.getSpawnPos();

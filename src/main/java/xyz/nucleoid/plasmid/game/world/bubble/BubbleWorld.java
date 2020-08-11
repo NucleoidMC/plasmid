@@ -82,7 +82,7 @@ public final class BubbleWorld implements AutoCloseable {
     }
 
     private void open() {
-        this.clearPlayers();
+        this.kickPlayers();
         this.setWorldGenerator(this.config.getGenerator());
 
         ((BubbleChunkControl) this.world.getChunkManager()).enable();
@@ -90,7 +90,7 @@ public final class BubbleWorld implements AutoCloseable {
 
     @Override
     public void close() {
-        this.clearPlayers();
+        this.kickPlayers();
 
         this.setWorldGenerator(VoidChunkGenerator.INSTANCE);
         ((BubbleChunkControl) this.world.getChunkManager()).disable();
@@ -116,6 +116,15 @@ public final class BubbleWorld implements AutoCloseable {
         return false;
     }
 
+    public void kickPlayer(ServerPlayerEntity player) {
+        if (!this.removePlayer(player) || player.world == this.world) {
+            ServerWorld overworld = this.world.getServer().getOverworld();
+
+            BlockPos spawnPos = overworld.getSpawnPos();
+            player.teleport(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0.0F, 0.0F);
+        }
+    }
+
     private void joinPlayer(ServerPlayerEntity player) {
         player.inventory.clear();
         player.getEnderChestInventory().clear();
@@ -135,16 +144,10 @@ public final class BubbleWorld implements AutoCloseable {
         player.teleport(this.world, spawnPos.x, spawnPos.y, spawnPos.z, 0.0F, 0.0F);
     }
 
-    private void clearPlayers() {
+    private void kickPlayers() {
         List<ServerPlayerEntity> players = new ArrayList<>(this.world.getPlayers());
-
         for (ServerPlayerEntity player : players) {
-            if (!this.removePlayer(player) || player.world == this.world) {
-                ServerWorld overworld = this.world.getServer().getOverworld();
-
-                BlockPos spawnPos = overworld.getSpawnPos();
-                player.teleport(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0.0F, 0.0F);
-            }
+            this.kickPlayer(player);
         }
     }
 
@@ -165,5 +168,9 @@ public final class BubbleWorld implements AutoCloseable {
 
     public Set<ServerPlayerEntity> getPlayers() {
         return this.players.keySet();
+    }
+
+    public boolean containsPlayer(ServerPlayerEntity player) {
+        return this.players.containsKey(player);
     }
 }

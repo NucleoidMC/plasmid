@@ -13,8 +13,8 @@ public abstract class ServerWorldMixin {
     @Inject(method = "addPlayer", at = @At("RETURN"))
     private void onPlayerAdded(ServerPlayerEntity player, CallbackInfo ci) {
         BubbleWorld bubble = BubbleWorld.forWorld(player.world);
-        if (bubble != null) {
-            bubble.addPlayer(player);
+        if (bubble != null && !bubble.containsPlayer(player)) {
+            bubble.kickPlayer(player);
         }
     }
 

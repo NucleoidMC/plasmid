@@ -1,18 +1,17 @@
 package net.gegy1000.plasmid.block;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.longs.Long2ObjectArrayMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.gegy1000.plasmid.game.event.BreakBlockListener;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.gegy1000.plasmid.registry.TinyRegistry;
 import net.minecraft.block.BlockState;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 
 public class CustomBlock {
@@ -28,20 +27,38 @@ public class CustomBlock {
     }
 
     public static void playerBreakBlock(BlockPos pos) {
-        if(BLOCK_MAP.containsKey(pos.asLong())){
+        if (BLOCK_MAP.containsKey(pos.asLong())) {
             BLOCK_MAP.remove(pos.asLong());
         }
+    }
+
+    /**
+     * returns all instances of a custom block type
+     *
+     * @param type the type of custom block
+     * @return a list of all custom block positions matching that type
+     */
+    public List<BlockPos> allOfType(CustomBlock type) {
+        ObjectArrayList<BlockPos> posList = new ObjectArrayList<>();
+
+        for (long key : BLOCK_MAP.keySet()) {
+            CustomBlock block = BLOCK_MAP.get(key);
+            if (block.id == type.id) {
+                posList.add(BlockPos.fromLong(key));
+            }
+        }
+        return posList;
     }
 
     public Identifier getId() {
         return id;
     }
 
-    public void clearMap(){
+    public void clearMap() {
         BLOCK_MAP.clear();
     }
 
-    public void removeEntry(BlockPos pos){
+    public void removeEntry(BlockPos pos) {
         BLOCK_MAP.remove(pos.asLong());
     }
 

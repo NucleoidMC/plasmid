@@ -38,7 +38,7 @@ public class CustomBlock {
      * @param type the type of custom block
      * @return a list of all custom block positions matching that type
      */
-    public List<BlockPos> allOfType(CustomBlock type) {
+    public static List<BlockPos> allOfType(CustomBlock type) {
         ObjectArrayList<BlockPos> posList = new ObjectArrayList<>();
 
         for (long key : BLOCK_MAP.keySet()) {

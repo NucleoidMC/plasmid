@@ -36,6 +36,18 @@ public final class Cost {
                 .display(new LiteralText(emeralds + " emeralds").formatted(Formatting.GREEN));
     }
 
+    public static Cost free(){
+        return new Cost()
+                .take((player, simulate) -> true)
+                .display(new LiteralText("Free"));
+    }
+
+    public static Cost ofItem(Item item, int count, Text text){
+        return new Cost()
+                .take(item, count)
+                .display(text);
+    }
+
     public static Cost no() {
         return new Cost().display(new LiteralText("Cannot buy"));
     }

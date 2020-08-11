@@ -2,10 +2,10 @@ package xyz.nucleoid.plasmid.game.world.bubble;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
@@ -136,13 +136,14 @@ public final class BubbleWorld implements AutoCloseable {
     }
 
     private void clearPlayers() {
-        PlayerManager playerManager = this.world.getServer().getPlayerManager();
-
         List<ServerPlayerEntity> players = new ArrayList<>(this.world.getPlayers());
 
         for (ServerPlayerEntity player : players) {
             if (!this.removePlayer(player) || player.world == this.world) {
-                playerManager.respawnPlayer(player, true);
+                ServerWorld overworld = this.world.getServer().getOverworld();
+
+                BlockPos spawnPos = overworld.getSpawnPos();
+                player.teleport(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0.0F, 0.0F);
             }
         }
     }

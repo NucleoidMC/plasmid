@@ -175,6 +175,7 @@ public final class GameWorld {
         }
 
         this.closed = true;
+        DIMENSION_TO_WORLD.remove(this.world.getRegistryKey(), this);
 
         for (ServerPlayerEntity player : this.bubble.getPlayers()) {
             this.notifyRemovePlayer(player);

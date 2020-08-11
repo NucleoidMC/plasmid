@@ -1,12 +1,10 @@
 package net.gegy1000.plasmid.item;
 
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.gegy1000.plasmid.Plasmid;
 import net.gegy1000.plasmid.block.CustomBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -36,10 +34,10 @@ public class CustomBlockItem {
     }
 
     private ActionResult onUse(PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHitResult) {
-        if(!world.isClient){
+        if (!world.isClient) {
             ItemStack stack = playerEntity.getStackInHand(hand);
-            if(CustomItem.match(stack) == item){
-                stack.setCount(stack.getCount()-1);
+            if (CustomItem.match(stack) == item) {
+                stack.setCount(stack.getCount() - 1);
                 playerEntity.playSound(SoundEvents.BLOCK_STONE_BREAK, 100, 1);
                 block.setBlock(blockHitResult.getBlockPos().offset(blockHitResult.getSide().getOpposite().getOpposite()), vanillaState, world);// Based code
                 return ActionResult.FAIL;
@@ -47,11 +45,12 @@ public class CustomBlockItem {
         }
         return ActionResult.PASS;
     }
-    public CustomItem getItem(){
+
+    public CustomItem getItem() {
         return item;
     }
 
-    public CustomBlock getBlock(){
+    public CustomBlock getBlock() {
         return block;
     }
 }

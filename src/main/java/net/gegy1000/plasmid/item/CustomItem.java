@@ -36,23 +36,6 @@ public final class CustomItem {
         return new Builder();
     }
 
-    public ItemStack applyTo(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-        tag.putString(Plasmid.ID + ":custom_item", this.id.toString());
-
-        if (this.name != null && !stack.hasCustomName()) {
-            stack.setCustomName(this.name);
-        }
-
-        return stack;
-    }
-
-    public ItemStack create(Item item) {
-        ItemStack stack = new ItemStack(item);
-        this.applyTo(stack);
-        return stack;
-    }
-
     @Nullable
     public static CustomItem match(ItemStack stack) {
         CompoundTag tag = stack.getTag();
@@ -75,6 +58,23 @@ public final class CustomItem {
         return REGISTRY.get(identifier);
     }
 
+    public ItemStack applyTo(ItemStack stack) {
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putString(Plasmid.ID + ":custom_item", this.id.toString());
+
+        if (this.name != null && !stack.hasCustomName()) {
+            stack.setCustomName(this.name);
+        }
+
+        return stack;
+    }
+
+    public ItemStack create(Item item) {
+        ItemStack stack = new ItemStack(item);
+        this.applyTo(stack);
+        return stack;
+    }
+
     public TypedActionResult<ItemStack> onUse(PlayerEntity player, World world, Hand hand) {
         if (this.use == null) {
             return TypedActionResult.pass(ItemStack.EMPTY);
@@ -90,6 +90,10 @@ public final class CustomItem {
 
     public Identifier getIdentifier() {
         return id;
+    }
+
+    public interface SwingHand {
+        void onSwingHand(ServerPlayerEntity player, Hand hand);
     }
 
     public static class Builder {
@@ -135,9 +139,5 @@ public final class CustomItem {
 
             return item;
         }
-    }
-
-    public interface SwingHand {
-        void onSwingHand(ServerPlayerEntity player, Hand hand);
     }
 }

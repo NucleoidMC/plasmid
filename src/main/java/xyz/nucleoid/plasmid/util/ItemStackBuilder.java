@@ -30,7 +30,7 @@ public final class ItemStackBuilder {
     }
 
     public static ItemStackBuilder of(ItemStack stack) {
-        return new ItemStackBuilder(stack);
+        return new ItemStackBuilder(stack.copy());
     }
 
     public ItemStackBuilder setCount(int count) {

@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "net.gegy1000.plasmid.mixin",
+  "package": "xyz.nucleoid.plasmid.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "custom.EntityMixin",

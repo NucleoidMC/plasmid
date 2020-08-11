@@ -4,11 +4,11 @@
   "version": "${version}",
   "name": "Plasmid",
   "description": "Server-side minigames library based on Fabric",
-  "authors": ["gegy1000", "Supercoder79"],
+  "authors": ["Nucleoid Contributors"],
   "license": "LGPLv3",
   "environment": "*",
   "entrypoints": {
-    "main": ["net.gegy1000.plasmid.Plasmid"]
+    "main": ["xyz.nucleoid.plasmid.Plasmid"]
   },
   "mixins": ["plasmid.mixins.json"],
   "accessWidener": "plasmid.accesswidener",

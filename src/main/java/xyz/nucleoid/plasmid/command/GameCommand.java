@@ -7,14 +7,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.ConfiguredGame;
-import xyz.nucleoid.plasmid.game.GameWorld;
-import xyz.nucleoid.plasmid.game.GameWorldState;
-import xyz.nucleoid.plasmid.game.StartResult;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
-import xyz.nucleoid.plasmid.game.player.JoinResult;
-import net.minecraft.command.arguments.DimensionArgumentType;
 import net.minecraft.command.arguments.IdentifierArgumentType;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
@@ -32,27 +24,30 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
+import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.game.ConfiguredGame;
+import xyz.nucleoid.plasmid.game.GameOpenException;
+import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.StartResult;
+import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.player.JoinResult;
+
+import java.util.Collection;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public final class GameCommand {
     public static final DynamicCommandExceptionType GAME_NOT_FOUND = new DynamicCommandExceptionType(arg -> {
-        return new TranslatableText("Game with id '%s' was not found!", arg);
+        return new TranslatableText("Game config with id '%s' was not found!", arg);
     });
 
-    public static final SimpleCommandExceptionType ALREADY_OPEN = new SimpleCommandExceptionType(
-            new LiteralText("A game is already open!")
+    public static final SimpleCommandExceptionType NO_GAME_OPEN = new SimpleCommandExceptionType(
+            new LiteralText("No games are open!")
     );
 
-    public static final SimpleCommandExceptionType NOT_RECRUITING = new SimpleCommandExceptionType(
-            new LiteralText("Game not recruiting!")
-    );
-
-    public static final SimpleCommandExceptionType UNSUPPORTED_WORLD = new SimpleCommandExceptionType(
-            new LiteralText("This dimension does not support running games!")
+    public static final SimpleCommandExceptionType NO_GAME_IN_WORLD = new SimpleCommandExceptionType(
+            new LiteralText("No game is open in this world!")
     );
 
     // @formatter:off
@@ -62,23 +57,17 @@ public final class GameCommand {
                 .then(literal("open")
                     .requires(source -> source.hasPermissionLevel(2))
                     .then(argument("game_type", IdentifierArgumentType.identifier()).suggests(gameSuggestions())
-                    .then(argument("dimension", DimensionArgumentType.dimension())
                     .executes(GameCommand::openGame)
-                )))
+                ))
                 .then(literal("start")
                     .requires(source -> source.hasPermissionLevel(2))
-                    .then(argument("dimension", DimensionArgumentType.dimension())
                     .executes(GameCommand::startGame)
-                ))
+                )
                 .then(literal("stop")
                     .requires(source -> source.hasPermissionLevel(2))
-                    .then(argument("dimension", DimensionArgumentType.dimension())
                     .executes(GameCommand::stopGame)
-                ))
-                .then(literal("join")
-                    .then(argument("dimension", DimensionArgumentType.dimension())
-                    .executes(GameCommand::joinGame)
-                ))
+                )
+                .then(literal("join").executes(GameCommand::joinGame))
                 .then(literal("list").executes(GameCommand::listGames))
         );
     }
@@ -94,30 +83,29 @@ public final class GameCommand {
             throw GAME_NOT_FOUND.create(gameTypeId);
         }
 
-        GameWorldState gameState = getGameState(context, source);
-        if (gameState.isOpen()) {
-            throw ALREADY_OPEN.create();
-        }
-
         PlayerManager playerManager = server.getPlayerManager();
 
         LiteralText announcement = new LiteralText("Game is opening! Hold tight..");
         playerManager.broadcastChatMessage(announcement.formatted(Formatting.GRAY), MessageType.SYSTEM, Util.NIL_UUID);
 
-        game.open(gameState).handle((v, throwable) -> {
-            if (throwable == null) {
-                onOpenSuccess(playerManager, gameState.getDimension());
-            } else {
-                onOpenError(playerManager, throwable);
-            }
-            return null;
-        });
+        try {
+            game.open(server).handle((v, throwable) -> {
+                if (throwable == null) {
+                    onOpenSuccess(playerManager);
+                } else {
+                    onOpenError(playerManager, throwable);
+                }
+                return null;
+            });
+        } catch (Throwable throwable) {
+            onOpenError(playerManager, throwable);
+        }
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(PlayerManager playerManager, RegistryKey<World> dimension) {
-        String command = "/game join " + dimension.getValue();
+    private static void onOpenSuccess(PlayerManager playerManager) {
+        String command = "/game join";
 
         ClickEvent joinClick = new ClickEvent(ClickEvent.Action.RUN_COMMAND, command);
         HoverEvent joinHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(command));
@@ -134,7 +122,15 @@ public final class GameCommand {
 
     private static void onOpenError(PlayerManager playerManager, Throwable throwable) {
         Plasmid.LOGGER.error("Failed to start game", throwable);
-        playerManager.broadcastChatMessage(new LiteralText("An exception occurred while trying to start game"), MessageType.SYSTEM, Util.NIL_UUID);
+
+        MutableText message;
+        if (throwable instanceof GameOpenException) {
+            message = ((GameOpenException) throwable).getReason().shallowCopy();
+        } else {
+            message = new LiteralText("The game threw an unexpected error while starting!");
+        }
+
+        playerManager.broadcastChatMessage(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);
     }
 
     private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -142,14 +138,14 @@ public final class GameCommand {
         ServerPlayerEntity player = source.getPlayer();
         PlayerManager playerManager = source.getMinecraftServer().getPlayerManager();
 
-        GameWorldState gameState = getGameState(context, source);
-        GameWorld openWorld = gameState.getOpenWorld();
-
-        if (openWorld == null) {
-            throw NOT_RECRUITING.create();
+        // TODO: currently, only allowing to join one open game at a time
+        Collection<GameWorld> games = GameWorld.getOpen();
+        GameWorld gameWorld = games.stream().findFirst().orElse(null);
+        if (gameWorld == null) {
+            throw NO_GAME_OPEN.create();
         }
 
-        JoinResult joinResult = openWorld.offerPlayer(player);
+        JoinResult joinResult = gameWorld.offerPlayer(player);
         if (joinResult.isErr()) {
             Text error = joinResult.getError();
             throw new SimpleCommandExceptionType(error).create();
@@ -166,14 +162,12 @@ public final class GameCommand {
     private static int startGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
 
-        GameWorldState gameState = getGameState(context, source);
-        GameWorld openWorld = gameState.getOpenWorld();
-
-        if (openWorld == null) {
-            throw NOT_RECRUITING.create();
+        GameWorld gameWorld = GameWorld.forWorld(source.getWorld());
+        if (gameWorld == null) {
+            throw NO_GAME_IN_WORLD.create();
         }
 
-        StartResult startResult = openWorld.requestStart();
+        StartResult startResult = gameWorld.requestStart();
         if (startResult.isErr()) {
             Text error = startResult.getError();
             throw new SimpleCommandExceptionType(error).create();
@@ -187,19 +181,26 @@ public final class GameCommand {
     }
 
     private static int stopGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameWorldState gameState = getGameState(context, context.getSource());
-        GameWorld openWorld = gameState.getOpenWorld();
-
-        if (openWorld == null) {
-            throw NOT_RECRUITING.create();
+        ServerCommandSource source = context.getSource();
+        GameWorld gameWorld = GameWorld.forWorld(source.getWorld());
+        if (gameWorld == null) {
+            throw NO_GAME_IN_WORLD.create();
         }
 
-        openWorld.closeWorld();
+        MinecraftServer server = source.getMinecraftServer();
+        PlayerManager playerManager = server.getPlayerManager();
 
-        MinecraftServer server = context.getSource().getMinecraftServer();
+        try {
+            gameWorld.closeWorld();
 
-        LiteralText message = new LiteralText("Game has been stopped");
-        server.getPlayerManager().broadcastChatMessage(message, MessageType.SYSTEM, Util.NIL_UUID);
+            LiteralText message = new LiteralText("Game has been stopped");
+            playerManager.broadcastChatMessage(message.formatted(Formatting.GRAY), MessageType.SYSTEM, Util.NIL_UUID);
+        } catch (Throwable throwable) {
+            Plasmid.LOGGER.error("Failed to stop game", throwable);
+
+            LiteralText message = new LiteralText("An unexpected error was thrown while stopping the game!");
+            playerManager.broadcastChatMessage(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);
+        }
 
         return Command.SINGLE_SUCCESS;
     }
@@ -232,16 +233,5 @@ public final class GameCommand {
                     builder
             );
         };
-    }
-
-    private static GameWorldState getGameState(CommandContext<ServerCommandSource> context, ServerCommandSource source) throws CommandSyntaxException {
-        World dimension = DimensionArgumentType.getDimensionArgument(context, "dimension");
-
-        GameWorldState gameWorld = GameWorldState.forWorld(dimension);
-        if (gameWorld == null) {
-            throw UNSUPPORTED_WORLD.create();
-        }
-
-        return gameWorld;
     }
 }

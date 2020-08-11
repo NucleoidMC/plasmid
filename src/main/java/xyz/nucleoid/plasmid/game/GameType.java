@@ -1,14 +1,14 @@
 package xyz.nucleoid.plasmid.game;
 
 import com.mojang.serialization.Codec;
-import xyz.nucleoid.plasmid.game.config.GameConfig;
-import xyz.nucleoid.plasmid.registry.TinyRegistry;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
+import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 
-public final class GameType<C extends GameConfig> {
+public final class GameType<C> {
     public static final TinyRegistry<GameType<?>> REGISTRY = TinyRegistry.newStable();
 
     private final Identifier identifier;
@@ -21,14 +21,14 @@ public final class GameType<C extends GameConfig> {
         this.configCodec = configCodec;
     }
 
-    public static <C extends GameConfig> GameType<C> register(Identifier identifier, Open<C> open, Codec<C> configCodec) {
+    public static <C> GameType<C> register(Identifier identifier, Open<C> open, Codec<C> configCodec) {
         GameType<C> type = new GameType<>(identifier, open, configCodec);
         REGISTRY.register(identifier, type);
         return type;
     }
 
-    public CompletableFuture<Void> open(GameWorldState worldState, C config) {
-        return this.open.open(worldState, config);
+    public CompletableFuture<Void> open(MinecraftServer server, C config) {
+        return this.open.open(server, config);
     }
 
     public Identifier getIdentifier() {
@@ -60,7 +60,7 @@ public final class GameType<C extends GameConfig> {
         return false;
     }
 
-    public interface Open<C extends GameConfig> {
-        CompletableFuture<Void> open(GameWorldState state, C config);
+    public interface Open<C> {
+        CompletableFuture<Void> open(MinecraftServer server, C config);
     }
 }

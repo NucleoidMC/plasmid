@@ -1,12 +1,11 @@
-package xyz.nucleoid.plasmid.mixin.map;
+package xyz.nucleoid.plasmid.mixin.bubble;
 
 import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import xyz.nucleoid.plasmid.game.world.ChunkLoadControl;
-import xyz.nucleoid.plasmid.game.world.ClearChunks;
+import xyz.nucleoid.plasmid.game.world.bubble.BubbleChunkControl;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
@@ -26,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
-public abstract class ThreadedAnvilChunkStorageMixin implements ClearChunks, ChunkLoadControl {
+public abstract class ThreadedAnvilChunkStorageMixin implements BubbleChunkControl {
     @Shadow
     private volatile Long2ObjectLinkedOpenHashMap<ChunkHolder> chunkHolders;
     @Shadow
@@ -59,8 +58,7 @@ public abstract class ThreadedAnvilChunkStorageMixin implements ClearChunks, Chu
 
     private LongSet createdChunks;
 
-    @Override
-    public void clearChunks() {
+    private void clearChunks() {
         this.chunkHolders.clear();
         this.currentChunkHolders.clear();
         this.loadedChunks.clear();
@@ -74,10 +72,12 @@ public abstract class ThreadedAnvilChunkStorageMixin implements ClearChunks, Chu
     @Override
     public void enable() {
         this.createdChunks = new LongOpenHashSet();
+        this.clearChunks();
     }
 
     @Override
     public void disable() {
+        this.clearChunks();
         this.createdChunks = null;
     }
 

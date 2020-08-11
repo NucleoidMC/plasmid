@@ -1,6 +1,6 @@
 {
   "generator": {
-    "type": "plasmid:dynamic"
+    "type": "plasmid:bubble"
   },
   "type": "minecraft:overworld"
 }

@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.game.world.generator;
+package xyz.nucleoid.plasmid.game.world.bubble;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.entity.SpawnGroup;
@@ -21,21 +21,22 @@ import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.feature.StructureFeature;
+import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public final class DynamicChunkGenerator extends ChunkGenerator {
-    public static final Codec<DynamicChunkGenerator> CODEC = Codec.unit(DynamicChunkGenerator::new);
+public final class BubbleChunkGenerator extends ChunkGenerator {
+    public static final Codec<BubbleChunkGenerator> CODEC = Codec.unit(BubbleChunkGenerator::new);
 
     private static final BiomeSource VOID_BIOMES = new FixedBiomeSource(Biomes.THE_VOID);
     private static final StructuresConfig VOID_STRUCTURES = new StructuresConfig(Optional.empty(), Collections.emptyMap());
 
     private ChunkGenerator generator = VoidChunkGenerator.INSTANCE;
 
-    public DynamicChunkGenerator() {
+    public BubbleChunkGenerator() {
         super(VOID_BIOMES, VOID_STRUCTURES);
     }
 

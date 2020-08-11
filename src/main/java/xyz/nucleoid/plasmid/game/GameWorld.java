@@ -1,8 +1,12 @@
 package xyz.nucleoid.plasmid.game;
 
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.World;
 import xyz.nucleoid.plasmid.game.event.EventType;
 import xyz.nucleoid.plasmid.game.event.GameCloseListener;
 import xyz.nucleoid.plasmid.game.event.GameOpenListener;
@@ -12,44 +16,55 @@ import xyz.nucleoid.plasmid.game.event.PlayerAddListener;
 import xyz.nucleoid.plasmid.game.event.PlayerRemoveListener;
 import xyz.nucleoid.plasmid.game.event.RequestStartListener;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
-import xyz.nucleoid.plasmid.game.player.PlayerSnapshot;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.GameRuleSet;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorld;
+import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorldConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
 public final class GameWorld {
-    private final GameWorldState state;
+    private static final Map<RegistryKey<World>, GameWorld> DIMENSION_TO_WORLD = new Reference2ObjectOpenHashMap<>();
+
+    private final BubbleWorld bubble;
     private final ServerWorld world;
 
     private Map<EventType<?>, Object> invokers = new HashMap<>();
     private GameRuleSet rules = GameRuleSet.empty();
 
-    private final Reference2ObjectMap<ServerPlayerEntity, PlayerSnapshot> players = new Reference2ObjectOpenHashMap<>();
-
     private boolean closed;
 
-    GameWorld(GameWorldState state) {
-        this.state = state;
-        this.world = state.world;
+    private GameWorld(BubbleWorld bubble) {
+        this.bubble = bubble;
+        this.world = bubble.getWorld();
+    }
+
+    public static GameWorld open(MinecraftServer server, BubbleWorldConfig config) {
+        BubbleWorld bubble = BubbleWorld.tryOpen(server, config);
+        if (bubble == null) {
+            throw new GameOpenException(new LiteralText("No available bubble worlds!"));
+        }
+
+        GameWorld gameWorld = new GameWorld(bubble);
+        DIMENSION_TO_WORLD.put(bubble.getDimensionKey(), gameWorld);
+
+        return gameWorld;
     }
 
     @Nullable
     public static GameWorld forWorld(World world) {
-        GameWorldState worldState = GameWorldState.forWorld(world);
-        if (worldState != null) {
-            return worldState.getOpenWorld();
-        }
-        return null;
+        return DIMENSION_TO_WORLD.get(world.getRegistryKey());
+    }
+
+    public static Collection<GameWorld> getOpen() {
+        return DIMENSION_TO_WORLD.values();
     }
 
     public ServerWorld getWorld() {
@@ -69,7 +84,7 @@ public final class GameWorld {
         this.invokers = game.getInvokers();
         this.rules = game.getRules();
 
-        for (ServerPlayerEntity player : this.players.keySet()) {
+        for (ServerPlayerEntity player : this.bubble.getPlayers()) {
             this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
         }
 
@@ -83,22 +98,20 @@ public final class GameWorld {
     }
 
     public boolean addPlayer(ServerPlayerEntity player) {
-        if (!this.players.containsKey(player)) {
-            this.players.put(player, PlayerSnapshot.take(player));
+        if (this.bubble.addPlayer(player)) {
             this.notifyAddPlayer(player);
-
             return true;
         }
 
         return false;
     }
 
-    public void removePlayer(ServerPlayerEntity player) {
-        PlayerSnapshot snapshot = this.players.remove(player);
-        if (snapshot != null) {
+    public boolean removePlayer(ServerPlayerEntity player) {
+        if (this.bubble.removePlayer(player)) {
             this.notifyRemovePlayer(player);
-            snapshot.restore(player);
+            return true;
         }
+        return false;
     }
 
     private void notifyAddPlayer(ServerPlayerEntity player) {
@@ -110,15 +123,15 @@ public final class GameWorld {
     }
 
     public int getPlayerCount() {
-        return this.players.size();
+        return this.bubble.getPlayers().size();
     }
 
     public Set<ServerPlayerEntity> getPlayers() {
-        return this.players.keySet();
+        return this.bubble.getPlayers();
     }
 
     public boolean containsPlayer(ServerPlayerEntity player) {
-        return this.players.containsKey(player);
+        return this.bubble.getPlayers().contains(player);
     }
 
     @SuppressWarnings("unchecked")
@@ -162,14 +175,13 @@ public final class GameWorld {
         }
 
         this.closed = true;
+
+        for (ServerPlayerEntity player : this.bubble.getPlayers()) {
+            this.notifyRemovePlayer(player);
+        }
+
         this.closeGame();
 
-        Reference2ObjectMaps.fastForEach(this.players, entry -> {
-            ServerPlayerEntity player = entry.getKey();
-            PlayerSnapshot snapshot = entry.getValue();
-            snapshot.restore(player);
-        });
-
-        this.state.closeWorld();
+        this.bubble.close();
     }
 }

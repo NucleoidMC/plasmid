@@ -1,11 +1,11 @@
 package xyz.nucleoid.plasmid.game;
 
 import com.mojang.serialization.Codec;
-import xyz.nucleoid.plasmid.game.config.GameConfig;
+import net.minecraft.server.MinecraftServer;
 
 import java.util.concurrent.CompletableFuture;
 
-public final class ConfiguredGame<C extends GameConfig> {
+public final class ConfiguredGame<C> {
     public static final Codec<ConfiguredGame<?>> CODEC = GameType.REGISTRY.dispatchStable(
             o -> o.type,
             type -> type.getConfigCodec().xmap(
@@ -22,8 +22,8 @@ public final class ConfiguredGame<C extends GameConfig> {
         this.config = config;
     }
 
-    public CompletableFuture<Void> open(GameWorldState state) {
-        return this.type.open(state, this.config);
+    public CompletableFuture<Void> open(MinecraftServer server) {
+        return this.type.open(server, this.config);
     }
 
     public GameType<C> getType() {
@@ -35,7 +35,7 @@ public final class ConfiguredGame<C extends GameConfig> {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends GameConfig> T coerceConfigUnchecked(GameConfig config) {
+    private static <T> T coerceConfigUnchecked(Object config) {
         return (T) config;
     }
 }

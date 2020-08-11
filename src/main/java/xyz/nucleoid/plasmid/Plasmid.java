@@ -19,7 +19,7 @@ import xyz.nucleoid.plasmid.game.event.AttackEntityListener;
 import xyz.nucleoid.plasmid.game.event.UseBlockListener;
 import xyz.nucleoid.plasmid.game.event.UseItemListener;
 import xyz.nucleoid.plasmid.game.map.template.StagingBoundRenderer;
-import xyz.nucleoid.plasmid.game.world.generator.DynamicChunkGenerator;
+import xyz.nucleoid.plasmid.game.world.bubble.BubbleChunkGenerator;
 import xyz.nucleoid.plasmid.item.CustomItem;
 import xyz.nucleoid.plasmid.item.PlasmidCustomItems;
 import net.minecraft.item.ItemStack;
@@ -39,7 +39,7 @@ public final class Plasmid implements ModInitializer {
     public void onInitialize() {
         Reflection.initialize(PlasmidCustomItems.class);
 
-        Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "dynamic"), DynamicChunkGenerator.CODEC);
+        Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "bubble"), BubbleChunkGenerator.CODEC);
 
         GameConfigs.register();
 

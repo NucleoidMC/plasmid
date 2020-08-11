@@ -22,13 +22,17 @@ public final class PlayerSnapshot {
     private final DefaultedList<ItemStack> inventory;
     private final DefaultedList<ItemStack> enderInventory;
     private final Collection<StatusEffectInstance> potionEffects;
+    private final int totalExperience;
+    private final int experienceLevel;
+    private final float experienceProgress;
 
     private PlayerSnapshot(
             RegistryKey<World> dimension, Vec3d position,
             GameMode gameMode,
             DefaultedList<ItemStack> inventory,
             DefaultedList<ItemStack> enderInventory,
-            Collection<StatusEffectInstance> potionEffects
+            Collection<StatusEffectInstance> potionEffects,
+            int totalExperience, int experienceLevel, float experienceProgress
     ) {
         this.dimension = dimension;
         this.position = position;
@@ -36,6 +40,9 @@ public final class PlayerSnapshot {
         this.inventory = inventory;
         this.enderInventory = enderInventory;
         this.potionEffects = potionEffects;
+        this.totalExperience = totalExperience;
+        this.experienceLevel = experienceLevel;
+        this.experienceProgress = experienceProgress;
     }
 
     public static PlayerSnapshot take(ServerPlayerEntity player) {
@@ -50,7 +57,17 @@ public final class PlayerSnapshot {
                 .map(StatusEffectInstance::new)
                 .collect(Collectors.toList());
 
-        return new PlayerSnapshot(dimension, position, gameMode, inventory, enderInventory, potionEffects);
+        int totalExperience = player.totalExperience;
+        int experienceLevel = player.experienceLevel;
+        float experienceProgress = player.experienceProgress;
+
+        return new PlayerSnapshot(
+                dimension, position,
+                gameMode,
+                inventory, enderInventory,
+                potionEffects,
+                totalExperience, experienceLevel, experienceProgress
+        );
     }
 
     public void restore(ServerPlayerEntity player) {
@@ -65,6 +82,10 @@ public final class PlayerSnapshot {
         for (StatusEffectInstance potionEffect : this.potionEffects) {
             player.addStatusEffect(potionEffect);
         }
+
+        player.totalExperience = this.totalExperience;
+        player.experienceProgress = this.experienceProgress;
+        player.experienceLevel = this.experienceLevel;
 
         player.teleport(world, this.position.x, this.position.y, this.position.z, 0.0F, 0.0F);
         player.setGameMode(this.gameMode);

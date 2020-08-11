@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public final class GameWorld {
+public final class GameWorld implements AutoCloseable {
     private static final Map<RegistryKey<World>, GameWorld> DIMENSION_TO_WORLD = new Reference2ObjectOpenHashMap<>();
 
     private final BubbleWorld bubble;
@@ -91,7 +91,7 @@ public final class GameWorld {
         this.invoker(GameOpenListener.EVENT).onOpen();
     }
 
-    public void closeGame() {
+    private void closeGame() {
         this.invoker(GameCloseListener.EVENT).onClose();
         this.invokers = new HashMap<>();
         this.rules = GameRuleSet.empty();
@@ -169,7 +169,8 @@ public final class GameWorld {
         }
     }
 
-    public void closeWorld() {
+    @Override
+    public void close() {
         if (this.closed) {
             return;
         }

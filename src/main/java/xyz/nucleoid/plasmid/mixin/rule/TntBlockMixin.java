@@ -18,7 +18,7 @@ public class TntBlockMixin {
     private void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean moved, CallbackInfo ci) {
         GameWorld gameWorld = GameWorld.forWorld(world);
         if (gameWorld != null) {
-            RuleResult result = gameWorld.testRule(GameRule.INSTANT_LIGHT_TNT);
+            RuleResult result = gameWorld.testRule(GameRule.UNSTABLE_TNT);
             if (result == RuleResult.ALLOW) {
                 TntBlock.primeTnt(world, pos);
                 world.removeBlock(pos, false);

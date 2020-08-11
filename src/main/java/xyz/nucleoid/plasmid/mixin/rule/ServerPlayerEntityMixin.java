@@ -17,7 +17,7 @@ public abstract class ServerPlayerEntityMixin {
 
         GameWorld gameWorld = GameWorld.forWorld(self.world);
         if (gameWorld != null && gameWorld.containsPlayer(self)) {
-            RuleResult result = gameWorld.testRule(GameRule.ALLOW_PVP);
+            RuleResult result = gameWorld.testRule(GameRule.PVP);
             if (result == RuleResult.ALLOW) {
                 ci.setReturnValue(true);
             } else if (result == RuleResult.DENY) {

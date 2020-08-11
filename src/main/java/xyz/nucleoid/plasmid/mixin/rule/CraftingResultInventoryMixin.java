@@ -17,7 +17,7 @@ public abstract class CraftingResultInventoryMixin implements RecipeUnlocker {
     public boolean shouldCraftRecipe(World world, ServerPlayerEntity player, Recipe<?> recipe) {
         GameWorld gameWorld = GameWorld.forWorld(player.world);
         if (gameWorld != null && gameWorld.containsPlayer(player)) {
-            RuleResult result = gameWorld.testRule(GameRule.ALLOW_CRAFTING);
+            RuleResult result = gameWorld.testRule(GameRule.CRAFTING);
             if (result == RuleResult.DENY) {
                 return false;
             }

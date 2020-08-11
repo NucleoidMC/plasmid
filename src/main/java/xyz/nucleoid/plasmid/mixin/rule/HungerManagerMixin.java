@@ -29,7 +29,7 @@ public class HungerManagerMixin {
         if (this.exhaustion > 4.0F || this.foodSaturationLevel > 0.0F) {
             GameWorld gameWorld = GameWorld.forWorld(player.world);
             if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
-                if (gameWorld.testRule(GameRule.ENABLE_HUNGER) == RuleResult.DENY) {
+                if (gameWorld.testRule(GameRule.HUNGER) == RuleResult.DENY) {
                     this.exhaustion = 0.0F;
                     this.foodSaturationLevel = 0.0F;
                 }

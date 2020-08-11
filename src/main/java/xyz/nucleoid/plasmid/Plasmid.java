@@ -19,6 +19,8 @@ import xyz.nucleoid.plasmid.game.event.AttackEntityListener;
 import xyz.nucleoid.plasmid.game.event.UseBlockListener;
 import xyz.nucleoid.plasmid.game.event.UseItemListener;
 import xyz.nucleoid.plasmid.game.map.template.StagingBoundRenderer;
+import xyz.nucleoid.plasmid.game.rule.GameRule;
+import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.game.world.bubble.BubbleChunkGenerator;
 import xyz.nucleoid.plasmid.item.CustomItem;
 import xyz.nucleoid.plasmid.item.PlasmidCustomItems;
@@ -61,9 +63,13 @@ public final class Plasmid implements ModInitializer {
                     }
                 }
 
-                GameWorld game = GameWorld.forWorld(world);
-                if (game != null && game.containsPlayer((ServerPlayerEntity) player)) {
-                    UseItemListener invoker = game.invoker(UseItemListener.EVENT);
+                GameWorld gameWorld = GameWorld.forWorld(world);
+                if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
+                    if (gameWorld.testRule(GameRule.INTERACT) == RuleResult.DENY) {
+                        return TypedActionResult.fail(ItemStack.EMPTY);
+                    }
+
+                    UseItemListener invoker = gameWorld.invoker(UseItemListener.EVENT);
                     return invoker.onUseItem((ServerPlayerEntity) player, hand);
                 }
             }
@@ -75,6 +81,10 @@ public final class Plasmid implements ModInitializer {
             if (!world.isClient) {
                 GameWorld gameWorld = GameWorld.forWorld(world);
                 if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
+                    if (gameWorld.testRule(GameRule.INTERACT) == RuleResult.DENY) {
+                        return ActionResult.FAIL;
+                    }
+
                     UseBlockListener invoker = gameWorld.invoker(UseBlockListener.EVENT);
                     return invoker.onUseBlock((ServerPlayerEntity) player, hand, hitResult);
                 }
@@ -99,11 +109,19 @@ public final class Plasmid implements ModInitializer {
 
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (!world.isClient) {
+                GameWorld gameWorld = GameWorld.forWorld(world);
+                if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
+                    if (gameWorld.testRule(GameRule.INTERACT) == RuleResult.DENY) {
+                        return ActionResult.FAIL;
+                    }
+                }
+
                 CustomEntity customEntity = CustomEntity.match(entity);
                 if (customEntity != null) {
                     return customEntity.interact(player, world, hand, entity, hitResult);
                 }
             }
+
             return ActionResult.PASS;
         });
 

@@ -1,5 +1,10 @@
 package xyz.nucleoid.plasmid.mixin.rule;
 
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
+import net.minecraft.world.World;
 import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
@@ -12,21 +17,47 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerEntity.class)
-public class PlayerEntityMixin {
+public abstract class PlayerEntityMixin extends LivingEntity {
+    private PlayerEntityMixin(EntityType<? extends LivingEntity> type, World world) {
+        super(type, world);
+    }
+
     @Inject(method = "isInvulnerableTo", at = @At("HEAD"), cancellable = true)
     private void isInvulnerableTo(DamageSource source, CallbackInfoReturnable<Boolean> ci) {
-        PlayerEntity self = (PlayerEntity) (Object) this;
-        if (self.world.isClient || source != DamageSource.FALL) {
+        if (this.world.isClient || source != DamageSource.FALL) {
             return;
         }
 
-        GameWorld gameWorld = GameWorld.forWorld(self.world);
-        if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) self)) {
+        ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+
+        GameWorld gameWorld = GameWorld.forWorld(this.world);
+        if (gameWorld != null && gameWorld.containsPlayer(player)) {
             RuleResult result = gameWorld.testRule(GameRule.FALL_DAMAGE);
             if (result == RuleResult.ALLOW) {
                 ci.setReturnValue(false);
             } else if (result == RuleResult.DENY) {
                 ci.setReturnValue(true);
+            }
+        }
+    }
+
+    @Inject(method = "dropSelectedItem", at = @At("HEAD"), cancellable = true)
+    private void dropSelectedItem(boolean dropEntireStack, CallbackInfoReturnable<Boolean> ci) {
+        if (this.world.isClient) {
+            return;
+        }
+
+        ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+
+        GameWorld gameWorld = GameWorld.forWorld(this.world);
+        if (gameWorld != null && gameWorld.containsPlayer(player)) {
+            RuleResult result = gameWorld.testRule(GameRule.THROW_ITEMS);
+            if (result == RuleResult.DENY) {
+                int slot = player.inventory.selectedSlot;
+                ItemStack stack = player.inventory.getStack(slot);
+                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, slot, stack));
+
+                ci.setReturnValue(false);
             }
         }
     }

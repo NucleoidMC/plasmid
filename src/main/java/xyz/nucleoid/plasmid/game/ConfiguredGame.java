@@ -4,6 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.server.MinecraftServer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public final class ConfiguredGame<C> {
@@ -11,6 +13,7 @@ public final class ConfiguredGame<C> {
 
     private final GameType<C> type;
     private final C config;
+    private static List<ConfiguredGame<?>> openingGames = new ArrayList<>();
 
     private ConfiguredGame(GameType<C> type, C config) {
         this.type = type;
@@ -18,7 +21,12 @@ public final class ConfiguredGame<C> {
     }
 
     public CompletableFuture<Void> open(MinecraftServer server) {
+        openingGames.add(this);
         return this.type.open(server, this.config);
+    }
+
+    public static ConfiguredGame<?> getOpeningGame() {
+        return openingGames.remove(0);
     }
 
     public GameType<C> getType() {

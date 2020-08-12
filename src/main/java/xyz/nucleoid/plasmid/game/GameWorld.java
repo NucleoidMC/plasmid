@@ -33,6 +33,7 @@ import java.util.function.Consumer;
 
 public final class GameWorld implements AutoCloseable {
     private static final Map<RegistryKey<World>, GameWorld> DIMENSION_TO_WORLD = new Reference2ObjectOpenHashMap<>();
+    private static final Map<GameWorld, ConfiguredGame<?>> WORLD_TO_GAME = new Reference2ObjectOpenHashMap<>();
 
     private final BubbleWorld bubble;
     private final ServerWorld world;
@@ -55,7 +56,7 @@ public final class GameWorld implements AutoCloseable {
 
         GameWorld gameWorld = new GameWorld(bubble);
         DIMENSION_TO_WORLD.put(bubble.getDimensionKey(), gameWorld);
-
+        WORLD_TO_GAME.put(gameWorld, ConfiguredGame.getOpeningGame());
         return gameWorld;
     }
 
@@ -66,6 +67,14 @@ public final class GameWorld implements AutoCloseable {
 
     public static Collection<GameWorld> getOpen() {
         return DIMENSION_TO_WORLD.values();
+    }
+
+    public static ConfiguredGame<?> forGameWorld(GameWorld gameWorld) {
+        return WORLD_TO_GAME.get(gameWorld);
+    }
+
+    public static Collection<ConfiguredGame<?>> getOpenGames() {
+        return WORLD_TO_GAME.values();
     }
 
     public ServerWorld getWorld() {
@@ -98,6 +107,7 @@ public final class GameWorld implements AutoCloseable {
         this.invoker(GameCloseListener.EVENT).onClose();
         this.listeners = new EventListeners();
         this.rules = GameRuleSet.empty();
+        WORLD_TO_GAME.remove(this);
     }
 
     public boolean addPlayer(ServerPlayerEntity player) {

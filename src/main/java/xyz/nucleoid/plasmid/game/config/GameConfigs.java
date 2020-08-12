@@ -80,6 +80,15 @@ public final class GameConfigs {
         return CONFIGURED_GAMES.get(identifier);
     }
 
+    @Nullable
+    public static Identifier getID(ConfiguredGame<?> configuredGame) {
+        Identifier identifier = null;
+        for (Map.Entry<Identifier, ConfiguredGame<?>> entry : CONFIGURED_GAMES.entrySet()) {
+            if (entry.getValue() == configuredGame) identifier = entry.getKey();
+        }
+        return identifier;
+    }
+
     public static Set<Identifier> getKeys() {
         return CONFIGURED_GAMES.keySet();
     }

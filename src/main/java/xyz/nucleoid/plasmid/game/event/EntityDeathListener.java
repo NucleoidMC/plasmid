@@ -28,5 +28,5 @@ public interface EntityDeathListener {
         return ActionResult.PASS;
     });
 
-    ActionResult onDeath(LivingEntity player, DamageSource source);
+    ActionResult onDeath(LivingEntity entity, DamageSource source);
 }

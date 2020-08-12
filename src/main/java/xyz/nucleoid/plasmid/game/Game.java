@@ -6,6 +6,11 @@ import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.GameRuleSet;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
+/**
+ * Represents a game with event listeners ({@link EventListeners}) and a set of rules ({@link GameRuleSet}).
+ *
+ * <p>Each {@link GameWorld} contains a {@link Game} instance.
+ */
 public final class Game {
     private final EventListeners listeners = new EventListeners();
     private final GameRuleSet rules = new GameRuleSet();
@@ -20,11 +25,21 @@ public final class Game {
         return this;
     }
 
+    /**
+     * Returns the {@link EventListeners} associated with this {@link Game}.
+     *
+     * @return  the {@link EventListeners} of this {@link Game}
+     */
     public EventListeners getListeners() {
         return this.listeners;
     }
 
-    GameRuleSet getRules() {
+    /**
+     * Returns the {@link GameRuleSet} associated with this {@link Game}.
+     *
+     * @return  the {@link GameRuleSet} of this {@link Game}
+     */
+    public GameRuleSet getRules() {
         return this.rules;
     }
 }

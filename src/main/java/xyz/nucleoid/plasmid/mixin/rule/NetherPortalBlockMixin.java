@@ -17,7 +17,7 @@ public class NetherPortalBlockMixin {
     private static void handleCreatePortal(WorldAccess world, BlockPos pos, CallbackInfoReturnable<Boolean> ci) {
         GameWorld gameWorld = GameWorld.forWorld(world.getWorld());
         if (gameWorld != null) {
-            RuleResult result = gameWorld.testRule(GameRule.ALLOW_PORTALS);
+            RuleResult result = gameWorld.testRule(GameRule.PORTALS);
             if (result == RuleResult.DENY) {
                 ci.setReturnValue(false);
             }

@@ -18,6 +18,7 @@
     "rule.HungerManagerMixin",
     "rule.NetherPortalBlockMixin",
     "rule.PlayerEntityMixin",
+    "rule.ScreenHandlerMixin",
     "rule.ServerPlayerEntityMixin",
     "rule.ServerPlayerInteractionManagerMixin",
     "rule.TntBlockMixin"

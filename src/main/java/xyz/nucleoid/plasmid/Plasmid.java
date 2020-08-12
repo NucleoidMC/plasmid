@@ -65,7 +65,7 @@ public final class Plasmid implements ModInitializer {
 
                 GameWorld gameWorld = GameWorld.forWorld(world);
                 if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
-                    if (gameWorld.testRule(GameRule.INTERACT) == RuleResult.DENY) {
+                    if (gameWorld.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
                         return TypedActionResult.fail(ItemStack.EMPTY);
                     }
 
@@ -81,7 +81,7 @@ public final class Plasmid implements ModInitializer {
             if (!world.isClient) {
                 GameWorld gameWorld = GameWorld.forWorld(world);
                 if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
-                    if (gameWorld.testRule(GameRule.INTERACT) == RuleResult.DENY) {
+                    if (gameWorld.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
                         return ActionResult.FAIL;
                     }
 
@@ -111,7 +111,7 @@ public final class Plasmid implements ModInitializer {
             if (!world.isClient) {
                 GameWorld gameWorld = GameWorld.forWorld(world);
                 if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
-                    if (gameWorld.testRule(GameRule.INTERACT) == RuleResult.DENY) {
+                    if (gameWorld.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
                         return ActionResult.FAIL;
                     }
                 }

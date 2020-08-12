@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.mixin.event;
 
+import net.minecraft.util.ActionResult;
 import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.event.PlayerDamageListener;
 import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
@@ -22,8 +23,9 @@ public class ServerPlayerEntityMixin {
 
         GameWorld gameWorld = GameWorld.forWorld(player.world);
         if (gameWorld != null && gameWorld.containsPlayer(player)) {
-            boolean cancel = gameWorld.invoker(PlayerDeathListener.EVENT).onDeath(player, source);
-            if (cancel) {
+            ActionResult result = gameWorld.invoker(PlayerDeathListener.EVENT).onDeath(player, source);
+
+            if(result == ActionResult.FAIL) {
                 ci.cancel();
             }
         }

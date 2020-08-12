@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 
+@Deprecated
 public class CustomBlock {
     private static final TinyRegistry<CustomBlock> REGISTRY = TinyRegistry.newStable();
     private static final Long2ObjectOpenHashMap<CustomBlock> BLOCK_MAP = new Long2ObjectOpenHashMap<>();

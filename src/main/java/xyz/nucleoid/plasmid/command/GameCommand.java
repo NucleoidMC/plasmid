@@ -191,7 +191,7 @@ public final class GameCommand {
         PlayerManager playerManager = server.getPlayerManager();
 
         try {
-            gameWorld.closeWorld();
+            gameWorld.close();
 
             LiteralText message = new LiteralText("Game has been stopped");
             playerManager.broadcastChatMessage(message.formatted(Formatting.GRAY), MessageType.SYSTEM, Util.NIL_UUID);

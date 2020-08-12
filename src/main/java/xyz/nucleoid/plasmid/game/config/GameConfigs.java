@@ -84,7 +84,10 @@ public final class GameConfigs {
     public static Identifier getID(ConfiguredGame<?> configuredGame) {
         Identifier identifier = null;
         for (Map.Entry<Identifier, ConfiguredGame<?>> entry : CONFIGURED_GAMES.entrySet()) {
-            if (entry.getValue() == configuredGame) identifier = entry.getKey();
+            if (entry.getValue() == configuredGame) {
+                identifier = entry.getKey();
+                break;
+            }
         }
         return identifier;
     }

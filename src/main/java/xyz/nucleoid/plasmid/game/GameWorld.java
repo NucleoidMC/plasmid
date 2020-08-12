@@ -39,7 +39,7 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Primary constructor for {@link GameWorld}.
      *
-     * @param bubble  the {@link BubbleWorld} this {@link GameWorld} is hosted in.
+     * @param bubble the {@link BubbleWorld} this {@link GameWorld} is hosted in.
      */
     private GameWorld(BubbleWorld bubble) {
         this.bubble = bubble;
@@ -50,10 +50,10 @@ public final class GameWorld implements AutoCloseable {
      *
      * <p>If a {@link BubbleWorld} could not be opened, a {@link GameOpenException} is thrown.
      *
-     * @throws GameOpenException  if a {@link BubbleWorld} could not be opened
-     * @param server  {@link MinecraftServer}    to open a {@link GameWorld} in
-     * @param config  {@link BubbleWorldConfig}  to use to construct a {@link GameWorld}
-     * @return  a {@link GameWorld} if one was opened
+     * @throws GameOpenException if a {@link BubbleWorld} could not be opened
+     * @param server {@link MinecraftServer}    to open a {@link GameWorld} in
+     * @param config {@link BubbleWorldConfig}  to use to construct a {@link GameWorld}
+     * @return a {@link GameWorld} if one was opened
      */
     public static GameWorld open(MinecraftServer server, BubbleWorldConfig config) {
         BubbleWorld bubble = BubbleWorld.tryOpen(server, config);
@@ -72,8 +72,8 @@ public final class GameWorld implements AutoCloseable {
      *
      * <p>If a {@link GameWorld} does not exist in the given {@link World}, null is returned.
      *
-     * @param world  world to check for a {@link GameWorld}
-     * @return  the {@link GameWorld} hosted in the given {@link World}, or null if none are found
+     * @param world world to check for a {@link GameWorld}
+     * @return the {@link GameWorld} hosted in the given {@link World}, or null if none are found
      */
     @Nullable
     public static GameWorld forWorld(World world) {
@@ -83,7 +83,7 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Returns a {@link Collection} of open {@link GameWorld}s across all dimensions.
      *
-     * @return  all open {@link GameWorld} instances
+     * @return all open {@link GameWorld} instances
      */
     public static Collection<GameWorld> getOpen() {
         return DIMENSION_TO_WORLD.values();
@@ -92,7 +92,7 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Returns the {@link ServerWorld} that this {@link GameWorld} is hosted in.
      *
-     * @return  the host world of this {@link GameWorld}.
+     * @return the host world of this {@link GameWorld}.
      */
     public ServerWorld getWorld() {
         return this.bubble.getWorld();
@@ -101,7 +101,7 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Opens a new {@link Game} in this {@link GameWorld} with properties set by the given {@link Consumer}.
      *
-     * @param builder  {@link Consumer} that modifies the given {@link Game} instance
+     * @param builder {@link Consumer} that modifies the given {@link Game} instance
      */
     public void openGame(Consumer<Game> builder) {
         Game game = new Game();
@@ -115,7 +115,7 @@ public final class GameWorld implements AutoCloseable {
      *
      * <p>All {@link PlayerAddListener#EVENT} and {@link GameOpenListener#EVENT} listeners are notified of the game changing.
      *
-     * @param game  {@link Game} to set this {@link GameWorld} to
+     * @param game {@link Game} to set this {@link GameWorld} to
      */
     public void setGame(Game game) {
         this.closeGame();
@@ -145,8 +145,8 @@ public final class GameWorld implements AutoCloseable {
      *
      * <p>Implementation is left to this {@link GameWorld}'s {@link BubbleWorld} in {@link BubbleWorld#addPlayer(ServerPlayerEntity)}.
      *
-     * @param player  {@link ServerPlayerEntity} to add to this {@link GameWorld}
-     * @return  whether the {@link ServerPlayerEntity} was successfully added
+     * @param player {@link ServerPlayerEntity} to add to this {@link GameWorld}
+     * @return whether the {@link ServerPlayerEntity} was successfully added
      */
     public boolean addPlayer(ServerPlayerEntity player) {
         return this.bubble.addPlayer(player);
@@ -157,8 +157,8 @@ public final class GameWorld implements AutoCloseable {
      *
      * <p>Implementation is left to this {@link GameWorld}'s {@link BubbleWorld} in {@link BubbleWorld#removePlayer(ServerPlayerEntity)}.
      *
-     * @param player  {@link ServerPlayerEntity} to remove from this {@link GameWorld}
-     * @return  whether the {@link ServerPlayerEntity} was successfully removed
+     * @param player {@link ServerPlayerEntity} to remove from this {@link GameWorld}
+     * @return whether the {@link ServerPlayerEntity} was successfully removed
      */
     public boolean removePlayer(ServerPlayerEntity player) {
         return this.bubble.removePlayer(player);
@@ -167,7 +167,7 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Returns the number of players in this {@link GameWorld}.
      *
-     * @return  the number of players in this {@link GameWorld}.
+     * @return the number of players in this {@link GameWorld}.
      */
     public int getPlayerCount() {
         return this.bubble.getPlayers().size();
@@ -178,7 +178,7 @@ public final class GameWorld implements AutoCloseable {
      *
      * <p>{@link GameWorld#containsPlayer(ServerPlayerEntity)} can be used to check if a {@link ServerPlayerEntity} is in this {@link GameWorld} instead.
      *
-     * @return  a {@link Set} that contains all {@link ServerPlayerEntity}s in this {@link GameWorld}
+     * @return a {@link Set} that contains all {@link ServerPlayerEntity}s in this {@link GameWorld}
      */
     public Set<ServerPlayerEntity> getPlayers() {
         return this.bubble.getPlayers();
@@ -187,8 +187,8 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Returns whether this {@link GameWorld} contains the given {@link ServerPlayerEntity}.
      *
-     * @param player  {@link ServerPlayerEntity} to check existence of
-     * @return        whether the given {@link ServerPlayerEntity} exists in this {@link GameWorld}
+     * @param player {@link ServerPlayerEntity} to check existence of
+     * @return whether the given {@link ServerPlayerEntity} exists in this {@link GameWorld}
      */
     public boolean containsPlayer(ServerPlayerEntity player) {
         return this.bubble.getPlayers().contains(player);
@@ -214,8 +214,8 @@ public final class GameWorld implements AutoCloseable {
      *
      * <p>As an example, calling this method with {@link GameRule#BLOCK_DROPS} will return a {@link RuleResult} that describes whether blocks can drop.
      *
-     * @param rule  the {@link GameRule} to test in this {@link GameWorld}
-     * @return  a {@link RuleResult} that describes whether the {@link GameRule} passes
+     * @param rule the {@link GameRule} to test in this {@link GameWorld}
+     * @return a {@link RuleResult} that describes whether the {@link GameRule} passes
      */
     public RuleResult testRule(GameRule rule) {
         return this.game.getRules().test(rule);
@@ -237,7 +237,7 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Requests that this {@link GameWorld} begins, which invokes any {@link RequestStartListener#EVENT} listener attached to it.
      *
-     * @return  a {@link StartResult} which describes whether the game was able to start
+     * @return a {@link StartResult} which describes whether the game was able to start
      */
     public StartResult requestStart() {
         return this.invoker(RequestStartListener.EVENT).requestStart();
@@ -249,8 +249,8 @@ public final class GameWorld implements AutoCloseable {
      * <p>If the event succeeds, {@link JoinResult#ok()} is returned. If the player could not be added to this game world,
      *      a {@link JoinResult} error is returned. If any listeners error, its response is returned and the player is not added to this game world.
      *
-     * @param player  the {@link ServerPlayerEntity} trying to join this {@link GameWorld}
-     * @return  {@link JoinResult} describing the results of the given {@link ServerPlayerEntity} trying to join
+     * @param player the {@link ServerPlayerEntity} trying to join this {@link GameWorld}
+     * @return {@link JoinResult} describing the results of the given {@link ServerPlayerEntity} trying to join
      */
     public JoinResult offerPlayer(ServerPlayerEntity player) {
         JoinResult result = this.invoker(OfferPlayerListener.EVENT).offerPlayer(player);

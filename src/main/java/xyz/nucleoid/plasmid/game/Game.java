@@ -28,7 +28,7 @@ public final class Game {
     /**
      * Returns the {@link EventListeners} associated with this {@link Game}.
      *
-     * @return  the {@link EventListeners} of this {@link Game}
+     * @return the {@link EventListeners} of this {@link Game}
      */
     public EventListeners getListeners() {
         return this.listeners;
@@ -37,7 +37,7 @@ public final class Game {
     /**
      * Returns the {@link GameRuleSet} associated with this {@link Game}.
      *
-     * @return  the {@link GameRuleSet} of this {@link Game}
+     * @return the {@link GameRuleSet} of this {@link Game}
      */
     public GameRuleSet getRules() {
         return this.rules;

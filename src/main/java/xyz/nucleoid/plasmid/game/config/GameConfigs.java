@@ -81,7 +81,7 @@ public final class GameConfigs {
     }
 
     @Nullable
-    public static Identifier getID(ConfiguredGame<?> configuredGame) {
+    public static Identifier getId(ConfiguredGame<?> configuredGame) {
         Identifier identifier = null;
         for (Map.Entry<Identifier, ConfiguredGame<?>> entry : CONFIGURED_GAMES.entrySet()) {
             if (entry.getValue() == configuredGame) {

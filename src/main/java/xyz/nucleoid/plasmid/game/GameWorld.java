@@ -93,7 +93,9 @@ public final class GameWorld implements AutoCloseable {
 
     public boolean addPlayer(ServerPlayerEntity player) {
         if (this.bubble.addPlayer(player)) {
-            this.notifyAddPlayer(player);
+            Scheduler.INSTANCE.submit(server -> {
+                this.notifyAddPlayer(player);
+            });
             return true;
         }
 
@@ -102,7 +104,9 @@ public final class GameWorld implements AutoCloseable {
 
     public boolean removePlayer(ServerPlayerEntity player) {
         if (this.bubble.removePlayer(player)) {
-            this.notifyRemovePlayer(player);
+            Scheduler.INSTANCE.submit(server -> {
+                this.notifyRemovePlayer(player);
+            });
             return true;
         }
         return false;

@@ -181,7 +181,7 @@ public final class GameCommand {
         CompletableFuture<StartResult> resultFuture = CompletableFuture.supplyAsync(gameWorld::requestStart, server);
 
         resultFuture.thenAccept(startResult -> {
-            if (startResult.isErr()) {
+            if (startResult.hasError()) {
                 Text error = startResult.getError();
                 source.sendError(error.shallowCopy().formatted(Formatting.RED));
             }

@@ -11,7 +11,7 @@ public interface RequestStartListener {
                     return result;
                 }
             }
-            return StartResult.alreadyStarted();
+            return StartResult.ALREADY_STARTED;
         };
     });
 

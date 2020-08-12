@@ -3,10 +3,11 @@ package xyz.nucleoid.plasmid.game.world.bubble;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
-import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
+
+import javax.annotation.Nullable;
 
 public final class BubbleWorldConfig {
-    private ChunkGenerator generator = VoidChunkGenerator.INSTANCE;
+    private ChunkGenerator generator = null;
     private GameMode defaultGameMode = GameMode.ADVENTURE;
     private Vec3d spawnPos = new Vec3d(0.0, 64.0, 0.0);
 
@@ -25,6 +26,7 @@ public final class BubbleWorldConfig {
         return this;
     }
 
+    @Nullable
     public ChunkGenerator getGenerator() {
         return this.generator;
     }

@@ -8,6 +8,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryLookupCodec;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.Heightmap;
@@ -33,15 +34,22 @@ import java.util.List;
 import java.util.Optional;
 
 public final class BubbleChunkGenerator extends ChunkGenerator {
-    public static final Codec<BubbleChunkGenerator> CODEC = Codec.unit(BubbleChunkGenerator::new);
+    public static final Codec<BubbleChunkGenerator> CODEC = RegistryLookupCodec.of(Registry.BIOME_KEY)
+            .xmap(BubbleChunkGenerator::new, g -> g.biomeRegistry)
+            .stable().codec();
 
     private static final BiomeSource VOID_BIOMES = new FixedBiomeSource(Biomes.THE_VOID);
     private static final StructuresConfig VOID_STRUCTURES = new StructuresConfig(Optional.empty(), Collections.emptyMap());
 
-    private ChunkGenerator generator = VoidChunkGenerator.INSTANCE;
+    private final Registry<Biome> biomeRegistry;
 
-    public BubbleChunkGenerator() {
+    private ChunkGenerator generator;
+
+    public BubbleChunkGenerator(Registry<Biome> biomeRegistry) {
         super(VOID_BIOMES, VOID_STRUCTURES);
+        this.biomeRegistry = biomeRegistry;
+
+        this.clearGenerator();
     }
 
     @Override
@@ -56,6 +64,10 @@ public final class BubbleChunkGenerator extends ChunkGenerator {
 
     public void setGenerator(ChunkGenerator generator) {
         this.generator = generator;
+    }
+
+    public void clearGenerator() {
+        this.generator = new VoidChunkGenerator(this.biomeRegistry);
     }
 
     @Override

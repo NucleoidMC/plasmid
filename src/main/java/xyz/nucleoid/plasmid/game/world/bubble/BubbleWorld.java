@@ -11,7 +11,6 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import xyz.nucleoid.plasmid.game.player.PlayerSnapshot;
-import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -83,17 +82,31 @@ public final class BubbleWorld implements AutoCloseable {
 
     private void open() {
         this.kickPlayers();
-        this.setWorldGenerator(this.config.getGenerator());
 
-        ((BubbleChunkControl) this.world.getChunkManager()).enable();
+        ServerChunkManager chunkManager = this.world.getChunkManager();
+
+        ChunkGenerator generator = this.config.getGenerator();
+
+        BubbleChunkGenerator bubbleGenerator = (BubbleChunkGenerator) chunkManager.getChunkGenerator();
+        if (generator != null) {
+            bubbleGenerator.setGenerator(generator);
+        } else {
+            bubbleGenerator.clearGenerator();
+        }
+
+        ((BubbleChunkControl) chunkManager).enable();
     }
 
     @Override
     public void close() {
         this.kickPlayers();
 
-        this.setWorldGenerator(VoidChunkGenerator.INSTANCE);
-        ((BubbleChunkControl) this.world.getChunkManager()).disable();
+        ServerChunkManager chunkManager = this.world.getChunkManager();
+
+        BubbleChunkGenerator bubbleGenerator = (BubbleChunkGenerator) chunkManager.getChunkGenerator();
+        bubbleGenerator.clearGenerator();
+
+        ((BubbleChunkControl) chunkManager).disable();
 
         OPEN_WORLDS.remove(this.getDimensionKey(), this);
     }
@@ -148,13 +161,6 @@ public final class BubbleWorld implements AutoCloseable {
         for (ServerPlayerEntity player : players) {
             this.kickPlayer(player);
         }
-    }
-
-    private void setWorldGenerator(ChunkGenerator generator) {
-        ServerChunkManager chunkManager = this.world.getChunkManager();
-
-        BubbleChunkGenerator dynamicGenerator = (BubbleChunkGenerator) chunkManager.getChunkGenerator();
-        dynamicGenerator.setGenerator(generator);
     }
 
     public ServerWorld getWorld() {

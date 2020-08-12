@@ -31,9 +31,9 @@ dependencies {
 
   implementation 'com.google.code.findbugs:jsr305:3.0.1'
 
-//  modRuntime("com.github.SuperCoder7979:databreaker:0.2.5") {
-//    exclude module: "fabric-loader"
-//  }
+  modRuntime("com.github.SuperCoder7979:databreaker:0.2.6") {
+    exclude module: "fabric-loader"
+  }
 }
 
 processResources {

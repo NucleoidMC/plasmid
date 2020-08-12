@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
@@ -82,7 +83,7 @@ public final class MapTemplateSerializer {
     }
 
     private void load(MapTemplate template, CompoundTag root) {
-        ListTag chunkList = root.getList("chunks", 10);
+        ListTag chunkList = root.getList("chunks", NbtType.COMPOUND);
         for (int i = 0; i < chunkList.size(); i++) {
             CompoundTag chunkRoot = chunkList.getCompound(i);
 
@@ -98,13 +99,13 @@ public final class MapTemplateSerializer {
             template.chunks.put(pos, chunk);
         }
 
-        ListTag regionList = root.getList("regions", 10);
+        ListTag regionList = root.getList("regions", NbtType.COMPOUND);
         for (int i = 0; i < regionList.size(); i++) {
             CompoundTag regionRoot = regionList.getCompound(i);
             template.regions.add(TemplateRegion.deserialize(regionRoot));
         }
 
-        ListTag blockEntityList = root.getList("block_entities", 10);
+        ListTag blockEntityList = root.getList("block_entities", NbtType.COMPOUND);
         for (int i = 0; i < blockEntityList.size(); i++) {
             CompoundTag blockEntity = blockEntityList.getCompound(i);
             BlockPos pos = new BlockPos(

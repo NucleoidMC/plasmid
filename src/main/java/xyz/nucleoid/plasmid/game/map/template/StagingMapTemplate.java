@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.map.template;
 
+import net.fabricmc.fabric.api.util.NbtType;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -71,7 +72,7 @@ public final class StagingMapTemplate {
         BlockBounds bounds = BlockBounds.deserialize(root);
 
         StagingMapTemplate map = new StagingMapTemplate(world, identifier, bounds);
-        ListTag regionList = root.getList("regions", 10);
+        ListTag regionList = root.getList("regions", NbtType.COMPOUND);
         for (int i = 0; i < regionList.size(); i++) {
             CompoundTag regionRoot = regionList.getCompound(i);
             map.regions.add(TemplateRegion.deserialize(regionRoot));

@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.util;
 
+import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.Block;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EquipmentSlot;
@@ -84,8 +85,8 @@ public final class ItemStackBuilder {
 
         ListTag predicateList;
 
-        if (tag.contains(key, 9)) {
-            predicateList = tag.getList(key, 8);
+        if (tag.contains(key, NbtType.LIST)) {
+            predicateList = tag.getList(key, NbtType.STRING);
         } else {
             predicateList = new ListTag();
             tag.put(key, predicateList);

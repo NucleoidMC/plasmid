@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.map.template;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -190,7 +191,7 @@ public final class MapTemplate {
 
         public static Chunk deserialize(CompoundTag tag) {
             Chunk chunk = new Chunk();
-            chunk.container.read(tag.getList("palette", 10), tag.getLongArray("block_states"));
+            chunk.container.read(tag.getList("palette", NbtType.COMPOUND), tag.getLongArray("block_states"));
             return chunk;
         }
     }

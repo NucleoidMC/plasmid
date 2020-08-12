@@ -45,11 +45,6 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
         this.origin = origin;
     }
 
-    private static FixedBiomeSource createBiomeSource(MinecraftServer server, RegistryKey<Biome> biome) {
-        DynamicRegistryManager registryManager = server.getRegistryManager();
-        return new FixedBiomeSource(registryManager.get(Registry.BIOME_KEY).get(biome));
-    }
-
     @Override
     public void setStructureStarts(DynamicRegistryManager registryManager, StructureAccessor accessor, Chunk chunk, StructureManager manager, long seed) {
     }

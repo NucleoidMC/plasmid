@@ -2,11 +2,18 @@ package xyz.nucleoid.plasmid.game.world.generator;
 
 import com.mojang.serialization.Codec;
 import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
+
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.registry.DynamicRegistryManager;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.BuiltinBiomes;
 import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.biome.source.FixedBiomeSource;
 import net.minecraft.world.chunk.Chunk;
@@ -22,8 +29,13 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
         super(biomes, structures);
     }
 
-    public GameChunkGenerator() {
-        this(new FixedBiomeSource(Biomes.THE_VOID), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
+    public GameChunkGenerator(MinecraftServer server) {
+        this(createBiomeSource(server, BuiltinBiomes.THE_VOID), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
+    }
+
+    protected static FixedBiomeSource createBiomeSource(MinecraftServer server, RegistryKey<Biome> biome) {
+        DynamicRegistryManager registryManager = server.getRegistryManager();
+        return new FixedBiomeSource(registryManager.get(Registry.BIOME_KEY).get(biome));
     }
 
     @Override

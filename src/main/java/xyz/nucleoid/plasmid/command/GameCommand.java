@@ -171,22 +171,26 @@ public final class GameCommand {
 
     private static int startGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
+        MinecraftServer server = source.getMinecraftServer();
 
         GameWorld gameWorld = GameWorld.forWorld(source.getWorld());
         if (gameWorld == null) {
             throw NO_GAME_IN_WORLD.create();
         }
 
-        StartResult startResult = gameWorld.requestStart();
-        if (startResult.isErr()) {
-            Text error = startResult.getError();
-            throw new SimpleCommandExceptionType(error).create();
-        }
+        CompletableFuture<StartResult> resultFuture = server.submit(() -> gameWorld.requestStart());
 
-        Text message = new LiteralText("Game is starting!").formatted(Formatting.GRAY);
-        for (ServerPlayerEntity otherPlayer : gameWorld.getPlayers()) {
-            otherPlayer.sendMessage(message, false);
-        }
+        resultFuture.thenAccept(startResult -> {
+            if (startResult.isErr()) {
+                Text error = startResult.getError();
+                source.sendError(error.shallowCopy().formatted(Formatting.RED));
+            }
+
+            Text message = new LiteralText("Game is starting!").formatted(Formatting.GRAY);
+            for (ServerPlayerEntity otherPlayer : gameWorld.getPlayers()) {
+                otherPlayer.sendMessage(message, false);
+            }
+        });
 
         return Command.SINGLE_SUCCESS;
     }

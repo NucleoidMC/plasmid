@@ -18,7 +18,6 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.game.map.template.MapTemplateSerializer;
 import xyz.nucleoid.plasmid.game.map.template.MapTemplateViewer;
@@ -29,9 +28,9 @@ import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
 import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -159,14 +158,10 @@ public final class MapCommand {
         }
 
         MapTemplate template = stagingMap.compile();
-        try {
-            MapTemplateSerializer serializer = new MapTemplateSerializer(world);
-            serializer.save(template, stagingMap.getIdentifier());
-
+        CompletableFuture<Void> future = MapTemplateSerializer.INSTANCE.save(world.getServer(), template, stagingMap.getIdentifier());
+        future.thenAccept(v -> {
             source.sendFeedback(new LiteralText("Compiled and saved map '" + identifier + "'"), false);
-        } catch (IOException e) {
-            Plasmid.LOGGER.error("Failed to save map", e);
-        }
+        });
 
         return Command.SINGLE_SUCCESS;
     }

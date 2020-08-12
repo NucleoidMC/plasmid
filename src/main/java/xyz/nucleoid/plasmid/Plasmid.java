@@ -18,6 +18,7 @@ import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.event.AttackEntityListener;
 import xyz.nucleoid.plasmid.game.event.UseBlockListener;
 import xyz.nucleoid.plasmid.game.event.UseItemListener;
+import xyz.nucleoid.plasmid.game.map.template.MapTemplateSerializer;
 import xyz.nucleoid.plasmid.game.map.template.StagingBoundRenderer;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
@@ -44,6 +45,7 @@ public final class Plasmid implements ModInitializer {
         Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "bubble"), BubbleChunkGenerator.CODEC);
 
         GameConfigs.register();
+        MapTemplateSerializer.INSTANCE.register();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             CustomizeCommand.register(dispatcher);

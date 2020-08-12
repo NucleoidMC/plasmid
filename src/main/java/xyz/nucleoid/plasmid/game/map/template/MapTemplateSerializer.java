@@ -3,22 +3,26 @@ package xyz.nucleoid.plasmid.game.map.template;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.registry.MutableRegistry;
-import net.minecraft.world.biome.Biome;
-import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.resource.Resource;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.ResourceType;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
+import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,23 +30,39 @@ import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-// TODO: maps should be stored as apart of datapack
 public final class MapTemplateSerializer {
-    private static final Path MAP_ROOT = Paths.get(Plasmid.ID, "map");
+    public static final MapTemplateSerializer INSTANCE = new MapTemplateSerializer();
 
-    private final ServerWorld world;
+    private static final Path EXPORT_ROOT = Paths.get(Plasmid.ID, "export");
 
-    public MapTemplateSerializer(ServerWorld world) {
-        this.world = world;
+    private ResourceManager resourceManager;
+
+    private MapTemplateSerializer() {
     }
 
-    public CompletableFuture<MapTemplate> load(Identifier identifier) {
-        return CompletableFuture.supplyAsync(() -> {
-            Path path = getPathFor(identifier).resolve("map.nbt");
+    public void register() {
+        ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
 
-            try (InputStream input = Files.newInputStream(path)) {
+        serverData.registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+            @Override
+            public Identifier getFabricId() {
+                return new Identifier(Plasmid.ID, "map_templates");
+            }
+
+            @Override
+            public void apply(ResourceManager manager) {
+                MapTemplateSerializer.this.resourceManager = manager;
+            }
+        });
+    }
+
+    public CompletableFuture<MapTemplate> load(MinecraftServer server, Identifier identifier) {
+        return CompletableFuture.supplyAsync(() -> {
+            Identifier path = getResourcePathFor(identifier);
+
+            try (Resource resource = this.resourceManager.getResource(path);) {
                 MapTemplate template = MapTemplate.createEmpty();
-                load(template, NbtIo.readCompressed(input));
+                this.load(server, template, NbtIo.readCompressed(resource.getInputStream()));
                 return template;
             } catch (IOException e) {
                 throw new CompletionException(e);
@@ -50,7 +70,20 @@ public final class MapTemplateSerializer {
         }, Util.getIoWorkerExecutor());
     }
 
-    private void load(MapTemplate template, CompoundTag root) {
+    public CompletableFuture<Void> save(MinecraftServer server, MapTemplate template, Identifier identifier) {
+        return CompletableFuture.supplyAsync(() -> {
+            Path path = getExportPathFor(identifier);
+            try (OutputStream output = Files.newOutputStream(path)) {
+                CompoundTag root = this.save(server, template);
+                NbtIo.writeCompressed(root, output);
+                return null;
+            } catch (IOException e) {
+                throw new CompletionException(e);
+            }
+        }, Util.getIoWorkerExecutor());
+    }
+
+    private void load(MinecraftServer server, MapTemplate template, CompoundTag root) {
         ListTag chunkList = root.getList("chunks", 10);
         for (int i = 0; i < chunkList.size(); i++) {
             CompoundTag chunkRoot = chunkList.getCompound(i);
@@ -89,14 +122,14 @@ public final class MapTemplateSerializer {
         String biomeId = root.getString("biome");
         if (!Strings.isNullOrEmpty(biomeId)) {
             Identifier biomeKey = new Identifier(biomeId);
-            MutableRegistry<Biome> biomes = this.world.getRegistryManager().get(Registry.BIOME_KEY);
+            MutableRegistry<Biome> biomes = server.getRegistryManager().get(Registry.BIOME_KEY);
             if (biomes.containsId(biomeKey)) {
                 template.biome = biomes.get(biomeKey);
             }
         }
     }
 
-    public void save(MapTemplate template, Identifier identifier) throws IOException {
+    private CompoundTag save(MinecraftServer server, MapTemplate template) {
         CompoundTag root = new CompoundTag();
 
         ListTag chunkList = new ListTag();
@@ -128,22 +161,20 @@ public final class MapTemplateSerializer {
         root.put("bounds", template.bounds.serialize(new CompoundTag()));
 
         if (template.biome != null) {
-            MutableRegistry<Biome> biomes = this.world.getRegistryManager().get(Registry.BIOME_KEY);
+            MutableRegistry<Biome> biomes = server.getRegistryManager().get(Registry.BIOME_KEY);
             Identifier biomeId = biomes.getId(template.biome);
             root.putString("biome", biomeId.toString());
         }
 
-        Path parent = getPathFor(identifier);
-        Files.createDirectories(parent);
-
-        Path path = parent.resolve("map.nbt");
-
-        try (OutputStream output = Files.newOutputStream(path)) {
-            NbtIo.writeCompressed(root, output);
-        }
+        return root;
     }
 
-    private static Path getPathFor(Identifier identifier) {
-        return MAP_ROOT.resolve(identifier.getNamespace()).resolve(identifier.getPath());
+    private static Identifier getResourcePathFor(Identifier identifier) {
+        return new Identifier(identifier.getNamespace(), "map_templates/" + identifier.getPath() + ".nbt");
+    }
+
+    private static Path getExportPathFor(Identifier identifier) {
+        identifier = getResourcePathFor(identifier);
+        return EXPORT_ROOT.resolve(identifier.getNamespace()).resolve(identifier.getPath());
     }
 }

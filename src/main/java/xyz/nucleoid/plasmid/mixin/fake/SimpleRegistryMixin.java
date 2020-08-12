@@ -10,11 +10,7 @@ import xyz.nucleoid.plasmid.fake.Fake;
 public class SimpleRegistryMixin<T> {
 
     @ModifyVariable(method = "getRawId", at = @At("HEAD"), argsOnly = true, index = 1)
-    private T modify(T t) {
-        if (t instanceof Fake) {
-            return (T) ((Fake<?>) t).getFaking();
-        } else {
-            return t;
-        }
+    private T modify(T entry) {
+        return Fake.getProxy(entry);
     }
 }

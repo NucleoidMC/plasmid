@@ -72,13 +72,7 @@ public final class GameConfigs {
     private static Identifier identifierFromPath(Identifier location) {
         String path = location.getPath();
         path = path.substring("games/".length(), path.length() - ".json".length());
-
-        int idx = path.indexOf('/');
-        if (idx == -1) {
-            return new Identifier(location.getNamespace(), path);
-        }
-
-        return new Identifier(path.substring(0, idx), path.substring(idx + 1));
+        return new Identifier(location.getNamespace(), path);
     }
 
     @Nullable

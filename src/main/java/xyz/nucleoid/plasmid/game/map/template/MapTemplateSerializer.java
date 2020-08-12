@@ -11,14 +11,12 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.util.registry.RegistryKey;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
@@ -56,13 +54,13 @@ public final class MapTemplateSerializer {
         });
     }
 
-    public CompletableFuture<MapTemplate> load(MinecraftServer server, Identifier identifier) {
+    public CompletableFuture<MapTemplate> load(Identifier identifier) {
         return CompletableFuture.supplyAsync(() -> {
             Identifier path = getResourcePathFor(identifier);
 
             try (Resource resource = this.resourceManager.getResource(path);) {
                 MapTemplate template = MapTemplate.createEmpty();
-                this.load(server, template, NbtIo.readCompressed(resource.getInputStream()));
+                this.load(template, NbtIo.readCompressed(resource.getInputStream()));
                 return template;
             } catch (IOException e) {
                 throw new CompletionException(e);
@@ -70,11 +68,11 @@ public final class MapTemplateSerializer {
         }, Util.getIoWorkerExecutor());
     }
 
-    public CompletableFuture<Void> save(MinecraftServer server, MapTemplate template, Identifier identifier) {
+    public CompletableFuture<Void> save(MapTemplate template, Identifier identifier) {
         return CompletableFuture.supplyAsync(() -> {
             Path path = getExportPathFor(identifier);
             try (OutputStream output = Files.newOutputStream(path)) {
-                CompoundTag root = this.save(server, template);
+                CompoundTag root = this.save(template);
                 NbtIo.writeCompressed(root, output);
                 return null;
             } catch (IOException e) {
@@ -83,7 +81,7 @@ public final class MapTemplateSerializer {
         }, Util.getIoWorkerExecutor());
     }
 
-    private void load(MinecraftServer server, MapTemplate template, CompoundTag root) {
+    private void load(MapTemplate template, CompoundTag root) {
         ListTag chunkList = root.getList("chunks", 10);
         for (int i = 0; i < chunkList.size(); i++) {
             CompoundTag chunkRoot = chunkList.getCompound(i);
@@ -121,15 +119,11 @@ public final class MapTemplateSerializer {
 
         String biomeId = root.getString("biome");
         if (!Strings.isNullOrEmpty(biomeId)) {
-            Identifier biomeKey = new Identifier(biomeId);
-            MutableRegistry<Biome> biomes = server.getRegistryManager().get(Registry.BIOME_KEY);
-            if (biomes.containsId(biomeKey)) {
-                template.biome = biomes.get(biomeKey);
-            }
+            template.biome = RegistryKey.of(Registry.BIOME_KEY, new Identifier(biomeId));
         }
     }
 
-    private CompoundTag save(MinecraftServer server, MapTemplate template) {
+    private CompoundTag save(MapTemplate template) {
         CompoundTag root = new CompoundTag();
 
         ListTag chunkList = new ListTag();
@@ -161,9 +155,7 @@ public final class MapTemplateSerializer {
         root.put("bounds", template.bounds.serialize(new CompoundTag()));
 
         if (template.biome != null) {
-            MutableRegistry<Biome> biomes = server.getRegistryManager().get(Registry.BIOME_KEY);
-            Identifier biomeId = biomes.getId(template.biome);
-            root.putString("biome", biomeId.toString());
+            root.putString("biome", template.biome.getValue().toString());
         }
 
         return root;

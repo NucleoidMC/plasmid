@@ -1,7 +1,11 @@
 package xyz.nucleoid.plasmid.game.map.template;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.registry.DynamicRegistryManager;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.biome.Biome;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
 import xyz.nucleoid.plasmid.util.BlockBounds;
@@ -29,16 +33,21 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class TemplateChunkGenerator extends GameChunkGenerator {
-    private final MapTemplate map;
+    private final MapTemplate template;
     private final BlockBounds worldBounds;
     private final BlockPos origin;
 
-    public TemplateChunkGenerator(MapTemplate map, BlockPos origin) {
-        super(new FixedBiomeSource(map.getBiome()), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
+    public TemplateChunkGenerator(MinecraftServer server, MapTemplate template, BlockPos origin) {
+        super(createBiomeSource(server, template.getBiome()), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
 
-        this.map = map;
-        this.worldBounds = map.getBounds().offset(origin);
+        this.template = template;
+        this.worldBounds = template.getBounds().offset(origin);
         this.origin = origin;
+    }
+
+    private static FixedBiomeSource createBiomeSource(MinecraftServer server, RegistryKey<Biome> biome) {
+        DynamicRegistryManager registryManager = server.getRegistryManager();
+        return new FixedBiomeSource(registryManager.get(Registry.BIOME_KEY).get(biome));
     }
 
     @Override
@@ -94,7 +103,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
                 for (int x = 0; x < 16; x++) {
                     mutablePos.set(x + offsetX, y + offsetY, z + offsetZ);
 
-                    BlockState state = this.map.getBlockState(mutablePos);
+                    BlockState state = this.template.getBlockState(mutablePos);
                     if (!state.isAir()) {
                         section.setBlockState(x, y, z, state);
                     }
@@ -115,7 +124,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
             for (int y = maxY; y >= minY; y--) {
                 mutablePos.setY(y);
 
-                BlockState state = this.map.getBlockState(mutablePos);
+                BlockState state = this.template.getBlockState(mutablePos);
                 if (predicate.test(state)) {
                     return y;
                 }
@@ -138,7 +147,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
 
             for (int y = maxY; y >= minY; y--) {
                 mutablePos.setY(y);
-                column[y] = this.map.getBlockState(mutablePos);
+                column[y] = this.template.getBlockState(mutablePos);
             }
 
             return new VerticalBlockSample(column);

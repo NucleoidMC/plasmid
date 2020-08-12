@@ -1,16 +1,15 @@
 package xyz.nucleoid.plasmid.game.world.generator;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.world.StructureWorldAccess;
-import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.Heightmap;
+import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
@@ -22,6 +21,7 @@ import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.feature.StructureFeature;
+import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -29,7 +29,7 @@ import java.util.Optional;
 
 public class VoidChunkGenerator extends ChunkGenerator {
     public static final VoidChunkGenerator INSTANCE = new VoidChunkGenerator();
-    public static final Codec<VoidChunkGenerator> CODEC = Codec.unit(VoidChunkGenerator.INSTANCE);
+    public static final Codec<VoidChunkGenerator> CODEC = Codec.unit(INSTANCE);
 
     private VoidChunkGenerator() {
         this(Biomes.THE_VOID);

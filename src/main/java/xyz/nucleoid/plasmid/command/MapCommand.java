@@ -158,7 +158,7 @@ public final class MapCommand {
         }
 
         MapTemplate template = stagingMap.compile();
-        CompletableFuture<Void> future = MapTemplateSerializer.INSTANCE.save(world.getServer(), template, stagingMap.getIdentifier());
+        CompletableFuture<Void> future = MapTemplateSerializer.INSTANCE.save(template, stagingMap.getIdentifier());
         future.thenAccept(v -> {
             source.sendFeedback(new LiteralText("Compiled and saved map '" + identifier + "'"), false);
         });

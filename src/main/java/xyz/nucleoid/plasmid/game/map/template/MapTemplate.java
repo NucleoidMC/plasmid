@@ -11,9 +11,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.BuiltinBiomes;
 import net.minecraft.world.chunk.IdListPalette;
 import net.minecraft.world.chunk.Palette;
 import net.minecraft.world.chunk.PalettedContainer;
@@ -32,7 +33,7 @@ public final class MapTemplate {
     final Long2ObjectMap<CompoundTag> blockEntities = new Long2ObjectOpenHashMap<>();
     final List<TemplateRegion> regions = new ArrayList<>();
 
-    Biome biome = Biomes.THE_VOID;
+    RegistryKey<Biome> biome = BuiltinBiomes.THE_VOID;
 
     BlockBounds bounds = null;
 
@@ -43,11 +44,11 @@ public final class MapTemplate {
         return new MapTemplate();
     }
 
-    public void setBiome(Biome biome) {
+    public void setBiome(RegistryKey<Biome> biome) {
         this.biome = biome;
     }
 
-    public Biome getBiome() {
+    public RegistryKey<Biome> getBiome() {
         return this.biome;
     }
 

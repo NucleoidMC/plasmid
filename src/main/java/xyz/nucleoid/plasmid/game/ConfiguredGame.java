@@ -1,18 +1,13 @@
 package xyz.nucleoid.plasmid.game;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.concurrent.CompletableFuture;
 
 public final class ConfiguredGame<C> {
-    public static final Codec<ConfiguredGame<?>> CODEC = GameType.REGISTRY.dispatchStable(
-            o -> o.type,
-            type -> type.getConfigCodec().xmap(
-                    config -> new ConfiguredGame<>(type, coerceConfigUnchecked(config)),
-                    tac -> coerceConfigUnchecked(tac.config)
-            )
-    );
+    public static final Codec<ConfiguredGame<?>> CODEC = GameType.REGISTRY.dispatchStable(c -> c.type, ConfiguredGame::codecFor);
 
     private final GameType<C> type;
     private final C config;
@@ -34,8 +29,27 @@ public final class ConfiguredGame<C> {
         return this.config;
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T> T coerceConfigUnchecked(Object config) {
-        return (T) config;
+    private static <C> Codec<? extends ConfiguredGame<C>> codecFor(GameType<C> type) {
+        Codec<C> configCodec = type.getConfigCodec();
+        if (configCodec instanceof MapCodec.MapCodecCodec) {
+            MapCodec<C> codec = ((MapCodec.MapCodecCodec<C>) configCodec).codec();
+            return xmapMapCodec(type, codec).codec();
+        } else {
+            return xmapCodec(type, configCodec);
+        }
+    }
+
+    private static <C> MapCodec<? extends ConfiguredGame<C>> xmapMapCodec(GameType<C> type, MapCodec<C> codec) {
+        return codec.xmap(
+                config -> new ConfiguredGame<>(type, config),
+                configured -> configured.config
+        );
+    }
+
+    private static <C> Codec<? extends ConfiguredGame<C>> xmapCodec(GameType<C> type, Codec<C> codec) {
+        return codec.xmap(
+                config -> new ConfiguredGame<>(type, config),
+                configured -> configured.config
+        );
     }
 }

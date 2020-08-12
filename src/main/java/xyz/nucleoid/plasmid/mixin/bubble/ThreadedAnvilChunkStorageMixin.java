@@ -41,13 +41,13 @@ public abstract class ThreadedAnvilChunkStorageMixin implements BubbleChunkContr
     private boolean chunkHolderListDirty;
     @Shadow
     @Final
-    private Long2ObjectLinkedOpenHashMap<ChunkHolder> field_18807;
+    private Long2ObjectLinkedOpenHashMap<ChunkHolder> chunksToUnload;
     @Shadow
     @Final
-    private Queue<Runnable> field_19343;
+    private Queue<Runnable> unloadTaskQueue;
     @Shadow
     @Final
-    private Long2ByteMap field_23786;
+    private Long2ByteMap chunkToType;
 
     @Shadow
     @Final
@@ -64,9 +64,9 @@ public abstract class ThreadedAnvilChunkStorageMixin implements BubbleChunkContr
         this.loadedChunks.clear();
         this.totalChunksLoadedCount.set(0);
         this.chunkHolderListDirty = true;
-        this.field_18807.clear();
-        this.field_19343.clear();
-        this.field_23786.clear();
+        this.chunksToUnload.clear();
+        this.unloadTaskQueue.clear();
+        this.chunkToType.clear();
     }
 
     @Override

@@ -1,26 +1,21 @@
 package xyz.nucleoid.plasmid.game;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
-import xyz.nucleoid.plasmid.game.event.EventType;
-import xyz.nucleoid.plasmid.game.event.GameCloseListener;
-import xyz.nucleoid.plasmid.game.event.GameOpenListener;
-import xyz.nucleoid.plasmid.game.event.GameTickListener;
-import xyz.nucleoid.plasmid.game.event.OfferPlayerListener;
-import xyz.nucleoid.plasmid.game.event.PlayerAddListener;
-import xyz.nucleoid.plasmid.game.event.PlayerRemoveListener;
-import xyz.nucleoid.plasmid.game.event.RequestStartListener;
+import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.GameRuleSet;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorld;
 import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorldConfig;
+import xyz.nucleoid.plasmid.util.Scheduler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,7 +34,8 @@ public final class GameWorld {
     private Map<EventType<?>, Object> invokers = new HashMap<>();
     private GameRuleSet rules = GameRuleSet.empty();
 
-    private boolean closed;
+    private boolean closed, closing;
+    private int ticksSinceClosing = 0;
 
     private GameWorld(BubbleWorld bubble) {
         this.bubble = bubble;
@@ -174,15 +170,20 @@ public final class GameWorld {
             return;
         }
 
-        this.closed = true;
-        DIMENSION_TO_WORLD.remove(this.world.getRegistryKey(), this);
+        this.closing = true;
+        new Scheduler().queue(server -> {
+            ticksSinceClosing++;
+            if (ticksSinceClosing == 20) {
+                DIMENSION_TO_WORLD.remove(this.world.getRegistryKey(), this);
 
-        for (ServerPlayerEntity player : this.bubble.getPlayers()) {
-            this.notifyRemovePlayer(player);
-        }
+                for (ServerPlayerEntity player : this.bubble.getPlayers()) {
+                    this.notifyRemovePlayer(player);
+                }
 
-        this.closeGame();
+                this.closeGame();
 
-        this.bubble.close();
+                this.bubble.close();
+            }
+        }, 20);
     }
 }

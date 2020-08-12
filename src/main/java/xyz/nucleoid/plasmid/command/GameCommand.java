@@ -148,7 +148,7 @@ public final class GameCommand {
             throw NO_GAME_OPEN.create();
         }
 
-        CompletableFuture<JoinResult> resultFuture = server.submit(() -> gameWorld.offerPlayer(player));
+        CompletableFuture<JoinResult> resultFuture = CompletableFuture.supplyAsync(() -> gameWorld.offerPlayer(player), server);
 
         resultFuture.thenAccept(joinResult -> {
             if (joinResult.isErr()) {
@@ -178,7 +178,7 @@ public final class GameCommand {
             throw NO_GAME_IN_WORLD.create();
         }
 
-        CompletableFuture<StartResult> resultFuture = server.submit(() -> gameWorld.requestStart());
+        CompletableFuture<StartResult> resultFuture = CompletableFuture.supplyAsync(gameWorld::requestStart, server);
 
         resultFuture.thenAccept(startResult -> {
             if (startResult.isErr()) {

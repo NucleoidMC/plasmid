@@ -1,7 +1,6 @@
 package xyz.nucleoid.plasmid.game;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -34,8 +33,7 @@ public final class GameWorld implements AutoCloseable {
     private Map<EventType<?>, Object> invokers = new HashMap<>();
     private GameRuleSet rules = GameRuleSet.empty();
 
-    private boolean closed, closing;
-    private int ticksSinceClosing = 0;
+    private boolean closed;
 
     private GameWorld(BubbleWorld bubble) {
         this.bubble = bubble;
@@ -67,7 +65,7 @@ public final class GameWorld implements AutoCloseable {
         return this.world;
     }
 
-    public void newGame(Consumer<Game> builder) {
+    public void openGame(Consumer<Game> builder) {
         Game game = new Game();
         builder.accept(game);
 
@@ -171,20 +169,17 @@ public final class GameWorld implements AutoCloseable {
             return;
         }
 
-        this.closing = true;
-        new Scheduler().queue(server -> {
-            ticksSinceClosing++;
-            if (ticksSinceClosing == 20) {
-                DIMENSION_TO_WORLD.remove(this.world.getRegistryKey(), this);
+        this.closed = true;
 
-                for (ServerPlayerEntity player : this.bubble.getPlayers()) {
-                    this.notifyRemovePlayer(player);
-                }
-
-                this.closeGame();
-
-                this.bubble.close();
+        Scheduler.INSTANCE.submit(server -> {
+            this.closeGame();
+            for (ServerPlayerEntity player : this.bubble.getPlayers()) {
+                this.notifyRemovePlayer(player);
             }
-        }, 20);
+
+            this.bubble.close();
+
+            DIMENSION_TO_WORLD.remove(this.world.getRegistryKey(), this);
+        });
     }
 }

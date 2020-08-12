@@ -33,6 +33,7 @@ import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -88,18 +89,20 @@ public final class GameCommand {
         LiteralText announcement = new LiteralText("Game is opening! Hold tight..");
         playerManager.broadcastChatMessage(announcement.formatted(Formatting.GRAY), MessageType.SYSTEM, Util.NIL_UUID);
 
-        try {
-            game.open(server).handle((v, throwable) -> {
-                if (throwable == null) {
-                    onOpenSuccess(playerManager);
-                } else {
-                    onOpenError(playerManager, throwable);
-                }
-                return null;
-            });
-        } catch (Throwable throwable) {
-            onOpenError(playerManager, throwable);
-        }
+        server.submit(() -> {
+            try {
+                game.open(server).handle((v, throwable) -> {
+                    if (throwable == null) {
+                        onOpenSuccess(playerManager);
+                    } else {
+                        onOpenError(playerManager, throwable);
+                    }
+                    return null;
+                });
+            } catch (Throwable throwable) {
+                onOpenError(playerManager, throwable);
+            }
+        });
 
         return Command.SINGLE_SUCCESS;
     }
@@ -136,7 +139,7 @@ public final class GameCommand {
     private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
-        PlayerManager playerManager = source.getMinecraftServer().getPlayerManager();
+        MinecraftServer server = source.getMinecraftServer();
 
         // TODO: currently, only allowing to join one open game at a time
         Collection<GameWorld> games = GameWorld.getOpen();
@@ -145,16 +148,23 @@ public final class GameCommand {
             throw NO_GAME_OPEN.create();
         }
 
-        JoinResult joinResult = gameWorld.offerPlayer(player);
-        if (joinResult.isErr()) {
-            Text error = joinResult.getError();
-            throw new SimpleCommandExceptionType(error).create();
-        }
+        CompletableFuture<JoinResult> resultFuture = server.submit(() -> gameWorld.offerPlayer(player));
 
-        Text joinMessage = player.getDisplayName().shallowCopy()
-                .append(" has joined the game lobby!")
-                .setStyle(Style.EMPTY.withColor(Formatting.YELLOW));
-        playerManager.broadcastChatMessage(joinMessage, MessageType.SYSTEM, Util.NIL_UUID);
+        resultFuture.thenAccept(joinResult -> {
+            if (joinResult.isErr()) {
+                Text error = joinResult.getError();
+                source.sendError(error.shallowCopy().formatted(Formatting.RED));
+                return;
+            }
+
+            Text joinMessage = player.getDisplayName().shallowCopy()
+                    .append(" has joined the game lobby!")
+                    .formatted(Formatting.YELLOW);
+
+            for (ServerPlayerEntity otherPlayer : gameWorld.getPlayers()) {
+                otherPlayer.sendMessage(joinMessage, false);
+            }
+        });
 
         return Command.SINGLE_SUCCESS;
     }
@@ -173,9 +183,10 @@ public final class GameCommand {
             throw new SimpleCommandExceptionType(error).create();
         }
 
-        MinecraftServer server = source.getMinecraftServer();
-        PlayerManager playerManager = server.getPlayerManager();
-        playerManager.broadcastChatMessage(new LiteralText("Game is starting!"), MessageType.SYSTEM, Util.NIL_UUID);
+        Text message = new LiteralText("Game is starting!").formatted(Formatting.GRAY);
+        for (ServerPlayerEntity otherPlayer : gameWorld.getPlayers()) {
+            otherPlayer.sendMessage(message, false);
+        }
 
         return Command.SINGLE_SUCCESS;
     }

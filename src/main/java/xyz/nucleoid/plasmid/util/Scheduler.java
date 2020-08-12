@@ -1,12 +1,10 @@
 package xyz.nucleoid.plasmid.util;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,7 +13,7 @@ import java.util.function.IntPredicate;
 public final class Scheduler {
     public static final Scheduler INSTANCE = new Scheduler();
 
-    private final Int2ObjectMap<List<Consumer<MinecraftServer>>> taskQueue = new Int2ObjectOpenHashMap<>();
+    private final LinkedList<Task> taskQueue = new LinkedList<>();
     private int currentTick = 0;
 
     private Scheduler() {
@@ -48,6 +46,7 @@ public final class Scheduler {
 
     /**
      * queue a one-shot task to be executed next tick on the server thread
+     *
      * @param task the action to perform
      */
     public void submit(Consumer<MinecraftServer> task) {
@@ -61,8 +60,7 @@ public final class Scheduler {
      * @param task the action to perform
      */
     public void submit(Consumer<MinecraftServer> task, int delay) {
-        int timestamp = this.currentTick + delay + 1;
-        this.taskQueue.computeIfAbsent(timestamp, t -> new ArrayList<>()).add(task);
+        this.taskQueue.add(new OneshotTask(task, this.currentTick + delay));
     }
 
     /**
@@ -85,66 +83,79 @@ public final class Scheduler {
      * @param interval the number of ticks in between each execution
      */
     public void repeatWhile(Consumer<MinecraftServer> task, IntPredicate condition, int delay, int interval) {
-        this.submit(new Repeating(task, condition, interval), delay);
+        int beginTime = this.currentTick + delay;
+        this.enqueue(new DoWhileTask(task, condition, beginTime, interval));
     }
 
-    /**
-     * repeat the given task n times more than 1 time
-     *
-     * @param task the action to perform
-     * @param times the number of times the task should be scheduled
-     * @param delay how many ticks in the future this event should first be called
-     * @param interval the number of ticks in between each execution
-     */
-    public void repeatN(Consumer<MinecraftServer> task, int times, int delay, int interval) {
-        this.repeatWhile(task, new IntPredicate() {
-            private int remaining = times;
-
-            @Override
-            public boolean test(int value) {
-                return --this.remaining > 0;
-            }
-        }, delay, interval);
+    private void enqueue(Task task) {
+        this.taskQueue.add(task);
     }
 
     private void runTasks(MinecraftServer server) {
-        this.currentTick = server.getTicks();
+        int time = server.getTicks();
+        this.currentTick = time;
 
-        List<Consumer<MinecraftServer>> tasks = this.taskQueue.remove(this.currentTick);
-        if (tasks == null) {
-            return;
-        }
-
-        for (Consumer<MinecraftServer> task : tasks) {
-            task.accept(server);
+        Iterator<Task> iterator = this.taskQueue.iterator();
+        while (iterator.hasNext()) {
+            Task task = iterator.next();
+            if (task.tryRun(server, time)) {
+                iterator.remove();
+            }
         }
     }
 
-    private final class Repeating implements Consumer<MinecraftServer> {
-        private final Consumer<MinecraftServer> task;
-        private final IntPredicate repeatCondition;
-        public final int interval;
+    private interface Task {
+        boolean tryRun(MinecraftServer server, int time);
+    }
 
-        private Repeating(Consumer<MinecraftServer> task, IntPredicate repeatCondition, int interval) {
+    private static class OneshotTask implements Task {
+        private final Consumer<MinecraftServer> action;
+        private final int time;
+
+        OneshotTask(Consumer<MinecraftServer> action, int time) {
+            this.action = action;
+            this.time = time;
+        }
+
+        @Override
+        public boolean tryRun(MinecraftServer server, int time) {
+            if (time >= this.time) {
+                this.action.accept(server);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private static class DoWhileTask implements Task {
+        private final Consumer<MinecraftServer> task;
+        private final IntPredicate condition;
+        private final int interval;
+
+        private int nextTime;
+
+        private DoWhileTask(Consumer<MinecraftServer> task, IntPredicate condition, int beginTime, int interval) {
             this.task = task;
-            this.repeatCondition = repeatCondition;
+            this.condition = condition;
+            this.nextTime = beginTime;
             this.interval = interval;
         }
 
         @Override
-        public void accept(MinecraftServer server) {
-            this.task.accept(server);
+        public boolean tryRun(MinecraftServer server, int time) {
+            if (time >= this.nextTime) {
+                this.task.accept(server);
+                this.nextTime = time + this.interval;
 
-            if (this.shouldRepeat(Scheduler.this.currentTick)) {
-                Scheduler.this.submit(this, this.interval);
+                return !this.shouldRepeat(time);
             }
+
+            return false;
         }
 
         private boolean shouldRepeat(int predicate) {
-            if (this.repeatCondition == null) {
-                return true;
-            }
-            return this.repeatCondition.test(predicate);
+            IntPredicate condition = this.condition;
+            return condition == null || condition.test(predicate);
         }
     }
 }

@@ -7,7 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import net.minecraft.command.arguments.IdentifierArgumentType;
+import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
@@ -113,7 +113,7 @@ public final class GameCommand {
                 .withFormatting(Formatting.UNDERLINE)
                 .withColor(Formatting.BLUE)
                 .withClickEvent(joinClick)
-                .setHoverEvent(joinHover);
+                .withHoverEvent(joinHover);
 
         Text openMessage = new LiteralText("Game has opened! ")
                 .append(new LiteralText("Click here to join").setStyle(joinStyle));
@@ -217,7 +217,7 @@ public final class GameCommand {
                     .withFormatting(Formatting.UNDERLINE)
                     .withColor(Formatting.BLUE)
                     .withClickEvent(linkClick)
-                    .setHoverEvent(linkHover);
+                    .withHoverEvent(linkHover);
 
             MutableText link = new LiteralText(id.toString()).setStyle(linkStyle);
             source.sendFeedback(new LiteralText(" - ").append(link), false);

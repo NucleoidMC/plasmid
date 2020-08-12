@@ -23,8 +23,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Ma
 
     private RegionTraceMode traceMode = RegionTraceMode.OFFSET;
 
-    public ServerPlayerEntityMixin(World world, BlockPos blockPos, GameProfile gameProfile) {
-        super(world, blockPos, gameProfile);
+    private ServerPlayerEntityMixin(World world, BlockPos blockPos, float yaw, GameProfile gameProfile) {
+        super(world, blockPos, yaw, gameProfile);
     }
 
     @Override

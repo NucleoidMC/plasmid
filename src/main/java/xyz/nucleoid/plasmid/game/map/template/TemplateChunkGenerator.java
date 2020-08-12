@@ -1,5 +1,7 @@
 package xyz.nucleoid.plasmid.game.map.template;
 
+import net.minecraft.util.registry.DynamicRegistryManager;
+import net.minecraft.world.StructureWorldAccess;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
 import xyz.nucleoid.plasmid.util.BlockBounds;
@@ -40,11 +42,11 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     }
 
     @Override
-    public void setStructureStarts(StructureAccessor structureAccessor, Chunk chunk, StructureManager structureManager, long l) {
+    public void setStructureStarts(DynamicRegistryManager registryManager, StructureAccessor accessor, Chunk chunk, StructureManager manager, long seed) {
     }
 
     @Override
-    public void addStructureReferences(WorldAccess world, StructureAccessor accessor, Chunk chunk) {
+    public void addStructureReferences(StructureWorldAccess world, StructureAccessor accessor, Chunk chunk) {
     }
 
     @Override

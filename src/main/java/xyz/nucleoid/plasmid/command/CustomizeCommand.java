@@ -6,8 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import xyz.nucleoid.plasmid.item.CustomItem;
-import net.minecraft.command.arguments.IdentifierArgumentType;
+import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
@@ -15,6 +14,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import xyz.nucleoid.plasmid.item.CustomItem;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;

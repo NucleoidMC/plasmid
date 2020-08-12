@@ -40,8 +40,7 @@ public final class GameConfigs {
             public void apply(ResourceManager manager) {
                 CONFIGURED_GAMES.clear();
 
-                Identifier root = new Identifier(Plasmid.ID, "games");
-                Collection<Identifier> resources = manager.findResources(root, path -> path.endsWith(".json"));
+                Collection<Identifier> resources = manager.findResources("games", path -> path.endsWith(".json"));
 
                 for (Identifier path : resources) {
                     try {

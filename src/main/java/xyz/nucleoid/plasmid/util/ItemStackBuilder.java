@@ -49,7 +49,7 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder addCanDestroy(Tag<Block> block) {
-        Identifier tagId = BlockTags.getContainer().getId(block);
+        Identifier tagId = BlockTags.getTagGroup().getTagId(block);
         if (tagId == null) {
             throw new IllegalArgumentException("tag " + block + " does not exist!");
         }
@@ -63,7 +63,7 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder addCanPlaceOn(Tag<Block> block) {
-        Identifier tagId = BlockTags.getContainer().getId(block);
+        Identifier tagId = BlockTags.getTagGroup().getTagId(block);
         if (tagId == null) {
             throw new IllegalArgumentException("tag " + block + " does not exist!");
         }

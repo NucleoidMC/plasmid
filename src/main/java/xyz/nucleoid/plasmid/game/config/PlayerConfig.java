@@ -2,13 +2,12 @@ package xyz.nucleoid.plasmid.game.config;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.dynamic.NumberCodecs;
 
 public final class PlayerConfig {
     public static final Codec<PlayerConfig> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
-                NumberCodecs.rangedInt(1, Integer.MAX_VALUE).fieldOf("min").forGetter(PlayerConfig::getMinPlayers),
-                NumberCodecs.rangedInt(1, Integer.MAX_VALUE).fieldOf("max").forGetter(PlayerConfig::getMaxPlayers)
+                Codec.intRange(1, Integer.MAX_VALUE).fieldOf("min").forGetter(PlayerConfig::getMinPlayers),
+                Codec.intRange(1, Integer.MAX_VALUE).fieldOf("max").forGetter(PlayerConfig::getMaxPlayers)
         ).apply(instance, PlayerConfig::new);
     });
 

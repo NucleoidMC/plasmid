@@ -1,16 +1,15 @@
 package xyz.nucleoid.plasmid.game.world.generator.builder;
 
 import com.mojang.serialization.Codec;
-import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.Heightmap;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.SpawnSettings;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.biome.source.FixedBiomeSource;
@@ -19,6 +18,7 @@ import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.StructuresConfig;
+import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
 
 import java.util.Collections;
 import java.util.List;
@@ -74,7 +74,7 @@ public final class GameGeneratorBuilder {
         }
 
         @Override
-        protected Codec<? extends ChunkGenerator> method_28506() {
+        protected Codec<? extends ChunkGenerator> getCodec() {
             return VoidChunkGenerator.CODEC;
         }
 
@@ -85,10 +85,9 @@ public final class GameGeneratorBuilder {
 
         @Override
         public void populateNoise(WorldAccess worldAccess, StructureAccessor structures, Chunk chunk) {
-            World world = worldAccess.getWorld();
+            BiomeAccess biomes = worldAccess.getBiomeAccess();
             ChunkRegion region = (ChunkRegion) worldAccess;
 
-            BiomeAccess biomes = world.getBiomeAccess();
             this.surface.addSurface(chunk, region, biomes, structures);
         }
 
@@ -120,7 +119,7 @@ public final class GameGeneratorBuilder {
         }
 
         @Override
-        public List<Biome.SpawnEntry> getEntitySpawnList(Biome biome, StructureAccessor accessor, SpawnGroup group, BlockPos pos) {
+        public List<SpawnSettings.SpawnEntry> getEntitySpawnList(Biome biome, StructureAccessor accessor, SpawnGroup group, BlockPos pos) {
             return Collections.emptyList();
         }
 

@@ -16,7 +16,7 @@
     "map.ServerPlayerEntityMixin",
     "rule.CraftingResultInventoryMixin",
     "rule.HungerManagerMixin",
-    "rule.NetherPortalBlockMixin",
+    "rule.AreaHelperMixin",
     "rule.PlayerEntityMixin",
     "rule.ScreenHandlerMixin",
     "rule.ServerPlayerEntityMixin",

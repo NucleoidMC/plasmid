@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.game.map.template;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import xyz.nucleoid.plasmid.util.BlockBounds;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -18,6 +17,7 @@ import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.chunk.IdListPalette;
 import net.minecraft.world.chunk.Palette;
 import net.minecraft.world.chunk.PalettedContainer;
+import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -147,9 +147,9 @@ public final class MapTemplate {
 
         for (Long2ObjectMap.Entry<Chunk> entry : Long2ObjectMaps.fastIterable(this.chunks)) {
             long chunkPos = entry.getLongKey();
-            int chunkX = ChunkSectionPos.getX(chunkPos);
-            int chunkY = ChunkSectionPos.getY(chunkPos);
-            int chunkZ = ChunkSectionPos.getZ(chunkPos);
+            int chunkX = ChunkSectionPos.unpackX(chunkPos);
+            int chunkY = ChunkSectionPos.unpackY(chunkPos);
+            int chunkZ = ChunkSectionPos.unpackZ(chunkPos);
 
             if (chunkX < minChunkX) minChunkX = chunkX;
             if (chunkY < minChunkY) minChunkY = chunkY;

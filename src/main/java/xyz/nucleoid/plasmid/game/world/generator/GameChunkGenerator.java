@@ -58,7 +58,7 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    protected final Codec<? extends ChunkGenerator> method_28506() {
+    protected final Codec<? extends ChunkGenerator> getCodec() {
         return VoidChunkGenerator.CODEC;
     }
 }

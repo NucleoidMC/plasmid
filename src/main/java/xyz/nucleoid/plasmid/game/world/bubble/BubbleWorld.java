@@ -135,7 +135,6 @@ public final class BubbleWorld implements AutoCloseable {
         player.clearStatusEffects();
 
         player.setFireTicks(0);
-        player.inLava = false;
         player.stopFallFlying();
 
         player.setGameMode(this.config.getDefaultGameMode());

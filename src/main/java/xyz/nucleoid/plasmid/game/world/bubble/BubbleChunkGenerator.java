@@ -6,12 +6,16 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.registry.DynamicRegistryManager;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.Heightmap;
+import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.SpawnSettings;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.biome.source.FixedBiomeSource;
@@ -41,7 +45,7 @@ public final class BubbleChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    protected Codec<? extends ChunkGenerator> method_28506() {
+    protected Codec<? extends ChunkGenerator> getCodec() {
         return CODEC;
     }
 
@@ -55,18 +59,18 @@ public final class BubbleChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    public void setStructureStarts(StructureAccessor accessor, Chunk chunk, StructureManager manager, long seed) {
-        this.generator.setStructureStarts(accessor, chunk, manager, seed);
+    public void setStructureStarts(DynamicRegistryManager registry, StructureAccessor accessor, Chunk chunk, StructureManager manager, long seed) {
+        this.generator.setStructureStarts(registry, accessor, chunk, manager, seed);
     }
 
     @Override
-    public void addStructureReferences(WorldAccess world, StructureAccessor structures, Chunk chunk) {
+    public void addStructureReferences(StructureWorldAccess world, StructureAccessor structures, Chunk chunk) {
         this.generator.addStructureReferences(world, structures, chunk);
     }
 
     @Override
-    public void populateBiomes(Chunk chunk) {
-        this.generator.populateBiomes(chunk);
+    public void populateBiomes(Registry<Biome> registry, Chunk chunk) {
+        this.generator.populateBiomes(registry, chunk);
     }
 
     @Override
@@ -95,8 +99,8 @@ public final class BubbleChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    public StructuresConfig getConfig() {
-        return this.generator.getConfig();
+    public StructuresConfig getStructuresConfig() {
+        return this.generator.getStructuresConfig();
     }
 
     @Override
@@ -146,12 +150,12 @@ public final class BubbleChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    public boolean method_28507(ChunkPos pos) {
-        return this.generator.method_28507(pos);
+    public boolean isStrongholdStartingChunk(ChunkPos pos) {
+        return this.generator.isStrongholdStartingChunk(pos);
     }
 
     @Override
-    public List<Biome.SpawnEntry> getEntitySpawnList(Biome biome, StructureAccessor structures, SpawnGroup group, BlockPos pos) {
+    public List<SpawnSettings.SpawnEntry> getEntitySpawnList(Biome biome, StructureAccessor structures, SpawnGroup group, BlockPos pos) {
         return this.generator.getEntitySpawnList(biome, structures, group, pos);
     }
 }

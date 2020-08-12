@@ -12,7 +12,7 @@ import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.MathHelper;
 
 public final class GameTeam {
-    private static final Codec<DyeColor> COLOR_CODEC = StringIdentifiable.method_28140(
+    private static final Codec<DyeColor> COLOR_CODEC = StringIdentifiable.createCodec(
             DyeColor::values,
             key -> DyeColor.byName(key, DyeColor.WHITE)
     );

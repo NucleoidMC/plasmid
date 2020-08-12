@@ -8,18 +8,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplateSerializer;
-import xyz.nucleoid.plasmid.game.map.template.TemplateRegion;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplateViewer;
-import xyz.nucleoid.plasmid.game.map.template.StagingMapTemplate;
-import xyz.nucleoid.plasmid.game.map.template.StagingMapManager;
-import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
-import xyz.nucleoid.plasmid.util.BlockBounds;
-import net.minecraft.command.arguments.BlockPosArgumentType;
-import net.minecraft.command.arguments.IdentifierArgumentType;
+import net.minecraft.command.argument.BlockPosArgumentType;
+import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.server.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -28,6 +18,16 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
+import xyz.nucleoid.plasmid.game.map.template.MapTemplateSerializer;
+import xyz.nucleoid.plasmid.game.map.template.MapTemplateViewer;
+import xyz.nucleoid.plasmid.game.map.template.StagingMapManager;
+import xyz.nucleoid.plasmid.game.map.template.StagingMapTemplate;
+import xyz.nucleoid.plasmid.game.map.template.TemplateRegion;
+import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
+import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
+import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.io.IOException;
 import java.util.List;
@@ -160,7 +160,8 @@ public final class MapCommand {
 
         MapTemplate template = stagingMap.compile();
         try {
-            MapTemplateSerializer.save(template, stagingMap.getIdentifier());
+            MapTemplateSerializer serializer = new MapTemplateSerializer(world);
+            serializer.save(template, stagingMap.getIdentifier());
 
             source.sendFeedback(new LiteralText("Compiled and saved map '" + identifier + "'"), false);
         } catch (IOException e) {

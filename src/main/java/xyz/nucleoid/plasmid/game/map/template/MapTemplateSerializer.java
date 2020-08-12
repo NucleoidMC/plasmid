@@ -3,6 +3,9 @@ package xyz.nucleoid.plasmid.game.map.template;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.registry.MutableRegistry;
+import net.minecraft.world.biome.Biome;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 import net.minecraft.nbt.CompoundTag;
@@ -27,7 +30,13 @@ import java.util.concurrent.CompletionException;
 public final class MapTemplateSerializer {
     private static final Path MAP_ROOT = Paths.get(Plasmid.ID, "map");
 
-    public static CompletableFuture<MapTemplate> load(Identifier identifier) {
+    private final ServerWorld world;
+
+    public MapTemplateSerializer(ServerWorld world) {
+        this.world = world;
+    }
+
+    public CompletableFuture<MapTemplate> load(Identifier identifier) {
         return CompletableFuture.supplyAsync(() -> {
             Path path = getPathFor(identifier).resolve("map.nbt");
 
@@ -38,10 +47,10 @@ public final class MapTemplateSerializer {
             } catch (IOException e) {
                 throw new CompletionException(e);
             }
-        }, Util.method_27958());
+        }, Util.getIoWorkerExecutor());
     }
 
-    private static void load(MapTemplate template, CompoundTag root) {
+    private void load(MapTemplate template, CompoundTag root) {
         ListTag chunkList = root.getList("chunks", 10);
         for (int i = 0; i < chunkList.size(); i++) {
             CompoundTag chunkRoot = chunkList.getCompound(i);
@@ -80,13 +89,14 @@ public final class MapTemplateSerializer {
         String biomeId = root.getString("biome");
         if (!Strings.isNullOrEmpty(biomeId)) {
             Identifier biomeKey = new Identifier(biomeId);
-            if (Registry.BIOME.containsId(biomeKey)) {
-                template.biome = Registry.BIOME.get(biomeKey);
+            MutableRegistry<Biome> biomes = this.world.getRegistryManager().get(Registry.BIOME_KEY);
+            if (biomes.containsId(biomeKey)) {
+                template.biome = biomes.get(biomeKey);
             }
         }
     }
 
-    public static void save(MapTemplate template, Identifier identifier) throws IOException {
+    public void save(MapTemplate template, Identifier identifier) throws IOException {
         CompoundTag root = new CompoundTag();
 
         ListTag chunkList = new ListTag();
@@ -118,7 +128,8 @@ public final class MapTemplateSerializer {
         root.put("bounds", template.bounds.serialize(new CompoundTag()));
 
         if (template.biome != null) {
-            Identifier biomeId = Registry.BIOME.getId(template.biome);
+            MutableRegistry<Biome> biomes = this.world.getRegistryManager().get(Registry.BIOME_KEY);
+            Identifier biomeId = biomes.getId(template.biome);
             root.putString("biome", biomeId.toString());
         }
 

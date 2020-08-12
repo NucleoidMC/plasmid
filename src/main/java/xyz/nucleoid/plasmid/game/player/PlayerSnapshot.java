@@ -91,7 +91,6 @@ public final class PlayerSnapshot {
         player.setGameMode(this.gameMode);
 
         player.setFireTicks(0);
-        player.inLava = false;
         player.stopFallFlying();
     }
 

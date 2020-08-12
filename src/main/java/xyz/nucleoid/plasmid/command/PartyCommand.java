@@ -5,13 +5,8 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import xyz.nucleoid.plasmid.party.Party;
-import xyz.nucleoid.plasmid.party.PartyError;
-import xyz.nucleoid.plasmid.party.PartyManager;
-import xyz.nucleoid.plasmid.party.PartyResult;
-import xyz.nucleoid.plasmid.util.PlayerRef;
-import net.minecraft.command.arguments.EntityArgumentType;
-import net.minecraft.command.arguments.GameProfileArgumentType;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -22,6 +17,11 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import xyz.nucleoid.plasmid.party.Party;
+import xyz.nucleoid.plasmid.party.PartyError;
+import xyz.nucleoid.plasmid.party.PartyManager;
+import xyz.nucleoid.plasmid.party.PartyResult;
+import xyz.nucleoid.plasmid.util.PlayerRef;
 
 import java.util.Collection;
 
@@ -93,7 +93,7 @@ public final class PartyCommand {
                                     ClickEvent.Action.RUN_COMMAND,
                                     "/party accept " + owner.getGameProfile().getName()
                             ))
-                            .setHoverEvent(new HoverEvent(
+                            .withHoverEvent(new HoverEvent(
                                     HoverEvent.Action.SHOW_TEXT,
                                     new LiteralText("Join ").append(owner.getDisplayName()).append("'s party")
                             ))

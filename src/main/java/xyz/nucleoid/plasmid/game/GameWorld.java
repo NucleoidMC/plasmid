@@ -129,6 +129,12 @@ public final class GameWorld implements AutoCloseable {
         return this.bubble.getPlayers();
     }
 
+    /**
+     * Returns whether this {@link GameWorld} contains the given {@link ServerPlayerEntity}.
+     *
+     * @param player  {@link ServerPlayerEntity} to check existence of
+     * @return        whether the given {@link ServerPlayerEntity} exists in this {@link GameWorld}
+     */
     public boolean containsPlayer(ServerPlayerEntity player) {
         return this.bubble.getPlayers().contains(player);
     }

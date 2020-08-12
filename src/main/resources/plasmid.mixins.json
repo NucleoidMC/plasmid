@@ -13,7 +13,7 @@
     "event.ExplosionMixin",
     "event.ServerPlayerEntityMixin",
     "event.ServerPlayerInteractionManagerMixin",
-    "fake.BlockMixin",
+    "fake.IdListMixin",
     "fake.PacketByteBufMixin",
     "fake.SimpleRegistryMixin",
     "map.ServerPlayerEntityMixin",

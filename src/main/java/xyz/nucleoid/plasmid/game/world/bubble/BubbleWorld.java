@@ -10,6 +10,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
+import xyz.nucleoid.plasmid.game.event.EventListeners;
+import xyz.nucleoid.plasmid.game.event.PlayerAddListener;
+import xyz.nucleoid.plasmid.game.event.PlayerRemoveListener;
 import xyz.nucleoid.plasmid.game.player.PlayerSnapshot;
 
 import javax.annotation.Nullable;
@@ -24,6 +27,8 @@ public final class BubbleWorld implements AutoCloseable {
 
     private final ServerWorld world;
     private final BubbleWorldConfig config;
+
+    private EventListeners listeners = new EventListeners();
 
     private final Map<ServerPlayerEntity, PlayerSnapshot> players = new HashMap<>();
 
@@ -115,6 +120,7 @@ public final class BubbleWorld implements AutoCloseable {
         if (!this.players.containsKey(player)) {
             this.players.put(player, PlayerSnapshot.take(player));
             this.joinPlayer(player);
+            this.notifyAddPlayer(player);
             return true;
         }
         return false;
@@ -123,6 +129,7 @@ public final class BubbleWorld implements AutoCloseable {
     public boolean removePlayer(ServerPlayerEntity player) {
         PlayerSnapshot snapshot = this.players.remove(player);
         if (snapshot != null) {
+            this.notifyRemovePlayer(player);
             snapshot.restore(player);
             return true;
         }
@@ -156,11 +163,23 @@ public final class BubbleWorld implements AutoCloseable {
         player.teleport(this.world, spawnPos.x, spawnPos.y, spawnPos.z, 0.0F, 0.0F);
     }
 
-    private void kickPlayers() {
+    public void kickPlayers() {
         List<ServerPlayerEntity> players = new ArrayList<>(this.world.getPlayers());
         for (ServerPlayerEntity player : players) {
             this.kickPlayer(player);
         }
+    }
+
+    private void notifyAddPlayer(ServerPlayerEntity player) {
+        this.listeners.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
+    }
+
+    private void notifyRemovePlayer(ServerPlayerEntity player) {
+        this.listeners.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
+    }
+
+    public void setListeners(EventListeners listeners) {
+        this.listeners = listeners;
     }
 
     public ServerWorld getWorld() {

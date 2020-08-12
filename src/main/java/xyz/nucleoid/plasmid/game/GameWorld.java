@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -130,6 +131,16 @@ public final class GameWorld implements AutoCloseable {
 
     public boolean containsPlayer(ServerPlayerEntity player) {
         return this.bubble.getPlayers().contains(player);
+    }
+
+    /**
+     * Returns whether this {@link GameWorld} contains the given {@link LivingEntity}.
+     *
+     * @param entity  {@link LivingEntity} to check existence of
+     * @return        whether the given {@link LivingEntity} exists in this {@link GameWorld}
+     */
+    public boolean containsEntity(LivingEntity entity) {
+        return this.bubble.getWorld().getEntity(entity.getUuid()) != null;
     }
 
     @SuppressWarnings("unchecked")

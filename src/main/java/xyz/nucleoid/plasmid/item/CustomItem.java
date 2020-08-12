@@ -58,6 +58,7 @@ public final class CustomItem {
         return REGISTRY.get(identifier);
     }
 
+    @Deprecated
     public ItemStack applyTo(ItemStack stack) {
         CompoundTag tag = stack.getOrCreateTag();
         tag.putString(Plasmid.ID + ":custom_item", this.id.toString());
@@ -69,6 +70,7 @@ public final class CustomItem {
         return stack;
     }
 
+    @Deprecated
     public ItemStack create(Item item) {
         ItemStack stack = new ItemStack(item);
         this.applyTo(stack);
@@ -88,6 +90,7 @@ public final class CustomItem {
         }
     }
 
+    @Deprecated
     public Identifier getIdentifier() {
         return id;
     }

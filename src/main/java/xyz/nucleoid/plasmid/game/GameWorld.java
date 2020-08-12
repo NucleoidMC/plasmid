@@ -8,7 +8,14 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
-import xyz.nucleoid.plasmid.game.event.*;
+import xyz.nucleoid.plasmid.game.event.EventListeners;
+import xyz.nucleoid.plasmid.game.event.EventType;
+import xyz.nucleoid.plasmid.game.event.GameCloseListener;
+import xyz.nucleoid.plasmid.game.event.GameOpenListener;
+import xyz.nucleoid.plasmid.game.event.GameTickListener;
+import xyz.nucleoid.plasmid.game.event.OfferPlayerListener;
+import xyz.nucleoid.plasmid.game.event.PlayerAddListener;
+import xyz.nucleoid.plasmid.game.event.RequestStartListener;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.GameRuleSet;
@@ -20,7 +27,6 @@ import xyz.nucleoid.plasmid.util.Scheduler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -31,7 +37,7 @@ public final class GameWorld implements AutoCloseable {
     private final BubbleWorld bubble;
     private final ServerWorld world;
 
-    private Map<EventType<?>, Object> invokers = new HashMap<>();
+    private EventListeners listeners = new EventListeners();
     private GameRuleSet rules = GameRuleSet.empty();
 
     private boolean closed;
@@ -76,7 +82,9 @@ public final class GameWorld implements AutoCloseable {
     public void setGame(Game game) {
         this.closeGame();
 
-        this.invokers = game.getInvokers();
+        this.listeners = game.getListeners();
+        this.bubble.setListeners(this.listeners);
+
         this.rules = game.getRules();
 
         for (ServerPlayerEntity player : this.bubble.getPlayers()) {
@@ -88,37 +96,16 @@ public final class GameWorld implements AutoCloseable {
 
     private void closeGame() {
         this.invoker(GameCloseListener.EVENT).onClose();
-        this.invokers = new HashMap<>();
+        this.listeners = new EventListeners();
         this.rules = GameRuleSet.empty();
     }
 
     public boolean addPlayer(ServerPlayerEntity player) {
-        if (this.bubble.addPlayer(player)) {
-            Scheduler.INSTANCE.submit(server -> {
-                this.notifyAddPlayer(player);
-            });
-            return true;
-        }
-
-        return false;
+        return this.bubble.addPlayer(player);
     }
 
     public boolean removePlayer(ServerPlayerEntity player) {
-        if (this.bubble.removePlayer(player)) {
-            Scheduler.INSTANCE.submit(server -> {
-                this.notifyRemovePlayer(player);
-            });
-            return true;
-        }
-        return false;
-    }
-
-    private void notifyAddPlayer(ServerPlayerEntity player) {
-        this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
-    }
-
-    private void notifyRemovePlayer(ServerPlayerEntity player) {
-        this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
+        return this.bubble.removePlayer(player);
     }
 
     public int getPlayerCount() {
@@ -129,6 +116,12 @@ public final class GameWorld implements AutoCloseable {
         return this.bubble.getPlayers();
     }
 
+    /**
+     * Returns whether this {@link GameWorld} contains the given {@link ServerPlayerEntity}.
+     *
+     * @param player  {@link ServerPlayerEntity} to check existence of
+     * @return        whether the given {@link ServerPlayerEntity} exists in this {@link GameWorld}
+     */
     public boolean containsPlayer(ServerPlayerEntity player) {
         return this.bubble.getPlayers().contains(player);
     }
@@ -136,17 +129,16 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Returns whether this {@link GameWorld} contains the given {@link LivingEntity}.
      *
-     * @param entity  {@link LivingEntity} to check existence of
-     * @return        whether the given {@link LivingEntity} exists in this {@link GameWorld}
+     * @param entity {@link LivingEntity} to check existence of
+     * @return whether the given {@link LivingEntity} exists in this {@link GameWorld}
      */
     public boolean containsEntity(LivingEntity entity) {
         return this.bubble.getWorld().getEntity(entity.getUuid()) != null;
     }
 
-    @SuppressWarnings("unchecked")
     @Nonnull
     public <T> T invoker(EventType<T> event) {
-        return (T) this.invokers.computeIfAbsent(event, EventType::createEmpty);
+        return this.listeners.invoker(event);
     }
 
     public RuleResult testRule(GameRule rule) {
@@ -187,11 +179,8 @@ public final class GameWorld implements AutoCloseable {
         this.closed = true;
 
         Scheduler.INSTANCE.submit(server -> {
+            this.bubble.kickPlayers();
             this.closeGame();
-            for (ServerPlayerEntity player : this.bubble.getPlayers()) {
-                this.notifyRemovePlayer(player);
-            }
-
             this.bubble.close();
 
             DIMENSION_TO_WORLD.remove(this.world.getRegistryKey(), this);

@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid;
 
+import com.google.common.reflect.Reflection;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -29,6 +30,7 @@ import xyz.nucleoid.plasmid.game.map.template.StagingBoundRenderer;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.game.world.bubble.BubbleChunkGenerator;
+import xyz.nucleoid.plasmid.item.PlasmidItems;
 
 public final class Plasmid implements ModInitializer {
     public static final String ID = "plasmid";
@@ -37,6 +39,8 @@ public final class Plasmid implements ModInitializer {
     @Override
     public void onInitialize() {
         Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "bubble"), BubbleChunkGenerator.CODEC);
+
+        Reflection.initialize(PlasmidItems.class);
 
         GameConfigs.register();
         MapTemplateSerializer.INSTANCE.register();

@@ -7,7 +7,7 @@ public final class GameOpenContext<C> {
     private final MinecraftServer server;
     private final ConfiguredGame<C> game;
 
-    public GameOpenContext(MinecraftServer server, ConfiguredGame<C> game) {
+    GameOpenContext(MinecraftServer server, ConfiguredGame<C> game) {
         this.server = server;
         this.game = game;
     }

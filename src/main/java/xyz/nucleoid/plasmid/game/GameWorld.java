@@ -231,7 +231,7 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Requests that this {@link GameWorld} begins. Called through the /game start command.
      *
-     * <p>The behavior of the game beginning is left any {@link RequestStartListener#EVENT} listener attached to it.
+     * <p>The behavior of the game starting is left any {@link RequestStartListener#EVENT} listener attached to it.
      *
      * @return a {@link StartResult} which describes whether the game was able to start
      */

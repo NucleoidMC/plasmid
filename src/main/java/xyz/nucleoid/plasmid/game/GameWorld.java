@@ -27,7 +27,7 @@ import java.util.function.Consumer;
  * Represents a unique world with a {@link Game} attached to it.
  *
  * <p>Each world has a generator which is triggered when the world is first created.
- * Players can be added to this game world through {@link GameWorld#addPlayer}.
+ * Players can only be added to this game world through {@link GameWorld#addPlayer} or {@link GameWorld#offerPlayer}.
  */
 public final class GameWorld implements AutoCloseable {
     private static final Map<RegistryKey<World>, GameWorld> DIMENSION_TO_WORLD = new Reference2ObjectOpenHashMap<>();

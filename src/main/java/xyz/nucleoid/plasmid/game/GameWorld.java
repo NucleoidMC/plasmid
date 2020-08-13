@@ -36,24 +36,26 @@ public final class GameWorld implements AutoCloseable {
 
     private final BubbleWorld bubble;
     private final ServerWorld world;
+    private final ConfiguredGame<?> game;
 
     private EventListeners listeners = new EventListeners();
     private GameRuleSet rules = GameRuleSet.empty();
 
     private boolean closed;
 
-    private GameWorld(BubbleWorld bubble) {
+    private GameWorld(BubbleWorld bubble, ConfiguredGame<?> game) {
         this.bubble = bubble;
         this.world = bubble.getWorld();
+        this.game = game;
     }
 
-    public static GameWorld open(MinecraftServer server, BubbleWorldConfig config) {
+    public static GameWorld open(MinecraftServer server, ConfiguredGame<?> game, BubbleWorldConfig config) {
         BubbleWorld bubble = BubbleWorld.tryOpen(server, config);
         if (bubble == null) {
             throw new GameOpenException(new LiteralText("No available bubble worlds!"));
         }
 
-        GameWorld gameWorld = new GameWorld(bubble);
+        GameWorld gameWorld = new GameWorld(bubble, game);
         DIMENSION_TO_WORLD.put(bubble.getDimensionKey(), gameWorld);
 
         return gameWorld;
@@ -70,6 +72,10 @@ public final class GameWorld implements AutoCloseable {
 
     public ServerWorld getWorld() {
         return this.world;
+    }
+
+    public ConfiguredGame<?> getGame() {
+        return this.game;
     }
 
     public void openGame(Consumer<Game> builder) {

@@ -24,9 +24,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * Represents a {@link BubbleWorld} with a {@link Game} attached to it.
+ * Represents a unique world with a {@link Game} attached to it.
  *
- * <p>Most operations in this class are delegated to its {@link BubbleWorld} or {@link Game} instance.
+ * <p>Each world has a generator which is triggered when the world is first created.
+ * Players can be added to this game world through {@link GameWorld#addPlayer}.
  */
 public final class GameWorld implements AutoCloseable {
     private static final Map<RegistryKey<World>, GameWorld> DIMENSION_TO_WORLD = new Reference2ObjectOpenHashMap<>();
@@ -36,11 +37,6 @@ public final class GameWorld implements AutoCloseable {
 
     private boolean closed;
 
-    /**
-     * Primary constructor for {@link GameWorld}.
-     *
-     * @param bubble the {@link BubbleWorld} this {@link GameWorld} is hosted in.
-     */
     private GameWorld(BubbleWorld bubble) {
         this.bubble = bubble;
     }
@@ -131,9 +127,9 @@ public final class GameWorld implements AutoCloseable {
     }
 
     /**
-     * Closes this {@link GameWorld}.
+     * Closes the current {@link Game} instance of this game world.
      *
-     * <p>All {@link GameCloseListener#EVENT} listeners are notified of the close, and then all listeners & rules for this {@link GameWorld} are reset.
+     * <p>All {@link GameCloseListener#EVENT} listeners are notified of the close.
      */
     private void closeGame() {
         this.invoker(GameCloseListener.EVENT).onClose();
@@ -141,9 +137,9 @@ public final class GameWorld implements AutoCloseable {
     }
 
     /**
-     * Attempts to add the given {@link ServerPlayerEntity} to this {@link GameWorld}.
+     * Attempts to add the given {@link ServerPlayerEntity} to this game world's {@link BubbleWorld}.
      *
-     * <p>Implementation is left to this {@link GameWorld}'s {@link BubbleWorld} in {@link BubbleWorld#addPlayer(ServerPlayerEntity)}.
+     * <p>{@link GameWorld#offerPlayer} can be used instead to check with {@link OfferPlayerListener} listeners before adding the player.
      *
      * @param player {@link ServerPlayerEntity} to add to this {@link GameWorld}
      * @return whether the {@link ServerPlayerEntity} was successfully added
@@ -165,8 +161,6 @@ public final class GameWorld implements AutoCloseable {
     }
 
     /**
-     * Returns the number of players in this {@link GameWorld}.
-     *
      * @return the number of players in this {@link GameWorld}.
      */
     public int getPlayerCount() {
@@ -235,7 +229,9 @@ public final class GameWorld implements AutoCloseable {
     }
 
     /**
-     * Requests that this {@link GameWorld} begins, which invokes any {@link RequestStartListener#EVENT} listener attached to it.
+     * Requests that this {@link GameWorld} begins. Called through the /game start command.
+     *
+     * <p>The behavior of the game beginning is left any {@link RequestStartListener#EVENT} listener attached to it.
      *
      * @return a {@link StartResult} which describes whether the game was able to start
      */
@@ -266,9 +262,9 @@ public final class GameWorld implements AutoCloseable {
     }
 
     /**
-     * Closes this {@link GameWorld} if it is not already closed.
+     * Closes this {@link GameWorld}.
      *
-     * <p>Upon close, all players in this {@link GameWorld} are removed (kick implementation is up to the {@link BubbleWorld} associated with this {@link GameWorld}).
+     * <p>Upon close, all players in this {@link GameWorld} are removed and restored to their state prior to entering this game world.
      */
     @Override
     public void close() {

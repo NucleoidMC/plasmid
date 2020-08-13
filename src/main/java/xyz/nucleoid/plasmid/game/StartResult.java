@@ -20,9 +20,7 @@ public final class StartResult {
     }
 
     /**
-     * Returns a {@link StartResult} with no error.
-     *
-     * @return {@link StartResult} with no error (null)
+     * @return {@link StartResult} with no error
      */
     public static StartResult ok() {
         return new StartResult(null);

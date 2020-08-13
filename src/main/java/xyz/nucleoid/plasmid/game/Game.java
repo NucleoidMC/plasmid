@@ -7,9 +7,10 @@ import xyz.nucleoid.plasmid.game.rule.GameRuleSet;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
 /**
- * Represents a game with event listeners ({@link EventListeners}) and a set of rules ({@link GameRuleSet}).
+ * Represents the logic of a game in a {@link GameWorld} through events ({@link EventListeners}) and rules ({@link GameRuleSet}).
  *
- * <p>Each {@link GameWorld} contains a {@link Game} instance.
+ * <p>Each GameWorld contains one {@link Game} instance instance at a time.
+ * Games can be swapped or opened through {@link GameWorld#setGame} or {@link GameWorld#openGame}.
  */
 public final class Game {
     private final EventListeners listeners = new EventListeners();
@@ -26,18 +27,14 @@ public final class Game {
     }
 
     /**
-     * Returns the {@link EventListeners} associated with this {@link Game}.
-     *
-     * @return the {@link EventListeners} of this {@link Game}
+     * @return the {@link EventListeners} of this game
      */
     public EventListeners getListeners() {
         return this.listeners;
     }
 
     /**
-     * Returns the {@link GameRuleSet} associated with this {@link Game}.
-     *
-     * @return the {@link GameRuleSet} of this {@link Game}
+     * @return the {@link GameRuleSet} of this game
      */
     public GameRuleSet getRules() {
         return this.rules;

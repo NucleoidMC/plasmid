@@ -29,6 +29,9 @@
     "rule.ServerPlayerInteractionManagerMixin",
     "rule.TntBlockMixin"
   ],
+  "client": [
+    "fake.ClientConnectionMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

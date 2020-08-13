@@ -17,6 +17,7 @@
     "event.ServerPlayerInteractionManagerMixin",
     "fake.IdListMixin",
     "fake.PacketByteBufMixin",
+    "fake.ServerPlayNetworkHandlerMixin",
     "fake.SimpleRegistryMixin",
     "map.ServerPlayerEntityMixin",
     "rule.AreaHelperMixin",

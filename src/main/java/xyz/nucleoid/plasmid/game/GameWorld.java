@@ -137,7 +137,7 @@ public final class GameWorld implements AutoCloseable {
     }
 
     /**
-     * Attempts to add the given {@link ServerPlayerEntity} to this game world's {@link BubbleWorld}.
+     * Attempts to add the given {@link ServerPlayerEntity} to this game world.
      *
      * <p>{@link GameWorld#offerPlayer} can be used instead to check with {@link OfferPlayerListener} listeners before adding the player.
      *

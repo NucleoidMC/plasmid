@@ -1,11 +1,12 @@
 package xyz.nucleoid.plasmid.mixin.bubble;
 
 import com.mojang.datafixers.util.Either;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleChunkControl;
+import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorldControl;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
@@ -25,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
-public abstract class ThreadedAnvilChunkStorageMixin implements BubbleChunkControl {
+public abstract class ThreadedAnvilChunkStorageMixin implements BubbleWorldControl {
     @Shadow
     private volatile Long2ObjectLinkedOpenHashMap<ChunkHolder> chunkHolders;
     @Shadow
@@ -51,6 +52,10 @@ public abstract class ThreadedAnvilChunkStorageMixin implements BubbleChunkContr
 
     @Shadow
     @Final
+    private Int2ObjectMap<ThreadedAnvilChunkStorage.EntityTracker> entityTrackers;
+
+    @Shadow
+    @Final
     private ThreadExecutor<Runnable> mainThreadExecutor;
 
     @Shadow
@@ -67,6 +72,7 @@ public abstract class ThreadedAnvilChunkStorageMixin implements BubbleChunkContr
         this.chunksToUnload.clear();
         this.unloadTaskQueue.clear();
         this.chunkToType.clear();
+        this.entityTrackers.clear();
     }
 
     @Override

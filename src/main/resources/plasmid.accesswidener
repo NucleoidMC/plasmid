@@ -5,4 +5,4 @@ accessible field net/minecraft/item/Item ATTACK_SPEED_MODIFIER_ID Ljava/util/UUI
 
 accessible method net/minecraft/entity/decoration/ArmorStandEntity setMarker (Z)V
 
-accessible class net/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator
+accessible class net/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTracker

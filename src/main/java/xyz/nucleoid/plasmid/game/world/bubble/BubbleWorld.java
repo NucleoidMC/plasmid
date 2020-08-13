@@ -99,7 +99,7 @@ public final class BubbleWorld implements AutoCloseable {
             bubbleGenerator.clearGenerator();
         }
 
-        ((BubbleChunkControl) chunkManager).enable();
+        BubbleWorldControl.enable(this.world);
     }
 
     @Override
@@ -111,7 +111,7 @@ public final class BubbleWorld implements AutoCloseable {
         BubbleChunkGenerator bubbleGenerator = (BubbleChunkGenerator) chunkManager.getChunkGenerator();
         bubbleGenerator.clearGenerator();
 
-        ((BubbleChunkControl) chunkManager).disable();
+        BubbleWorldControl.disable(this.world);
 
         OPEN_WORLDS.remove(this.getDimensionKey(), this);
     }

@@ -6,6 +6,7 @@
   "mixins": [
     "bubble.PlayerManagerMixin",
     "bubble.ServerChunkManagerMixin",
+    "bubble.ServerTickSchedulerMixin",
     "bubble.ServerWorldMixin",
     "bubble.ThreadedAnvilChunkStorageMixin",
     "custom.EntityMixin",

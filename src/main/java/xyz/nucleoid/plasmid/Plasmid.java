@@ -1,6 +1,5 @@
 package xyz.nucleoid.plasmid;
 
-import com.google.common.reflect.Reflection;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -8,7 +7,14 @@ import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
-import xyz.nucleoid.plasmid.command.CustomizeCommand;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.registry.Registry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import xyz.nucleoid.plasmid.command.GameCommand;
 import xyz.nucleoid.plasmid.command.MapCommand;
 import xyz.nucleoid.plasmid.command.PartyCommand;
@@ -23,16 +29,6 @@ import xyz.nucleoid.plasmid.game.map.template.StagingBoundRenderer;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.game.world.bubble.BubbleChunkGenerator;
-import xyz.nucleoid.plasmid.item.CustomItem;
-import xyz.nucleoid.plasmid.item.PlasmidCustomItems;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.registry.Registry;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public final class Plasmid implements ModInitializer {
     public static final String ID = "plasmid";
@@ -40,15 +36,12 @@ public final class Plasmid implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Reflection.initialize(PlasmidCustomItems.class);
-
         Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "bubble"), BubbleChunkGenerator.CODEC);
 
         GameConfigs.register();
         MapTemplateSerializer.INSTANCE.register();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            CustomizeCommand.register(dispatcher);
             MapCommand.register(dispatcher);
             GameCommand.register(dispatcher);
             PartyCommand.register(dispatcher);
@@ -56,15 +49,6 @@ public final class Plasmid implements ModInitializer {
 
         UseItemCallback.EVENT.register((player, world, hand) -> {
             if (!world.isClient) {
-                ItemStack stack = player.getStackInHand(hand);
-                CustomItem custom = CustomItem.match(stack);
-                if (custom != null) {
-                    TypedActionResult<ItemStack> result = custom.onUse(player, world, hand);
-                    if (result.getResult().isAccepted()) {
-                        return result;
-                    }
-                }
-
                 GameWorld gameWorld = GameWorld.forWorld(world);
                 if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
                     if (gameWorld.testRule(GameRule.INTERACTION) == RuleResult.DENY) {

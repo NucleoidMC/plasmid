@@ -33,12 +33,14 @@ public final class GameWorld implements AutoCloseable {
     private static final Map<RegistryKey<World>, GameWorld> DIMENSION_TO_WORLD = new Reference2ObjectOpenHashMap<>();
 
     private final BubbleWorld bubble;
+    private final ConfiguredGame<?> configuredGame;
     private Game game = new Game();
 
     private boolean closed;
 
-    private GameWorld(BubbleWorld bubble) {
+    private GameWorld(BubbleWorld bubble, ConfiguredGame<?> configuredGame) {
         this.bubble = bubble;
+        this.configuredGame = configuredGame;
     }
 
     /**
@@ -47,17 +49,18 @@ public final class GameWorld implements AutoCloseable {
      * <p>If a {@link BubbleWorld} could not be opened, a {@link GameOpenException} is thrown.
      *
      * @throws GameOpenException if a {@link BubbleWorld} could not be opened
-     * @param server {@link MinecraftServer}    to open a {@link GameWorld} in
-     * @param config {@link BubbleWorldConfig}  to use to construct a {@link GameWorld}
+     * @param server {@link MinecraftServer} to open a {@link GameWorld} in
+     * @param game initial game to open this GameWorld with
+     * @param config {@link BubbleWorldConfig} to use to construct a {@link GameWorld}
      * @return a {@link GameWorld} if one was opened
      */
-    public static GameWorld open(MinecraftServer server, BubbleWorldConfig config) {
+    public static GameWorld open(MinecraftServer server, ConfiguredGame<?> game, BubbleWorldConfig config) {
         BubbleWorld bubble = BubbleWorld.tryOpen(server, config);
         if (bubble == null) {
             throw new GameOpenException(new LiteralText("No available bubble worlds!"));
         }
 
-        GameWorld gameWorld = new GameWorld(bubble);
+        GameWorld gameWorld = new GameWorld(bubble, game);
         DIMENSION_TO_WORLD.put(bubble.getDimensionKey(), gameWorld);
 
         return gameWorld;
@@ -92,6 +95,10 @@ public final class GameWorld implements AutoCloseable {
      */
     public ServerWorld getWorld() {
         return this.bubble.getWorld();
+    }
+
+    public ConfiguredGame<?> getGame() {
+        return this.configuredGame;
     }
 
     /**

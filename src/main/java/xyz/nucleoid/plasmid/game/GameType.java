@@ -1,7 +1,6 @@
 package xyz.nucleoid.plasmid.game;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
@@ -27,8 +26,8 @@ public final class GameType<C> {
         return type;
     }
 
-    public CompletableFuture<Void> open(MinecraftServer server, C config) {
-        return this.open.open(server, config);
+    public CompletableFuture<Void> open(GameOpenContext<C> context) {
+        return this.open.open(context);
     }
 
     public Identifier getIdentifier() {
@@ -61,6 +60,6 @@ public final class GameType<C> {
     }
 
     public interface Open<C> {
-        CompletableFuture<Void> open(MinecraftServer server, C config);
+        CompletableFuture<Void> open(GameOpenContext<C> context);
     }
 }

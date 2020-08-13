@@ -6,6 +6,7 @@
   "mixins": [
     "bubble.PlayerManagerMixin",
     "bubble.ServerChunkManagerMixin",
+    "bubble.ServerTickSchedulerMixin",
     "bubble.ServerWorldMixin",
     "bubble.ThreadedAnvilChunkStorageMixin",
     "custom.EntityMixin",
@@ -16,6 +17,7 @@
     "event.ServerPlayerInteractionManagerMixin",
     "fake.IdListMixin",
     "fake.PacketByteBufMixin",
+    "fake.ServerPlayNetworkHandlerMixin",
     "fake.SimpleRegistryMixin",
     "map.ServerPlayerEntityMixin",
     "rule.AreaHelperMixin",

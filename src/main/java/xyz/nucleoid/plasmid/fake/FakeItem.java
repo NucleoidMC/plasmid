@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.fake;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 /**
  * Specialisation for {@link Fake} for stack support
@@ -13,8 +14,17 @@ public interface FakeItem<F extends Item> extends Fake<F> {
     /**
      * The stack to use
      *
-     * @param itemStack The original stack
+     * @param stack The original stack
      * @return The stack to send to the client
      */
-    ItemStack getFaking(ItemStack itemStack);
+    default ItemStack getFaking(ItemStack stack) {
+        ItemStack fakingStack = new ItemStack(this.getFaking(), stack.getCount());
+
+        CompoundTag tag = stack.getTag();
+        if (tag != null) {
+            fakingStack.setTag(tag.copy());
+        }
+
+        return fakingStack;
+    }
 }

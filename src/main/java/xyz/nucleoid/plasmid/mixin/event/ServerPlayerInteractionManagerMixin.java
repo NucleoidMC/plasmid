@@ -26,7 +26,6 @@ public class ServerPlayerInteractionManagerMixin {
 
         GameWorld gameWorld = GameWorld.forWorld(this.player.world);
         if (gameWorld != null && gameWorld.containsPlayer(this.player)) {
-            CustomBlock.playerBreakBlock(pos);
             ActionResult result = gameWorld.invoker(BreakBlockListener.EVENT).onBreak(this.player, pos);
 
             if (result == ActionResult.FAIL) {

@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.mixin.bubble;
 
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleChunkControl;
+import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorldControl;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import org.spongepowered.asm.mixin.Final;
@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ServerChunkManager.class)
-public abstract class ServerChunkManagerMixin implements BubbleChunkControl {
+public abstract class ServerChunkManagerMixin implements BubbleWorldControl {
     @Shadow
     @Final
     public ThreadedAnvilChunkStorage threadedAnvilChunkStorage;
@@ -19,12 +19,12 @@ public abstract class ServerChunkManagerMixin implements BubbleChunkControl {
     @Override
     public void enable() {
         this.initChunkCaches();
-        ((BubbleChunkControl) this.threadedAnvilChunkStorage).enable();
+        ((BubbleWorldControl) this.threadedAnvilChunkStorage).enable();
     }
 
     @Override
     public void disable() {
         this.initChunkCaches();
-        ((BubbleChunkControl) this.threadedAnvilChunkStorage).disable();
+        ((BubbleWorldControl) this.threadedAnvilChunkStorage).disable();
     }
 }

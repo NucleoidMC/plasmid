@@ -27,3 +27,5 @@ bin/
 # fabric
 
 run/
+
+ci_version.json

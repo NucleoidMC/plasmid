@@ -12,18 +12,12 @@ import javax.annotation.Nullable;
 public final class StartResult {
     public static final StartResult ALREADY_STARTED = error(new LiteralText("This game has already started!"));
     public static final StartResult NOT_ENOUGH_PLAYERS = error(new LiteralText("Game does not have enough players yet!"));
+    public static final StartResult OK = new StartResult(null);
 
     private final Text error;
 
     private StartResult(Text error) {
         this.error = error;
-    }
-
-    /**
-     * @return {@link StartResult} with no error
-     */
-    public static StartResult ok() {
-        return new StartResult(null);
     }
 
     /**

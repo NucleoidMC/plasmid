@@ -27,14 +27,14 @@ public class ChatCommand {
     public static int switchToAll(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerPlayerEntity player = ctx.getSource().getPlayer();
         ((HasChatChannel) player).setChatChannel(ChatChannel.ALL);
-        player.sendMessage(new LiteralText("Chat channel switched to all.").formatted(Formatting.AQUA), false);
+        player.sendMessage(new LiteralText("Chat channel switched to all").formatted(Formatting.AQUA), false);
         return Command.SINGLE_SUCCESS;
     }
 
     public static int switchToTeam(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerPlayerEntity player = ctx.getSource().getPlayer();
-        ((HasChatChannel) player).setChatChannel(ChatChannel.ALL);
-        player.sendMessage(new LiteralText("Chat channel switched to team.").formatted(Formatting.AQUA), false);
+        ((HasChatChannel) player).setChatChannel(ChatChannel.TEAM);
+        player.sendMessage(new LiteralText("Chat channel switched to team").formatted(Formatting.AQUA), false);
         return Command.SINGLE_SUCCESS;
     }
 }

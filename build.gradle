@@ -12,7 +12,8 @@ group = project.maven_group
 
 // check if we're in a ci environment
 if (System.getenv("BUILD_NUMBER")) {
-  version = read_ci_version()
+  def ci_version = read_ci_version()
+  version = "$ci_version.major.$ci_version.minor.$ci_version.patch"
 } else {
   version = "$version+local"
 }

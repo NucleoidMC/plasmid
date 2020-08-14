@@ -270,7 +270,7 @@ public final class GameWorld implements AutoCloseable {
      */
     public JoinResult offerPlayer(ServerPlayerEntity player) {
         JoinResult result = this.invoker(OfferPlayerListener.EVENT).offerPlayer(player);
-        if (result.isErr()) {
+        if (result.isError()) {
             return result;
         }
 

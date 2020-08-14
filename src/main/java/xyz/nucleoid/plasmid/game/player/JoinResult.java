@@ -36,7 +36,7 @@ public final class JoinResult {
         return this.error == null;
     }
 
-    public boolean isErr() {
+    public boolean isError() {
         return this.error != null;
     }
 

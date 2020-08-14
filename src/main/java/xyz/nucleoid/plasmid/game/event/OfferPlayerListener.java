@@ -8,7 +8,7 @@ public interface OfferPlayerListener {
         return player -> {
             for (OfferPlayerListener listener : listeners) {
                 JoinResult result = listener.offerPlayer(player);
-                if (result.isErr()) {
+                if (result.isError()) {
                     return result;
                 }
             }

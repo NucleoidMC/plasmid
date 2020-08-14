@@ -47,7 +47,7 @@ public final class StartResult {
     /**
      * @return whether this {@link StartResult} contains an error
      */
-    public boolean hasError() {
+    public boolean isError() {
         return this.error != null;
     }
 

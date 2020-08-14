@@ -151,7 +151,7 @@ public final class GameCommand {
         CompletableFuture<JoinResult> resultFuture = CompletableFuture.supplyAsync(() -> gameWorld.offerPlayer(player), server);
 
         resultFuture.thenAccept(joinResult -> {
-            if (joinResult.isErr()) {
+            if (joinResult.isError()) {
                 Text error = joinResult.getError();
                 source.sendError(error.shallowCopy().formatted(Formatting.RED));
                 return;
@@ -181,7 +181,7 @@ public final class GameCommand {
         CompletableFuture<StartResult> resultFuture = CompletableFuture.supplyAsync(gameWorld::requestStart, server);
 
         resultFuture.thenAccept(startResult -> {
-            if (startResult.hasError()) {
+            if (startResult.isError()) {
                 Text error = startResult.getError();
                 source.sendError(error.shallowCopy().formatted(Formatting.RED));
             }

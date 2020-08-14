@@ -5,6 +5,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
 
@@ -22,12 +25,16 @@ public class ChatCommand {
     // @formatter:on
 
     public static int switchToAll(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ((HasChatChannel) ctx.getSource().getPlayer()).setChatChannel(ChatChannel.ALL);
+        ServerPlayerEntity player = ctx.getSource().getPlayer();
+        ((HasChatChannel) player).setChatChannel(ChatChannel.ALL);
+        player.sendMessage(new LiteralText("Chat channel switched to all.").formatted(Formatting.AQUA), false);
         return Command.SINGLE_SUCCESS;
     }
 
     public static int switchToTeam(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ((HasChatChannel) ctx.getSource().getPlayer()).setChatChannel(ChatChannel.TEAM);
+        ServerPlayerEntity player = ctx.getSource().getPlayer();
+        ((HasChatChannel) player).setChatChannel(ChatChannel.ALL);
+        player.sendMessage(new LiteralText("Chat channel switched to team.").formatted(Formatting.AQUA), false);
         return Command.SINGLE_SUCCESS;
     }
 }

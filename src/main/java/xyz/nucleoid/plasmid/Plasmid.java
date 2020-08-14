@@ -18,9 +18,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import xyz.nucleoid.plasmid.command.GameCommand;
-import xyz.nucleoid.plasmid.command.MapCommand;
-import xyz.nucleoid.plasmid.command.PartyCommand;
+import xyz.nucleoid.plasmid.command.*;
 import xyz.nucleoid.plasmid.entity.CustomEntity;
 import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
@@ -51,6 +49,8 @@ public final class Plasmid implements ModInitializer {
             MapCommand.register(dispatcher);
             GameCommand.register(dispatcher);
             PartyCommand.register(dispatcher);
+            ChatCommand.register(dispatcher);
+            ShoutCommand.register(dispatcher);
         });
 
         UseItemCallback.EVENT.register((player, world, hand) -> {

@@ -3,7 +3,9 @@ package xyz.nucleoid.plasmid;
 import com.google.common.reflect.Reflection;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
@@ -16,9 +18,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import xyz.nucleoid.plasmid.command.GameCommand;
-import xyz.nucleoid.plasmid.command.MapCommand;
-import xyz.nucleoid.plasmid.command.PartyCommand;
+import xyz.nucleoid.plasmid.command.*;
 import xyz.nucleoid.plasmid.entity.CustomEntity;
 import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
@@ -49,6 +49,8 @@ public final class Plasmid implements ModInitializer {
             MapCommand.register(dispatcher);
             GameCommand.register(dispatcher);
             PartyCommand.register(dispatcher);
+            ChatCommand.register(dispatcher);
+            ShoutCommand.register(dispatcher);
         });
 
         UseItemCallback.EVENT.register((player, world, hand) -> {
@@ -123,5 +125,18 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerTickEvents.START_SERVER_TICK.register(StagingBoundRenderer::onTick);
+
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            for (GameWorld gameWorld : GameWorld.getOpen()) {
+                gameWorld.close();
+            }
+        });
+
+        ServerWorldEvents.UNLOAD.register((server, world) -> {
+            GameWorld gameWorld = GameWorld.forWorld(world);
+            if (gameWorld != null) {
+                gameWorld.close();
+            }
+        });
     }
 }

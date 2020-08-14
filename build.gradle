@@ -10,8 +10,13 @@ archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
-def build_number = System.getenv("BUILD_NUMBER")
-version = version + "+" + (build_number ? "build.$build_number" : "local")
+// check if we're in a ci environment
+if (System.getenv("BUILD_NUMBER")) {
+  def ci_version = read_ci_version()
+  version = "$ci_version.major.$ci_version.minor.$ci_version.patch"
+} else {
+  version = "$version+local"
+}
 
 minecraft {
   accessWidener = file("src/main/resources/plasmid.accesswidener")
@@ -87,4 +92,46 @@ publishing {
       mavenLocal()
     }
   }
+}
+
+import groovy.json.*
+
+def get_base_version() {
+  def version = project.mod_version.split('\\.')
+  return [
+      major: version[0] ?: 0,
+      minor: version[1] ?: 0,
+      patch: 0
+  ]
+}
+
+static def read_ci_version() {
+  def file = new File("ci_version.json")
+
+  if (file.exists()) {
+    def json = new JsonSlurper().parseText(file.text)
+    return json
+  }
+
+  return null
+}
+
+static def write_ci_version(version) {
+  def file = new File("ci_version.json")
+  file.write JsonOutput.toJson(version)
+}
+
+task incrementCiVersion {
+  def base_version = get_base_version()
+  def ci_version = read_ci_version()
+
+  if (!ci_version || ci_version.major != base_version.major || ci_version.minor != base_version.minor) {
+    // the base version changed! reset our ci version to match
+    ci_version = base_version
+  } else {
+    // the base version hasn't changed: increment patch version
+    ci_version.patch += 1
+  }
+
+  write_ci_version(ci_version)
 }

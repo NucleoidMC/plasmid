@@ -26,6 +26,12 @@ public abstract class ClientConnectionMixin {
     @Shadow
     public abstract boolean isLocal();
 
+    /**
+     * Here we ensure that packets sent on the integrated server are serialized/deserialized. This is usually skipped
+     * for optimization purposes. In the case of faking items, however, we depend on the ability to hook and swap
+     * values as they are sent to the client. Unfortunately, a more "proper" solution would involve being much more
+     * invasive and introduce challenges relating to integrating with other mods.
+     */
     @ModifyVariable(method = "sendImmediately", at = @At("HEAD"), argsOnly = true, index = 1)
     private Packet<?> modify(Packet<?> packet) throws IOException {
         if (!isLocal() && side != NetworkSide.CLIENTBOUND) {

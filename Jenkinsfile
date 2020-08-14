@@ -4,7 +4,11 @@ node {
     }
 
     stage('build') {
-        sh './gradlew clean build publish'
+        sh './gradlew incrementCiVersion clean build'
+    }
+
+    stage('publish') {
+      sh './gradlew publish'
     }
 
     stage('archive') {

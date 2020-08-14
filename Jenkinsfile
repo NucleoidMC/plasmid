@@ -3,12 +3,12 @@ node {
         checkout scm
     }
 
-    stage('build') {
-        sh './gradlew incrementCiVersion clean build'
+    stage('incrementVersion') {
+        sh './gradlew incrementCiVersion'
     }
 
-    stage('publish') {
-      sh './gradlew publish'
+    stage('build') {
+        sh './gradlew clean build publish'
     }
 
     stage('archive') {

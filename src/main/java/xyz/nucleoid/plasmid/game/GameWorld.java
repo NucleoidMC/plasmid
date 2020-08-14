@@ -170,6 +170,7 @@ public final class GameWorld implements AutoCloseable {
 
     /**
      * Attempts to removes the given {@link ServerPlayerEntity} from this {@link GameWorld}.
+     * When a player is removed, they will be teleported back to their former location prior to joining
      *
      * <p>Implementation is left to this {@link GameWorld}'s {@link BubbleWorld} in {@link BubbleWorld#removePlayer(ServerPlayerEntity)}.
      *

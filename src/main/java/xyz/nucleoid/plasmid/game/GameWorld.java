@@ -8,6 +8,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.event.EventListeners;
 import xyz.nucleoid.plasmid.game.event.EventType;
 import xyz.nucleoid.plasmid.game.event.GameCloseListener;
@@ -26,7 +27,9 @@ import xyz.nucleoid.plasmid.util.Scheduler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -37,6 +40,8 @@ public final class GameWorld implements AutoCloseable {
     private final BubbleWorld bubble;
     private final ServerWorld world;
     private final ConfiguredGame<?> game;
+
+    private final List<AutoCloseable> resources = new ArrayList<>();
 
     private EventListeners listeners = new EventListeners();
     private GameRuleSet rules = GameRuleSet.empty();
@@ -104,6 +109,18 @@ public final class GameWorld implements AutoCloseable {
         this.invoker(GameCloseListener.EVENT).onClose();
         this.listeners = new EventListeners();
         this.rules = GameRuleSet.empty();
+    }
+
+    /**
+     * Adds an {@link AutoCloseable} resource to this {@link GameWorld} which will be closed upon game close
+     *
+     * @param resource the resource to add
+     * @param <T> the type of resource
+     * @return the added resource
+     */
+    public <T extends AutoCloseable> T addResource(T resource) {
+        this.resources.add(resource);
+        return resource;
     }
 
     public boolean addPlayer(ServerPlayerEntity player) {
@@ -183,6 +200,16 @@ public final class GameWorld implements AutoCloseable {
         }
 
         this.closed = true;
+
+        for (AutoCloseable resource : this.resources) {
+            try {
+                resource.close();
+            } catch (Exception e) {
+                Plasmid.LOGGER.warn("Failed to close resource on GameWorld", e);
+            }
+        }
+
+        this.resources.clear();
 
         Scheduler.INSTANCE.submit(server -> {
             this.bubble.kickPlayers();

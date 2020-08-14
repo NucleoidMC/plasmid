@@ -170,6 +170,7 @@ public final class GameWorld implements AutoCloseable {
 
     /**
      * Attempts to removes the given {@link ServerPlayerEntity} from this {@link GameWorld}.
+     * When a player is removed, they will be teleported back to their former location prior to joining
      *
      * <p>Implementation is left to this {@link GameWorld}'s {@link BubbleWorld} in {@link BubbleWorld#removePlayer(ServerPlayerEntity)}.
      *
@@ -238,7 +239,7 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Attempts to tick this {@link GameWorld} and any {@link GameTickListener#EVENT} listener attached to it.
      *
-     * <p>If this {@link GameWorld} is closed ({@link GameWorld#closed}), the tick will not execute.
+     * <p>If this {@link GameWorld} has been closed, the tick will not execute.
      */
     public void tick() {
         if (this.closed) {

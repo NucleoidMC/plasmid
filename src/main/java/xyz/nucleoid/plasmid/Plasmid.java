@@ -3,7 +3,9 @@ package xyz.nucleoid.plasmid;
 import com.google.common.reflect.Reflection;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
@@ -123,5 +125,18 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerTickEvents.START_SERVER_TICK.register(StagingBoundRenderer::onTick);
+
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            for (GameWorld gameWorld : GameWorld.getOpen()) {
+                gameWorld.close();
+            }
+        });
+
+        ServerWorldEvents.UNLOAD.register((server, world) -> {
+            GameWorld gameWorld = GameWorld.forWorld(world);
+            if (gameWorld != null) {
+                gameWorld.close();
+            }
+        });
     }
 }

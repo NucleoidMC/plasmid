@@ -238,7 +238,7 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Attempts to tick this {@link GameWorld} and any {@link GameTickListener#EVENT} listener attached to it.
      *
-     * <p>If this {@link GameWorld} is closed ({@link GameWorld#closed}), the tick will not execute.
+     * <p>If this {@link GameWorld} has been closed, the tick will not execute.
      */
     public void tick() {
         if (this.closed) {

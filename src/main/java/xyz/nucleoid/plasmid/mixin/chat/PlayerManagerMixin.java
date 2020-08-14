@@ -1,11 +1,12 @@
 package xyz.nucleoid.plasmid.mixin.chat;
 
 import net.minecraft.network.MessageType;
-import net.minecraft.scoreboard.AbstractTeam;
+import net.minecraft.scoreboard.Team;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -55,10 +56,11 @@ public abstract class PlayerManagerMixin {
     }
 
     private void sendTeamChat(Text message, ServerPlayerEntity sender) {
-        AbstractTeam team = sender.getScoreboardTeam();
+        Team team = (Team) sender.getScoreboardTeam();
         UUID senderUuid = sender.getUuid();
 
-        Text teamMessage = new LiteralText("[Team] ").formatted(team.getColor()).append(message);
+        Formatting color = team.getColor();
+        Text teamMessage = new LiteralText("[Team] ").formatted(color).append(message);
 
         for (ServerPlayerEntity player : this.getPlayerList()) {
             if (player == sender || player.getScoreboardTeam() == team) {

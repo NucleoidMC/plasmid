@@ -27,7 +27,9 @@
     "rule.ScreenHandlerMixin",
     "rule.ServerPlayerEntityMixin",
     "rule.ServerPlayerInteractionManagerMixin",
-    "rule.TntBlockMixin"
+    "rule.TntBlockMixin",
+    "chat.PlayerManagerMixin",
+    "chat.ServerPlayerEntityMixin"
   ],
   "client": [
     "fake.ClientConnectionMixin"

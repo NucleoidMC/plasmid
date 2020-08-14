@@ -7,34 +7,29 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 /**
- * Allows for Vanilla blocks/items to be faked for the client side
- *
- * @param <F> The type being faked to
+ * Represents an object that should be remapped to some vanilla "proxy" counterpart when being sent to clients
  */
-public interface Fake<F> {
-
+public interface Fake {
     /**
-     * The proxy to be sent to the client
-     *
-     * @return The proxy to be sent
+     * @return the proxy to be sent to the client
      */
-    F getFaking();
+    Object asProxy();
 
     /**
      * Resolves the proxy instance to be used to send the client
      *
      * @param entry Entry to send to the client
-     * @param <F>   Type of entry. Used for convenience
+     * @param <T>   Type of entry. Used for convenience
      * @return      The proxied entry to use, or the entry itself
      */
     @SuppressWarnings("unchecked")
-    static <F> F getProxy(F entry) {
+    static <T> T getProxy(T entry) {
         if (entry instanceof BlockState) {
             BlockState blockState = (BlockState) entry;
             Block block = blockState.getBlock();
 
             if (block instanceof FakeBlock) {
-                return (F) ((FakeBlock<?>) block).getFaking(blockState);
+                return (T) ((FakeBlock) block).asProxy(blockState);
             }
         }
 
@@ -43,21 +38,22 @@ public interface Fake<F> {
             Block block = fluidState.getBlockState().getBlock();
 
             if (block instanceof FakeBlock) {
-                return (F) ((FakeBlock<?>) block).getFaking(fluidState);
+                return (T) ((FakeBlock) block).asProxy(fluidState);
             }
         }
 
         if (entry instanceof ItemStack) {
-            ItemStack itemStack = (ItemStack) entry;
-            Item item = itemStack.getItem();
+            ItemStack stack = (ItemStack) entry;
+            Item item = stack.getItem();
 
             if (item instanceof FakeItem) {
-                return (F) ((FakeItem<?>) item).getFaking(itemStack);
+                return (T) ((FakeItem) item).asProxy(stack);
             }
         }
 
         if (entry instanceof Fake) {
-            return ((Fake<? extends F>) entry).getFaking();
+            Fake fake = (Fake) entry;
+            return (T) fake.asProxy();
         }
 
         return entry;

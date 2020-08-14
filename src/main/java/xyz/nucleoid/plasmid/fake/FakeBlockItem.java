@@ -1,12 +1,10 @@
 package xyz.nucleoid.plasmid.fake;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
-import xyz.nucleoid.plasmid.fake.Fake;
 
-public class FakeBlockItem extends BlockItem implements Fake<Item> {
+public class FakeBlockItem extends BlockItem implements Fake {
 
     private final Block clientSideBlock;
 
@@ -16,7 +14,7 @@ public class FakeBlockItem extends BlockItem implements Fake<Item> {
     }
 
     @Override
-    public Item getFaking() {
+    public Item asProxy() {
         return clientSideBlock.asItem();
     }
 }

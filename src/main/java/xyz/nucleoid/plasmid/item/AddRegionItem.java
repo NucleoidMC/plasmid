@@ -13,7 +13,7 @@ import xyz.nucleoid.plasmid.fake.FakeItem;
 import xyz.nucleoid.plasmid.game.map.template.trace.RegionTraceMode;
 import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
 
-public final class AddRegionItem extends Item implements FakeItem<Item> {
+public final class AddRegionItem extends Item implements FakeItem {
     public AddRegionItem(Item.Settings settings) {
         super(settings);
     }
@@ -59,7 +59,7 @@ public final class AddRegionItem extends Item implements FakeItem<Item> {
     }
 
     @Override
-    public Item getFaking() {
+    public Item asProxy() {
         return Items.STICK;
     }
 }

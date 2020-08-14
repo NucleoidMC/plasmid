@@ -5,25 +5,27 @@ import net.minecraft.block.BlockState;
 import net.minecraft.fluid.FluidState;
 
 /**
- * Specialisation for {@link Fake} for state support
- *
- * @param <F> The block type being faked
+ * Specialisation for {@link Fake} for blocks
  */
-public interface FakeBlock<F extends Block> extends Fake<F> {
+public interface FakeBlock extends Fake {
+    @Override
+    Block asProxy();
 
     /**
-     * The block state to use
+     * Maps a {@link BlockState} to its proxy counterpart to be sent to the client
      *
      * @param state The original block state
      * @return The block state to send to the client
      */
-    BlockState getFaking(BlockState state);
+    BlockState asProxy(BlockState state);
 
     /**
-     * The fluid state to use
+     * Maps a {@link FluidState} to its proxy counterpart to be sent to the client
      *
      * @param state The fluid block state
      * @return The fluid state to send to the client
      */
-    FluidState getFaking(FluidState state);
+    default FluidState asProxy(FluidState state) {
+        return this.asProxy(state.getBlockState()).getFluidState();
+    }
 }

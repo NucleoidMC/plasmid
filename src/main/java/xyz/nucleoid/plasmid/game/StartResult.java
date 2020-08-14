@@ -38,8 +38,6 @@ public final class StartResult {
     }
 
     /**
-     * Returns whether this {@link StartResult} is a success (no error).
-     *
      * @return whether this {@link StartResult} is a success (no error).
      */
     public boolean isOk() {
@@ -47,8 +45,6 @@ public final class StartResult {
     }
 
     /**
-     * Returns whether this {@link StartResult} contains an error.
-     *
      * @return whether this {@link StartResult} contains an error
      */
     public boolean hasError() {

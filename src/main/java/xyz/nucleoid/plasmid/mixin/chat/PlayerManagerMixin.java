@@ -4,6 +4,7 @@ import net.minecraft.network.MessageType;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Mixin;
@@ -57,9 +58,11 @@ public abstract class PlayerManagerMixin {
         AbstractTeam team = sender.getScoreboardTeam();
         UUID senderUuid = sender.getUuid();
 
+        Text teamMessage = new LiteralText("[Team] ").formatted(team.getColor()).append(message);
+
         for (ServerPlayerEntity player : this.getPlayerList()) {
             if (player == sender || player.getScoreboardTeam() == team) {
-                player.sendSystemMessage(message, senderUuid);
+                player.sendSystemMessage(teamMessage, senderUuid);
             }
         }
     }

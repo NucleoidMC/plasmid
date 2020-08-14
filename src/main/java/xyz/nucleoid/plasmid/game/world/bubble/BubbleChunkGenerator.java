@@ -15,7 +15,7 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.BuiltinBiomes;
 import net.minecraft.world.biome.SpawnSettings;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.biome.source.BiomeSource;
@@ -38,7 +38,6 @@ public final class BubbleChunkGenerator extends ChunkGenerator {
             .xmap(BubbleChunkGenerator::new, g -> g.biomeRegistry)
             .stable().codec();
 
-    private static final BiomeSource VOID_BIOMES = new FixedBiomeSource(Biomes.THE_VOID);
     private static final StructuresConfig VOID_STRUCTURES = new StructuresConfig(Optional.empty(), Collections.emptyMap());
 
     private final Registry<Biome> biomeRegistry;
@@ -46,7 +45,7 @@ public final class BubbleChunkGenerator extends ChunkGenerator {
     private ChunkGenerator generator;
 
     public BubbleChunkGenerator(Registry<Biome> biomeRegistry) {
-        super(VOID_BIOMES, VOID_STRUCTURES);
+        super(new FixedBiomeSource(biomeRegistry.get(BuiltinBiomes.THE_VOID)), VOID_STRUCTURES);
         this.biomeRegistry = biomeRegistry;
 
         this.clearGenerator();

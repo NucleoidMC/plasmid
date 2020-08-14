@@ -28,4 +28,22 @@ public interface FakeBlock extends Fake {
     default FluidState asProxy(FluidState state) {
         return this.asProxy(state.getBlockState()).getFluidState();
     }
+
+    static BlockState getProxy(BlockState state) {
+        Block block = state.getBlock();
+        if (block instanceof FakeBlock) {
+            return ((FakeBlock) block).asProxy(state);
+        }
+
+        return state;
+    }
+
+    static FluidState getProxy(FluidState state) {
+        Block block = state.getBlockState().getBlock();
+        if (block instanceof FakeBlock) {
+            return ((FakeBlock) block).asProxy(state);
+        }
+
+        return state;
+    }
 }

@@ -10,7 +10,7 @@
     "bubble.ServerWorldMixin",
     "bubble.ThreadedAnvilChunkStorageMixin",
     "custom.EntityMixin",
-    "custom.ServerPlayNetworkHandlerMixin",
+    "event.ServerPlayNetworkHandlerMixin",
     "event.ExplosionMixin",
     "event.LivingEntityMixin",
     "event.ServerPlayerEntityMixin",

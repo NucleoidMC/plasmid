@@ -19,4 +19,13 @@ public interface FakeItem extends Fake {
     default ItemStack asProxy(ItemStack stack) {
         return stack;
     }
+
+    static ItemStack getProxy(ItemStack stack) {
+        Item item = stack.getItem();
+        if (item instanceof FakeItem) {
+            return ((FakeItem) item).asProxy(stack);
+        }
+
+        return stack;
+    }
 }

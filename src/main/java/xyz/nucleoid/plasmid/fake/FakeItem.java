@@ -4,10 +4,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 /**
- * Specialisation for {@link Fake} for items
+ * Represents an item that should be remapped to some vanilla "proxy" counterpart when being sent to clients
  */
-public interface FakeItem extends Fake {
-    @Override
+public interface FakeItem {
     Item asProxy();
 
     /**

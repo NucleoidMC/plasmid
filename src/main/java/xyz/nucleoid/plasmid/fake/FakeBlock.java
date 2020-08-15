@@ -5,10 +5,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.fluid.FluidState;
 
 /**
- * Specialisation for {@link Fake} for blocks
+ * Represents a block that should be remapped to some vanilla "proxy" counterpart when being sent to clients
  */
-public interface FakeBlock extends Fake {
-    @Override
+public interface FakeBlock {
     Block asProxy();
 
     /**

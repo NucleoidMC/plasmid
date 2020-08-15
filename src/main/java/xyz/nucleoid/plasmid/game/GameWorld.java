@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 /**
  * Represents a unique world with a {@link Game} attached to it.
  *
- * <p>Each world has a {@link ChunkGenerator} which is invoked as chunks are requested.
+ * <p>Each world has a {@link net.minecraft.world.gen.chunk.ChunkGenerator} which is invoked as chunks are requested.
  * It is important to note that not all chunks will be loaded on start, and the game logic must take care to handle this.
  * Players can only be added to this game world through {@link GameWorld#addPlayer} or {@link GameWorld#offerPlayer}.
  */

@@ -107,7 +107,7 @@ def get_base_version() {
   ]
 }
 
-def read_ci_version() {
+static def read_ci_version() {
   def file = new File("ci_version.json")
 
   if (file.exists()) {
@@ -115,7 +115,7 @@ def read_ci_version() {
     return json
   }
 
-  return get_base_version()
+  return null
 }
 
 static def write_ci_version(version) {
@@ -127,7 +127,7 @@ task incrementCiVersion {
   def base_version = get_base_version()
   def ci_version = read_ci_version()
 
-  if (base_version.major != ci_version.major || base_version.minor != ci_version.minor) {
+  if (!ci_version || ci_version.major != base_version.major || ci_version.minor != base_version.minor) {
     // the base version changed! reset our ci version to match
     ci_version = base_version
   } else {

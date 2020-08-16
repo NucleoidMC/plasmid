@@ -7,8 +7,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public final class FloatingText {
     private final ArmorStandEntity entity;

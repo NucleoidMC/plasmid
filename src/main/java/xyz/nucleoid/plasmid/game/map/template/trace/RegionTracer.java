@@ -1,8 +1,7 @@
 package xyz.nucleoid.plasmid.game.map.template.trace;
 
 import net.minecraft.util.math.BlockPos;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public interface RegionTracer {
     void startTracing(BlockPos origin);

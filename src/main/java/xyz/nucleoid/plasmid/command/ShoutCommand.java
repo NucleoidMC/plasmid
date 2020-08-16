@@ -19,10 +19,10 @@ public class ShoutCommand {
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-            literal("shout")
-                .then(
-                    argument("message", StringArgumentType.greedyString()).executes(ShoutCommand::sendMessage)
-                )
+                literal("shout")
+                        .then(
+                                argument("message", StringArgumentType.greedyString()).executes(ShoutCommand::sendMessage)
+                        )
         );
     }
     // @formatter:on

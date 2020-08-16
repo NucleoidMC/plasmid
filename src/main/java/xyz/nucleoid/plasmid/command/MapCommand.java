@@ -19,12 +19,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplateSerializer;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplateViewer;
-import xyz.nucleoid.plasmid.game.map.template.StagingMapManager;
-import xyz.nucleoid.plasmid.game.map.template.StagingMapTemplate;
-import xyz.nucleoid.plasmid.game.map.template.TemplateRegion;
+import xyz.nucleoid.plasmid.game.map.template.*;
 import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
 import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
 import xyz.nucleoid.plasmid.util.BlockBounds;
@@ -38,9 +33,7 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public final class MapCommand {
-    public static final DynamicCommandExceptionType MAP_NOT_FOUND = new DynamicCommandExceptionType(arg -> {
-        return new TranslatableText("Map with id '%s' was not found!", arg);
-    });
+    public static final DynamicCommandExceptionType MAP_NOT_FOUND = new DynamicCommandExceptionType(arg -> new TranslatableText("Map with id '%s' was not found!", arg));
 
     public static final SimpleCommandExceptionType MAP_NOT_FOUND_AT = new SimpleCommandExceptionType(
             new LiteralText("No map found here")
@@ -53,38 +46,38 @@ public final class MapCommand {
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-            literal("map").requires(source -> source.hasPermissionLevel(4))
-                .then(literal("stage")
-                    .then(argument("identifier", IdentifierArgumentType.identifier()).suggests(stagingSuggestions())
-                    .then(argument("min", BlockPosArgumentType.blockPos())
-                    .then(argument("max", BlockPosArgumentType.blockPos())
-                    .executes(MapCommand::stageMap)
-                ))))
-                .then(literal("enter")
-                    .then(argument("identifier", IdentifierArgumentType.identifier()).suggests(stagingSuggestions())
-                    .executes(MapCommand::enterMap)
-                ))
-                .then(literal("exit").executes(MapCommand::exitMap))
-                .then(literal("compile")
-                    .then(argument("identifier", IdentifierArgumentType.identifier()).suggests(stagingSuggestions())
-                    .executes(MapCommand::compileMap)
-                ))
-                .then(literal("region")
-                    .then(literal("add")
-                        .then(argument("marker", StringArgumentType.word())
-                        .then(argument("min", BlockPosArgumentType.blockPos())
-                        .then(argument("max", BlockPosArgumentType.blockPos())
-                        .executes(MapCommand::addRegion)
-                    ))))
-                    .then(literal("remove")
-                        .then(literal("here")
-                        .executes(MapCommand::removeRegionHere)
-                    ))
-                    .then(literal("commit")
-                        .then(argument("marker", StringArgumentType.word())
-                        .executes(MapCommand::commitRegion)
-                    ))
-                )
+                literal("map").requires(source -> source.hasPermissionLevel(4))
+                        .then(literal("stage")
+                                .then(argument("identifier", IdentifierArgumentType.identifier()).suggests(stagingSuggestions())
+                                        .then(argument("min", BlockPosArgumentType.blockPos())
+                                                .then(argument("max", BlockPosArgumentType.blockPos())
+                                                        .executes(MapCommand::stageMap)
+                                                ))))
+                        .then(literal("enter")
+                                .then(argument("identifier", IdentifierArgumentType.identifier()).suggests(stagingSuggestions())
+                                        .executes(MapCommand::enterMap)
+                                ))
+                        .then(literal("exit").executes(MapCommand::exitMap))
+                        .then(literal("compile")
+                                .then(argument("identifier", IdentifierArgumentType.identifier()).suggests(stagingSuggestions())
+                                        .executes(MapCommand::compileMap)
+                                ))
+                        .then(literal("region")
+                                .then(literal("add")
+                                        .then(argument("marker", StringArgumentType.word())
+                                                .then(argument("min", BlockPosArgumentType.blockPos())
+                                                        .then(argument("max", BlockPosArgumentType.blockPos())
+                                                                .executes(MapCommand::addRegion)
+                                                        ))))
+                                .then(literal("remove")
+                                        .then(literal("here")
+                                                .executes(MapCommand::removeRegionHere)
+                                        ))
+                                .then(literal("commit")
+                                        .then(argument("marker", StringArgumentType.word())
+                                                .executes(MapCommand::commitRegion)
+                                        ))
+                        )
         );
     }
     // @formatter:on

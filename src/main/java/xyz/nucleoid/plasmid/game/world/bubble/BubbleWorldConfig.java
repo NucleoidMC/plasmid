@@ -3,8 +3,7 @@ package xyz.nucleoid.plasmid.game.world.bubble;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public final class BubbleWorldConfig {
     private ChunkGenerator generator = null;

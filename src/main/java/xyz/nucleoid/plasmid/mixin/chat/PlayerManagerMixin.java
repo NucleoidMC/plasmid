@@ -7,6 +7,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,15 +19,17 @@ import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
 @Mixin(PlayerManager.class)
 public abstract class PlayerManagerMixin {
-    @Shadow @Nullable public abstract ServerPlayerEntity getPlayer(UUID uuid);
+    @Shadow
+    @Nullable
+    public abstract ServerPlayerEntity getPlayer(UUID uuid);
 
-    @Shadow public abstract List<ServerPlayerEntity> getPlayerList();
+    @Shadow
+    public abstract List<ServerPlayerEntity> getPlayerList();
 
     @Inject(method = "broadcastChatMessage", at = @At("HEAD"), cancellable = true)
     public void broadcastChatMessage(Text message, MessageType type, UUID senderUuid, CallbackInfo ci) {

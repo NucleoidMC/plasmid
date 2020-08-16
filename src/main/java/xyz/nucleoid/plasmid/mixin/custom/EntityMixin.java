@@ -1,20 +1,19 @@
 package xyz.nucleoid.plasmid.mixin.custom;
 
-import xyz.nucleoid.plasmid.entity.CustomEntity;
-import xyz.nucleoid.plasmid.entity.CustomizableEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import javax.annotation.Nullable;
+import xyz.nucleoid.plasmid.entity.CustomEntity;
+import xyz.nucleoid.plasmid.entity.CustomizableEntity;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements CustomizableEntity {

@@ -17,9 +17,9 @@ public class ChatCommand {
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-            literal("chat")
-                .then(literal("all").executes(ChatCommand::switchToAll))
-                .then(literal("team").executes(ChatCommand::switchToTeam))
+                literal("chat")
+                        .then(literal("all").executes(ChatCommand::switchToAll))
+                        .then(literal("team").executes(ChatCommand::switchToTeam))
         );
     }
     // @formatter:on

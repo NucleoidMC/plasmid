@@ -4,8 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 public final class EventListeners {
     private final Multimap<EventType<?>, Object> listeners = HashMultimap.create();
@@ -22,7 +21,7 @@ public final class EventListeners {
     }
 
     @SuppressWarnings("unchecked")
-    @Nonnull
+    @NotNull
     public <T> T invoker(EventType<T> event) {
         return (T) this.invokers.computeIfAbsent(event, EventType::createEmpty);
     }

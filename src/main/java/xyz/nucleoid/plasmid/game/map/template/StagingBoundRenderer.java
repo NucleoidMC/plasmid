@@ -1,9 +1,5 @@
 package xyz.nucleoid.plasmid.game.map.template;
 
-import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTraceMode;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
-import xyz.nucleoid.plasmid.util.BlockBounds;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.server.MinecraftServer;
@@ -12,6 +8,10 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
+import xyz.nucleoid.plasmid.game.map.template.trace.RegionTraceMode;
+import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
+import xyz.nucleoid.plasmid.util.BlockBounds;
 
 public final class StagingBoundRenderer {
     public static void onTick(MinecraftServer server) {
@@ -137,7 +137,7 @@ public final class StagingBoundRenderer {
         int maxY = max.getY();
         int maxZ = max.getZ();
 
-        return new Edge[] {
+        return new Edge[]{
                 // edges
                 new Edge(minX, minY, minZ, minX, minY, maxZ),
                 new Edge(minX, maxY, minZ, minX, maxY, maxZ),

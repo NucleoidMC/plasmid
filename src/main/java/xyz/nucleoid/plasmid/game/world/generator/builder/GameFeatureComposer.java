@@ -5,7 +5,8 @@ import net.minecraft.world.gen.StructureAccessor;
 
 public interface GameFeatureComposer {
     static GameFeatureComposer none() {
-        return (region, structures) -> {};
+        return (region, structures) -> {
+        };
     }
 
     void addFeatures(ChunkRegion region, StructureAccessor structures);

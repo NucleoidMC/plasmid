@@ -15,7 +15,7 @@ import java.util.List;
  * <li>{@link ActionResult#SUCCESS} cancels further processing and drops the current loot.
  * <li>{@link ActionResult#FAIL} cancels further processing and drops no loot.
  * <li>{@link ActionResult#PASS} moves on to the next listener.</ul>
- *
+ * <p>
  * Listeners can modify the list of {@link ItemStack}s returned to them, regardless of what their result is.
  * If all listeners return {@link ActionResult#PASS}, the current loot is dropped.
  */

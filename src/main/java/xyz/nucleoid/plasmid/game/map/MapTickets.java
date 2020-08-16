@@ -1,9 +1,9 @@
 package xyz.nucleoid.plasmid.game.map;
 
-import xyz.nucleoid.plasmid.util.BlockBounds;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
+import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.stream.Stream;
 
@@ -36,9 +36,7 @@ public final class MapTickets {
 
     public void release(ServerWorld world) {
         ServerChunkManager chunkManager = world.getChunkManager();
-        this.stream().forEach(ticketPos -> {
-            chunkManager.setChunkForced(ticketPos, false);
-        });
+        this.stream().forEach(ticketPos -> chunkManager.setChunkForced(ticketPos, false));
     }
 
     private Stream<ChunkPos> stream() {

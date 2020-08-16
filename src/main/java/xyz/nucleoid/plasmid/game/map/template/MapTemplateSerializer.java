@@ -59,7 +59,7 @@ public final class MapTemplateSerializer {
         return CompletableFuture.supplyAsync(() -> {
             Identifier path = getResourcePathFor(identifier);
 
-            try (Resource resource = this.resourceManager.getResource(path);) {
+            try (Resource resource = this.resourceManager.getResource(path)) {
                 MapTemplate template = MapTemplate.createEmpty();
                 this.load(template, NbtIo.readCompressed(resource.getInputStream()));
                 return template;
@@ -138,7 +138,7 @@ public final class MapTemplateSerializer {
 
             CompoundTag chunkRoot = new CompoundTag();
 
-            chunkRoot.putIntArray("pos", new int[] { pos.getX(), pos.getY(), pos.getZ() });
+            chunkRoot.putIntArray("pos", new int[]{pos.getX(), pos.getY(), pos.getZ()});
             chunk.serialize(chunkRoot);
 
             chunkList.add(chunkRoot);

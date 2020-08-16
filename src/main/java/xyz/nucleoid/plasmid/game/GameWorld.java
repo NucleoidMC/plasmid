@@ -8,6 +8,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
@@ -17,8 +19,6 @@ import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorld;
 import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorldConfig;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -50,11 +50,11 @@ public final class GameWorld implements AutoCloseable {
      *
      * <p>If a {@link BubbleWorld} could not be opened, a {@link GameOpenException} is thrown.
      *
-     * @throws GameOpenException if a {@link BubbleWorld} could not be opened
      * @param server {@link MinecraftServer} to open a {@link GameWorld} in
-     * @param game initial game to open this GameWorld with
+     * @param game   initial game to open this GameWorld with
      * @param config {@link BubbleWorldConfig} to use to construct a {@link GameWorld}
      * @return a {@link GameWorld} if one was opened
+     * @throws GameOpenException if a {@link BubbleWorld} could not be opened
      */
     public static GameWorld open(MinecraftServer server, ConfiguredGame<?> game, BubbleWorldConfig config) {
         BubbleWorld bubble = BubbleWorld.tryOpen(server, config);
@@ -149,7 +149,7 @@ public final class GameWorld implements AutoCloseable {
      * Adds an {@link AutoCloseable} resource to this {@link GameWorld} which will be closed upon game close
      *
      * @param resource the resource to add
-     * @param <T> the type of resource
+     * @param <T>      the type of resource
      * @return the added resource
      */
     public <T extends AutoCloseable> T addResource(T resource) {
@@ -220,7 +220,7 @@ public final class GameWorld implements AutoCloseable {
         return this.bubble.getWorld().getEntity(entity.getUuid()) != null;
     }
 
-    @Nonnull
+    @NotNull
     public <T> T invoker(EventType<T> event) {
         return this.game.getListeners().invoker(event);
     }
@@ -265,7 +265,7 @@ public final class GameWorld implements AutoCloseable {
      * Attempts to add a {@link ServerPlayerEntity} to this {@link GameWorld} by invoking any {@link OfferPlayerListener#EVENT} listeners attached to it.
      *
      * <p>If the event succeeds, {@link JoinResult#ok()} is returned. If the player could not be added to this game world,
-     *      a {@link JoinResult} error is returned. If any listeners error, its response is returned and the player is not added to this game world.
+     * a {@link JoinResult} error is returned. If any listeners error, its response is returned and the player is not added to this game world.
      *
      * @param player the {@link ServerPlayerEntity} trying to join this {@link GameWorld}
      * @return {@link JoinResult} describing the results of the given {@link ServerPlayerEntity} trying to join

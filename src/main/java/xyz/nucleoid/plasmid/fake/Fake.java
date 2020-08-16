@@ -9,7 +9,7 @@ public final class Fake {
      * Resolves the proxy instance to be used to send the client
      *
      * @param entry Entry to send to the client
-     * @param <T> Type of entry. Used for convenience
+     * @param <T>   Type of entry. Used for convenience
      * @return The proxied entry to use, or the entry itself
      */
     @SuppressWarnings("unchecked")

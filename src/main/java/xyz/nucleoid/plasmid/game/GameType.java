@@ -2,9 +2,9 @@ package xyz.nucleoid.plasmid.game;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 
 public final class GameType<C> {

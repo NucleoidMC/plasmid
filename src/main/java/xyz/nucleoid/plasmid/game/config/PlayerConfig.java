@@ -4,10 +4,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public final class PlayerConfig {
-    public static final Codec<PlayerConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.intRange(1, Integer.MAX_VALUE).fieldOf("min").forGetter(PlayerConfig::getMinPlayers),
-            Codec.intRange(1, Integer.MAX_VALUE).fieldOf("max").forGetter(PlayerConfig::getMaxPlayers)
-    ).apply(instance, PlayerConfig::new));
+    public static final Codec<PlayerConfig> CODEC = RecordCodecBuilder.create(instance -> {
+        return instance.group(
+                Codec.intRange(1, Integer.MAX_VALUE).fieldOf("min").forGetter(PlayerConfig::getMinPlayers),
+                Codec.intRange(1, Integer.MAX_VALUE).fieldOf("max").forGetter(PlayerConfig::getMaxPlayers)
+        ).apply(instance, PlayerConfig::new);
+    });
 
     private final int minPlayers;
     private final int maxPlayers;

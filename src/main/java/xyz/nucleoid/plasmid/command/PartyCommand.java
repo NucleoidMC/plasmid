@@ -10,7 +10,12 @@ import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.*;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.party.Party;
 import xyz.nucleoid.plasmid.party.PartyError;
@@ -27,25 +32,25 @@ public final class PartyCommand {
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                literal("party")
-                        .then(literal("invite")
-                                .then(argument("player", EntityArgumentType.player())
-                                        .executes(PartyCommand::invitePlayer)
-                                ))
-                        .then(literal("kick")
-                                .then(argument("player", GameProfileArgumentType.gameProfile())
-                                        .executes(PartyCommand::kickPlayer)
-                                ))
-                        .then(literal("transfer")
-                                .then(argument("player", EntityArgumentType.player())
-                                        .executes(PartyCommand::transferToPlayer)
-                                ))
-                        .then(literal("accept")
-                                .then(argument("player", EntityArgumentType.player())
-                                        .executes(PartyCommand::acceptInvite)
-                                ))
-                        .then(literal("leave").executes(PartyCommand::leave))
-                        .then(literal("disband").executes(PartyCommand::disband))
+            literal("party")
+                .then(literal("invite")
+                    .then(argument("player", EntityArgumentType.player())
+                    .executes(PartyCommand::invitePlayer)
+                ))
+                .then(literal("kick")
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
+                    .executes(PartyCommand::kickPlayer)
+                ))
+                .then(literal("transfer")
+                    .then(argument("player", EntityArgumentType.player())
+                    .executes(PartyCommand::transferToPlayer)
+                ))
+                .then(literal("accept")
+                    .then(argument("player", EntityArgumentType.player())
+                    .executes(PartyCommand::acceptInvite)
+                ))
+                .then(literal("leave").executes(PartyCommand::leave))
+                .then(literal("disband").executes(PartyCommand::disband))
         );
     }
     // @formatter:on
@@ -56,20 +61,13 @@ public final class PartyCommand {
 
     private static Text displayError(PartyError error, String player) {
         switch (error) {
-            case DOES_NOT_EXIST:
-                return new LiteralText("You do not control any party!");
-            case ALREADY_INVITED:
-                return new LiteralText(player + " is already invited to this party!");
-            case ALREADY_IN_PARTY:
-                return new LiteralText("You are already in this party!");
-            case CANNOT_REMOVE_SELF:
-                return new LiteralText("Cannot remove yourself from the party!");
-            case NOT_IN_PARTY:
-                return new LiteralText(player + " is not in this party!");
-            case NOT_INVITED:
-                return new LiteralText("You are not invited to this party!");
-            default:
-                throw new UnsupportedOperationException();
+            case DOES_NOT_EXIST: return new LiteralText("You do not control any party!");
+            case ALREADY_INVITED: return new LiteralText(player + " is already invited to this party!");
+            case ALREADY_IN_PARTY: return new LiteralText("You are already in this party!");
+            case CANNOT_REMOVE_SELF: return new LiteralText("Cannot remove yourself from the party!");
+            case NOT_IN_PARTY: return new LiteralText(player + " is not in this party!");
+            case NOT_INVITED: return new LiteralText("You are not invited to this party!");
+            default: throw new UnsupportedOperationException();
         }
     }
 
@@ -131,7 +129,9 @@ public final class PartyCommand {
                 MutableText message = new LiteralText(profile.getName() + " has been kicked from the party");
                 party.broadcastMessage(server, message.formatted(Formatting.GOLD));
 
-                PlayerRef.of(profile).ifOnline(server, player -> player.sendMessage(new LiteralText("You have been kicked from the party").formatted(Formatting.RED), false));
+                PlayerRef.of(profile).ifOnline(server, player -> {
+                    player.sendMessage(new LiteralText("You have been kicked from the party").formatted(Formatting.RED), false);
+                });
             } else {
                 PartyError error = result.getError();
                 source.sendError(displayError(error, profile.getName()));

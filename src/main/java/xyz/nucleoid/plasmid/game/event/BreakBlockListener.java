@@ -12,7 +12,7 @@ import net.minecraft.util.math.BlockPos;
  * <li>{@link ActionResult#SUCCESS} cancels further processing and allows the break.
  * <li>{@link ActionResult#FAIL} cancels further processing and cancels the break.
  * <li>{@link ActionResult#PASS} moves on to the next listener.</ul>
- * <p>
+ *
  * If all listeners return {@link ActionResult#PASS}, the break succeeds.
  */
 public interface BreakBlockListener {

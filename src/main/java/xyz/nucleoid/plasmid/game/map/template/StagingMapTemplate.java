@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game.map.template;
 
 import net.fabricmc.fabric.api.util.NbtType;
+import xyz.nucleoid.plasmid.util.BlockBounds;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.CompoundTag;
@@ -8,7 +9,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.ArrayList;
 import java.util.Collection;

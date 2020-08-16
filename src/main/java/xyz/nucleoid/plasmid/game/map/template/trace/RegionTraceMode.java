@@ -6,7 +6,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 public enum RegionTraceMode {
     OFFSET(new LiteralText("offset mode")),

@@ -1,5 +1,7 @@
 package xyz.nucleoid.plasmid.game.world.generator.builder;
 
+import xyz.nucleoid.plasmid.game.world.view.HeightmapColumnSample;
+import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
 import net.minecraft.block.Blocks;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.ChunkRegion;
@@ -7,8 +9,6 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.StructureAccessor;
-import xyz.nucleoid.plasmid.game.world.view.HeightmapColumnSample;
-import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
 
 public interface GameSurfaceComposer {
     static GameSurfaceComposer none() {

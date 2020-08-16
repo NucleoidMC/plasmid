@@ -7,7 +7,8 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 public final class VoidBlockView implements BlockView {
     public static final VoidBlockView INSTANCE = new VoidBlockView();

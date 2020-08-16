@@ -2,8 +2,9 @@ package xyz.nucleoid.plasmid.party;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.PlayerRef;
+
+import javax.annotation.Nullable;
 
 public final class PartyManager {
     public static final PartyManager INSTANCE = new PartyManager();

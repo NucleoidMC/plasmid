@@ -2,14 +2,14 @@ package xyz.nucleoid.plasmid.game.player;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import xyz.nucleoid.plasmid.util.ItemStackBuilder;
+import xyz.nucleoid.plasmid.util.ItemUtil;
 import net.minecraft.item.FireworkItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.MathHelper;
-import xyz.nucleoid.plasmid.util.ItemStackBuilder;
-import xyz.nucleoid.plasmid.util.ItemUtil;
 
 public final class GameTeam {
     private static final Codec<DyeColor> COLOR_CODEC = StringIdentifiable.createCodec(
@@ -17,11 +17,13 @@ public final class GameTeam {
             key -> DyeColor.byName(key, DyeColor.WHITE)
     );
 
-    public static final Codec<GameTeam> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.STRING.fieldOf("key").forGetter(GameTeam::getKey),
-            Codec.STRING.fieldOf("display").forGetter(GameTeam::getDisplay),
-            COLOR_CODEC.fieldOf("color").forGetter(GameTeam::getDye)
-    ).apply(instance, GameTeam::new));
+    public static final Codec<GameTeam> CODEC = RecordCodecBuilder.create(instance -> {
+        return instance.group(
+                Codec.STRING.fieldOf("key").forGetter(GameTeam::getKey),
+                Codec.STRING.fieldOf("display").forGetter(GameTeam::getDisplay),
+                COLOR_CODEC.fieldOf("color").forGetter(GameTeam::getDye)
+        ).apply(instance, GameTeam::new);
+    });
 
     private final String display;
     private final String key;
@@ -91,40 +93,23 @@ public final class GameTeam {
 
     private static Formatting formatByDye(DyeColor dye) {
         switch (dye) {
-            case WHITE:
-                return Formatting.WHITE;
-            case ORANGE:
-                return Formatting.GOLD;
-            case MAGENTA:
-                return Formatting.LIGHT_PURPLE;
-            case LIGHT_BLUE:
-                return Formatting.AQUA;
-            case YELLOW:
-                return Formatting.YELLOW;
-            case LIME:
-                return Formatting.GREEN;
-            case PINK:
-                return Formatting.LIGHT_PURPLE;
-            case GRAY:
-                return Formatting.DARK_GRAY;
-            case LIGHT_GRAY:
-                return Formatting.GRAY;
-            case CYAN:
-                return Formatting.DARK_AQUA;
-            case PURPLE:
-                return Formatting.DARK_PURPLE;
-            case BLUE:
-                return Formatting.BLUE;
-            case BROWN:
-                return Formatting.DARK_RED;
-            case GREEN:
-                return Formatting.DARK_GREEN;
-            case RED:
-                return Formatting.RED;
-            case BLACK:
-                return Formatting.BLACK;
-            default:
-                return Formatting.RESET;
+            case WHITE: return Formatting.WHITE;
+            case ORANGE: return Formatting.GOLD;
+            case MAGENTA: return Formatting.LIGHT_PURPLE;
+            case LIGHT_BLUE: return Formatting.AQUA;
+            case YELLOW: return Formatting.YELLOW;
+            case LIME: return Formatting.GREEN;
+            case PINK: return Formatting.LIGHT_PURPLE;
+            case GRAY: return Formatting.DARK_GRAY;
+            case LIGHT_GRAY: return Formatting.GRAY;
+            case CYAN: return Formatting.DARK_AQUA;
+            case PURPLE: return Formatting.DARK_PURPLE;
+            case BLUE: return Formatting.BLUE;
+            case BROWN: return Formatting.DARK_RED;
+            case GREEN: return Formatting.DARK_GREEN;
+            case RED: return Formatting.RED;
+            case BLACK: return Formatting.BLACK;
+            default: return Formatting.RESET;
         }
     }
 }

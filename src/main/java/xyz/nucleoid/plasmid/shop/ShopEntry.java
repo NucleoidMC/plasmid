@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.shop;
 
+import xyz.nucleoid.plasmid.util.ItemStackBuilder;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -11,7 +12,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import xyz.nucleoid.plasmid.util.ItemStackBuilder;
 
 import java.util.function.Consumer;
 
@@ -39,7 +39,9 @@ public final class ShopEntry {
         Text name = icon.getName().shallowCopy().formatted(Formatting.BOLD);
         icon.setCustomName(count.append(name));
 
-        return new ShopEntry(stack).onBuy(player -> player.inventory.offerOrDrop(player.world, stack));
+        return new ShopEntry(stack).onBuy(player -> {
+            player.inventory.offerOrDrop(player.world, stack);
+        });
     }
 
     public ShopEntry withCost(Cost cost) {

@@ -16,7 +16,7 @@ public final class ItemUtil {
         ItemStack star = new ItemStack(Items.FIREWORK_STAR);
         CompoundTag explosion = star.getOrCreateSubTag("Explosion");
 
-        explosion.putIntArray("Colors", new int[]{color});
+        explosion.putIntArray("Colors", new int[] { color });
         explosion.putByte("Type", (byte) type.getId());
 
         CompoundTag fireworks = rocket.getOrCreateSubTag("Fireworks");

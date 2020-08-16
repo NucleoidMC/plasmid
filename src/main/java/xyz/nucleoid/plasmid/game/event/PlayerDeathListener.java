@@ -12,7 +12,7 @@ import net.minecraft.util.ActionResult;
  * <li>{@link ActionResult#SUCCESS} cancels further processing and kills the player.
  * <li>{@link ActionResult#FAIL} cancels further processing and does not kill the player.
  * <li>{@link ActionResult#PASS} moves on to the next listener.</ul>
- * <p>
+ *
  * If all listeners return {@link ActionResult#PASS}, the player is killed.
  */
 public interface PlayerDeathListener {
@@ -20,7 +20,7 @@ public interface PlayerDeathListener {
         for (PlayerDeathListener listener : listeners) {
             ActionResult result = listener.onDeath(player, source);
 
-            if (result != ActionResult.PASS) {
+            if(result != ActionResult.PASS) {
                 return result;
             }
         }

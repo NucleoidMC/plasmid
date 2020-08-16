@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.game.map.template.trace;
 
-import net.minecraft.util.math.BlockPos;
 import xyz.nucleoid.plasmid.util.BlockBounds;
+import net.minecraft.util.math.BlockPos;
 
 public class PartialRegion {
     private final BlockPos origin;

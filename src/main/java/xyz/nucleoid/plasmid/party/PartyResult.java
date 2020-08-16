@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.party;
 
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 public final class PartyResult {
     private final Party party;

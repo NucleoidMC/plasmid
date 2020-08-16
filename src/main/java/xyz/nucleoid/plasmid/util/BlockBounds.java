@@ -5,7 +5,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 public final class BlockBounds {
     public static final BlockBounds EMPTY = BlockBounds.of(BlockPos.ORIGIN);
@@ -97,8 +98,8 @@ public final class BlockBounds {
     }
 
     public CompoundTag serialize(CompoundTag root) {
-        root.putIntArray("min", new int[]{this.min.getX(), this.min.getY(), this.min.getZ()});
-        root.putIntArray("max", new int[]{this.max.getX(), this.max.getY(), this.max.getZ()});
+        root.putIntArray("min", new int[] { this.min.getX(), this.min.getY(), this.min.getZ() });
+        root.putIntArray("max", new int[] { this.max.getX(), this.max.getY(), this.max.getZ() });
         return root;
     }
 

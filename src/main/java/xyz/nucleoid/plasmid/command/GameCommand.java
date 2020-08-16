@@ -14,7 +14,13 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.*;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -33,7 +39,9 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public final class GameCommand {
-    public static final DynamicCommandExceptionType GAME_NOT_FOUND = new DynamicCommandExceptionType(arg -> new TranslatableText("Game config with id '%s' was not found!", arg));
+    public static final DynamicCommandExceptionType GAME_NOT_FOUND = new DynamicCommandExceptionType(arg -> {
+        return new TranslatableText("Game config with id '%s' was not found!", arg);
+    });
 
     public static final SimpleCommandExceptionType NO_GAME_OPEN = new SimpleCommandExceptionType(
             new LiteralText("No games are open!")
@@ -46,22 +54,22 @@ public final class GameCommand {
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                literal("game")
-                        .then(literal("open")
-                                .requires(source -> source.hasPermissionLevel(2))
-                                .then(argument("game_type", IdentifierArgumentType.identifier()).suggests(gameSuggestions())
-                                        .executes(GameCommand::openGame)
-                                ))
-                        .then(literal("start")
-                                .requires(source -> source.hasPermissionLevel(2))
-                                .executes(GameCommand::startGame)
-                        )
-                        .then(literal("stop")
-                                .requires(source -> source.hasPermissionLevel(2))
-                                .executes(GameCommand::stopGame)
-                        )
-                        .then(literal("join").executes(GameCommand::joinGame))
-                        .then(literal("list").executes(GameCommand::listGames))
+            literal("game")
+                .then(literal("open")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(argument("game_type", IdentifierArgumentType.identifier()).suggests(gameSuggestions())
+                    .executes(GameCommand::openGame)
+                ))
+                .then(literal("start")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .executes(GameCommand::startGame)
+                )
+                .then(literal("stop")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .executes(GameCommand::stopGame)
+                )
+                .then(literal("join").executes(GameCommand::joinGame))
+                .then(literal("list").executes(GameCommand::listGames))
         );
     }
     // @formatter:on
@@ -234,9 +242,11 @@ public final class GameCommand {
     }
 
     private static SuggestionProvider<ServerCommandSource> gameSuggestions() {
-        return (ctx, builder) -> CommandSource.suggestMatching(
-                GameConfigs.getKeys().stream().map(Identifier::toString),
-                builder
-        );
+        return (ctx, builder) -> {
+            return CommandSource.suggestMatching(
+                    GameConfigs.getKeys().stream().map(Identifier::toString),
+                    builder
+            );
+        };
     }
 }

@@ -1,16 +1,16 @@
 package xyz.nucleoid.plasmid.mixin.event;
 
+import net.minecraft.util.ActionResult;
+import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.event.PlayerDamageListener;
+import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.plasmid.game.GameWorld;
-import xyz.nucleoid.plasmid.game.event.PlayerDamageListener;
-import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
 
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerEntityMixin {
@@ -25,7 +25,7 @@ public class ServerPlayerEntityMixin {
         if (gameWorld != null && gameWorld.containsPlayer(player)) {
             ActionResult result = gameWorld.invoker(PlayerDeathListener.EVENT).onDeath(player, source);
 
-            if (result == ActionResult.FAIL) {
+            if(result == ActionResult.FAIL) {
                 ci.cancel();
             }
         }

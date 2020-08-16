@@ -36,13 +36,13 @@ public final class Cost {
                 .display(new LiteralText(emeralds + " emeralds").formatted(Formatting.GREEN));
     }
 
-    public static Cost free() {
+    public static Cost free(){
         return new Cost()
                 .take((player, simulate) -> true)
                 .display(new LiteralText("Free"));
     }
 
-    public static Cost ofItem(Item item, int count, Text text) {
+    public static Cost ofItem(Item item, int count, Text text){
         return new Cost()
                 .take(item, count)
                 .display(text);

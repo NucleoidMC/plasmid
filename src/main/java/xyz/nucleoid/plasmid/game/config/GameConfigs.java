@@ -7,14 +7,14 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.game.ConfiguredGame;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.ConfiguredGame;
 
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -57,7 +57,9 @@ public final class GameConfigs {
                                 CONFIGURED_GAMES.put(identifier, game);
                             });
 
-                            decode.error().ifPresent(error -> Plasmid.LOGGER.error("Failed to decode {}: {}", path, error.toString()));
+                            decode.error().ifPresent(error -> {
+                                Plasmid.LOGGER.error("Failed to decode {}: {}", path, error.toString());
+                            });
                         }
                     } catch (IOException e) {
                         Plasmid.LOGGER.error("Failed to read configured game at {}", path, e);

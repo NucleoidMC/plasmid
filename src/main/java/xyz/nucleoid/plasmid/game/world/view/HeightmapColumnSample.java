@@ -6,7 +6,8 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 public final class HeightmapColumnSample implements BlockView {
     private static final BlockState VOID_BLOCK = Blocks.AIR.getDefaultState();

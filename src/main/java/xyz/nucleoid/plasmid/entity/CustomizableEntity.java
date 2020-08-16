@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.entity;
 
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 public interface CustomizableEntity {
     void setCustomEntity(CustomEntity customEntity);

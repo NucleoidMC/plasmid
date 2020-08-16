@@ -1,9 +1,9 @@
 package xyz.nucleoid.plasmid.party;
 
+import xyz.nucleoid.plasmid.util.PlayerRef;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import xyz.nucleoid.plasmid.util.PlayerRef;
 
 import java.util.Collection;
 import java.util.HashSet;

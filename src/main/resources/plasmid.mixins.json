@@ -9,14 +9,12 @@
     "bubble.ServerTickSchedulerMixin",
     "bubble.ServerWorldMixin",
     "bubble.ThreadedAnvilChunkStorageMixin",
-    "chat.PlayerManagerMixin",
-    "chat.ServerPlayerEntityMixin",
     "custom.EntityMixin",
+    "event.ServerPlayNetworkHandlerMixin",
     "event.ExplosionMixin",
     "event.LivingEntityMixin",
     "event.ServerPlayerEntityMixin",
     "event.ServerPlayerInteractionManagerMixin",
-    "event.ServerPlayNetworkHandlerMixin",
     "fake.IdListMixin",
     "fake.PacketByteBufMixin",
     "fake.ServerPlayNetworkHandlerMixin",
@@ -29,7 +27,9 @@
     "rule.ScreenHandlerMixin",
     "rule.ServerPlayerEntityMixin",
     "rule.ServerPlayerInteractionManagerMixin",
-    "rule.TntBlockMixin"
+    "rule.TntBlockMixin",
+    "chat.PlayerManagerMixin",
+    "chat.ServerPlayerEntityMixin"
   ],
   "client": [
     "fake.ClientConnectionMixin"

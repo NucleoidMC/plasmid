@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.util;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -32,7 +33,7 @@ public final class Scheduler {
      * queue a one time task to be executed on the server thread and capture the result in a future
      *
      * @param delay how many ticks in the future this should be called, where 0 means at the end of the current tick
-     * @param task  the action to perform
+     * @param task the action to perform
      */
     public <T> CompletableFuture<T> submit(Function<MinecraftServer, T> task, int delay) {
         CompletableFuture<T> future = new CompletableFuture<>();
@@ -56,7 +57,7 @@ public final class Scheduler {
      * queue a one time task to be executed on the server thread
      *
      * @param delay how many ticks in the future this should be called, where 0 means at the end of the current tick
-     * @param task  the action to perform
+     * @param task the action to perform
      */
     public void submit(Consumer<MinecraftServer> task, int delay) {
         this.taskQueue.add(new OneshotTask(task, this.currentTick + delay));
@@ -65,8 +66,8 @@ public final class Scheduler {
     /**
      * schedule a repeating task that is executed infinitely every n ticks
      *
-     * @param task     the action to perform
-     * @param delay    how many ticks in the future this event should first be called
+     * @param task the action to perform
+     * @param delay how many ticks in the future this event should first be called
      * @param interval the number of ticks in between each execution
      */
     public void repeat(Consumer<MinecraftServer> task, int delay, int interval) {
@@ -76,10 +77,10 @@ public final class Scheduler {
     /**
      * repeat the given task until the predicate returns false
      *
-     * @param task      the action to perform
+     * @param task the action to perform
      * @param condition whether or not to reschedule the task again, with the parameter being the current tick
-     * @param delay     how many ticks in the future this event should first be called
-     * @param interval  the number of ticks in between each execution
+     * @param delay how many ticks in the future this event should first be called
+     * @param interval the number of ticks in between each execution
      */
     public void repeatWhile(Consumer<MinecraftServer> task, IntPredicate condition, int delay, int interval) {
         int beginTime = this.currentTick + delay;
@@ -94,7 +95,13 @@ public final class Scheduler {
         int time = server.getTicks();
         this.currentTick = time;
 
-        this.taskQueue.removeIf(task -> task.tryRun(server, time));
+        Iterator<Task> iterator = this.taskQueue.iterator();
+        while (iterator.hasNext()) {
+            Task task = iterator.next();
+            if (task.tryRun(server, time)) {
+                iterator.remove();
+            }
+        }
     }
 
     private interface Task {

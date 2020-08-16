@@ -50,11 +50,11 @@ public final class GameWorld implements AutoCloseable {
      *
      * <p>If a {@link BubbleWorld} could not be opened, a {@link GameOpenException} is thrown.
      *
-     * @throws GameOpenException if a {@link BubbleWorld} could not be opened
      * @param server {@link MinecraftServer} to open a {@link GameWorld} in
      * @param game initial game to open this GameWorld with
      * @param config {@link BubbleWorldConfig} to use to construct a {@link GameWorld}
      * @return a {@link GameWorld} if one was opened
+     * @throws GameOpenException if a {@link BubbleWorld} could not be opened
      */
     public static GameWorld open(MinecraftServer server, ConfiguredGame<?> game, BubbleWorldConfig config) {
         BubbleWorld bubble = BubbleWorld.tryOpen(server, config);
@@ -265,7 +265,7 @@ public final class GameWorld implements AutoCloseable {
      * Attempts to add a {@link ServerPlayerEntity} to this {@link GameWorld} by invoking any {@link OfferPlayerListener#EVENT} listeners attached to it.
      *
      * <p>If the event succeeds, {@link JoinResult#ok()} is returned. If the player could not be added to this game world,
-     *      a {@link JoinResult} error is returned. If any listeners error, its response is returned and the player is not added to this game world.
+     * a {@link JoinResult} error is returned. If any listeners error, its response is returned and the player is not added to this game world.
      *
      * @param player the {@link ServerPlayerEntity} trying to join this {@link GameWorld}
      * @return {@link JoinResult} describing the results of the given {@link ServerPlayerEntity} trying to join

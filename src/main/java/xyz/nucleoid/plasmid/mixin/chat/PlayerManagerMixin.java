@@ -24,9 +24,12 @@ import java.util.UUID;
 
 @Mixin(PlayerManager.class)
 public abstract class PlayerManagerMixin {
-    @Shadow @Nullable public abstract ServerPlayerEntity getPlayer(UUID uuid);
+    @Shadow
+    @Nullable
+    public abstract ServerPlayerEntity getPlayer(UUID uuid);
 
-    @Shadow public abstract List<ServerPlayerEntity> getPlayerList();
+    @Shadow
+    public abstract List<ServerPlayerEntity> getPlayerList();
 
     @Inject(method = "broadcastChatMessage", at = @At("HEAD"), cancellable = true)
     public void broadcastChatMessage(Text message, MessageType type, UUID senderUuid, CallbackInfo ci) {

@@ -1,7 +1,5 @@
 package xyz.nucleoid.plasmid.mixin.custom;
 
-import xyz.nucleoid.plasmid.entity.CustomEntity;
-import xyz.nucleoid.plasmid.entity.CustomizableEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
@@ -13,6 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.nucleoid.plasmid.entity.CustomEntity;
+import xyz.nucleoid.plasmid.entity.CustomizableEntity;
 
 import javax.annotation.Nullable;
 

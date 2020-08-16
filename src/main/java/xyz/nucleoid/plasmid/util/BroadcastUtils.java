@@ -20,14 +20,12 @@ public class BroadcastUtils {
         for (ServerPlayerEntity player : world.getPlayers()) {
             player.sendMessage(message, false);
         }
-        ;
     }
 
     public static void broadcastSound(SoundEvent sound, float pitch, GameWorld world) {
         for (ServerPlayerEntity player : world.getPlayers()) {
             player.playSound(sound, SoundCategory.PLAYERS, 1.0F, pitch);
         }
-        ;
     }
 
     public static void broadcastSound(SoundEvent sound, GameWorld world) {

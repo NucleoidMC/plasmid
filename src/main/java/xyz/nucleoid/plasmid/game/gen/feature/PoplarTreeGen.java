@@ -27,9 +27,9 @@ public class PoplarTreeGen implements MapGen {
         for (int y = 0; y < 12; y++) {
             world.setBlockState(mutable, LOG, 0);
             //add branch blocks
-            if (maxRadius * radius(y / 11.f) > 2.3) {
-                Direction.Axis axis = getAxis(random);
-                world.setBlockState(mutable.offset(getDirection(axis, random)).up(leafDistance), LOG.with(Properties.AXIS, axis), 0);
+            if (maxRadius * this.radius(y / 11.f) > 2.3) {
+                Direction.Axis axis = this.getAxis(random);
+                world.setBlockState(mutable.offset(this.getDirection(axis, random)).up(leafDistance), LOG.with(Properties.AXIS, axis), 0);
             }
 
             mutable.move(Direction.UP);
@@ -39,7 +39,7 @@ public class PoplarTreeGen implements MapGen {
         mutable.move(Direction.UP, leafDistance);
 
         for (int y = 0; y < 12; y++) {
-            GenHelper.circle(mutable.mutableCopy(), maxRadius * radius(y / 11.f), leafPos -> {
+            GenHelper.circle(mutable.mutableCopy(), maxRadius * this.radius(y / 11.f), leafPos -> {
                 if (world.getBlockState(leafPos).isAir()) {
                     world.setBlockState(leafPos, LEAVES, 0);
                 }

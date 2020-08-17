@@ -1,11 +1,11 @@
 package xyz.nucleoid.plasmid.game.map.template;
 
-import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.util.BlockBounds;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.PersistentState;
+import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import javax.annotation.Nullable;
 import java.util.Collection;

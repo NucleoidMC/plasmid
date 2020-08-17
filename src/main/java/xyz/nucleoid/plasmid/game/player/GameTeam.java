@@ -2,14 +2,14 @@ package xyz.nucleoid.plasmid.game.player;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import xyz.nucleoid.plasmid.util.ItemStackBuilder;
-import xyz.nucleoid.plasmid.util.ItemUtil;
 import net.minecraft.item.FireworkItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.MathHelper;
+import xyz.nucleoid.plasmid.util.ItemStackBuilder;
+import xyz.nucleoid.plasmid.util.ItemUtil;
 
 public final class GameTeam {
     private static final Codec<DyeColor> COLOR_CODEC = StringIdentifiable.createCodec(

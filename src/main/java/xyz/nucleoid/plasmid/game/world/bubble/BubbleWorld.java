@@ -16,11 +16,7 @@ import xyz.nucleoid.plasmid.game.event.PlayerRemoveListener;
 import xyz.nucleoid.plasmid.game.player.PlayerSnapshot;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public final class BubbleWorld implements AutoCloseable {
     private static final Map<RegistryKey<World>, BubbleWorld> OPEN_WORLDS = new Reference2ObjectOpenHashMap<>();

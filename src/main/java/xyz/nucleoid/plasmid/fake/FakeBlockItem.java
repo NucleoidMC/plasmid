@@ -15,6 +15,6 @@ public class FakeBlockItem extends BlockItem implements FakeItem {
 
     @Override
     public Item asProxy() {
-        return clientSideBlock.asItem();
+        return this.clientSideBlock.asItem();
     }
 }

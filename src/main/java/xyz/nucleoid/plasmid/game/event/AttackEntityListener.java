@@ -14,7 +14,7 @@ import net.minecraft.util.hit.EntityHitResult;
  * <li>{@link ActionResult#SUCCESS} cancels further processing and allows the attack.
  * <li>{@link ActionResult#FAIL} cancels further processing and cancels the attack.
  * <li>{@link ActionResult#PASS} moves on to the next listener.</ul>
- *
+ * <p>
  * If all listeners return {@link ActionResult#PASS}, the attack succeeds.
  */
 public interface AttackEntityListener {

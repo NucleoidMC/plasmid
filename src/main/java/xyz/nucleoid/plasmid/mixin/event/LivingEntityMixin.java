@@ -54,18 +54,18 @@ public abstract class LivingEntityMixin extends Entity {
         List<ItemStack> droppedStacks = lootTable.generateLoot(context);
 
         // default stack dropping for client
-        if (world.isClient) {
+        if (this.world.isClient) {
             droppedStacks.forEach(this::dropStack);
             return;
         }
 
-        GameWorld gameWorld = GameWorld.forWorld(world);
+        GameWorld gameWorld = GameWorld.forWorld(this.world);
 
-        if(gameWorld != null && gameWorld.containsEntity((LivingEntity) (Object) this)) {
+        if (gameWorld != null && gameWorld.containsEntity((LivingEntity) (Object) this)) {
             TypedActionResult<List<ItemStack>> result = gameWorld.invoker(EntityDropLootListener.EVENT).onDropLoot((LivingEntity) (Object) this, droppedStacks);
 
             // drop potentially modified stacks from listeners
-            if(result.getResult() != ActionResult.FAIL) {
+            if (result.getResult() != ActionResult.FAIL) {
                 result.getValue().forEach(this::dropStack);
             }
 

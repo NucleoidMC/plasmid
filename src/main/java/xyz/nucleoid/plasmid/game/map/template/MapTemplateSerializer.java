@@ -59,7 +59,7 @@ public final class MapTemplateSerializer {
         return CompletableFuture.supplyAsync(() -> {
             Identifier path = getResourcePathFor(identifier);
 
-            try (Resource resource = this.resourceManager.getResource(path);) {
+            try (Resource resource = this.resourceManager.getResource(path)) {
                 MapTemplate template = MapTemplate.createEmpty();
                 this.load(template, NbtIo.readCompressed(resource.getInputStream()));
                 return template;

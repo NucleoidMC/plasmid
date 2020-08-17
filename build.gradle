@@ -123,20 +123,22 @@ static def write_ci_version(version) {
   file.write JsonOutput.toJson(version)
 }
 
-task incrementCiVersion << {
-  def base_version = get_base_version()
-  def old_version = read_ci_version()
-  def new_version = old_version
+task incrementCiVersion {
+  doLast {
+    def base_version = get_base_version()
+    def old_version = read_ci_version()
+    def new_version = old_version
 
-  if (!old_version || old_version.major != base_version.major || old_version.minor != base_version.minor) {
-    // the base version changed! reset our ci version to match
-    new_version = base_version
-  } else {
-    // the base version hasn't changed: increment patch version
-    new_version.patch += 1
+    if (!old_version || old_version.major != base_version.major || old_version.minor != base_version.minor) {
+      // the base version changed! reset our ci version to match
+      new_version = base_version
+    } else {
+      // the base version hasn't changed: increment patch version
+      new_version.patch += 1
+    }
+
+    println "incrementing version from $old_version to $new_version!"
+
+    write_ci_version(new_version)
   }
-
-  println "incrementing version from $old_version to $new_version!"
-
-  write_ci_version(new_version)
 }

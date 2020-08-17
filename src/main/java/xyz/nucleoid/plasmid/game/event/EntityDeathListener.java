@@ -12,7 +12,7 @@ import net.minecraft.util.ActionResult;
  * <li>{@link ActionResult#SUCCESS} cancels further processing and kills the entity.
  * <li>{@link ActionResult#FAIL} cancels further processing and does not kill the entity.
  * <li>{@link ActionResult#PASS} moves on to the next listener.</ul>
- *
+ * <p>
  * If all listeners return {@link ActionResult#PASS}, the entity is killed.
  */
 public interface EntityDeathListener {
@@ -20,7 +20,7 @@ public interface EntityDeathListener {
         for (EntityDeathListener listener : listeners) {
             ActionResult result = listener.onDeath(entity, source);
 
-            if(result != ActionResult.PASS) {
+            if (result != ActionResult.PASS) {
                 return result;
             }
         }

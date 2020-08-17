@@ -3,14 +3,10 @@ package xyz.nucleoid.plasmid.game.gen;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
+import java.util.function.Consumer;
+
 public final class GenHelper {
 	public static final Direction[] HORIZONTALS = new Direction[] { Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST };
-	// Code used from Terraform
-	public static void circle(BlockPos.Mutable origin, double radius, Consumer<BlockPos.Mutable> consumer) {
-		int x = origin.getX();
-		int z = origin.getZ();
-		double radiusSq = radius * radius;
-		int radiusCeil = (int)Math.ceil(radius);
 
     // Code used from Terraform
     public static void circle(BlockPos.Mutable origin, double radius, Consumer<BlockPos.Mutable> consumer) {

@@ -13,6 +13,7 @@
     "event.ServerPlayNetworkHandlerMixin",
     "event.ExplosionMixin",
     "event.LivingEntityMixin",
+    "event.ProjectileEntityMixin",
     "event.ServerPlayerEntityMixin",
     "event.ServerPlayerInteractionManagerMixin",
     "fake.IdListMixin",

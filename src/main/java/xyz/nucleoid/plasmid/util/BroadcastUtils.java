@@ -7,7 +7,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.game.GameWorld;
 
-public class BroadcastUtils {
+public final class BroadcastUtils {
 
     public static void broadcastTitle(Text message, GameWorld world) {
         for (ServerPlayerEntity player : world.getPlayers()) {

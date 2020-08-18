@@ -25,6 +25,10 @@ public final class TinyRegistry<T> implements Codec<T> {
         return new TinyRegistry<>(Lifecycle.stable());
     }
 
+    public void clear() {
+        this.map.clear();
+    }
+
     public void register(Identifier identifier, T value) {
         this.map.put(identifier, value);
     }

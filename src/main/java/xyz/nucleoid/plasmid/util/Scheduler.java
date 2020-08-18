@@ -4,8 +4,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntPredicate;
@@ -13,7 +13,7 @@ import java.util.function.IntPredicate;
 public final class Scheduler {
     public static final Scheduler INSTANCE = new Scheduler();
 
-    private final LinkedList<Task> taskQueue = new LinkedList<>();
+    private final ConcurrentLinkedQueue<Task> taskQueue = new ConcurrentLinkedQueue<>();
     private int currentTick = 0;
 
     private Scheduler() {
@@ -21,16 +21,17 @@ public final class Scheduler {
     }
 
     /**
-     * queue a one-shot task to be executed next tick on the server thread and capture the result in a future
+     * queue a one-shot task to be executed on the server thread at the end of the current tick and capture the result
+     * in a {@link CompletableFuture}
      *
      * @param task the action to perform
      */
     public <T> CompletableFuture<T> submit(Function<MinecraftServer, T> task) {
-        return this.submit(task, 1);
+        return this.submit(task, 0);
     }
 
     /**
-     * queue a one time task to be executed on the server thread and capture the result in a future
+     * queue a one time task to be executed on the server thread and capture the result in a {@link CompletableFuture}
      *
      * @param delay how many ticks in the future this should be called, where 0 means at the end of the current tick
      * @param task the action to perform
@@ -45,12 +46,12 @@ public final class Scheduler {
     }
 
     /**
-     * queue a one-shot task to be executed next tick on the server thread
+     * queue a one-shot task to be executed on the server thread at the end of the current tick
      *
      * @param task the action to perform
      */
     public void submit(Consumer<MinecraftServer> task) {
-        this.submit(task, 1);
+        this.submit(task, 0);
     }
 
     /**

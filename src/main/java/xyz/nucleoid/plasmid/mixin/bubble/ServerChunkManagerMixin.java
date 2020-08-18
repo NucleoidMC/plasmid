@@ -5,7 +5,7 @@ import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorldControl;
+import xyz.nucleoid.plasmid.world.bubble.BubbleWorldControl;
 
 @Mixin(ServerChunkManager.class)
 public abstract class ServerChunkManagerMixin implements BubbleWorldControl {

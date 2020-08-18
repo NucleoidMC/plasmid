@@ -5,7 +5,7 @@ import net.minecraft.world.ScheduledTick;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorldControl;
+import xyz.nucleoid.plasmid.world.bubble.BubbleWorldControl;
 
 import java.util.Set;
 import java.util.TreeSet;

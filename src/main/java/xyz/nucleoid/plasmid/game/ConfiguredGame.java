@@ -17,7 +17,7 @@ public final class ConfiguredGame<C> {
         this.config = config;
     }
 
-    public CompletableFuture<Void> open(MinecraftServer server) {
+    public CompletableFuture<GameWorld> open(MinecraftServer server) {
         GameOpenContext<C> context = new GameOpenContext<>(server, this);
         return this.type.open(context);
     }

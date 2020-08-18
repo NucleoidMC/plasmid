@@ -16,6 +16,10 @@ public final class Game {
     private final EventListeners listeners = new EventListeners();
     private final GameRuleSet rules = new GameRuleSet();
 
+    public static Game empty() {
+        return new Game();
+    }
+
     public Game setRule(GameRule rule, RuleResult result) {
         this.rules.put(rule, result);
         return this;

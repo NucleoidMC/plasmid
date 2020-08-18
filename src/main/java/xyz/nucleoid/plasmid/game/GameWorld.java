@@ -57,7 +57,7 @@ public final class GameWorld implements AutoCloseable {
         listeners.onRemovePlayer(player -> {
             Scheduler.INSTANCE.submit(server -> {
                 this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
-                this.lifecycle.removePlayer(this,player);
+                this.lifecycle.removePlayer(this, player);
             });
         });
     }

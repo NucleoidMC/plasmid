@@ -13,17 +13,17 @@ import net.minecraft.util.hit.BlockHitResult;
  * <li>{@link ActionResult#PASS} moves on to the next listener.</ul>
  */
 public interface BlockHitListener {
-	EventType<BlockHitListener> EVENT = EventType.create(BlockHitListener.class, listeners -> (hitResult) -> {
-		for (BlockHitListener listener : listeners) {
-			ActionResult result = listener.onBlockHit(hitResult);
+    EventType<BlockHitListener> EVENT = EventType.create(BlockHitListener.class, listeners -> (hitResult) -> {
+        for (BlockHitListener listener : listeners) {
+            ActionResult result = listener.onBlockHit(hitResult);
 
-			if(result != ActionResult.PASS) {
-				return result;
-			}
-		}
+            if (result != ActionResult.PASS) {
+                return result;
+            }
+        }
 
-		return ActionResult.PASS;
-	});
+        return ActionResult.PASS;
+    });
 
-	ActionResult onBlockHit(BlockHitResult hitResult);
+    ActionResult onBlockHit(BlockHitResult hitResult);
 }

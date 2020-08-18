@@ -13,17 +13,17 @@ import net.minecraft.util.hit.EntityHitResult;
  * <li>{@link ActionResult#PASS} moves on to the next listener.</ul>
  */
 public interface EntityHitListener {
-	EventType<EntityHitListener> EVENT = EventType.create(EntityHitListener.class, listeners -> (hitResult) -> {
-		for (EntityHitListener listener : listeners) {
-			ActionResult result = listener.onEntityHit(hitResult);
+    EventType<EntityHitListener> EVENT = EventType.create(EntityHitListener.class, listeners -> (hitResult) -> {
+        for (EntityHitListener listener : listeners) {
+            ActionResult result = listener.onEntityHit(hitResult);
 
-			if(result != ActionResult.PASS) {
-				return result;
-			}
-		}
+            if (result != ActionResult.PASS) {
+                return result;
+            }
+        }
 
-		return ActionResult.PASS;
-	});
+        return ActionResult.PASS;
+    });
 
-	ActionResult onEntityHit(EntityHitResult hitResult);
+    ActionResult onEntityHit(EntityHitResult hitResult);
 }

@@ -6,7 +6,7 @@ import net.minecraft.util.math.Direction;
 import java.util.function.Consumer;
 
 public final class GenHelper {
-	public static final Direction[] HORIZONTALS = new Direction[] { Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST };
+    public static final Direction[] HORIZONTALS = new Direction[] { Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST };
 
     // Code used from Terraform
     public static void circle(BlockPos.Mutable origin, double radius, Consumer<BlockPos.Mutable> consumer) {

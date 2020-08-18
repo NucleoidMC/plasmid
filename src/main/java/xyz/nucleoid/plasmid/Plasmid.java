@@ -20,11 +20,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import xyz.nucleoid.plasmid.command.ChatCommand;
-import xyz.nucleoid.plasmid.command.GameCommand;
-import xyz.nucleoid.plasmid.command.MapCommand;
-import xyz.nucleoid.plasmid.command.PartyCommand;
-import xyz.nucleoid.plasmid.command.ShoutCommand;
+import xyz.nucleoid.plasmid.command.*;
 import xyz.nucleoid.plasmid.entity.CustomEntity;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.GameWorld;
@@ -39,9 +35,9 @@ import xyz.nucleoid.plasmid.game.map.template.MapTemplateSerializer;
 import xyz.nucleoid.plasmid.game.map.template.StagingBoundRenderer;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
-import xyz.nucleoid.plasmid.world.bubble.BubbleChunkGenerator;
 import xyz.nucleoid.plasmid.item.PlasmidItems;
 import xyz.nucleoid.plasmid.test.TestGame;
+import xyz.nucleoid.plasmid.world.bubble.BubbleChunkGenerator;
 
 public final class Plasmid implements ModInitializer {
     public static final String ID = "plasmid";

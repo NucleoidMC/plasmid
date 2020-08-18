@@ -16,6 +16,10 @@ public interface BubbleWorldSpawner {
         return new Surface(pos);
     }
 
+    static BubbleWorldSpawner atSurface(int x, int z) {
+        return new Surface(new BlockPos(x, 0, z));
+    }
+
     void spawnPlayer(ServerWorld world, ServerPlayerEntity player);
 
     final class At implements BubbleWorldSpawner {

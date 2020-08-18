@@ -31,7 +31,7 @@ public final class BubbleWorld implements AutoCloseable {
 
     @Nullable
     public static BubbleWorld forWorld(World world) {
-        return ((HasBubbleWorld) world).getBubbleWorld();
+        return ((BubbleWorldHolder) world).getBubbleWorld();
     }
 
     public static CompletableFuture<Optional<BubbleWorld>> tryOpen(MinecraftServer server, BubbleWorldConfig config) {
@@ -46,7 +46,7 @@ public final class BubbleWorld implements AutoCloseable {
                 return Optional.empty();
             }
 
-            ((HasBubbleWorld) world).setBubbleWorld(bubbleWorld);
+            ((BubbleWorldHolder) world).setBubbleWorld(bubbleWorld);
 
             return Optional.of(bubbleWorld);
         }, server);
@@ -107,7 +107,7 @@ public final class BubbleWorld implements AutoCloseable {
 
             BubbleWorldControl.disable(this.world);
         } finally {
-            ((HasBubbleWorld) this.world).setBubbleWorld(null);
+            ((BubbleWorldHolder) this.world).setBubbleWorld(null);
         }
     }
 

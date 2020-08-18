@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.plasmid.world.bubble.BubbleLevelProperties;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorld;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorldControl;
-import xyz.nucleoid.plasmid.world.bubble.HasBubbleWorld;
+import xyz.nucleoid.plasmid.world.bubble.BubbleWorldHolder;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -34,7 +34,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 @Mixin(ServerWorld.class)
-public abstract class ServerWorldMixin extends World implements HasBubbleWorld, BubbleWorldControl {
+public abstract class ServerWorldMixin extends World implements BubbleWorldHolder, BubbleWorldControl {
     @Shadow
     @Final
     private ServerTickScheduler<Block> blockTickScheduler;

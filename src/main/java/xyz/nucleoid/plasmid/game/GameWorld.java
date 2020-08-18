@@ -169,7 +169,6 @@ public final class GameWorld implements AutoCloseable {
 
     /**
      * Attempts to add the given {@link ServerPlayerEntity} to this game world if it is not already added.
-     * This should be
      *
      * <p>{@link GameWorld#offerPlayer} can be used instead to check with {@link OfferPlayerListener} listeners before adding the player.
      *

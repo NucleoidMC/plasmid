@@ -13,6 +13,9 @@ import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import javax.annotation.Nullable;
 
+/**
+ * @deprecated in favour of {@link xyz.nucleoid.plasmid.fake.FakeEntityType}
+ */
 @Deprecated
 public final class CustomEntity {
     private static final TinyRegistry<CustomEntity> REGISTRY = TinyRegistry.newStable();

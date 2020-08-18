@@ -2,7 +2,7 @@ package xyz.nucleoid.plasmid.world.bubble;
 
 import javax.annotation.Nullable;
 
-public interface HasBubbleWorld {
+public interface BubbleWorldHolder {
     void setBubbleWorld(BubbleWorld bubbleWorld);
 
     @Nullable

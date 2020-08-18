@@ -21,8 +21,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.nucleoid.plasmid.world.bubble.BubbleLevelProperties;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorld;
-import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorldControl;
 import xyz.nucleoid.plasmid.world.bubble.HasBubbleWorld;
 
@@ -81,19 +81,16 @@ public abstract class ServerWorldMixin extends World implements HasBubbleWorld, 
     }
 
     @Override
-    public long getTimeOfDay() {
-        if (this.bubbleWorld != null) {
-            BubbleWorldConfig config = this.bubbleWorld.getConfig();
-            if (config.hasTimeOfDay()) {
-                return config.getTimeOfDay();
-            }
-        }
-        return super.getTimeOfDay();
-    }
-
-    @Override
     public void setBubbleWorld(BubbleWorld bubbleWorld) {
+        if (this.bubbleWorld != null) {
+            ((BubbleLevelProperties) this.properties).close();
+        }
+
         this.bubbleWorld = bubbleWorld;
+
+        if (bubbleWorld != null) {
+            ((BubbleLevelProperties) this.properties).apply(bubbleWorld.getConfig());
+        }
     }
 
     @Nullable

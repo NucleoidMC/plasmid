@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.world.bubble;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
@@ -8,6 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
+import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerSnapshot;
 
 import javax.annotation.Nullable;
@@ -18,9 +20,8 @@ public final class BubbleWorld implements AutoCloseable {
     private final ServerWorld world;
     private final BubbleWorldConfig config;
 
-    private final BubbleWorldListeners listeners = new BubbleWorldListeners();
-
-    private final Map<ServerPlayerEntity, PlayerSnapshot> players = new HashMap<>();
+    private final PlayerSet players = new PlayerSet();
+    private final Map<ServerPlayerEntity, PlayerSnapshot> playerSnapshots = new Object2ObjectOpenHashMap<>();
 
     private BubbleWorld(ServerWorld world, BubbleWorldConfig config) {
         this.world = world;
@@ -114,8 +115,9 @@ public final class BubbleWorld implements AutoCloseable {
     public boolean addPlayer(ServerPlayerEntity player) {
         this.assertServerThread();
 
-        if (!this.players.containsKey(player)) {
-            this.players.put(player, PlayerSnapshot.take(player));
+        if (!this.players.contains(player)) {
+            this.players.add(player);
+            this.playerSnapshots.put(player, PlayerSnapshot.take(player));
             this.joinPlayer(player);
             return true;
         }
@@ -126,14 +128,12 @@ public final class BubbleWorld implements AutoCloseable {
     public boolean removePlayer(ServerPlayerEntity player) {
         this.assertServerThread();
 
-        PlayerSnapshot snapshot = this.players.remove(player);
+        PlayerSnapshot snapshot = this.playerSnapshots.remove(player);
         if (snapshot != null) {
-            this.listeners.removePlayer.accept(player);
             snapshot.restore(player);
-            return true;
         }
 
-        return false;
+        return this.players.remove(player);
     }
 
     public void kickPlayer(ServerPlayerEntity player) {
@@ -185,16 +185,17 @@ public final class BubbleWorld implements AutoCloseable {
         return this.config;
     }
 
-    public BubbleWorldListeners getListeners() {
-        return this.listeners;
+    public Set<ServerPlayerEntity> getPlayers() {
+        return this.playerSnapshots.keySet();
     }
 
-    public Set<ServerPlayerEntity> getPlayers() {
-        return this.players.keySet();
+    // TODO: 0.4: this should entirely replace getPlayers()
+    public PlayerSet getPlayerSet() {
+        return this.players;
     }
 
     public boolean containsPlayer(ServerPlayerEntity player) {
-        return this.players.containsKey(player);
+        return this.players.contains(player);
     }
 
     private void assertServerThread() {

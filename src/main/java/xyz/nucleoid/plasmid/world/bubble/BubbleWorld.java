@@ -1,6 +1,5 @@
 package xyz.nucleoid.plasmid.world.bubble;
 
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
@@ -16,8 +15,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public final class BubbleWorld implements AutoCloseable {
-    private static final Map<RegistryKey<World>, BubbleWorld> OPEN_WORLDS = new Reference2ObjectOpenHashMap<>();
-
     private final ServerWorld world;
     private final BubbleWorldConfig config;
 
@@ -34,7 +31,7 @@ public final class BubbleWorld implements AutoCloseable {
 
     @Nullable
     public static BubbleWorld forWorld(World world) {
-        return OPEN_WORLDS.get(world.getRegistryKey());
+        return ((HasBubbleWorld) world).getBubbleWorld();
     }
 
     public static CompletableFuture<Optional<BubbleWorld>> tryOpen(MinecraftServer server, BubbleWorldConfig config) {
@@ -49,7 +46,7 @@ public final class BubbleWorld implements AutoCloseable {
                 return Optional.empty();
             }
 
-            OPEN_WORLDS.put(world.getRegistryKey(), bubbleWorld);
+            ((HasBubbleWorld) world).setBubbleWorld(bubbleWorld);
 
             return Optional.of(bubbleWorld);
         }, server);
@@ -58,8 +55,7 @@ public final class BubbleWorld implements AutoCloseable {
     @Nullable
     private static ServerWorld findFreeWorld(MinecraftServer server) {
         for (ServerWorld world : server.getWorlds()) {
-            RegistryKey<World> dimensionKey = world.getRegistryKey();
-            if (!OPEN_WORLDS.containsKey(dimensionKey) && BubbleWorld.accepts(world)) {
+            if (BubbleWorld.forWorld(world) == null && BubbleWorld.accepts(world)) {
                 return world;
             }
         }
@@ -111,7 +107,7 @@ public final class BubbleWorld implements AutoCloseable {
 
             BubbleWorldControl.disable(this.world);
         } finally {
-            OPEN_WORLDS.remove(this.getDimensionKey(), this);
+            ((HasBubbleWorld) this.world).setBubbleWorld(null);
         }
     }
 
@@ -181,6 +177,10 @@ public final class BubbleWorld implements AutoCloseable {
 
     public RegistryKey<World> getDimensionKey() {
         return this.world.getRegistryKey();
+    }
+
+    public BubbleWorldConfig getConfig() {
+        return this.config;
     }
 
     public BubbleWorldListeners getListeners() {

@@ -22,8 +22,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorld;
+import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorldControl;
+import xyz.nucleoid.plasmid.world.bubble.HasBubbleWorld;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -31,7 +34,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 @Mixin(ServerWorld.class)
-public abstract class ServerWorldMixin extends World implements BubbleWorldControl {
+public abstract class ServerWorldMixin extends World implements HasBubbleWorld, BubbleWorldControl {
     @Shadow
     @Final
     private ServerTickScheduler<Block> blockTickScheduler;
@@ -52,6 +55,8 @@ public abstract class ServerWorldMixin extends World implements BubbleWorldContr
     @Final
     private Set<EntityNavigation> entityNavigations;
 
+    private BubbleWorld bubbleWorld;
+
     private ServerWorldMixin(MutableWorldProperties properties, RegistryKey<World> registryKey, DimensionType dimension, Supplier<Profiler> profiler, boolean client, boolean debug, long seed) {
         super(properties, registryKey, dimension, profiler, client, debug, seed);
     }
@@ -61,7 +66,7 @@ public abstract class ServerWorldMixin extends World implements BubbleWorldContr
 
     @Inject(method = "addPlayer", at = @At("RETURN"))
     private void onPlayerAdded(ServerPlayerEntity player, CallbackInfo ci) {
-        BubbleWorld bubble = BubbleWorld.forWorld(player.world);
+        BubbleWorld bubble = BubbleWorld.forWorld(this);
         if (bubble != null && !bubble.containsPlayer(player)) {
             bubble.kickPlayer(player);
         }
@@ -69,10 +74,32 @@ public abstract class ServerWorldMixin extends World implements BubbleWorldContr
 
     @Inject(method = "removePlayer", at = @At("RETURN"))
     private void onPlayerRemoved(ServerPlayerEntity player, CallbackInfo ci) {
-        BubbleWorld bubble = BubbleWorld.forWorld(player.world);
+        BubbleWorld bubble = BubbleWorld.forWorld(this);
         if (bubble != null) {
             bubble.removePlayer(player);
         }
+    }
+
+    @Override
+    public long getTimeOfDay() {
+        if (this.bubbleWorld != null) {
+            BubbleWorldConfig config = this.bubbleWorld.getConfig();
+            if (config.hasTimeOfDay()) {
+                return config.getTimeOfDay();
+            }
+        }
+        return super.getTimeOfDay();
+    }
+
+    @Override
+    public void setBubbleWorld(BubbleWorld bubbleWorld) {
+        this.bubbleWorld = bubbleWorld;
+    }
+
+    @Nullable
+    @Override
+    public BubbleWorld getBubbleWorld() {
+        return this.bubbleWorld;
     }
 
     @Override

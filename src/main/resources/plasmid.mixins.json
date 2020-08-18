@@ -4,6 +4,7 @@
   "package": "xyz.nucleoid.plasmid.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "bubble.MinecraftServerMixin",
     "bubble.PlayerManagerMixin",
     "bubble.ServerChunkManagerMixin",
     "bubble.ServerTickSchedulerMixin",

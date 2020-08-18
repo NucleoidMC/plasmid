@@ -10,6 +10,7 @@ public final class BubbleWorldConfig {
     private ChunkGenerator generator = null;
     private GameMode defaultGameMode = GameMode.ADVENTURE;
     private BubbleWorldSpawner spawner = BubbleWorldSpawner.at(new Vec3d(0.0, 64.0, 0.0));
+    private int timeOfDay = 6000;
 
     public BubbleWorldConfig setGenerator(ChunkGenerator generator) {
         this.generator = generator;
@@ -30,6 +31,16 @@ public final class BubbleWorldConfig {
         return this;
     }
 
+    public BubbleWorldConfig setTimeOfDay(int timeOfDay) {
+        this.timeOfDay = timeOfDay;
+        return this;
+    }
+
+    public BubbleWorldConfig removeTimeOfDay() {
+        this.timeOfDay = Integer.MIN_VALUE;
+        return this;
+    }
+
     @Nullable
     public ChunkGenerator getGenerator() {
         return this.generator;
@@ -41,5 +52,13 @@ public final class BubbleWorldConfig {
 
     public BubbleWorldSpawner getSpawner() {
         return this.spawner;
+    }
+
+    public int getTimeOfDay() {
+        return this.timeOfDay;
+    }
+
+    public boolean hasTimeOfDay() {
+        return this.timeOfDay != Integer.MIN_VALUE;
     }
 }

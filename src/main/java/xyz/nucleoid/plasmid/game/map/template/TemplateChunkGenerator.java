@@ -77,17 +77,20 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
 
             try {
                 int minWorldY = sectionY << 4;
-                this.addSection(minWorldX, minWorldY, minWorldZ, mutablePos, section);
+                this.addSection(minWorldX, minWorldY, minWorldZ, mutablePos, protoChunk, section);
             } finally {
                 section.unlock();
             }
         }
     }
 
-    private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable mutablePos, ChunkSection section) {
+    private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable mutablePos, ProtoChunk chunk, ChunkSection section) {
         int offsetX = minWorldX - this.origin.getX();
         int offsetY = minWorldY - this.origin.getY();
         int offsetZ = minWorldZ - this.origin.getZ();
+
+        Heightmap oceanFloor = chunk.getHeightmap(Heightmap.Type.OCEAN_FLOOR_WG);
+        Heightmap worldSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
 
         for (int y = 0; y < 16; y++) {
             for (int z = 0; z < 16; z++) {
@@ -97,6 +100,14 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
                     BlockState state = this.template.getBlockState(mutablePos);
                     if (!state.isAir()) {
                         section.setBlockState(x, y, z, state);
+
+                        int worldY = y + minWorldY;
+                        oceanFloor.trackUpdate(x, worldY, z, state);
+                        worldSurface.trackUpdate(x, worldY, z, state);
+
+                        if (state.getLuminance() != 0) {
+                            chunk.addLightSource(new BlockPos(minWorldX + x, worldY, minWorldZ + z));
+                        }
                     }
                 }
             }

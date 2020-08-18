@@ -13,13 +13,17 @@ import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorld;
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorldConfig;
 import xyz.nucleoid.plasmid.util.Scheduler;
+import xyz.nucleoid.plasmid.world.bubble.BubbleWorld;
+import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
+import xyz.nucleoid.plasmid.world.bubble.BubbleWorldListeners;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -34,15 +38,28 @@ public final class GameWorld implements AutoCloseable {
 
     private final BubbleWorld bubble;
     private final ConfiguredGame<?> configuredGame;
-    private Game game = new Game();
+    private final AtomicReference<Game> game = new AtomicReference<>(Game.empty());
 
     private final List<AutoCloseable> resources = new ArrayList<>();
 
-    private boolean closed;
+    private final AtomicBoolean closed = new AtomicBoolean();
+
+    private final GameLifecycle lifecycle = new GameLifecycle();
 
     private GameWorld(BubbleWorld bubble, ConfiguredGame<?> configuredGame) {
         this.bubble = bubble;
         this.configuredGame = configuredGame;
+
+        this.addBubbleListeners(bubble.getListeners());
+    }
+
+    private void addBubbleListeners(BubbleWorldListeners listeners) {
+        listeners.onRemovePlayer(player -> {
+            Scheduler.INSTANCE.submit(server -> {
+                this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
+                this.lifecycle.removePlayer(this,player);
+            });
+        });
     }
 
     /**
@@ -53,19 +70,25 @@ public final class GameWorld implements AutoCloseable {
      * @param server {@link MinecraftServer} to open a {@link GameWorld} in
      * @param game initial game to open this GameWorld with
      * @param config {@link BubbleWorldConfig} to use to construct a {@link GameWorld}
-     * @return a {@link GameWorld} if one was opened
+     * @return a future to a {@link GameWorld} if one was opened
      * @throws GameOpenException if a {@link BubbleWorld} could not be opened
      */
-    public static GameWorld open(MinecraftServer server, ConfiguredGame<?> game, BubbleWorldConfig config) {
-        BubbleWorld bubble = BubbleWorld.tryOpen(server, config);
-        if (bubble == null) {
-            throw new GameOpenException(new LiteralText("No available bubble worlds!"));
+    public static CompletableFuture<GameWorld> open(MinecraftServer server, ConfiguredGame<?> game, BubbleWorldConfig config) {
+        if (!DIMENSION_TO_WORLD.isEmpty()) {
+            // TODO: allow for concurrent games
+            CompletableFuture<GameWorld> future = new CompletableFuture<>();
+            future.completeExceptionally(new GameOpenException(new LiteralText("Concurrent games are not yet allowed!")));
+            return future;
         }
 
-        GameWorld gameWorld = new GameWorld(bubble, game);
-        DIMENSION_TO_WORLD.put(bubble.getDimensionKey(), gameWorld);
+        return BubbleWorld.tryOpen(server, config).thenApply(bubbleOpt -> {
+            BubbleWorld bubble = bubbleOpt.orElseThrow(() -> new GameOpenException(new LiteralText("No available bubble worlds!")));
 
-        return gameWorld;
+            GameWorld gameWorld = new GameWorld(bubble, game);
+            DIMENSION_TO_WORLD.put(bubble.getDimensionKey(), gameWorld);
+
+            return gameWorld;
+        });
     }
 
     /**
@@ -91,19 +114,6 @@ public final class GameWorld implements AutoCloseable {
     }
 
     /**
-     * Returns the {@link ServerWorld} that this {@link GameWorld} is hosted in.
-     *
-     * @return the host world of this {@link GameWorld}.
-     */
-    public ServerWorld getWorld() {
-        return this.bubble.getWorld();
-    }
-
-    public ConfiguredGame<?> getGame() {
-        return this.configuredGame;
-    }
-
-    /**
      * Opens a new {@link Game} in this {@link GameWorld} with properties set by the given {@link Consumer}.
      *
      * @param builder {@link Consumer} that modifies the given {@link Game} instance
@@ -118,31 +128,29 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Directly sets the current {@link Game} in this {@link GameWorld}.
      *
-     * <p>All {@link PlayerAddListener#EVENT} and {@link GameOpenListener#EVENT} listeners are notified of the game changing.
+     * <p>On the new game, {@link PlayerAddListener} will be invoked with existing players, followed by
+     * {@link GameOpenListener} once all players have been added.
      *
-     * @param game {@link Game} to set this {@link GameWorld} to
+     * <p>Before the new game is open, {@link GameCloseListener} will be invoked on the former game instance
+     *
+     * @param game {@link Game} to set on this {@link GameWorld}
      */
     public void setGame(Game game) {
-        this.closeGame();
-
-        this.game = game;
-        this.bubble.setListeners(this.game.getListeners());
-
-        for (ServerPlayerEntity player : this.bubble.getPlayers()) {
-            this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
+        if (this.closed.get()) {
+            return;
         }
 
-        this.invoker(GameOpenListener.EVENT).onOpen();
-    }
+        Game closedGame = this.game.getAndSet(game);
 
-    /**
-     * Closes the current {@link Game} instance of this game world.
-     *
-     * <p>All {@link GameCloseListener#EVENT} listeners are notified of the close.
-     */
-    private void closeGame() {
-        this.invoker(GameCloseListener.EVENT).onClose();
-        this.game = new Game();
+        Scheduler.INSTANCE.submit(server -> {
+            closedGame.getListeners().invoker(GameCloseListener.EVENT).onClose();
+
+            for (ServerPlayerEntity player : this.bubble.getPlayers()) {
+                this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
+            }
+
+            this.invoker(GameOpenListener.EVENT).onOpen();
+        });
     }
 
     /**
@@ -153,12 +161,15 @@ public final class GameWorld implements AutoCloseable {
      * @return the added resource
      */
     public <T extends AutoCloseable> T addResource(T resource) {
-        this.resources.add(resource);
-        return resource;
+        synchronized (this.resources) {
+            this.resources.add(resource);
+            return resource;
+        }
     }
 
     /**
      * Attempts to add the given {@link ServerPlayerEntity} to this game world if it is not already added.
+     * This should be
      *
      * <p>{@link GameWorld#offerPlayer} can be used instead to check with {@link OfferPlayerListener} listeners before adding the player.
      *
@@ -166,7 +177,16 @@ public final class GameWorld implements AutoCloseable {
      * @return whether the {@link ServerPlayerEntity} was successfully added
      */
     public boolean addPlayer(ServerPlayerEntity player) {
-        return this.bubble.addPlayer(player);
+        if (this.closed.get()) {
+            return false;
+        }
+
+        if (this.bubble.addPlayer(player)) {
+            this.lifecycle.addPlayer(this, player);
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -179,14 +199,88 @@ public final class GameWorld implements AutoCloseable {
      * @return whether the {@link ServerPlayerEntity} was successfully removed
      */
     public boolean removePlayer(ServerPlayerEntity player) {
+        if (this.closed.get()) {
+            return false;
+        }
         return this.bubble.removePlayer(player);
     }
 
     /**
-     * @return the number of players in this {@link GameWorld}.
+     * Requests that this {@link GameWorld} begins. Called through the /game start command.
+     *
+     * <p>The behavior of the game starting is left any {@link RequestStartListener#EVENT} listener attached to it.
+     *
+     * @return a {@link StartResult} which describes whether the game was able to start
      */
-    public int getPlayerCount() {
-        return this.bubble.getPlayers().size();
+    public CompletableFuture<StartResult> requestStart() {
+        return Scheduler.INSTANCE.submit(server -> {
+            return this.invoker(RequestStartListener.EVENT).requestStart();
+        });
+    }
+
+    /**
+     * Attempts to add a {@link ServerPlayerEntity} to this {@link GameWorld} by invoking any {@link OfferPlayerListener#EVENT} listeners attached to it.
+     *
+     * <p>If the event succeeds, {@link JoinResult#ok()} is returned. If the player could not be added to this game world,
+     * a {@link JoinResult} error is returned. If any listeners error, its response is returned and the player is not added to this game world.
+     *
+     * @param player the {@link ServerPlayerEntity} trying to join this {@link GameWorld}
+     * @return {@link JoinResult} describing the results of the given {@link ServerPlayerEntity} trying to join
+     */
+    public CompletableFuture<JoinResult> offerPlayer(ServerPlayerEntity player) {
+        return Scheduler.INSTANCE.submit(server -> {
+            JoinResult result = this.invoker(OfferPlayerListener.EVENT).offerPlayer(player);
+            if (result.isError()) {
+                return result;
+            }
+
+            if (this.addPlayer(player)) {
+                return JoinResult.ok();
+            } else {
+                return JoinResult.alreadyJoined();
+            }
+        });
+    }
+
+    /**
+     * Closes this {@link GameWorld}.
+     *
+     * <p>Upon close, all players in this {@link GameWorld} are removed and restored to their state prior to entering this game world.
+     */
+    @Override
+    public void close() {
+        if (!this.closed.compareAndSet(false, true)) {
+            return;
+        }
+
+        Game game = this.game.getAndSet(Game.empty());
+
+        Scheduler.INSTANCE.submit(server -> {
+            try {
+                this.bubble.kickPlayers();
+
+                this.closeResources();
+                game.getListeners().invoker(GameCloseListener.EVENT).onClose();
+                this.lifecycle.close(this);
+
+                this.bubble.close();
+            } finally {
+                DIMENSION_TO_WORLD.remove(this.bubble.getWorld().getRegistryKey(), this);
+            }
+        });
+    }
+
+    private void closeResources() {
+        synchronized (this.resources) {
+            for (AutoCloseable resource : this.resources) {
+                try {
+                    resource.close();
+                } catch (Exception e) {
+                    Plasmid.LOGGER.warn("Failed to close resource on GameWorld", e);
+                }
+            }
+            this.resources.clear();
+        }
     }
 
     /**
@@ -198,6 +292,13 @@ public final class GameWorld implements AutoCloseable {
      */
     public Set<ServerPlayerEntity> getPlayers() {
         return this.bubble.getPlayers();
+    }
+
+    /**
+     * @return the number of players in this {@link GameWorld}.
+     */
+    public int getPlayerCount() {
+        return this.bubble.getPlayers().size();
     }
 
     /**
@@ -222,7 +323,8 @@ public final class GameWorld implements AutoCloseable {
 
     @Nonnull
     public <T> T invoker(EventType<T> event) {
-        return this.game.getListeners().invoker(event);
+        Game game = this.game.get();
+        return game.getListeners().invoker(event);
     }
 
     /**
@@ -234,84 +336,24 @@ public final class GameWorld implements AutoCloseable {
      * @return a {@link RuleResult} that describes whether the {@link GameRule} passes
      */
     public RuleResult testRule(GameRule rule) {
-        return this.game.getRules().test(rule);
+        Game game = this.game.get();
+        return game.getRules().test(rule);
     }
 
     /**
-     * Attempts to tick this {@link GameWorld} and any {@link GameTickListener#EVENT} listener attached to it.
+     * Returns the {@link ServerWorld} that this {@link GameWorld} is hosted in.
      *
-     * <p>If this {@link GameWorld} has been closed, the tick will not execute.
+     * @return the host world of this {@link GameWorld}.
      */
-    public void tick() {
-        if (this.closed) {
-            return;
-        }
-
-        this.invoker(GameTickListener.EVENT).onTick();
+    public ServerWorld getWorld() {
+        return this.bubble.getWorld();
     }
 
-    /**
-     * Requests that this {@link GameWorld} begins. Called through the /game start command.
-     *
-     * <p>The behavior of the game starting is left any {@link RequestStartListener#EVENT} listener attached to it.
-     *
-     * @return a {@link StartResult} which describes whether the game was able to start
-     */
-    public StartResult requestStart() {
-        return this.invoker(RequestStartListener.EVENT).requestStart();
+    public ConfiguredGame<?> getGame() {
+        return this.configuredGame;
     }
 
-    /**
-     * Attempts to add a {@link ServerPlayerEntity} to this {@link GameWorld} by invoking any {@link OfferPlayerListener#EVENT} listeners attached to it.
-     *
-     * <p>If the event succeeds, {@link JoinResult#ok()} is returned. If the player could not be added to this game world,
-     * a {@link JoinResult} error is returned. If any listeners error, its response is returned and the player is not added to this game world.
-     *
-     * @param player the {@link ServerPlayerEntity} trying to join this {@link GameWorld}
-     * @return {@link JoinResult} describing the results of the given {@link ServerPlayerEntity} trying to join
-     */
-    public JoinResult offerPlayer(ServerPlayerEntity player) {
-        JoinResult result = this.invoker(OfferPlayerListener.EVENT).offerPlayer(player);
-        if (result.isError()) {
-            return result;
-        }
-
-        if (this.addPlayer(player)) {
-            return JoinResult.ok();
-        } else {
-            return JoinResult.alreadyJoined();
-        }
-    }
-
-    /**
-     * Closes this {@link GameWorld}.
-     *
-     * <p>Upon close, all players in this {@link GameWorld} are removed and restored to their state prior to entering this game world.
-     */
-    @Override
-    public void close() {
-        if (this.closed) {
-            return;
-        }
-
-        this.closed = true;
-
-        for (AutoCloseable resource : this.resources) {
-            try {
-                resource.close();
-            } catch (Exception e) {
-                Plasmid.LOGGER.warn("Failed to close resource on GameWorld", e);
-            }
-        }
-
-        this.resources.clear();
-
-        Scheduler.INSTANCE.submit(server -> {
-            this.bubble.kickPlayers();
-            this.closeGame();
-            this.bubble.close();
-
-            DIMENSION_TO_WORLD.remove(this.bubble.getWorld().getRegistryKey(), this);
-        });
+    public GameLifecycle getLifecycle() {
+        return this.lifecycle;
     }
 }

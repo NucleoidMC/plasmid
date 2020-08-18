@@ -20,6 +20,10 @@ public final class AddRegionItem extends Item implements FakeItem {
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        if (world.isClient) {
+            return super.use(world, player, hand);
+        }
+
         ItemStack stack = player.getStackInHand(hand);
 
         if (player instanceof RegionTracer) {

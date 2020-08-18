@@ -26,7 +26,7 @@ public final class GameType<C> {
         return type;
     }
 
-    public CompletableFuture<Void> open(GameOpenContext<C> context) {
+    public CompletableFuture<GameWorld> open(GameOpenContext<C> context) {
         return this.open.open(context);
     }
 
@@ -60,6 +60,6 @@ public final class GameType<C> {
     }
 
     public interface Open<C> {
-        CompletableFuture<Void> open(GameOpenContext<C> context);
+        CompletableFuture<GameWorld> open(GameOpenContext<C> context);
     }
 }

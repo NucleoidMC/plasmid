@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 public final class PlayerSnapshot {
     private final RegistryKey<World> dimension;
     private final Vec3d position;
+    private final float yaw;
+    private final float pitch;
     private final GameMode gameMode;
     private final DefaultedList<ItemStack> inventory;
     private final DefaultedList<ItemStack> enderInventory;
@@ -27,7 +29,7 @@ public final class PlayerSnapshot {
     private final float experienceProgress;
 
     private PlayerSnapshot(
-            RegistryKey<World> dimension, Vec3d position,
+            RegistryKey<World> dimension, Vec3d position, float yaw, float pitch,
             GameMode gameMode,
             DefaultedList<ItemStack> inventory,
             DefaultedList<ItemStack> enderInventory,
@@ -36,6 +38,8 @@ public final class PlayerSnapshot {
     ) {
         this.dimension = dimension;
         this.position = position;
+        this.yaw = yaw;
+        this.pitch = pitch;
         this.gameMode = gameMode;
         this.inventory = inventory;
         this.enderInventory = enderInventory;
@@ -48,6 +52,8 @@ public final class PlayerSnapshot {
     public static PlayerSnapshot take(ServerPlayerEntity player) {
         RegistryKey<World> dimension = player.world.getRegistryKey();
         Vec3d position = player.getPos();
+        float yaw = player.yaw;
+        float pitch = player.pitch;
         GameMode gameMode = player.interactionManager.getGameMode();
 
         DefaultedList<ItemStack> inventory = snapshotInventory(player.inventory);
@@ -62,7 +68,7 @@ public final class PlayerSnapshot {
         float experienceProgress = player.experienceProgress;
 
         return new PlayerSnapshot(
-                dimension, position,
+                dimension, position, yaw, pitch,
                 gameMode,
                 inventory, enderInventory,
                 potionEffects,
@@ -87,11 +93,12 @@ public final class PlayerSnapshot {
         player.experienceProgress = this.experienceProgress;
         player.experienceLevel = this.experienceLevel;
 
-        player.teleport(world, this.position.x, this.position.y, this.position.z, 0.0F, 0.0F);
+        player.teleport(world, this.position.x, this.position.y, this.position.z, this.yaw, this.pitch);
         player.setGameMode(this.gameMode);
 
         player.setFireTicks(0);
         player.stopFallFlying();
+        player.fallDistance = 0.0F;
     }
 
     private void restoreInventory(Inventory inventory, DefaultedList<ItemStack> from) {

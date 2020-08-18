@@ -21,8 +21,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorld;
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorldControl;
+import xyz.nucleoid.plasmid.world.bubble.BubbleWorld;
+import xyz.nucleoid.plasmid.world.bubble.BubbleWorldControl;
 
 import java.util.Map;
 import java.util.Queue;

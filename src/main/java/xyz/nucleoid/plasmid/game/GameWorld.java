@@ -182,6 +182,7 @@ public final class GameWorld implements AutoCloseable {
         }
 
         if (this.bubble.addPlayer(player)) {
+            this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
             this.lifecycle.addPlayer(this, player);
             return true;
         }

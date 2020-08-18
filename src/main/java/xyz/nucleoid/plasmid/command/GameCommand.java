@@ -259,7 +259,8 @@ public final class GameCommand {
     }
 
     private static int openChannel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        MinecraftServer server = context.getSource().getMinecraftServer();
+        ServerCommandSource source = context.getSource();
+        MinecraftServer server = source.getMinecraftServer();
         GameChannelManager channelManager = GameChannelManager.get(server);
         Identifier channelId = IdentifierArgumentType.getIdentifier(context, "channel_id");
         Pair<Identifier, ConfiguredGame<?>> game = GameConfigArgument.get(context, "game_type");
@@ -270,20 +271,21 @@ public final class GameCommand {
         }
 
         MutableText message = new TranslatableText("Created channel with id '%s'", channelId);
-        context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
+        source.sendFeedback(message.formatted(Formatting.GRAY), false);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int removeChannel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        MinecraftServer server = context.getSource().getMinecraftServer();
+        ServerCommandSource source = context.getSource();
+        MinecraftServer server = source.getMinecraftServer();
         GameChannelManager channelManager = GameChannelManager.get(server);
 
         Identifier channelId = GameChannelArgument.get(context, "channel_id").getLeft();
         channelManager.remove(channelId);
 
         MutableText message = new TranslatableText("Removed channel with id '%s'", channelId);
-        context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
+        source.sendFeedback(message.formatted(Formatting.GRAY), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -308,11 +310,11 @@ public final class GameCommand {
     }
 
     private static int connectBlockToChannel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        ServerWorld world = source.getWorld();
+
         Pair<Identifier, GameChannel> channel = GameChannelArgument.get(context, "channel_id");
-
         BlockPos pos = BlockPosArgumentType.getLoadedBlockPos(context, "pos");
-
-        ServerWorld world = context.getSource().getWorld();
 
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof ChannelEndpoint) {
@@ -321,7 +323,7 @@ public final class GameCommand {
             }
 
             MutableText message = new TranslatableText("Connected '%s' to block at (%s; %s; %s)", channel.getLeft(), pos.getX(), pos.getY(), pos.getZ());
-            context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
+            source.sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;
         } else {

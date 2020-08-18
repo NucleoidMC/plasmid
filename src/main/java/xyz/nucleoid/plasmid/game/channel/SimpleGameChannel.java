@@ -5,10 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ConfiguredGame;
 import xyz.nucleoid.plasmid.game.GameLifecycle;
 import xyz.nucleoid.plasmid.game.GameOpenException;
@@ -31,10 +33,10 @@ public final class SimpleGameChannel implements GameChannel {
 
     private final ChannelConnections connections = new ChannelConnections();
 
+    private final LifecycleListeners lifecycleListeners = new LifecycleListeners();
+
     private GameWorld openGame;
     private CompletableFuture<GameWorld> openGameFuture;
-
-    private LifecycleListeners lifecycleListeners = new LifecycleListeners();
 
     public SimpleGameChannel(Identifier id, Identifier gameId) {
         this.id = id;
@@ -48,10 +50,25 @@ public final class SimpleGameChannel implements GameChannel {
 
     @Override
     public void requestJoin(ServerPlayerEntity player) {
-        this.offerPlayer(player).thenAccept(joinResult -> {
-            if (joinResult.isError()) {
-                player.sendMessage(joinResult.getError().shallowCopy().formatted(Formatting.RED), true);
+        this.offerPlayer(player).handle((joinResult, throwable) -> {
+            MutableText errorFeedback = null;
+
+            if (joinResult != null && joinResult.isError()) {
+                errorFeedback = joinResult.getError().shallowCopy();
+            } else if (throwable != null) {
+                if (throwable instanceof GameOpenException) {
+                    errorFeedback = ((GameOpenException) throwable).getReason().shallowCopy();
+                } else {
+                    errorFeedback = new LiteralText("An unexpected exception occurred while joining game!");
+                    Plasmid.LOGGER.warn("Failed to join game", throwable);
+                }
             }
+
+            if (errorFeedback != null) {
+                player.sendMessage(errorFeedback.formatted(Formatting.RED), true);
+            }
+
+            return null;
         });
     }
 

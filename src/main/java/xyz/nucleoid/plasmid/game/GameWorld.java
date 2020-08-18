@@ -257,11 +257,11 @@ public final class GameWorld implements AutoCloseable {
 
         Scheduler.INSTANCE.submit(server -> {
             try {
-                this.bubble.kickPlayers();
+                List<ServerPlayerEntity> players = this.bubble.kickPlayers();
 
                 this.closeResources();
                 game.getListeners().invoker(GameCloseListener.EVENT).onClose();
-                this.lifecycle.close(this);
+                this.lifecycle.close(this, players);
 
                 this.bubble.close();
             } finally {

@@ -24,9 +24,9 @@ public final class GameLifecycle {
         }
     }
 
-    void close(GameWorld gameWorld) {
+    void close(GameWorld gameWorld, List<ServerPlayerEntity> players) {
         for (Listeners listener : this.listeners) {
-            listener.onClose(gameWorld);
+            listener.onClose(gameWorld, players);
         }
     }
 
@@ -35,6 +35,6 @@ public final class GameLifecycle {
 
         void onRemovePlayer(GameWorld gameWorld, ServerPlayerEntity player);
 
-        void onClose(GameWorld gameWorld);
+        void onClose(GameWorld gameWorld, List<ServerPlayerEntity> players);
     }
 }

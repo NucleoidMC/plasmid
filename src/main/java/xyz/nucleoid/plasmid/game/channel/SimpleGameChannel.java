@@ -18,6 +18,7 @@ import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public final class SimpleGameChannel implements GameChannel {
@@ -163,7 +164,7 @@ public final class SimpleGameChannel implements GameChannel {
         }
 
         @Override
-        public void onClose(GameWorld gameWorld) {
+        public void onClose(GameWorld gameWorld, List<ServerPlayerEntity> players) {
             SimpleGameChannel.this.closeGame();
         }
     }

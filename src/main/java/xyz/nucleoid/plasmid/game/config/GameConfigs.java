@@ -13,6 +13,7 @@ import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ConfiguredGame;
+import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -20,12 +21,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 public final class GameConfigs {
-    private static final Map<Identifier, ConfiguredGame<?>> CONFIGURED_GAMES = new HashMap<>();
+    private static final TinyRegistry<ConfiguredGame<?>> CONFIGURED_GAMES = TinyRegistry.newStable();
 
     public static void register() {
         ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
@@ -54,7 +53,7 @@ public final class GameConfigs {
 
                             decode.result().ifPresent(result -> {
                                 ConfiguredGame<?> game = result.getFirst();
-                                CONFIGURED_GAMES.put(identifier, game);
+                                CONFIGURED_GAMES.register(identifier, game);
                             });
 
                             decode.error().ifPresent(error -> {

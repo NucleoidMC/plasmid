@@ -162,13 +162,15 @@ public final class BubbleWorld implements AutoCloseable {
         this.config.getSpawner().spawnPlayer(this.world, player);
     }
 
-    public void kickPlayers() {
+    public List<ServerPlayerEntity> kickPlayers() {
         this.assertServerThread();
 
         List<ServerPlayerEntity> players = new ArrayList<>(this.world.getPlayers());
         for (ServerPlayerEntity player : players) {
             this.kickPlayer(player);
         }
+
+        return players;
     }
 
     public ServerWorld getWorld() {

@@ -33,7 +33,6 @@ public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
 
     public static SidebarWidget open(Text title, PlayerSet players) {
         SidebarWidget widget = new SidebarWidget(title, players);
-
         for (ServerPlayerEntity player : players) {
             widget.onAddPlayer(player);
         }

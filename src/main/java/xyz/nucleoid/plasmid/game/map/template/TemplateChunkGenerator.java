@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game.map.template;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.util.math.BlockPos;
@@ -84,7 +85,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
         }
     }
 
-    private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable mutablePos, ProtoChunk chunk, ChunkSection section) {
+    private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable templatePos, ProtoChunk chunk, ChunkSection section) {
         int offsetX = minWorldX - this.origin.getX();
         int offsetY = minWorldY - this.origin.getY();
         int offsetZ = minWorldZ - this.origin.getZ();
@@ -95,9 +96,9 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
         for (int y = 0; y < 16; y++) {
             for (int z = 0; z < 16; z++) {
                 for (int x = 0; x < 16; x++) {
-                    mutablePos.set(x + offsetX, y + offsetY, z + offsetZ);
+                    templatePos.set(x + offsetX, y + offsetY, z + offsetZ);
 
-                    BlockState state = this.template.getBlockState(mutablePos);
+                    BlockState state = this.template.getBlockState(templatePos);
                     if (!state.isAir()) {
                         section.setBlockState(x, y, z, state);
 
@@ -107,6 +108,14 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
 
                         if (state.getLuminance() != 0) {
                             chunk.addLightSource(new BlockPos(minWorldX + x, worldY, minWorldZ + z));
+                        }
+
+                        CompoundTag blockEntityTag = this.template.getBlockEntityTag(templatePos);
+                        if (blockEntityTag != null) {
+                            blockEntityTag.putInt("x", minWorldX + x);
+                            blockEntityTag.putInt("y", worldY);
+                            blockEntityTag.putInt("z", minWorldZ + z);
+                            chunk.addPendingBlockEntityTag(blockEntityTag);
                         }
                     }
                 }

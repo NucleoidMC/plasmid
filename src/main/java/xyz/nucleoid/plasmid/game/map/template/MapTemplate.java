@@ -87,6 +87,11 @@ public final class MapTemplate {
         return AIR;
     }
 
+    @Nullable
+    public CompoundTag getBlockEntityTag(BlockPos pos) {
+        return this.blockEntities.get(pos.asLong());
+    }
+
     // TODO: store / lookup more efficiently?
     public int getTopY(int x, int z, Heightmap.Type heightmap) {
         Predicate<BlockState> predicate = heightmap.getBlockPredicate();

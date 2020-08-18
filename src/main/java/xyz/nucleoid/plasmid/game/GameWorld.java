@@ -148,8 +148,6 @@ public final class GameWorld implements AutoCloseable {
 
             closedGame.getListeners().invoker(GameCloseListener.EVENT).onClose();
 
-            this.game.set(game);
-
             for (ServerPlayerEntity player : this.bubble.getPlayers()) {
                 this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
             }

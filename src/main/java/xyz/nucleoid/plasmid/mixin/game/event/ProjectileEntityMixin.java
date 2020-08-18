@@ -16,7 +16,7 @@ import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.event.BlockHitListener;
 import xyz.nucleoid.plasmid.game.event.EntityHitListener;
 
-@Mixin({ ProjectileEntity.class })
+@Mixin(ProjectileEntity.class)
 public abstract class ProjectileEntityMixin extends Entity {
     public ProjectileEntityMixin(EntityType<?> type, World world) {
         super(type, world);

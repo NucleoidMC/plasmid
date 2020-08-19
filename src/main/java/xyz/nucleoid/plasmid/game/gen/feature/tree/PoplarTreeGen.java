@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.game.gen.feature;
+package xyz.nucleoid.plasmid.game.gen.feature.tree;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -11,7 +11,7 @@ import xyz.nucleoid.plasmid.game.gen.MapGen;
 
 import java.util.Random;
 
-public class PoplarTreeGen implements MapGen {
+public final class PoplarTreeGen implements MapGen {
     public static final PoplarTreeGen INSTANCE = new PoplarTreeGen(Blocks.OAK_LOG.getDefaultState(), Blocks.OAK_LEAVES.getDefaultState().with(Properties.DISTANCE_1_7, 1));
 
     private final BlockState log;
@@ -31,10 +31,10 @@ public class PoplarTreeGen implements MapGen {
 
         BlockPos.Mutable mutable = pos.mutableCopy();
         for (int y = 0; y < 12; y++) {
-            world.setBlockState(mutable, log, 0);
-            //add branch blocks
+            world.setBlockState(mutable, this.log, 0);
+            // Add branch blocks
             if (maxRadius * this.radius(y / 11.f) > 2.3) {
-                Direction.Axis axis = getAxis(random);
+                Direction.Axis axis = this.getAxis(random);
                 world.setBlockState(mutable.offset(this.getDirection(axis, random)).up(leafDistance), this.log.with(Properties.AXIS, axis), 0);
             }
 
@@ -47,9 +47,10 @@ public class PoplarTreeGen implements MapGen {
         for (int y = 0; y < 12; y++) {
             GenHelper.circle(mutable.mutableCopy(), maxRadius * this.radius(y / 11.f), leafPos -> {
                 if (world.getBlockState(leafPos).isAir()) {
-                    world.setBlockState(leafPos, leaves, 0);
+                    world.setBlockState(leafPos, this.leaves, 0);
                 }
             });
+
             mutable.move(Direction.UP);
         }
     }

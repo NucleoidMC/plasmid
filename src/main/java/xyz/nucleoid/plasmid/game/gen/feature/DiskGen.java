@@ -9,21 +9,28 @@ import xyz.nucleoid.plasmid.game.gen.MapGen;
 
 import java.util.Random;
 
-public class DiskGen implements MapGen {
-    public static final DiskGen INSTANCE = new DiskGen();
-
-    private static final WeightedList<BlockState> STATES = new WeightedList<BlockState>()
+public final class DiskGen implements MapGen {
+    public static final DiskGen INSTANCE = new DiskGen(new WeightedList<BlockState>()
             .add(Blocks.SAND.getDefaultState(), 1)
-            .add(Blocks.GRAVEL.getDefaultState(), 1);
+            .add(Blocks.GRAVEL.getDefaultState(), 1), 2, 5);
+    private final WeightedList<BlockState> states;
+    private final int baseSize;
+    private final int randomSize;
+
+    public DiskGen(WeightedList<BlockState> states, int baseSize, int randomSize) {
+        this.states = states;
+        this.baseSize = baseSize;
+        this.randomSize = randomSize;
+    }
 
     @Override
     public void generate(ServerWorldAccess world, BlockPos pos, Random random) {
 
-        int radius = random.nextInt(5) + 2;
+        int radius = random.nextInt(this.randomSize) + this.baseSize;
         int radiusSquared = radius * radius;
 
         BlockPos.Mutable mutable = new BlockPos.Mutable();
-        BlockState state = STATES.pickRandom(random);
+        BlockState state = this.states.pickRandom(random);
 
         for (int x = pos.getX() - radius; x <= pos.getX() + radius; ++x) {
             for (int z = pos.getZ() - radius; z <= pos.getZ() + radius; ++z) {

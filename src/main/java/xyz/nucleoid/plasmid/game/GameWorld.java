@@ -11,12 +11,12 @@ import net.minecraft.world.World;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
+import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.util.Scheduler;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorld;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
-import xyz.nucleoid.plasmid.world.bubble.BubbleWorldListeners;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -50,15 +50,18 @@ public final class GameWorld implements AutoCloseable {
         this.bubble = bubble;
         this.configuredGame = configuredGame;
 
-        this.addBubbleListeners(bubble.getListeners());
+        this.addPlayerListeners(bubble.getPlayerSet());
     }
 
-    private void addBubbleListeners(BubbleWorldListeners listeners) {
-        listeners.onRemovePlayer(player -> {
-            Scheduler.INSTANCE.submit(server -> {
-                this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
-                this.lifecycle.removePlayer(this, player);
-            });
+    private void addPlayerListeners(PlayerSet players) {
+        players.addListener(new PlayerSet.Listener() {
+            @Override
+            public void onRemovePlayer(ServerPlayerEntity player) {
+                Scheduler.INSTANCE.submit(server -> {
+                    GameWorld.this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
+                    GameWorld.this.lifecycle.removePlayer(GameWorld.this, player);
+                });
+            }
         });
     }
 
@@ -140,9 +143,9 @@ public final class GameWorld implements AutoCloseable {
             return;
         }
 
-        Game closedGame = this.game.getAndSet(game);
-
         Scheduler.INSTANCE.submit(server -> {
+            Game closedGame = this.game.getAndSet(game);
+
             closedGame.getListeners().invoker(GameCloseListener.EVENT).onClose();
 
             for (ServerPlayerEntity player : this.bubble.getPlayers()) {
@@ -292,6 +295,10 @@ public final class GameWorld implements AutoCloseable {
      */
     public Set<ServerPlayerEntity> getPlayers() {
         return this.bubble.getPlayers();
+    }
+
+    public PlayerSet getPlayerSet() {
+        return this.bubble.getPlayerSet();
     }
 
     /**

@@ -40,7 +40,6 @@ public final class TestGame {
 
                         game.on(PlayerDeathListener.EVENT, (player, source) -> {
                             player.teleport(0.0, 65.0, 0.0);
-                            player.setHealth(20.0F);
                             return ActionResult.FAIL;
                         });
                     });

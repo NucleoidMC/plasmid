@@ -12,10 +12,7 @@ import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerSnapshot;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public final class BubbleWorld implements AutoCloseable {
@@ -25,6 +22,8 @@ public final class BubbleWorld implements AutoCloseable {
 
     private final PlayerSet players = new PlayerSet();
     private final Map<ServerPlayerEntity, PlayerSnapshot> playerSnapshots = new Object2ObjectOpenHashMap<>();
+
+    private final Set<ServerPlayerEntity> playerView = Collections.unmodifiableSet(this.playerSnapshots.keySet());
 
     BubbleWorld(ServerWorld world, BubbleWorldConfig config, Identifier bubbleKey) {
         this.world = world;
@@ -141,7 +140,7 @@ public final class BubbleWorld implements AutoCloseable {
     }
 
     public Set<ServerPlayerEntity> getPlayers() {
-        return this.playerSnapshots.keySet();
+        return this.playerView;
     }
 
     // TODO: 0.4: this should entirely replace getPlayers()

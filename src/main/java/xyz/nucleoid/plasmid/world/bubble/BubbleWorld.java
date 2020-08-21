@@ -155,8 +155,9 @@ public final class BubbleWorld implements AutoCloseable {
 
     private void assertServerThread() {
         Thread currentThread = Thread.currentThread();
-        if (currentThread != this.world.getServer().getThread()) {
-            throw new UnsupportedOperationException("cannot execute on " + currentThread + ": expected server thread!");
+        Thread serverThread = this.world.getServer().getThread();
+        if (currentThread != serverThread) {
+            throw new UnsupportedOperationException("cannot execute on " + currentThread.getName() + ": expected server thread (" + serverThread.getName() + ")!");
         }
     }
 }

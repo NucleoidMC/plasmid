@@ -58,9 +58,7 @@ public final class GameWorld implements AutoCloseable {
         players.addListener(new PlayerSet.Listener() {
             @Override
             public void onRemovePlayer(ServerPlayerEntity player) {
-                Scheduler.INSTANCE.submit(server -> {
-                    GameWorld.this.onRemovePlayer(player);
-                });
+                GameWorld.this.onRemovePlayer(player);
             }
         });
     }

@@ -34,6 +34,8 @@ import xyz.nucleoid.plasmid.game.channel.GameChannel;
 import xyz.nucleoid.plasmid.game.channel.GameChannelManager;
 import xyz.nucleoid.plasmid.game.channel.SimpleGameChannel;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.player.PlayerSet;
+import xyz.nucleoid.plasmid.util.Scheduler;
 
 import java.util.Collection;
 
@@ -79,6 +81,7 @@ public final class GameCommand {
                     .executes(GameCommand::stopGame)
                 )
                 .then(literal("join").executes(GameCommand::joinGame))
+                .then(literal("leave").executes(GameCommand::leaveGame))
                 .then(literal("list").executes(GameCommand::listGames))
                 .then(literal("channel")
                     .requires(source -> source.hasPermissionLevel(3))
@@ -108,10 +111,6 @@ public final class GameCommand {
         ConfiguredGame<?> game = GameConfigArgument.get(context, "game_type").getRight();
 
         PlayerManager playerManager = server.getPlayerManager();
-
-        LiteralText announcement = new LiteralText("Game is opening! Hold tight..");
-        playerManager.broadcastChatMessage(announcement.formatted(Formatting.GRAY), MessageType.SYSTEM, Util.NIL_UUID);
-
         server.submit(() -> {
             try {
                 game.open(server).handle((v, throwable) -> {
@@ -174,16 +173,23 @@ public final class GameCommand {
             if (joinResult.isError()) {
                 Text error = joinResult.getError();
                 source.sendError(error.shallowCopy().formatted(Formatting.RED));
-                return;
             }
+        });
 
-            Text joinMessage = player.getDisplayName().shallowCopy()
-                    .append(" has joined the game lobby!")
-                    .formatted(Formatting.YELLOW);
+        return Command.SINGLE_SUCCESS;
+    }
 
-            for (ServerPlayerEntity otherPlayer : gameWorld.getPlayers()) {
-                otherPlayer.sendMessage(joinMessage, false);
-            }
+    private static int leaveGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        ServerPlayerEntity player = source.getPlayer();
+
+        GameWorld gameWorld = GameWorld.forWorld(source.getWorld());
+        if (gameWorld == null) {
+            throw NO_GAME_IN_WORLD.create();
+        }
+
+        Scheduler.INSTANCE.submit(server -> {
+            gameWorld.removePlayer(player);
         });
 
         return Command.SINGLE_SUCCESS;
@@ -198,15 +204,15 @@ public final class GameCommand {
         }
 
         gameWorld.requestStart().thenAccept(startResult -> {
+            Text message;
             if (startResult.isError()) {
                 Text error = startResult.getError();
-                source.sendError(error.shallowCopy().formatted(Formatting.RED));
+                message = error.shallowCopy().formatted(Formatting.RED);
+            } else {
+                message = new LiteralText("Game is starting!").formatted(Formatting.GRAY);
             }
 
-            Text message = new LiteralText("Game is starting!").formatted(Formatting.GRAY);
-            for (ServerPlayerEntity otherPlayer : gameWorld.getPlayers()) {
-                otherPlayer.sendMessage(message, false);
-            }
+            gameWorld.getPlayerSet().sendMessage(message);
         });
 
         return Command.SINGLE_SUCCESS;
@@ -219,19 +225,18 @@ public final class GameCommand {
             throw NO_GAME_IN_WORLD.create();
         }
 
-        MinecraftServer server = source.getMinecraftServer();
-        PlayerManager playerManager = server.getPlayerManager();
+        PlayerSet playerSet = gameWorld.getPlayerSet().copy();
 
         try {
             gameWorld.close();
 
-            LiteralText message = new LiteralText("Game has been stopped");
-            playerManager.broadcastChatMessage(message.formatted(Formatting.GRAY), MessageType.SYSTEM, Util.NIL_UUID);
+            LiteralText message = new LiteralText("Game has been stopped!");
+            playerSet.sendMessage(message.formatted(Formatting.GRAY));
         } catch (Throwable throwable) {
             Plasmid.LOGGER.error("Failed to stop game", throwable);
 
             LiteralText message = new LiteralText("An unexpected error was thrown while stopping the game!");
-            playerManager.broadcastChatMessage(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);
+            playerSet.sendMessage(message.formatted(Formatting.RED));
         }
 
         return Command.SINGLE_SUCCESS;

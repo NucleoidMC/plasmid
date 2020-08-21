@@ -5,6 +5,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import xyz.nucleoid.plasmid.Plasmid;
@@ -228,6 +230,12 @@ public final class GameWorld implements AutoCloseable {
             }
 
             if (this.addPlayer(player)) {
+                Text joinMessage = player.getDisplayName().shallowCopy()
+                        .append(" has joined the game lobby!")
+                        .formatted(Formatting.YELLOW);
+
+                this.getPlayerSet().sendMessage(joinMessage);
+
                 return JoinResult.ok();
             } else {
                 return JoinResult.alreadyJoined();

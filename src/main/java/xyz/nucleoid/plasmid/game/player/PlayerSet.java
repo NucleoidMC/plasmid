@@ -84,6 +84,12 @@ public final class PlayerSet implements Iterable<ServerPlayerEntity> {
         return this.players.iterator();
     }
 
+    public PlayerSet copy() {
+        PlayerSet copy = new PlayerSet();
+        copy.players.addAll(this.players);
+        return copy;
+    }
+
     public interface Listener {
         default void onAddPlayer(ServerPlayerEntity player) {
         }

@@ -108,14 +108,14 @@ public final class GameCommand {
         ServerCommandSource source = context.getSource();
         MinecraftServer server = source.getMinecraftServer();
 
-        ConfiguredGame<?> game = GameConfigArgument.get(context, "game_type").getRight();
+        Pair<Identifier, ConfiguredGame<?>> game = GameConfigArgument.get(context, "game_type");
 
         PlayerManager playerManager = server.getPlayerManager();
         server.submit(() -> {
             try {
-                game.open(server).handle((v, throwable) -> {
+                game.getRight().open(server).handle((v, throwable) -> {
                     if (throwable == null) {
-                        onOpenSuccess(playerManager);
+                        onOpenSuccess(source, game.getLeft(), playerManager);
                     } else {
                         onOpenError(playerManager, throwable);
                     }
@@ -129,7 +129,7 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(PlayerManager playerManager) {
+    private static void onOpenSuccess(ServerCommandSource source, Identifier gameId, PlayerManager playerManager) {
         String command = "/game join";
 
         ClickEvent joinClick = new ClickEvent(ClickEvent.Action.RUN_COMMAND, command);
@@ -140,7 +140,7 @@ public final class GameCommand {
                 .withClickEvent(joinClick)
                 .withHoverEvent(joinHover);
 
-        Text openMessage = new LiteralText("Game has opened! ")
+        Text openMessage = source.getDisplayName().shallowCopy().append(" has opened " + gameId + "!")
                 .append(new LiteralText("Click here to join").setStyle(joinStyle));
         playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
     }
@@ -209,7 +209,8 @@ public final class GameCommand {
                 Text error = startResult.getError();
                 message = error.shallowCopy().formatted(Formatting.RED);
             } else {
-                message = new LiteralText("Game is starting!").formatted(Formatting.GRAY);
+                message = source.getDisplayName().shallowCopy().append(" has started the game!")
+                        .formatted(Formatting.GRAY);
             }
 
             gameWorld.getPlayerSet().sendMessage(message);
@@ -230,7 +231,7 @@ public final class GameCommand {
         try {
             gameWorld.close();
 
-            LiteralText message = new LiteralText("Game has been stopped!");
+            MutableText message = source.getDisplayName().shallowCopy().append(" has stopped the game!");
             playerSet.sendMessage(message.formatted(Formatting.GRAY));
         } catch (Throwable throwable) {
             Plasmid.LOGGER.error("Failed to stop game", throwable);

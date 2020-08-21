@@ -128,12 +128,14 @@ public final class BubbleWorld implements AutoCloseable {
     public boolean removePlayer(ServerPlayerEntity player) {
         this.assertServerThread();
 
+        boolean removed = this.players.remove(player);
+
         PlayerSnapshot snapshot = this.playerSnapshots.remove(player);
         if (snapshot != null) {
             snapshot.restore(player);
         }
 
-        return this.players.remove(player);
+        return removed;
     }
 
     public void kickPlayer(ServerPlayerEntity player) {

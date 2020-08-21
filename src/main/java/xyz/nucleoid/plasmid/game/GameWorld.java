@@ -59,8 +59,7 @@ public final class GameWorld implements AutoCloseable {
             @Override
             public void onRemovePlayer(ServerPlayerEntity player) {
                 Scheduler.INSTANCE.submit(server -> {
-                    GameWorld.this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
-                    GameWorld.this.lifecycle.removePlayer(GameWorld.this, player);
+                    GameWorld.this.onRemovePlayer(player);
                 });
             }
         });
@@ -198,6 +197,15 @@ public final class GameWorld implements AutoCloseable {
             return false;
         }
         return this.bubble.removePlayer(player);
+    }
+
+    private void onRemovePlayer(ServerPlayerEntity player) {
+        this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
+        this.lifecycle.removePlayer(this, player);
+
+        if (this.getPlayerCount() <= 0) {
+            this.close();
+        }
     }
 
     /**

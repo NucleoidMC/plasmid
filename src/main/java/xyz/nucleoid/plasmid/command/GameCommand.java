@@ -140,7 +140,7 @@ public final class GameCommand {
                 .withClickEvent(joinClick)
                 .withHoverEvent(joinHover);
 
-        Text openMessage = source.getDisplayName().shallowCopy().append(" has opened " + gameId + "!")
+        Text openMessage = source.getDisplayName().shallowCopy().append(" has opened " + gameId + "! ")
                 .append(new LiteralText("Click here to join").setStyle(joinStyle));
         playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
     }

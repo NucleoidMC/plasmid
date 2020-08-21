@@ -2,6 +2,8 @@ package xyz.nucleoid.plasmid.game.event;
 
 import xyz.nucleoid.plasmid.game.StartResult;
 
+import javax.annotation.Nullable;
+
 public interface RequestStartListener {
     EventType<RequestStartListener> EVENT = EventType.create(RequestStartListener.class, listeners -> {
         return () -> {
@@ -15,5 +17,6 @@ public interface RequestStartListener {
         };
     });
 
+    @Nullable
     StartResult requestStart();
 }

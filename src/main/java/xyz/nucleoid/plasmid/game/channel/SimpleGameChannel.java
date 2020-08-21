@@ -51,6 +51,7 @@ public final class SimpleGameChannel implements GameChannel {
 
     @Override
     public void requestJoin(ServerPlayerEntity player) {
+        // TODO: needs better error handling: namely, CompletionException
         this.offerPlayer(player).handle((joinResult, throwable) -> {
             MutableText errorFeedback = null;
 

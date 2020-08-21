@@ -17,7 +17,6 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.Unit;
-import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xyz.nucleoid.plasmid.command.*;
@@ -40,7 +39,6 @@ import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.item.PlasmidItems;
 import xyz.nucleoid.plasmid.test.TestGame;
-import xyz.nucleoid.plasmid.world.bubble.BubbleChunkGenerator;
 
 public final class Plasmid implements ModInitializer {
     public static final String ID = "plasmid";
@@ -48,8 +46,6 @@ public final class Plasmid implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "bubble"), BubbleChunkGenerator.CODEC);
-
         Reflection.initialize(PlasmidItems.class);
 
         GameConfigs.register();

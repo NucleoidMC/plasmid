@@ -5,7 +5,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import xyz.nucleoid.plasmid.Plasmid;
@@ -77,16 +76,7 @@ public final class GameWorld implements AutoCloseable {
      * @throws GameOpenException if a {@link BubbleWorld} could not be opened
      */
     public static CompletableFuture<GameWorld> open(MinecraftServer server, ConfiguredGame<?> game, BubbleWorldConfig config) {
-        if (!DIMENSION_TO_WORLD.isEmpty()) {
-            // TODO: allow for concurrent games
-            CompletableFuture<GameWorld> future = new CompletableFuture<>();
-            future.completeExceptionally(new GameOpenException(new LiteralText("Concurrent games are not yet allowed!")));
-            return future;
-        }
-
-        return BubbleWorld.tryOpen(server, config).thenApply(bubbleOpt -> {
-            BubbleWorld bubble = bubbleOpt.orElseThrow(() -> new GameOpenException(new LiteralText("No available bubble worlds!")));
-
+        return BubbleWorld.open(server, config).thenApply(bubble -> {
             GameWorld gameWorld = new GameWorld(bubble, game);
             DIMENSION_TO_WORLD.put(bubble.getDimensionKey(), gameWorld);
 

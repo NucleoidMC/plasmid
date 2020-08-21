@@ -21,9 +21,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.nucleoid.plasmid.world.bubble.BubbleLevelProperties;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorld;
-import xyz.nucleoid.plasmid.world.bubble.BubbleWorldControl;
+import xyz.nucleoid.plasmid.world.bubble.CloseBubbleWorld;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorldHolder;
 
 import javax.annotation.Nullable;
@@ -34,7 +33,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 @Mixin(ServerWorld.class)
-public abstract class ServerWorldMixin extends World implements BubbleWorldHolder, BubbleWorldControl {
+public abstract class ServerWorldMixin extends World implements BubbleWorldHolder, CloseBubbleWorld {
     @Shadow
     @Final
     private ServerTickScheduler<Block> blockTickScheduler;
@@ -82,15 +81,7 @@ public abstract class ServerWorldMixin extends World implements BubbleWorldHolde
 
     @Override
     public void setBubbleWorld(BubbleWorld bubbleWorld) {
-        if (this.bubbleWorld != null) {
-            ((BubbleLevelProperties) this.properties).close();
-        }
-
         this.bubbleWorld = bubbleWorld;
-
-        if (bubbleWorld != null) {
-            ((BubbleLevelProperties) this.properties).apply(bubbleWorld.getConfig());
-        }
     }
 
     @Nullable
@@ -100,24 +91,11 @@ public abstract class ServerWorldMixin extends World implements BubbleWorldHolde
     }
 
     @Override
-    public void enable() {
-        BubbleWorldControl.enable(this.blockTickScheduler);
-        BubbleWorldControl.enable(this.fluidTickScheduler);
-        BubbleWorldControl.enable(this.getChunkManager());
+    public void closeBubble() {
+        CloseBubbleWorld.closeBubble(this.blockTickScheduler);
+        CloseBubbleWorld.closeBubble(this.fluidTickScheduler);
+        CloseBubbleWorld.closeBubble(this.getChunkManager());
 
-        this.clearWorld();
-    }
-
-    @Override
-    public void disable() {
-        BubbleWorldControl.disable(this.blockTickScheduler);
-        BubbleWorldControl.disable(this.fluidTickScheduler);
-        BubbleWorldControl.disable(this.getChunkManager());
-
-        this.clearWorld();
-    }
-
-    private void clearWorld() {
         this.clearBlockEntities();
         this.clearEntities();
     }

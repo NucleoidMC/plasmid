@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
 import xyz.nucleoid.plasmid.game.GameWorld;
-import xyz.nucleoid.plasmid.game.event.BroadcastChatMessageListener;
+import xyz.nucleoid.plasmid.game.event.PlayerChatListener;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
@@ -44,7 +44,7 @@ public abstract class PlayerManagerMixin {
             return;
         } else {
             GameWorld gameWorld = GameWorld.forWorld(sender.world);
-            if (gameWorld != null && gameWorld.containsEntity(sender) && gameWorld.invoker(BroadcastChatMessageListener.EVENT).onBroadcastChatMessage(message, sender) == ActionResult.FAIL) {
+            if (gameWorld != null && gameWorld.containsEntity(sender) && gameWorld.invoker(PlayerChatListener.EVENT).onSendChatMessage(message, sender) == ActionResult.FAIL) {
                 ci.cancel();
             }
             if ((((HasChatChannel) sender).getChatChannel()) != ChatChannel.TEAM) return;

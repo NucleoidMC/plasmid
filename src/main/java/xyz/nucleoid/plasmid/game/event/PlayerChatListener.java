@@ -15,10 +15,10 @@ import net.minecraft.util.ActionResult;
  * </ul>
  *
  */
-public interface BroadcastChatMessageListener {
-    EventType<BroadcastChatMessageListener> EVENT = EventType.create(BroadcastChatMessageListener.class, listeners -> (message, sender) -> {
-        for (BroadcastChatMessageListener listener : listeners) {
-            ActionResult result = listener.onBroadcastChatMessage(message, sender);
+public interface PlayerChatListener {
+    EventType<PlayerChatListener> EVENT = EventType.create(PlayerChatListener.class, listeners -> (message, sender) -> {
+        for (PlayerChatListener listener : listeners) {
+            ActionResult result = listener.onSendChatMessage(message, sender);
 
             if (result != ActionResult.PASS) {
                 return result;
@@ -28,5 +28,5 @@ public interface BroadcastChatMessageListener {
         return ActionResult.PASS;
     });
 
-    ActionResult onBroadcastChatMessage(Text message, ServerPlayerEntity sender);
+    ActionResult onSendChatMessage(Text message, ServerPlayerEntity sender);
 }

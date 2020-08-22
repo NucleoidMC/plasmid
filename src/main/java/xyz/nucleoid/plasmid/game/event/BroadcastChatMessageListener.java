@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game.event;
 
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 
 /**
@@ -15,9 +16,9 @@ import net.minecraft.util.ActionResult;
  *
  */
 public interface BroadcastChatMessageListener {
-    EventType<BroadcastChatMessageListener> EVENT = EventType.create(BroadcastChatMessageListener.class, listeners -> (sender) -> {
+    EventType<BroadcastChatMessageListener> EVENT = EventType.create(BroadcastChatMessageListener.class, listeners -> (message, sender) -> {
         for (BroadcastChatMessageListener listener : listeners) {
-            ActionResult result = listener.onBroadcastChatMessage(sender);
+            ActionResult result = listener.onBroadcastChatMessage(message, sender);
 
             if (result != ActionResult.PASS) {
                 return result;
@@ -27,5 +28,5 @@ public interface BroadcastChatMessageListener {
         return ActionResult.PASS;
     });
 
-    ActionResult onBroadcastChatMessage(ServerPlayerEntity sender);
+    ActionResult onBroadcastChatMessage(Text message, ServerPlayerEntity sender);
 }

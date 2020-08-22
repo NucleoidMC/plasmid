@@ -45,7 +45,7 @@ public abstract class PlayerManagerMixin {
             return;
         } else if (playerExists) {
             GameWorld gameWorld = GameWorld.forWorld(sender.world);
-            if (gameWorld != null && gameWorld.containsEntity(sender) && gameWorld.invoker(BroadcastChatMessageListener.EVENT).onBroadcastChatMessage(sender) == ActionResult.FAIL) {
+            if (gameWorld != null && gameWorld.containsEntity(sender) && gameWorld.invoker(BroadcastChatMessageListener.EVENT).onBroadcastChatMessage(message, sender) == ActionResult.FAIL) {
                 ci.cancel();
             }
         }

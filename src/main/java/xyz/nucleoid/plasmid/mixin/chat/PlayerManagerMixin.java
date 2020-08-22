@@ -6,6 +6,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
 import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.event.PlayerChatListener;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
@@ -38,8 +40,14 @@ public abstract class PlayerManagerMixin {
         }
 
         ServerPlayerEntity sender = this.getPlayer(senderUuid);
-        if (sender == null || (((HasChatChannel) sender).getChatChannel()) != ChatChannel.TEAM) {
+        if (sender == null) {
             return;
+        } else {
+            GameWorld gameWorld = GameWorld.forWorld(sender.world);
+            if (gameWorld != null && gameWorld.containsEntity(sender) && gameWorld.invoker(PlayerChatListener.EVENT).onSendChatMessage(message, sender) == ActionResult.FAIL) {
+                ci.cancel();
+            }
+            if ((((HasChatChannel) sender).getChatChannel()) != ChatChannel.TEAM) return;
         }
 
         if (this.isTeamChatAllowed(sender)) {

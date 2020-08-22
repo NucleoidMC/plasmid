@@ -10,6 +10,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerTickScheduler;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.ProgressListener;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.MutableWorldProperties;
@@ -76,6 +77,13 @@ public abstract class ServerWorldMixin extends World implements BubbleWorldHolde
         BubbleWorld bubble = BubbleWorld.forWorld(this);
         if (bubble != null) {
             bubble.removePlayer(player);
+        }
+    }
+
+    @Inject(method = "save", at = @At("HEAD"), cancellable = true)
+    private void save(ProgressListener progressListener, boolean flush, boolean enabled, CallbackInfo ci) {
+        if (flush && this.bubbleWorld != null) {
+            ci.cancel();
         }
     }
 

@@ -10,6 +10,7 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerSnapshot;
+import xyz.nucleoid.plasmid.util.Scheduler;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -29,8 +30,6 @@ public final class BubbleWorld implements AutoCloseable {
         this.world = world;
         this.config = config;
         this.bubbleKey = bubbleKey;
-
-        this.open();
     }
 
     @Nullable
@@ -45,19 +44,27 @@ public final class BubbleWorld implements AutoCloseable {
         }, server);
     }
 
-    private void open() {
-        this.assertServerThread();
-        this.kickPlayers();
-    }
-
     @Override
     public void close() {
-        this.assertServerThread();
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        this.closeAsync(future);
 
-        this.kickPlayers();
+        future.thenAccept(v -> {
+            CloseBubbleWorld.closeBubble(this.world);
+            BubbleWorldManager.get(this.world.getServer()).close(this);
+        });
+    }
 
-        CloseBubbleWorld.closeBubble(this.world);
-        BubbleWorldManager.get(this.world.getServer()).close(this);
+    private void closeAsync(CompletableFuture<Void> future) {
+        Scheduler.INSTANCE.submit(server -> {
+            this.kickPlayers();
+
+            if (this.world.getPlayers().isEmpty() && this.world.getChunkManager().getLoadedChunkCount() <= 0) {
+                future.complete(null);
+            } else {
+                this.closeAsync(future);
+            }
+        });
     }
 
     public boolean addPlayer(ServerPlayerEntity player) {

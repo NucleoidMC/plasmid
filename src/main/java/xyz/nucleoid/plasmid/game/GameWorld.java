@@ -309,7 +309,7 @@ public final class GameWorld implements AutoCloseable {
      * @return the number of players in this {@link GameWorld}.
      */
     public int getPlayerCount() {
-        return this.bubble.getPlayers().size();
+        return this.bubble.getPlayerSet().size();
     }
 
     /**

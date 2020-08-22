@@ -40,14 +40,14 @@ public abstract class PlayerManagerMixin {
         }
 
         ServerPlayerEntity sender = this.getPlayer(senderUuid);
-        boolean playerExists = sender != null;
-        if (!playerExists || (((HasChatChannel) sender).getChatChannel()) != ChatChannel.TEAM) {
+        if (sender == null) {
             return;
-        } else if (playerExists) {
+        } else {
             GameWorld gameWorld = GameWorld.forWorld(sender.world);
             if (gameWorld != null && gameWorld.containsEntity(sender) && gameWorld.invoker(BroadcastChatMessageListener.EVENT).onBroadcastChatMessage(message, sender) == ActionResult.FAIL) {
                 ci.cancel();
             }
+            if ((((HasChatChannel) sender).getChatChannel()) != ChatChannel.TEAM) return;
         }
 
         if (this.isTeamChatAllowed(sender)) {

@@ -38,6 +38,7 @@ import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
 import java.util.Collection;
+import java.util.Comparator;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -164,7 +165,7 @@ public final class GameCommand {
 
         // TODO: currently, only allowing to join one open game at a time
         Collection<GameWorld> games = GameWorld.getOpen();
-        GameWorld gameWorld = games.stream().findFirst().orElse(null);
+        GameWorld gameWorld = games.stream().max(Comparator.comparingInt(GameWorld::getPlayerCount)).orElse(null);
         if (gameWorld == null) {
             throw NO_GAME_OPEN.create();
         }

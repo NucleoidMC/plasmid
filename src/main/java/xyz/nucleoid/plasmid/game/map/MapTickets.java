@@ -7,11 +7,13 @@ import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.stream.Stream;
 
-public final class MapTickets {
+public final class MapTickets implements AutoCloseable {
+    private final ServerWorld world;
     private final ChunkPos minChunk;
     private final ChunkPos maxChunk;
 
-    private MapTickets(ChunkPos minChunk, ChunkPos maxChunk) {
+    private MapTickets(ServerWorld world, ChunkPos minChunk, ChunkPos maxChunk) {
+        this.world = world;
         this.minChunk = minChunk;
         this.maxChunk = maxChunk;
     }
@@ -20,7 +22,7 @@ public final class MapTickets {
         ChunkPos minChunk = new ChunkPos(bounds.getMin());
         ChunkPos maxChunk = new ChunkPos(bounds.getMax());
 
-        MapTickets tickets = new MapTickets(minChunk, maxChunk);
+        MapTickets tickets = new MapTickets(world, minChunk, maxChunk);
         tickets.acquire(world);
 
         return tickets;
@@ -30,12 +32,17 @@ public final class MapTickets {
         ServerChunkManager chunkManager = world.getChunkManager();
         this.stream().forEach(ticketPos -> {
             chunkManager.setChunkForced(ticketPos, true);
-            world.getChunk(ticketPos.x, ticketPos.z);
         });
     }
 
+    @Deprecated
     public void release(ServerWorld world) {
-        ServerChunkManager chunkManager = world.getChunkManager();
+       this.close();
+    }
+
+    @Override
+    public void close() {
+        ServerChunkManager chunkManager = this.world.getChunkManager();
         this.stream().forEach(ticketPos -> {
             chunkManager.setChunkForced(ticketPos, false);
         });

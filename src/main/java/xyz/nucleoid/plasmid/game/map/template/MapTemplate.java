@@ -56,6 +56,12 @@ public final class MapTemplate {
     public void setBlockState(BlockPos pos, BlockState state) {
         Chunk chunk = this.chunks.computeIfAbsent(chunkPos(pos), p -> new Chunk());
         chunk.set(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15, state);
+
+        if (state.getBlock().hasBlockEntity()) {
+            CompoundTag tag = new CompoundTag();
+            tag.putString("id", "DUMMY");
+            this.blockEntities.put(pos.asLong(), tag);
+        }
     }
 
     public void setBlockEntity(BlockPos pos, @Nullable BlockEntity entity) {

@@ -1,8 +1,8 @@
 package xyz.nucleoid.plasmid.game.player;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
+import net.minecraft.util.Formatting;
 
 import javax.annotation.Nullable;
 
@@ -30,6 +30,19 @@ public final class JoinResult {
 
     public static JoinResult alreadyJoined() {
         return err(new LiteralText("You are already in this game!"));
+    }
+
+    public static JoinResult inOtherGame() {
+        String linkCommand = "/game leave";
+        Style linkStyle = Style.EMPTY
+                .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, linkCommand))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(linkCommand)))
+                .withFormatting(Formatting.BLUE, Formatting.UNDERLINE);
+
+        Text link = new LiteralText("leave this game")
+                .setStyle(linkStyle);
+
+        return err(new LiteralText("You must ").append(link).append(" before joining another game!"));
     }
 
     public boolean isOk() {

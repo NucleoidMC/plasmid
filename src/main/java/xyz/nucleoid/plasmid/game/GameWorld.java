@@ -230,6 +230,10 @@ public final class GameWorld implements AutoCloseable {
      */
     public CompletableFuture<JoinResult> offerPlayer(ServerPlayerEntity player) {
         return Scheduler.INSTANCE.submit(server -> {
+            if (GameWorld.forWorld(player.world) != null) {
+                return JoinResult.inOtherGame();
+            }
+
             JoinResult result = this.invoker(OfferPlayerListener.EVENT).offerPlayer(player);
             if (result.isError()) {
                 return result;

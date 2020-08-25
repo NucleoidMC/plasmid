@@ -36,6 +36,7 @@ import xyz.nucleoid.plasmid.game.channel.SimpleGameChannel;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.util.Scheduler;
+import xyz.nucleoid.plasmid.util.TranslatableLiteralText;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -210,8 +211,10 @@ public final class GameCommand {
                 Text error = startResult.getError();
                 message = error.shallowCopy().formatted(Formatting.RED);
             } else {
-                message = source.getDisplayName().shallowCopy().append(" has started the game!")
-                        .formatted(Formatting.GRAY);
+                message = new TranslatableLiteralText(source.getDisplayName().shallowCopy().append(" has started the game!"),
+                        "text.plasmid.game.started.player",
+                        source.getDisplayName()
+                ).formatted(Formatting.GRAY);
             }
 
             gameWorld.getPlayerSet().sendMessage(message);
@@ -232,21 +235,24 @@ public final class GameCommand {
         try {
             gameWorld.close();
 
-            MutableText message = source.getDisplayName().shallowCopy().append(" has stopped the game!");
+            MutableText message = new TranslatableLiteralText(source.getDisplayName().shallowCopy().append(" has stopped the game!"),
+                    "text.plasmid.game.stopped.player", source.getDisplayName());
             playerSet.sendMessage(message.formatted(Formatting.GRAY));
         } catch (Throwable throwable) {
             Plasmid.LOGGER.error("Failed to stop game", throwable);
 
-            LiteralText message = new LiteralText("An unexpected error was thrown while stopping the game!");
+            LiteralText message = new TranslatableLiteralText("An unexpected error was thrown while stopping the game!",
+                    "text.plasmid.game.stopped.error");
             playerSet.sendMessage(message.formatted(Formatting.RED));
         }
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int listGames(CommandContext<ServerCommandSource> context) {
+    private static int listGames(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
-        source.sendFeedback(new LiteralText("Registered games:").formatted(Formatting.BOLD), false);
+        source.sendFeedback(new TranslatableLiteralText("Registered games:", "text.plasmid.game.command.list").getText(source.getPlayer()).formatted(Formatting.BOLD), false);
+
         for (Identifier id : GameConfigs.getKeys()) {
             String command = "/game open " + id;
 
@@ -277,7 +283,8 @@ public final class GameCommand {
             throw CHANNEL_ALREADY_EXISTS.create(channelId);
         }
 
-        MutableText message = new TranslatableText("Created channel with id '%s'", channelId);
+        MutableText message = new TranslatableLiteralText(new TranslatableText("Created channel with id '%s'", channelId),
+                "text.plasmid.game.channel.create", channelId).getText(source.getPlayer());
         source.sendFeedback(message.formatted(Formatting.GRAY), false);
 
         return Command.SINGLE_SUCCESS;
@@ -291,7 +298,8 @@ public final class GameCommand {
         Identifier channelId = GameChannelArgument.get(context, "channel_id").getLeft();
         channelManager.remove(channelId);
 
-        MutableText message = new TranslatableText("Removed channel with id '%s'", channelId);
+        MutableText message = new TranslatableLiteralText(new TranslatableText("Removed channel with id '%s'", channelId),
+                "text.plasmid.game.channel.remove", channelId).getText(source.getPlayer());
         source.sendFeedback(message.formatted(Formatting.GRAY), false);
 
         return Command.SINGLE_SUCCESS;
@@ -307,7 +315,8 @@ public final class GameCommand {
                 throw ENDPOINT_ALREADY_CONNECTED.create();
             }
 
-            MutableText message = new TranslatableText("Connected '%s' to '%s'", channel.getLeft(), entity.getEntityName());
+            MutableText message = new TranslatableLiteralText(new TranslatableText("Connected '%s' to '%s'", channel.getLeft(), entity.getEntityName()),
+                    "text.plasmid.game.channel.connect.entity", channel.getLeft(), entity.getEntityName()).getText(context.getSource().getPlayer());
             context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;
@@ -329,7 +338,8 @@ public final class GameCommand {
                 throw ENDPOINT_ALREADY_CONNECTED.create();
             }
 
-            MutableText message = new TranslatableText("Connected '%s' to block at (%s; %s; %s)", channel.getLeft(), pos.getX(), pos.getY(), pos.getZ());
+            MutableText message = new TranslatableLiteralText(new TranslatableText("Connected '%s' to block at (%s; %s; %s)", channel.getLeft(), pos.getX(), pos.getY(), pos.getZ()),
+                    "text.plasmid.game.channel.connect.block", channel.getLeft(), pos.getX(), pos.getY(), pos.getZ()).getText(source.getPlayer());
             source.sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;

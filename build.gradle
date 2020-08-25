@@ -43,7 +43,7 @@ dependencies {
     exclude module: "fabric-loader"
   }
 
-  modCompile "curse.maven:server-translations:3042095"
+  modCompile "curse.maven:server-translations:3042138"
 }
 
 processResources {

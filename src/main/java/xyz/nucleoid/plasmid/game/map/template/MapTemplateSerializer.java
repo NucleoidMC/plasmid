@@ -59,7 +59,7 @@ public final class MapTemplateSerializer {
         return CompletableFuture.supplyAsync(() -> {
             Identifier path = getResourcePathFor(identifier);
 
-            try (Resource resource = this.resourceManager.getResource(path);) {
+            try (Resource resource = this.resourceManager.getResource(path)) {
                 MapTemplate template = MapTemplate.createEmpty();
                 this.load(template, NbtIo.readCompressed(resource.getInputStream()));
                 return template;
@@ -72,10 +72,13 @@ public final class MapTemplateSerializer {
     public CompletableFuture<Void> save(MapTemplate template, Identifier identifier) {
         return CompletableFuture.supplyAsync(() -> {
             Path path = getExportPathFor(identifier);
-            try (OutputStream output = Files.newOutputStream(path)) {
-                CompoundTag root = this.save(template);
-                NbtIo.writeCompressed(root, output);
-                return null;
+            try {
+                Files.createDirectories(path.getParent());
+                try (OutputStream output = Files.newOutputStream(path)) {
+                    CompoundTag root = this.save(template);
+                    NbtIo.writeCompressed(root, output);
+                    return null;
+                }
             } catch (IOException e) {
                 throw new CompletionException(e);
             }

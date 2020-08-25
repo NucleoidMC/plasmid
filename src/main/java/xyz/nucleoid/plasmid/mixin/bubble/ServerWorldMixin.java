@@ -10,6 +10,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerTickScheduler;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.ProgressListener;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.MutableWorldProperties;
@@ -21,9 +22,11 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorld;
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorldControl;
+import xyz.nucleoid.plasmid.world.bubble.BubbleWorld;
+import xyz.nucleoid.plasmid.world.bubble.CloseBubbleWorld;
+import xyz.nucleoid.plasmid.world.bubble.BubbleWorldHolder;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -31,7 +34,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 @Mixin(ServerWorld.class)
-public abstract class ServerWorldMixin extends World implements BubbleWorldControl {
+public abstract class ServerWorldMixin extends World implements BubbleWorldHolder, CloseBubbleWorld {
     @Shadow
     @Final
     private ServerTickScheduler<Block> blockTickScheduler;
@@ -52,6 +55,8 @@ public abstract class ServerWorldMixin extends World implements BubbleWorldContr
     @Final
     private Set<EntityNavigation> entityNavigations;
 
+    private BubbleWorld bubbleWorld;
+
     private ServerWorldMixin(MutableWorldProperties properties, RegistryKey<World> registryKey, DimensionType dimension, Supplier<Profiler> profiler, boolean client, boolean debug, long seed) {
         super(properties, registryKey, dimension, profiler, client, debug, seed);
     }
@@ -61,7 +66,7 @@ public abstract class ServerWorldMixin extends World implements BubbleWorldContr
 
     @Inject(method = "addPlayer", at = @At("RETURN"))
     private void onPlayerAdded(ServerPlayerEntity player, CallbackInfo ci) {
-        BubbleWorld bubble = BubbleWorld.forWorld(player.world);
+        BubbleWorld bubble = BubbleWorld.forWorld(this);
         if (bubble != null && !bubble.containsPlayer(player)) {
             bubble.kickPlayer(player);
         }
@@ -69,31 +74,36 @@ public abstract class ServerWorldMixin extends World implements BubbleWorldContr
 
     @Inject(method = "removePlayer", at = @At("RETURN"))
     private void onPlayerRemoved(ServerPlayerEntity player, CallbackInfo ci) {
-        BubbleWorld bubble = BubbleWorld.forWorld(player.world);
+        BubbleWorld bubble = BubbleWorld.forWorld(this);
         if (bubble != null) {
             bubble.removePlayer(player);
         }
     }
 
-    @Override
-    public void enable() {
-        BubbleWorldControl.enable(this.blockTickScheduler);
-        BubbleWorldControl.enable(this.fluidTickScheduler);
-        BubbleWorldControl.enable(this.getChunkManager());
-
-        this.clearWorld();
+    @Inject(method = "save", at = @At("HEAD"), cancellable = true)
+    private void save(ProgressListener progressListener, boolean flush, boolean enabled, CallbackInfo ci) {
+        if (flush && this.bubbleWorld != null) {
+            ci.cancel();
+        }
     }
 
     @Override
-    public void disable() {
-        BubbleWorldControl.disable(this.blockTickScheduler);
-        BubbleWorldControl.disable(this.fluidTickScheduler);
-        BubbleWorldControl.disable(this.getChunkManager());
-
-        this.clearWorld();
+    public void setBubbleWorld(BubbleWorld bubbleWorld) {
+        this.bubbleWorld = bubbleWorld;
     }
 
-    private void clearWorld() {
+    @Nullable
+    @Override
+    public BubbleWorld getBubbleWorld() {
+        return this.bubbleWorld;
+    }
+
+    @Override
+    public void closeBubble() {
+        CloseBubbleWorld.closeBubble(this.blockTickScheduler);
+        CloseBubbleWorld.closeBubble(this.fluidTickScheduler);
+        CloseBubbleWorld.closeBubble(this.getChunkManager());
+
         this.clearBlockEntities();
         this.clearEntities();
     }

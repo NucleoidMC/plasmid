@@ -13,13 +13,17 @@ import xyz.nucleoid.plasmid.fake.FakeItem;
 import xyz.nucleoid.plasmid.game.map.template.trace.RegionTraceMode;
 import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
 
-public final class AddRegionItem extends Item implements FakeItem<Item> {
+public final class AddRegionItem extends Item implements FakeItem {
     public AddRegionItem(Item.Settings settings) {
         super(settings);
     }
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
+        if (world.isClient) {
+            return super.use(world, player, hand);
+        }
+
         ItemStack stack = player.getStackInHand(hand);
 
         if (player instanceof RegionTracer) {
@@ -59,7 +63,7 @@ public final class AddRegionItem extends Item implements FakeItem<Item> {
     }
 
     @Override
-    public Item getFaking() {
+    public Item asProxy() {
         return Items.STICK;
     }
 }

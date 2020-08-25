@@ -1,7 +1,5 @@
 package xyz.nucleoid.plasmid.mixin.custom;
 
-import xyz.nucleoid.plasmid.entity.CustomEntity;
-import xyz.nucleoid.plasmid.entity.CustomizableEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
@@ -13,11 +11,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.nucleoid.plasmid.entity.CustomEntity;
+import xyz.nucleoid.plasmid.entity.CustomizableEntity;
+import xyz.nucleoid.plasmid.entity.NonPersistentEntity;
 
 import javax.annotation.Nullable;
 
 @Mixin(Entity.class)
-public abstract class EntityMixin implements CustomizableEntity {
+public abstract class EntityMixin implements CustomizableEntity, NonPersistentEntity {
     @Shadow
     public abstract void setCustomName(@Nullable Text name);
 
@@ -25,6 +26,7 @@ public abstract class EntityMixin implements CustomizableEntity {
     public World world;
 
     private CustomEntity customEntity;
+    private boolean nonPersistent;
 
     @Override
     public void setCustomEntity(CustomEntity customEntity) {
@@ -38,6 +40,18 @@ public abstract class EntityMixin implements CustomizableEntity {
     @Override
     public CustomEntity getCustomEntity() {
         return this.customEntity;
+    }
+
+    @Override
+    public void setNonPersistent() {
+        this.nonPersistent = true;
+    }
+
+    @Inject(method = "saveToTag", at = @At("HEAD"), cancellable = true)
+    private void saveToTag(CompoundTag tag, CallbackInfoReturnable<Boolean> ci) {
+        if (this.nonPersistent) {
+            ci.setReturnValue(false);
+        }
     }
 
     @Inject(method = "toTag", at = @At("RETURN"))

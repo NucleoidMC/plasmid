@@ -3,6 +3,10 @@ node {
         checkout scm
     }
 
+    stage('incrementVersion') {
+        sh './gradlew incrementCiVersion'
+    }
+
     stage('build') {
         sh './gradlew clean build publish'
     }

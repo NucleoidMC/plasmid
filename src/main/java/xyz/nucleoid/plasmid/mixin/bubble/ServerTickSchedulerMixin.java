@@ -5,13 +5,13 @@ import net.minecraft.world.ScheduledTick;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleWorldControl;
+import xyz.nucleoid.plasmid.world.bubble.CloseBubbleWorld;
 
 import java.util.Set;
 import java.util.TreeSet;
 
 @Mixin(ServerTickScheduler.class)
-public class ServerTickSchedulerMixin<T> implements BubbleWorldControl {
+public class ServerTickSchedulerMixin<T> implements CloseBubbleWorld {
     @Shadow
     @Final
     private Set<ScheduledTick<T>> scheduledTickActions;
@@ -21,16 +21,7 @@ public class ServerTickSchedulerMixin<T> implements BubbleWorldControl {
     private TreeSet<ScheduledTick<T>> scheduledTickActionsInOrder;
 
     @Override
-    public void disable() {
-        this.clearActions();
-    }
-
-    @Override
-    public void enable() {
-        this.clearActions();
-    }
-
-    private void clearActions() {
+    public void closeBubble() {
         this.scheduledTickActions.clear();
         this.scheduledTickActionsInOrder.clear();
     }

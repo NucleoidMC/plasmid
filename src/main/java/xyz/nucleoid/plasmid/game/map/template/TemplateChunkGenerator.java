@@ -1,24 +1,18 @@
 package xyz.nucleoid.plasmid.game.map.template;
 
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.biome.Biome;
-import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
-import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
-import xyz.nucleoid.plasmid.util.BlockBounds;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.Heightmap;
+import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.source.BiomeAccess;
-import net.minecraft.world.biome.source.FixedBiomeSource;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.ProtoChunk;
@@ -26,6 +20,9 @@ import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
+import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
+import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
+import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,26 +78,45 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
 
             try {
                 int minWorldY = sectionY << 4;
-                this.addSection(minWorldX, minWorldY, minWorldZ, mutablePos, section);
+                this.addSection(minWorldX, minWorldY, minWorldZ, mutablePos, protoChunk, section);
             } finally {
                 section.unlock();
             }
         }
     }
 
-    private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable mutablePos, ChunkSection section) {
+    private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable templatePos, ProtoChunk chunk, ChunkSection section) {
         int offsetX = minWorldX - this.origin.getX();
         int offsetY = minWorldY - this.origin.getY();
         int offsetZ = minWorldZ - this.origin.getZ();
 
+        Heightmap oceanFloor = chunk.getHeightmap(Heightmap.Type.OCEAN_FLOOR_WG);
+        Heightmap worldSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
+
         for (int y = 0; y < 16; y++) {
             for (int z = 0; z < 16; z++) {
                 for (int x = 0; x < 16; x++) {
-                    mutablePos.set(x + offsetX, y + offsetY, z + offsetZ);
+                    templatePos.set(x + offsetX, y + offsetY, z + offsetZ);
 
-                    BlockState state = this.template.getBlockState(mutablePos);
+                    BlockState state = this.template.getBlockState(templatePos);
                     if (!state.isAir()) {
                         section.setBlockState(x, y, z, state);
+
+                        int worldY = y + minWorldY;
+                        oceanFloor.trackUpdate(x, worldY, z, state);
+                        worldSurface.trackUpdate(x, worldY, z, state);
+
+                        if (state.getLuminance() != 0) {
+                            chunk.addLightSource(new BlockPos(minWorldX + x, worldY, minWorldZ + z));
+                        }
+
+                        CompoundTag blockEntityTag = this.template.getBlockEntityTag(templatePos);
+                        if (blockEntityTag != null) {
+                            blockEntityTag.putInt("x", minWorldX + x);
+                            blockEntityTag.putInt("y", worldY);
+                            blockEntityTag.putInt("z", minWorldZ + z);
+                            chunk.addPendingBlockEntityTag(blockEntityTag);
+                        }
                     }
                 }
             }

@@ -70,4 +70,26 @@ public final class ColoredBlocks {
             default: return Blocks.GLASS;
         }
     }
+
+    public static Block bed(DyeColor color) {
+        switch (color) {
+            case ORANGE: return Blocks.ORANGE_BED;
+            case MAGENTA: return Blocks.MAGENTA_BED;
+            case LIGHT_BLUE: return Blocks.LIGHT_BLUE_BED;
+            case YELLOW: return Blocks.YELLOW_BED;
+            case LIME: return Blocks.LIME_BED;
+            case PINK: return Blocks.PINK_BED;
+            case GRAY: return Blocks.GRAY_BED;
+            case LIGHT_GRAY: return Blocks.LIGHT_GRAY_BED;
+            case CYAN: return Blocks.CYAN_BED;
+            case PURPLE: return Blocks.PURPLE_BED;
+            case BLUE: return Blocks.BLUE_BED;
+            case BROWN: return Blocks.BROWN_BED;
+            case GREEN: return Blocks.GREEN_BED;
+            case RED: return Blocks.RED_BED;
+            case BLACK: return Blocks.BLACK_BED;
+            default:
+            case WHITE: return Blocks.WHITE_BED;
+        }
+    }
 }

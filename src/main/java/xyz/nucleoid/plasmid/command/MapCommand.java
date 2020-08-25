@@ -18,12 +18,8 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplateSerializer;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplateViewer;
-import xyz.nucleoid.plasmid.game.map.template.StagingMapManager;
-import xyz.nucleoid.plasmid.game.map.template.StagingMapTemplate;
-import xyz.nucleoid.plasmid.game.map.template.TemplateRegion;
+import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.game.map.template.*;
 import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
 import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
 import xyz.nucleoid.plasmid.util.BlockBounds;
@@ -159,8 +155,15 @@ public final class MapCommand {
 
         MapTemplate template = stagingMap.compile();
         CompletableFuture<Void> future = MapTemplateSerializer.INSTANCE.save(template, stagingMap.getIdentifier());
-        future.thenAccept(v -> {
-            source.sendFeedback(new LiteralText("Compiled and saved map '" + identifier + "'"), false);
+
+        future.handle((v, throwable) -> {
+            if (throwable == null) {
+                source.sendFeedback(new LiteralText("Compiled and saved map '" + identifier + "'"), false);
+            } else {
+                Plasmid.LOGGER.error("Failed to compile map to '{}'", identifier, throwable);
+                source.sendError(new LiteralText("Failed to compile map! An unexpected exception was thrown"));
+            }
+            return null;
         });
 
         return Command.SINGLE_SUCCESS;

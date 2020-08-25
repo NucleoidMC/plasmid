@@ -1,9 +1,12 @@
 package xyz.nucleoid.plasmid;
 
 import com.google.common.reflect.Reflection;
+import com.mojang.serialization.Codec;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
@@ -13,24 +16,29 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.util.Unit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import xyz.nucleoid.plasmid.command.GameCommand;
-import xyz.nucleoid.plasmid.command.MapCommand;
-import xyz.nucleoid.plasmid.command.PartyCommand;
+import xyz.nucleoid.plasmid.command.*;
 import xyz.nucleoid.plasmid.entity.CustomEntity;
+import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.channel.GameChannel;
+import xyz.nucleoid.plasmid.game.channel.SimpleGameChannel;
+import xyz.nucleoid.plasmid.game.composite.CompositeGameConfig;
+import xyz.nucleoid.plasmid.game.composite.OrderedGame;
+import xyz.nucleoid.plasmid.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.event.AttackEntityListener;
+import xyz.nucleoid.plasmid.game.event.GameTickListener;
 import xyz.nucleoid.plasmid.game.event.UseBlockListener;
 import xyz.nucleoid.plasmid.game.event.UseItemListener;
 import xyz.nucleoid.plasmid.game.map.template.MapTemplateSerializer;
 import xyz.nucleoid.plasmid.game.map.template.StagingBoundRenderer;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
-import xyz.nucleoid.plasmid.game.world.bubble.BubbleChunkGenerator;
 import xyz.nucleoid.plasmid.item.PlasmidItems;
+import xyz.nucleoid.plasmid.test.TestGame;
 
 public final class Plasmid implements ModInitializer {
     public static final String ID = "plasmid";
@@ -38,17 +46,27 @@ public final class Plasmid implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "bubble"), BubbleChunkGenerator.CODEC);
-
         Reflection.initialize(PlasmidItems.class);
 
         GameConfigs.register();
         MapTemplateSerializer.INSTANCE.register();
 
+        GameChannel.register(new Identifier(ID, "simple"), SimpleGameChannel.CODEC);
+
+        GameType.register(new Identifier(Plasmid.ID, "test"), TestGame::open, Codec.unit(Unit.INSTANCE));
+        GameType.register(new Identifier(Plasmid.ID, "order"), OrderedGame::open, CompositeGameConfig.CODEC);
+        GameType.register(new Identifier(Plasmid.ID, "random"), RandomGame::open, CompositeGameConfig.CODEC);
+
+        this.registerCallbacks();
+    }
+
+    private void registerCallbacks() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             MapCommand.register(dispatcher);
             GameCommand.register(dispatcher);
             PartyCommand.register(dispatcher);
+            ChatCommand.register(dispatcher);
+            ShoutCommand.register(dispatcher);
         });
 
         UseItemCallback.EVENT.register((player, world, hand) -> {
@@ -118,10 +136,23 @@ public final class Plasmid implements ModInitializer {
         ServerTickEvents.END_WORLD_TICK.register(world -> {
             GameWorld game = GameWorld.forWorld(world);
             if (game != null) {
-                game.tick();
+                game.invoker(GameTickListener.EVENT).onTick();
             }
         });
 
         ServerTickEvents.START_SERVER_TICK.register(StagingBoundRenderer::onTick);
+
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            for (GameWorld gameWorld : GameWorld.getOpen()) {
+                gameWorld.close();
+            }
+        });
+
+        ServerWorldEvents.UNLOAD.register((server, world) -> {
+            GameWorld gameWorld = GameWorld.forWorld(world);
+            if (gameWorld != null) {
+                gameWorld.close();
+            }
+        });
     }
 }

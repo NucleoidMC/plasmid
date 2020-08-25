@@ -1,6 +1,5 @@
 package xyz.nucleoid.plasmid.shop;
 
-import xyz.nucleoid.plasmid.util.ItemStackBuilder;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -12,6 +11,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import xyz.nucleoid.plasmid.util.ItemStackBuilder;
 
 import java.util.function.Consumer;
 

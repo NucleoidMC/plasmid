@@ -1,7 +1,6 @@
 package xyz.nucleoid.plasmid.entity;
 
 import com.google.common.base.Preconditions;
-import xyz.nucleoid.plasmid.registry.TinyRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
@@ -10,9 +9,14 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.world.World;
+import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import javax.annotation.Nullable;
 
+/**
+ * @deprecated in favour of {@link xyz.nucleoid.plasmid.fake.FakeEntityType}
+ */
+@Deprecated
 public final class CustomEntity {
     private static final TinyRegistry<CustomEntity> REGISTRY = TinyRegistry.newStable();
 

@@ -60,7 +60,7 @@ public final class ItemStackBuilder {
 
     public ItemStackBuilder addCanPlaceOn(Block block) {
         Identifier blockId = Registry.BLOCK.getId(block);
-        return this.addCanDestroy(blockId.toString());
+        return this.addCanPlaceOn(blockId.toString());
     }
 
     public ItemStackBuilder addCanPlaceOn(Tag<Block> block) {
@@ -69,7 +69,7 @@ public final class ItemStackBuilder {
             throw new IllegalArgumentException("tag " + block + " does not exist!");
         }
 
-        return this.addCanDestroy("#" + tagId.toString());
+        return this.addCanPlaceOn("#" + tagId.toString());
     }
 
     private ItemStackBuilder addCanDestroy(String predicate) {

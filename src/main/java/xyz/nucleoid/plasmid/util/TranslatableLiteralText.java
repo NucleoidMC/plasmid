@@ -28,6 +28,16 @@ public final class TranslatableLiteralText extends LiteralText {
         this.translatableText = new TranslatableText(key, args);
     }
 
+    public TranslatableLiteralText(String defaultString, TranslatableText translatableText) {
+        super(defaultString);
+        this.translatableText = translatableText;
+    }
+
+    public TranslatableLiteralText(Text defaultString, TranslatableText translatableText) {
+        super(defaultString.getString());
+        this.translatableText = translatableText;
+    }
+
     @Override
     public MutableText setStyle(Style style) {
         this.translatableText.setStyle(style);
@@ -54,5 +64,10 @@ public final class TranslatableLiteralText extends LiteralText {
         this.translatableText.append(text);
         super.append(text);
         return this;
+    }
+
+    @Override
+    public TranslatableLiteralText copy() {
+        return new TranslatableLiteralText(super.copy(), this.translatableText);
     }
 }

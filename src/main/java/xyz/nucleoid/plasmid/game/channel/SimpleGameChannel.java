@@ -17,6 +17,7 @@ import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
+import xyz.nucleoid.plasmid.util.TranslatableLiteralText;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -61,7 +62,8 @@ public final class SimpleGameChannel implements GameChannel {
                 if (throwable instanceof GameOpenException) {
                     errorFeedback = ((GameOpenException) throwable).getReason().shallowCopy();
                 } else {
-                    errorFeedback = new LiteralText("An unexpected exception occurred while joining game!");
+                    errorFeedback = new TranslatableLiteralText(new LiteralText("An unexpected exception occurred while joining game!"),
+                            "text.plasmid.game.join.error");
                     Plasmid.LOGGER.warn("Failed to join game", throwable);
                 }
             }

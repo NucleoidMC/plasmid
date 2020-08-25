@@ -16,6 +16,7 @@ import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.util.Scheduler;
+import xyz.nucleoid.plasmid.util.TranslatableLiteralText;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorld;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
 
@@ -240,9 +241,10 @@ public final class GameWorld implements AutoCloseable {
             }
 
             if (this.addPlayer(player)) {
-                Text joinMessage = player.getDisplayName().shallowCopy()
-                        .append(" has joined the game lobby!")
-                        .formatted(Formatting.YELLOW);
+                Text joinMessage = new TranslatableLiteralText(player.getDisplayName().shallowCopy()
+                        .append(" has joined the game lobby!"),
+                        "text.plasmid.game.join", player.getDisplayName()
+                ).formatted(Formatting.YELLOW);
 
                 this.getPlayerSet().sendMessage(joinMessage);
 

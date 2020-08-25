@@ -27,6 +27,7 @@ minecraft {
 repositories {
   maven { url = "https://jitpack.io/" }
   maven { url = "https://maven.gegy.dev/" }
+  maven { url = "https://www.cursemaven.com" } // Server-Translation
 }
 
 dependencies {
@@ -41,6 +42,8 @@ dependencies {
   modRuntime("com.github.SuperCoder7979:databreaker:0.2.6") {
     exclude module: "fabric-loader"
   }
+
+  modCompile "curse.maven:server-translations:3042095"
 }
 
 processResources {

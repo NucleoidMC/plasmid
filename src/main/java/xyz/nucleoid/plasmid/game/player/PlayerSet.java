@@ -8,6 +8,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
+import xyz.nucleoid.plasmid.util.TranslatableLiteralText;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -56,6 +57,7 @@ public final class PlayerSet implements Iterable<ServerPlayerEntity> {
 
     public void sendMessage(Text message) {
         for (ServerPlayerEntity player : this.players) {
+            if (message instanceof TranslatableLiteralText) message = ((TranslatableLiteralText) message).getText(player);
             player.sendMessage(message, false);
         }
     }

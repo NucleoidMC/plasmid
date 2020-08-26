@@ -6,6 +6,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
+import xyz.nucleoid.plasmid.chat.translation.TranslationHandler;
 import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.event.PlayerChatListener;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
@@ -43,6 +45,7 @@ public abstract class PlayerManagerMixin {
         if (sender == null) {
             return;
         } else {
+            if (message instanceof TranslatableText) message = TranslationHandler.getCorrectText((TranslatableText) message, sender);
             GameWorld gameWorld = GameWorld.forWorld(sender.world);
             if (gameWorld != null && gameWorld.containsEntity(sender) && gameWorld.invoker(PlayerChatListener.EVENT).onSendChatMessage(message, sender) == ActionResult.FAIL) {
                 ci.cancel();

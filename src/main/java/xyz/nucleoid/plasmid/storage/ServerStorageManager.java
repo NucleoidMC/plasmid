@@ -37,7 +37,10 @@ public final class ServerStorageManager extends PersistentState {
 
         for (int i = 0; i < storageTags.size(); i++) {
             CompoundTag storageTag = storageTags.getCompound(i);
-            ServerStorage.STORAGES.get(new Identifier(storageTag.getString("id"))).fromTag(storageTag);
+            ServerStorage storage = ServerStorage.STORAGES.get(new Identifier(storageTag.getString("id")));
+            if (storage != null) {
+                storage.fromTag(storageTag);
+            }
         }
     }
 

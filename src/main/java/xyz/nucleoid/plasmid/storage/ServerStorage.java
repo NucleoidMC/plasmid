@@ -21,6 +21,7 @@ public interface ServerStorage {
      * @param key - The id of the storage.
      * @param storage - The {@link ServerStorage} to add to the {@link #STORAGES} map.
      * @param <S> - The type of {@link ServerStorage}.
+     * @throws IllegalStateException if the storage is created after {@link ServerStorageManager} has loaded its NBT.
      * @return - The supplied {@link ServerStorage}.
      */
     static <S extends ServerStorage> S createStorage(Identifier key, S storage) {

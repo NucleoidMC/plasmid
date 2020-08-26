@@ -10,6 +10,7 @@ import xyz.nucleoid.plasmid.Plasmid;
 
 public final class ServerStorageManager extends PersistentState {
     private static final String KEY = Plasmid.ID + "_storage";
+    private static boolean loaded = false;
 
     ServerStorageManager() {
         super(KEY);
@@ -17,6 +18,10 @@ public final class ServerStorageManager extends PersistentState {
 
     public static ServerStorageManager get(ServerWorld world) {
         return world.getPersistentStateManager().getOrCreate(() -> new ServerStorageManager(), KEY);
+    }
+
+    public static boolean isLoaded() {
+        return loaded;
     }
 
     @Override
@@ -33,6 +38,7 @@ public final class ServerStorageManager extends PersistentState {
 
     @Override
     public void fromTag(CompoundTag tag) {
+        loaded = true;
         ListTag storageTags = tag.getList("storages", NbtType.COMPOUND);
 
         for (int i = 0; i < storageTags.size(); i++) {

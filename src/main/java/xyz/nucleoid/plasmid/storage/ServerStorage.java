@@ -24,6 +24,9 @@ public interface ServerStorage {
      * @return - The supplied {@link ServerStorage}.
      */
     static <S extends ServerStorage> S createStorage(Identifier key, S storage) {
+        if (ServerStorageManager.isLoaded()) {
+            throw new IllegalStateException(String.format("Server Storage with id %s was created after Server Storage Manager loaded!", key));
+        }
         STORAGES.put(key, storage);
         return storage;
     }

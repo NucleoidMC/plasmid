@@ -34,7 +34,8 @@
     "game.rule.ScreenHandlerMixin",
     "game.rule.ServerPlayerEntityMixin",
     "game.rule.ServerPlayerInteractionManagerMixin",
-    "game.rule.TntBlockMixin"
+    "game.rule.TntBlockMixin",
+    "storage.ServerWorldMixin"
   ],
   "client": [
     "fake.ClientConnectionMixin"

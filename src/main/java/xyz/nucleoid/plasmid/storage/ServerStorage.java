@@ -19,8 +19,8 @@ public interface ServerStorage {
      * Adds a {@link ServerStorage} to the {@link #STORAGES} map and returns the {@link ServerStorage}.
      * Use this to have your {@link ServerStorage} be saved and loaded.
      * @param key - The id of the storage.
-     * @param storage - The {@link ServerStorage} to add to the @link #STORAGES} map.
-     * @param <S> - The type of {@link ServerStorage}
+     * @param storage - The {@link ServerStorage} to add to the {@link #STORAGES} map.
+     * @param <S> - The type of {@link ServerStorage}.
      * @return - The supplied {@link ServerStorage}.
      */
     static <S extends ServerStorage> S createStorage(Identifier key, S storage) {
@@ -30,7 +30,7 @@ public interface ServerStorage {
 
     /**
      * Called when saving this {@link ServerStorage} to NBT.
-     * @return - The serialized NBT data of this {@link ServerStorage}
+     * @return - The serialized NBT data of this {@link ServerStorage}.
      */
     CompoundTag toTag();
 

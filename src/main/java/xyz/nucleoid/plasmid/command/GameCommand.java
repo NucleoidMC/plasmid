@@ -142,7 +142,7 @@ public final class GameCommand {
                 .withHoverEvent(joinHover);
 
         Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), gameId)
-                /*.append(new TranslatableText("text.plasmid.game.open.join").setStyle(joinStyle))*/;
+                .append(new TranslatableText("text.plasmid.game.open.join").setStyle(joinStyle));
         playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
     }
 

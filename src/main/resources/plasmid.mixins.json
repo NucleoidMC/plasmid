@@ -11,6 +11,7 @@
     "bubble.ServerTickSchedulerMixin",
     "bubble.ServerWorldMixin",
     "bubble.ThreadedAnvilChunkStorageMixin",
+    "chat.BossBarS2CPacketAccessor",
     "chat.GameMessageS2CPacketAccessor",
     "chat.LanguageMixin",
     "chat.PlayerManagerMixin",

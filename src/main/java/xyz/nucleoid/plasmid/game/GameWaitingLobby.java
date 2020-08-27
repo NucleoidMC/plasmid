@@ -4,6 +4,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.game.config.PlayerConfig;
 import xyz.nucleoid.plasmid.game.event.*;
@@ -16,7 +17,7 @@ import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public final class GameWaitingLobby {
-    private static final Text WAITING_TITLE = new LiteralText("Waiting for players...");
+    private static final Text WAITING_TITLE = new TranslatableText("text.plasmid.game.waiting_lobby.bar.waiting");
 
     private final GameWorld gameWorld;
     private final PlayerConfig playerConfig;
@@ -69,7 +70,7 @@ public final class GameWaitingLobby {
             this.started = true;
             this.gameWorld.requestStart().thenAccept(startResult -> {
                 if (startResult.isError()) {
-                    MutableText message = new LiteralText("Game start cancelled! ").append(startResult.getError());
+                    MutableText message = new TranslatableText("text.plasmid.game.waiting_lobby.bar.cancel").append(startResult.getError());
                     this.gameWorld.getPlayerSet().sendMessage(message.formatted(Formatting.RED));
                     this.started = false;
                 }
@@ -136,7 +137,7 @@ public final class GameWaitingLobby {
             long remainingTicks = Math.max(this.countdownStart + this.countdownDuration - time, 0);
             long remainingSeconds = remainingTicks / 20;
 
-            this.bar.setTitle(new LiteralText("Starting in " + remainingSeconds + " seconds!"));
+            this.bar.setTitle(new TranslatableText("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
             this.bar.setProgress((float) remainingTicks / this.countdownDuration);
         } else {
             this.bar.setTitle(WAITING_TITLE);

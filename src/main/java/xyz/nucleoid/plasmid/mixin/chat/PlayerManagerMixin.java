@@ -45,7 +45,6 @@ public abstract class PlayerManagerMixin {
         if (sender == null) {
             return;
         } else {
-            if (message instanceof TranslatableText) message = TranslationHandler.getCorrectText((TranslatableText) message, sender);
             GameWorld gameWorld = GameWorld.forWorld(sender.world);
             if (gameWorld != null && gameWorld.containsEntity(sender) && gameWorld.invoker(PlayerChatListener.EVENT).onSendChatMessage(message, sender) == ActionResult.FAIL) {
                 ci.cancel();

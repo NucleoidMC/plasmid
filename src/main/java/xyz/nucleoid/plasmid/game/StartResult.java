@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game;
 import com.google.common.base.Preconditions;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 
 import javax.annotation.Nullable;
 
@@ -10,8 +11,8 @@ import javax.annotation.Nullable;
  * Describes the result of a {@link GameWorld} attempting to start.
  */
 public final class StartResult {
-    public static final StartResult ALREADY_STARTED = error(new LiteralText("This game has already started!"));
-    public static final StartResult NOT_ENOUGH_PLAYERS = error(new LiteralText("Game does not have enough players yet!"));
+    public static final StartResult ALREADY_STARTED = error(new TranslatableText("text.plasmid.game.start_result.already_started"));
+    public static final StartResult NOT_ENOUGH_PLAYERS = error(new TranslatableText("text.plasmid.game.start_result.not_enough_players"));
     public static final StartResult OK = new StartResult(null);
 
     private final Text error;

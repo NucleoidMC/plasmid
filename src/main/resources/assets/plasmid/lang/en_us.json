@@ -12,8 +12,10 @@
   "text.plasmid.game.open.error": "The game threw an unexpected error while starting!",
   "text.plasmid.game.open.opened": "%1$s has opened %2$s! ",
   "text.plasmid.game.open.join": "Click here to join",
-
   "text.plasmid.game.waiting_lobby.bar.waiting": "Waiting for players...",
   "text.plasmid.game.waiting_lobby.bar.countdown": "Starting in %s seconds!",
-  "text.plasmid.game.waiting_lobby.bar.cancel": "Game start cancelled! "
+  "text.plasmid.game.waiting_lobby.bar.cancel": "Game start cancelled! ",
+
+  "text.plasmid.game.start_result.already_started": "This game has already started!",
+  "text.plasmid.game.start_result.not_enough_players": "Game does not have enough players yet!"
 }

@@ -20,9 +20,10 @@ public class PlasmidTranslations {
         register("text.plasmid.game.open.error", "The game threw an unexpected error while starting!");
         register("text.plasmid.game.open.opened", "%1$s has opened %2$s! ");
         register("text.plasmid.game.open.join", "Click here to join");
-
         register("text.plasmid.game.waiting_lobby.bar.waiting", "Waiting for players...");
         register("text.plasmid.game.waiting_lobby.bar.countdown", "Starting in %s seconds!");
         register("text.plasmid.game.waiting_lobby.bar.cancel", "Game start cancelled! ");
+        register("text.plasmid.game.start_result.already_started", "This game has already started!");
+        register("text.plasmid.game.start_result.not_enough_players", "Game does not have enough players yet!");
     }
 }

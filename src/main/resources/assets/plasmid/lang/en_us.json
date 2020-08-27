@@ -8,5 +8,8 @@
   "text.plasmid.game.channel.connect.entity": "Connected '%1$s' to '%2$s''",
   "text.plasmid.game.channel.connect.block": "Connected '%1$s' to block at (%2$s; %3$s; %4$s)",
   "text.plasmid.game.join": "%s has joined the game lobby!",
-  "text.plasmid.game.join.error": "An unexpected exception occurred while joining game!"
+  "text.plasmid.game.join.error": "An unexpected exception occurred while joining game!",
+  "text.plasmid.game.open.error": "The game threw an unexpected error while starting!",
+  "text.plasmid.game.open.opened": "%1$s has opened %2$s!",
+  "text.plasmid.game.open.join": "Click here to join"
 }

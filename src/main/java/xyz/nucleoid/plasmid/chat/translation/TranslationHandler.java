@@ -30,9 +30,12 @@ public class TranslationHandler {
 
     public static Text getCorrectText(TranslatableText translatableText, ServerPlayerEntity serverPlayerEntity) {
         if (FabricLoader.getInstance().isModLoaded("server_translations")
-                && SERVER_SIDE_KEYS.contains(translatableText.getKey()))
+                && SERVER_SIDE_KEYS.contains(translatableText.getKey())) {
             return ServerTranslations.getMessageForPlayer(translatableText, serverPlayerEntity);
-        if (SERVER_SIDE_KEYS.contains(translatableText.getKey())) return new LiteralText(translatableText.getString()).setStyle(translatableText.getStyle());
+        }
+        if (SERVER_SIDE_KEYS.contains(translatableText.getKey())) {
+            return new LiteralText(translatableText.getString()).setStyle(translatableText.getStyle());
+        }
         return translatableText;
     }
 

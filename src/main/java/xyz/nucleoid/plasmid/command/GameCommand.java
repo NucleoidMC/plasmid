@@ -141,8 +141,8 @@ public final class GameCommand {
                 .withClickEvent(joinClick)
                 .withHoverEvent(joinHover);
 
-        Text openMessage = source.getDisplayName().shallowCopy().append(" has opened " + gameId + "! ")
-                .append(new LiteralText("Click here to join").setStyle(joinStyle));
+        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), gameId)
+                /*.append(new TranslatableText("text.plasmid.game.open.join").setStyle(joinStyle))*/;
         playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
     }
 
@@ -153,7 +153,7 @@ public final class GameCommand {
         if (throwable instanceof GameOpenException) {
             message = ((GameOpenException) throwable).getReason().shallowCopy();
         } else {
-            message = new LiteralText("The game threw an unexpected error while starting!");
+            message = new TranslatableText("text.plasmid.game.open.error");
         }
 
         playerManager.broadcastChatMessage(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);

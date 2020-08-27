@@ -16,6 +16,7 @@
     "chat.PlayerManagerMixin",
     "chat.ServerPlayerEntityMixin",
     "chat.ServerPlayNetworkHandlerMixin",
+    "chat.TitleS2CPacketAccessor",
     "custom.EntityMixin",
     "fake.IdListMixin",
     "fake.PacketByteBufMixin",

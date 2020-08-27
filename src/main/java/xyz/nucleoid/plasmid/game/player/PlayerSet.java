@@ -58,7 +58,6 @@ public final class PlayerSet implements Iterable<ServerPlayerEntity> {
 
     public void sendMessage(Text message) {
         for (ServerPlayerEntity player : this.players) {
-            if (message instanceof TranslatableText) message = TranslationHandler.getCorrectText((TranslatableText) message, player);
             player.sendMessage(message, false);
         }
     }

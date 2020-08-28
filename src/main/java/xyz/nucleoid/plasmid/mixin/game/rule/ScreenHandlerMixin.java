@@ -26,7 +26,7 @@ public class ScreenHandlerMixin {
 
     @Inject(method = "method_30010", at = @At("HEAD"), cancellable = true)
     private void onSlotAction(int slot, int data, SlotActionType type, PlayerEntity player, CallbackInfoReturnable<ItemStack> ci) {
-        if (type == SlotActionType.THROW && !player.world.isClient) {
+        if (slot != -999 && type == SlotActionType.THROW && !player.world.isClient) {
             GameWorld gameWorld = GameWorld.forWorld(player.world);
             if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
                 if (gameWorld.testRule(GameRule.THROW_ITEMS) == RuleResult.DENY) {

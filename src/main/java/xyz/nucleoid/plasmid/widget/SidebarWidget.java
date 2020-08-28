@@ -1,5 +1,7 @@
 package xyz.nucleoid.plasmid.widget;
 
+import fr.catcore.server.translations.api.LocalizableText;
+import fr.catcore.server.translations.api.LocalizationTarget;
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScoreboardPlayerUpdateS2CPacket;
@@ -23,7 +25,7 @@ public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
     private final PlayerSet players;
     private final Text title;
 
-    private String[] display = new String[0];
+    private Text[] display = new Text[0];
 
     private SidebarWidget(Text title, PlayerSet players) {
         this.players = players;
@@ -40,7 +42,7 @@ public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
         return widget;
     }
 
-    public void set(String[] display) {
+    public void set(Text[] display) {
         if (Arrays.equals(this.display, display)) {
             return;
         }
@@ -51,7 +53,7 @@ public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
             if (i >= display.length || !this.display[i].equals(display[i])) {
                 this.players.sendPacket(new ScoreboardPlayerUpdateS2CPacket(
                         ServerScoreboard.UpdateMode.REMOVE, null,
-                        this.display[i], score
+                        this.display[i].getString(), score
                 ));
             }
         }
@@ -65,7 +67,7 @@ public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
 
     @Override
     public void onAddPlayer(ServerPlayerEntity player) {
-        ScoreboardObjective objective = this.createDummyObjective();
+        ScoreboardObjective objective = this.createDummyObjective(player);
 
         player.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(objective, ADD_OBJECTIVE));
         player.networkHandler.sendPacket(new ScoreboardDisplayS2CPacket(SIDEBAR_SLOT, objective));
@@ -75,26 +77,26 @@ public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
 
     @Override
     public void onRemovePlayer(ServerPlayerEntity player) {
-        ScoreboardObjective objective = this.createDummyObjective();
+        ScoreboardObjective objective = this.createDummyObjective(player);
         player.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(objective, REMOVE_OBJECTIVE));
     }
 
-    private void sendDisplay(ServerPlayerEntity player, String[] lines) {
+    private void sendDisplay(ServerPlayerEntity player, Text[] lines) {
         for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
+            Text line = LocalizableText.asLocalizedFor(lines[i],(LocalizationTarget) player);
             int score = lines.length - i;
             player.networkHandler.sendPacket(new ScoreboardPlayerUpdateS2CPacket(
                     ServerScoreboard.UpdateMode.CHANGE, OBJECTIVE_NAME,
-                    line, score
+                    line.getString(), score
             ));
         }
     }
 
-    private ScoreboardObjective createDummyObjective() {
+    private ScoreboardObjective createDummyObjective(ServerPlayerEntity playerEntity) {
         return new ScoreboardObjective(
                 null, OBJECTIVE_NAME,
                 ScoreboardCriterion.DUMMY,
-                this.title,
+                LocalizableText.asLocalizedFor(this.title,(LocalizationTarget) playerEntity),
                 ScoreboardCriterion.RenderType.INTEGER
         );
     }

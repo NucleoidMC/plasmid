@@ -246,7 +246,7 @@ public final class GameCommand {
 
     private static int listGames(CommandContext<ServerCommandSource> context) {
         ServerCommandSource source = context.getSource();
-        source.sendFeedback(new TranslatableText("text.plasmid.game.command.list").formatted(Formatting.BOLD), false);
+        source.sendFeedback(new TranslatableText("text.plasmid.game.list").formatted(Formatting.BOLD), false);
 
         for (Identifier id : GameConfigs.getKeys()) {
             String command = "/game open " + id;

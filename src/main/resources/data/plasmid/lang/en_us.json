@@ -2,7 +2,7 @@
   "text.plasmid.game.started.player": "%s has started the game!",
   "text.plasmid.game.stopped.player": "%s has stopped the game!",
   "text.plasmid.game.stopped.error": "An unexpected error was thrown while stopping the game!",
-  "text.plasmid.game.command.list": "Registered games:",
+  "text.plasmid.game.list": "Registered games:",
   "text.plasmid.game.channel.create": "Created channel with id '%s'",
   "text.plasmid.game.channel.remove": "Removed channel with id '%s'",
   "text.plasmid.game.channel.connect.entity": "Connected '%1$s' to '%2$s''",

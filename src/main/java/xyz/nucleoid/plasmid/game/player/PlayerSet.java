@@ -8,8 +8,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import xyz.nucleoid.plasmid.chat.translation.TranslationHandler;
 
 import java.util.Iterator;
 import java.util.Set;

@@ -19,7 +19,6 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.Unit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import xyz.nucleoid.plasmid.chat.translation.PlasmidTranslations;
 import xyz.nucleoid.plasmid.command.*;
 import xyz.nucleoid.plasmid.entity.CustomEntity;
 import xyz.nucleoid.plasmid.game.GameType;
@@ -48,7 +47,6 @@ public final class Plasmid implements ModInitializer {
     @Override
     public void onInitialize() {
         Reflection.initialize(PlasmidItems.class);
-        Reflection.initialize(PlasmidTranslations.class);
 
         GameConfigs.register();
         MapTemplateSerializer.INSTANCE.register();

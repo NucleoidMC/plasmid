@@ -9,11 +9,15 @@ import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
     private static final int SIDEBAR_SLOT = 1;
@@ -42,7 +46,38 @@ public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
         return widget;
     }
 
-    public void set(Text[] display) {
+    /*
+       Style wont work.
+     */
+    public void set(TranslatableText[] display) {
+        if (Arrays.equals(this.display, display)) {
+            return;
+        }
+
+        // clear old lines
+        for (int i = 0; i < this.display.length; i++) {
+            int score = display.length - i;
+            if (i >= display.length || !this.display[i].equals(display[i])) {
+                this.players.sendPacket(new ScoreboardPlayerUpdateS2CPacket(
+                        ServerScoreboard.UpdateMode.REMOVE, null,
+                        this.display[i].getString(), score
+                ));
+            }
+        }
+
+        this.display = display;
+
+        for (ServerPlayerEntity player : this.players) {
+            this.sendDisplay(player, display);
+        }
+    }
+
+    public void set(String[] stringDisplay) {
+        List<Text> textDisplay = new ArrayList<>();
+        for (String string : stringDisplay) {
+            textDisplay.add(new LiteralText(string));
+        }
+        Text[] display = textDisplay.toArray(new Text[0]);
         if (Arrays.equals(this.display, display)) {
             return;
         }

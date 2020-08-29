@@ -45,9 +45,9 @@ public final class BubbleWorldManager {
 
         DynamicRegistryManager registryManager = this.server.getRegistryManager();
 
-        DimensionType dimensionType = registryManager.getDimensionTypes().get(DimensionType.OVERWORLD_REGISTRY_KEY);
+        DimensionType dimensionType = registryManager.getDimensionTypes().get(config.getDimensionType());
         if (dimensionType == null) {
-            throw new IllegalStateException("overworld dimension type does not exist");
+            throw new IllegalStateException(config.getDimensionType() + " dimension type does not exist");
         }
 
         DimensionOptions dimensionOptions = new DimensionOptions(

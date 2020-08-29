@@ -81,7 +81,12 @@ public final class GameCommand {
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(GameCommand::stopGame)
                 )
-                .then(literal("join").executes(GameCommand::joinGame))
+                .then(literal("join")
+                        .executes(GameCommand::joinGame)
+                        .then(GameConfigArgument.argument("game_type")
+                            .executes(GameCommand::joinQualifiedGame)
+                        )
+                )
                 .then(literal("leave").executes(GameCommand::leaveGame))
                 .then(literal("list").executes(GameCommand::listGames))
                 .then(literal("channel")
@@ -131,7 +136,7 @@ public final class GameCommand {
     }
 
     private static void onOpenSuccess(ServerCommandSource source, Identifier gameId, PlayerManager playerManager) {
-        String command = "/game join";
+        String command = "/game join " + gameId;
 
         ClickEvent joinClick = new ClickEvent(ClickEvent.Action.RUN_COMMAND, command);
         HoverEvent joinHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(command));
@@ -160,15 +165,38 @@ public final class GameCommand {
     }
 
     private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
-
-        // TODO: currently, only allowing to join one open game at a time
         Collection<GameWorld> games = GameWorld.getOpen();
         GameWorld gameWorld = games.stream().max(Comparator.comparingInt(GameWorld::getPlayerCount)).orElse(null);
         if (gameWorld == null) {
             throw NO_GAME_OPEN.create();
         }
+
+        joinPlayerToGame(context, gameWorld);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int joinQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ConfiguredGame<?> game = GameConfigArgument.get(context, "game_type").getRight();
+
+        Collection<GameWorld> games = GameWorld.getOpen();
+        GameWorld gameWorld = games.stream()
+                .filter(gw -> gw.getGame() == game)
+                .max(Comparator.comparingInt(GameWorld::getPlayerCount))
+                .orElse(null);
+
+        if (gameWorld == null) {
+            throw NO_GAME_OPEN.create();
+        }
+
+        joinPlayerToGame(context, gameWorld);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static void joinPlayerToGame(CommandContext<ServerCommandSource> context, GameWorld gameWorld) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        ServerPlayerEntity player = source.getPlayer();
 
         gameWorld.offerPlayer(player).thenAccept(joinResult -> {
             if (joinResult.isError()) {
@@ -176,8 +204,6 @@ public final class GameCommand {
                 source.sendError(error.shallowCopy().formatted(Formatting.RED));
             }
         });
-
-        return Command.SINGLE_SUCCESS;
     }
 
     private static int leaveGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {

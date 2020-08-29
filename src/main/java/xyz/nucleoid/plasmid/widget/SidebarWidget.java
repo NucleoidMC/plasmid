@@ -127,22 +127,6 @@ public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
         }
     }
 
-    private void sendDisplay(ServerPlayerEntity player, String[] stringLines) {
-        List<Text> textDisplay = new ArrayList<>();
-        for (String string : stringLines) {
-            textDisplay.add(new LiteralText(string));
-        }
-        Text[] lines = textDisplay.toArray(new Text[0]);
-        for (int i = 0; i < lines.length; i++) {
-            Text line = lines[i];
-            int score = lines.length - i;
-            player.networkHandler.sendPacket(new ScoreboardPlayerUpdateS2CPacket(
-                    ServerScoreboard.UpdateMode.CHANGE, OBJECTIVE_NAME,
-                    line.getString(), score
-            ));
-        }
-    }
-
     private ScoreboardObjective createDummyObjective(ServerPlayerEntity playerEntity) {
         return new ScoreboardObjective(
                 null, OBJECTIVE_NAME,

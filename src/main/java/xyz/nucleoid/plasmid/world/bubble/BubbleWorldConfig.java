@@ -1,14 +1,17 @@
 package xyz.nucleoid.plasmid.world.bubble;
 
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameMode;
+import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 
 import javax.annotation.Nullable;
 
 public final class BubbleWorldConfig {
     private long seed = 0;
+    private RegistryKey<DimensionType> dimensionType = DimensionType.OVERWORLD_REGISTRY_KEY;
     private ChunkGenerator generator = null;
     private GameMode defaultGameMode = GameMode.ADVENTURE;
     private BubbleWorldSpawner spawner = BubbleWorldSpawner.at(new Vec3d(0.0, 64.0, 0.0));
@@ -17,6 +20,11 @@ public final class BubbleWorldConfig {
 
     public BubbleWorldConfig setSeed(long seed) {
         this.seed = seed;
+        return this;
+    }
+
+    public BubbleWorldConfig setDimensionType(RegistryKey<DimensionType> dimensionType) {
+        this.dimensionType = dimensionType;
         return this;
     }
 
@@ -56,6 +64,10 @@ public final class BubbleWorldConfig {
 
     public long getSeed() {
         return this.seed;
+    }
+
+    public RegistryKey<DimensionType> getDimensionType() {
+        return this.dimensionType;
     }
 
     @Nullable

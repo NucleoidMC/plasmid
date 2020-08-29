@@ -27,7 +27,6 @@ minecraft {
 repositories {
   maven { url = "https://jitpack.io/" }
   maven { url = "https://maven.gegy.dev/" }
-  maven { url = "https://www.cursemaven.com" } // Server-Translation
 }
 
 dependencies {
@@ -43,8 +42,8 @@ dependencies {
     exclude module: "fabric-loader"
   }
 
-  modCompile "curse.maven:server-translations:3044356"
-  include "curse.maven:server-translations:3044356"
+  modCompile 'fr.catcore:server-translations-api:1.3.0'
+  include 'fr.catcore:server-translations-api:1.3.0'
 }
 
 processResources {

@@ -26,11 +26,19 @@ public class ScreenHandlerMixin {
 
     @Inject(method = "method_30010", at = @At("HEAD"), cancellable = true)
     private void onSlotAction(int slot, int data, SlotActionType type, PlayerEntity player, CallbackInfoReturnable<ItemStack> ci) {
-        if (slot != -999 && type == SlotActionType.THROW && !player.world.isClient) {
+        if (player.world.isClient) {
+            return;
+        }
+
+        if (type == SlotActionType.THROW || type == SlotActionType.PICKUP) {
             GameWorld gameWorld = GameWorld.forWorld(player.world);
             if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
                 if (gameWorld.testRule(GameRule.THROW_ITEMS) == RuleResult.DENY) {
-                    ci.setReturnValue(this.slots.get(slot).getStack());
+                    if (type == SlotActionType.PICKUP && slot == -999) {
+                        ci.setReturnValue(player.inventory.getCursorStack());
+                    } else if (type == SlotActionType.THROW && slot >= 0 && slot < this.slots.size()) {
+                        ci.setReturnValue(this.slots.get(slot).getStack());
+                    }
                 }
             }
         }

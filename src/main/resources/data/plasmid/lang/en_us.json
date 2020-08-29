@@ -1,0 +1,38 @@
+{
+  "text.plasmid.game.started.player": "%s has started the game!",
+  "text.plasmid.game.stopped.player": "%s has stopped the game!",
+  "text.plasmid.game.stopped.error": "An unexpected error was thrown while stopping the game!",
+  "text.plasmid.game.list": "Registered games:",
+  "text.plasmid.game.channel.create": "Created channel with id '%s'",
+  "text.plasmid.game.channel.remove": "Removed channel with id '%s'",
+  "text.plasmid.game.channel.connect.entity": "Connected '%1$s' to '%2$s''",
+  "text.plasmid.game.channel.connect.block": "Connected '%1$s' to block at (%2$s; %3$s; %4$s)",
+  "text.plasmid.game.join": "%s has joined the game lobby!",
+  "text.plasmid.game.join.error": "An unexpected exception occurred while joining game!",
+  "text.plasmid.game.open.error": "The game threw an unexpected error while starting!",
+  "text.plasmid.game.open.opened": "%1$s has opened %2$s! ",
+  "text.plasmid.game.open.join": "Click here to join",
+  "text.plasmid.game.waiting_lobby.bar.waiting": "Waiting for players...",
+  "text.plasmid.game.waiting_lobby.bar.countdown": "Starting in %s seconds!",
+  "text.plasmid.game.waiting_lobby.bar.cancel": "Game start cancelled! ",
+
+  "text.plasmid.game.start_result.already_started": "This game has already started!",
+  "text.plasmid.game.start_result.not_enough_players": "Game does not have enough players yet!",
+  "text.plasmid.chat.switch.all": "Chat channel switched to all",
+  "text.plasmid.chat.switch.team": "Chat channel switched to team",
+
+  "text.plasmid.party.error.does_not_exist": "You do not control any party!",
+  "text.plasmid.party.error.already_invited": "%s is already invited to this party!",
+  "text.plasmid.party.error.already_in_party": "You are already in this party!",
+  "text.plasmid.party.error.cannot_remove_self": "Cannot remove yourself from the party!",
+  "text.plasmid.party.error.not_in_party": "%s is not in this party!",
+  "text.plasmid.party.error.not_invited": "You are not invited to this party!",
+
+  "text.plasmid.party.invited.sender": "Invited %s to the party",
+  "text.plasmid.party.invited.receiver": "You have been invited to join %s's party! ",
+  "text.plasmid.party.invited.receiver.click": "Click here to join",
+  "text.plasmid.party.invited.receiver.hover": "Join %s's party!",
+
+  "text.plasmid.party.kicked.sender": "%s has been kicked from the party",
+  "text.plasmid.party.kicked.receiver": "You have been kicked from the party"
+}

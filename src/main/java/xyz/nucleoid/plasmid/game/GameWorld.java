@@ -6,6 +6,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
@@ -240,8 +241,7 @@ public final class GameWorld implements AutoCloseable {
             }
 
             if (this.addPlayer(player)) {
-                Text joinMessage = player.getDisplayName().shallowCopy()
-                        .append(" has joined the game lobby!")
+                Text joinMessage = new TranslatableText("text.plasmid.game.join", player.getDisplayName())
                         .formatted(Formatting.YELLOW);
 
                 this.getPlayerSet().sendMessage(joinMessage);

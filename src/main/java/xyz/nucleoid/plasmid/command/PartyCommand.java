@@ -56,12 +56,12 @@ public final class PartyCommand {
 
     private static Text displayError(PartyError error, String player) {
         switch (error) {
-            case DOES_NOT_EXIST: return new LiteralText("You do not control any party!");
-            case ALREADY_INVITED: return new LiteralText(player + " is already invited to this party!");
-            case ALREADY_IN_PARTY: return new LiteralText("You are already in this party!");
-            case CANNOT_REMOVE_SELF: return new LiteralText("Cannot remove yourself from the party!");
-            case NOT_IN_PARTY: return new LiteralText(player + " is not in this party!");
-            case NOT_INVITED: return new LiteralText("You are not invited to this party!");
+            case DOES_NOT_EXIST: return new TranslatableText("text.plasmid.party.error.does_not_exist");
+            case ALREADY_INVITED: return new TranslatableText("text.plasmid.party.error.already_invited", player);
+            case ALREADY_IN_PARTY: return new TranslatableText("text.plasmid.party.error.already_in_party");
+            case CANNOT_REMOVE_SELF: return new TranslatableText("text.plasmid.party.error.cannot_remove_self");
+            case NOT_IN_PARTY: return new TranslatableText("text.plasmid.party.error.not_in_party", player);
+            case NOT_INVITED: return new TranslatableText("text.plasmid.party.error.not_invited");
             default: throw new UnsupportedOperationException();
         }
     }
@@ -74,13 +74,11 @@ public final class PartyCommand {
 
         PartyResult result = PartyManager.INSTANCE.invitePlayer(PlayerRef.of(owner), PlayerRef.of(player));
         if (result.isOk()) {
-            MutableText message = new LiteralText("Invited ")
-                    .append(player.getDisplayName())
-                    .append(" to the party");
+            MutableText message = new TranslatableText("text.plasmid.party.invited.sender", player.getDisplayName());
 
             source.sendFeedback(message.formatted(Formatting.GOLD), false);
 
-            MutableText notificationLink = new LiteralText("Click here to join")
+            MutableText notificationLink = new TranslatableText("text.plasmid.party.invited.receiver.click")
                     .setStyle(Style.EMPTY
                             .withColor(Formatting.BLUE)
                             .withColor(Formatting.UNDERLINE)
@@ -90,13 +88,11 @@ public final class PartyCommand {
                             ))
                             .withHoverEvent(new HoverEvent(
                                     HoverEvent.Action.SHOW_TEXT,
-                                    new LiteralText("Join ").append(owner.getDisplayName()).append("'s party")
+                                    new TranslatableText("text.plasmid.party.invited.receiver.hover", player.getDisplayName())
                             ))
                     );
 
-            MutableText notification = new LiteralText("You have been invited to join ")
-                    .append(owner.getDisplayName())
-                    .append("'s party! ")
+            MutableText notification = new TranslatableText("text.plasmid.party.invited.receiver", player.getDisplayName())
                     .formatted(Formatting.GOLD)
                     .append(notificationLink);
 
@@ -121,11 +117,11 @@ public final class PartyCommand {
             if (result.isOk()) {
                 Party party = result.getParty();
 
-                MutableText message = new LiteralText(profile.getName() + " has been kicked from the party");
+                MutableText message = new TranslatableText("text.plasmid.party.kicked.sender", owner.getDisplayName());
                 party.broadcastMessage(server, message.formatted(Formatting.GOLD));
 
                 PlayerRef.of(profile).ifOnline(server, player -> {
-                    player.sendMessage(new LiteralText("You have been kicked from the party").formatted(Formatting.RED), false);
+                    player.sendMessage(new TranslatableText("text.plasmid.party.kicked.receiver").formatted(Formatting.RED), false);
                 });
             } else {
                 PartyError error = result.getError();

@@ -21,18 +21,18 @@
   "text.plasmid.chat.switch.all": "Canal de discussion règlé sur tous le monde",
   "text.plasmid.chat.switch.team": "Canal de discussion règlé sur l'équipe",
 
-  "text.plasmid.party.error.does_not_exist": "Vous n'avez le contrôle d'aucune partie !",
-  "text.plasmid.party.error.already_invited": "%s est déjà invité(e) dans votre partie !",
-  "text.plasmid.party.error.already_in_party": "Vous faites déjà parti(e) de cette partie !",
-  "text.plasmid.party.error.cannot_remove_self": "Vous ne pouvez pas quitter votre propre partie !",
-  "text.plasmid.party.error.not_in_party": "%s ne fait pas parti de cette partie !",
-  "text.plasmid.party.error.not_invited": "Vous n'êtes pas invité(e) à cette partie !",
+  "text.plasmid.party.error.does_not_exist": "Vous n'avez le contrôle d'aucun groupe !",
+  "text.plasmid.party.error.already_invited": "%s est déjà invité(e) dans votre groupe !",
+  "text.plasmid.party.error.already_in_party": "Vous faites déjà parti(e) de ce groupe !",
+  "text.plasmid.party.error.cannot_remove_self": "Vous ne pouvez pas quitter votre propre groupe !",
+  "text.plasmid.party.error.not_in_party": "%s ne fait pas parti(e) de ce groupe !",
+  "text.plasmid.party.error.not_invited": "Vous n'êtes pas invité(e) dans ce groupe !",
 
-  "text.plasmid.party.invited.sender": "%s a été invité(e) dans la partie",
-  "text.plasmid.party.invited.receiver": "Vous avez été invité(e) à rejoindre la partie de %s ! ",
-  "text.plasmid.party.invited.receiver.click": "Cliquez ici pour la rejoindre",
-  "text.plasmid.party.invited.receiver.hover": "Rejoindre la partie de %s !",
+  "text.plasmid.party.invited.sender": "%s a été invité(e) dans le groupe",
+  "text.plasmid.party.invited.receiver": "Vous avez été invité(e) à rejoindre le groupe de %s ! ",
+  "text.plasmid.party.invited.receiver.click": "Cliquez ici pour le rejoindre",
+  "text.plasmid.party.invited.receiver.hover": "Rejoindre le groupe de %s !",
 
-  "text.plasmid.party.kicked.sender": "%s a été éjecté(e) de la partie",
-  "text.plasmid.party.kicked.receiver": "Vous avez été éjecté(e) de la partie."
+  "text.plasmid.party.kicked.sender": "%s a été éjecté(e) du groupe",
+  "text.plasmid.party.kicked.receiver": "Vous avez été éjecté(e) du groupe."
 }

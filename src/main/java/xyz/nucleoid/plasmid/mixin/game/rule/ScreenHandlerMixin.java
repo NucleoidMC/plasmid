@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
@@ -31,16 +32,35 @@ public class ScreenHandlerMixin {
         }
 
         if (type == SlotActionType.THROW || type == SlotActionType.PICKUP) {
-            GameWorld gameWorld = GameWorld.forWorld(player.world);
-            if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
-                if (gameWorld.testRule(GameRule.THROW_ITEMS) == RuleResult.DENY) {
-                    if (type == SlotActionType.PICKUP && slot == -999) {
-                        ci.setReturnValue(player.inventory.getCursorStack());
-                    } else if (type == SlotActionType.THROW && slot >= 0 && slot < this.slots.size()) {
-                        ci.setReturnValue(this.slots.get(slot).getStack());
-                    }
+            if (this.shouldBlockThrowingItems(player)) {
+                if (type == SlotActionType.PICKUP && slot == -999) {
+                    ci.setReturnValue(player.inventory.getCursorStack());
+                } else if (type == SlotActionType.THROW && slot >= 0 && slot < this.slots.size()) {
+                    ci.setReturnValue(this.slots.get(slot).getStack());
                 }
             }
         }
+    }
+
+    @Inject(method = "close", at = @At("HEAD"))
+    private void close(PlayerEntity player, CallbackInfo ci) {
+        ItemStack cursor = player.inventory.getCursorStack();
+        if (cursor.isEmpty()) {
+            return;
+        }
+
+        if (this.shouldBlockThrowingItems(player)) {
+            if (player.inventory.insertStack(cursor)) {
+                player.inventory.setCursorStack(ItemStack.EMPTY);
+            }
+        }
+    }
+
+    private boolean shouldBlockThrowingItems(PlayerEntity player) {
+        GameWorld gameWorld = GameWorld.forWorld(player.world);
+        if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
+            return gameWorld.testRule(GameRule.THROW_ITEMS) == RuleResult.DENY;
+        }
+        return false;
     }
 }

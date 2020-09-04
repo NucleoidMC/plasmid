@@ -2,10 +2,8 @@ package xyz.nucleoid.plasmid.mixin.fake;
 
 import io.netty.channel.Channel;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,11 +13,6 @@ import java.io.IOException;
 
 @Mixin(ClientConnection.class)
 public abstract class ClientConnectionMixin {
-
-    @Shadow
-    @Final
-    private NetworkSide side;
-
     @Shadow
     private Channel channel;
 

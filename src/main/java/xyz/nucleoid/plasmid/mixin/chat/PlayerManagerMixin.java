@@ -42,15 +42,19 @@ public abstract class PlayerManagerMixin {
         ServerPlayerEntity sender = this.getPlayer(senderUuid);
         if (sender == null) {
             return;
-        } else {
-            GameWorld gameWorld = GameWorld.forWorld(sender.world);
-            if (gameWorld != null && gameWorld.containsEntity(sender) && gameWorld.invoker(PlayerChatListener.EVENT).onSendChatMessage(message, sender) == ActionResult.FAIL) {
-                ci.cancel();
-            }
-            if ((((HasChatChannel) sender).getChatChannel()) != ChatChannel.TEAM) return;
         }
 
-        if (this.isTeamChatAllowed(sender)) {
+        GameWorld gameWorld = GameWorld.forWorld(sender.world);
+        if (gameWorld != null && gameWorld.containsEntity(sender)) {
+            ActionResult result = gameWorld.invoker(PlayerChatListener.EVENT).onSendChatMessage(message, sender);
+            if (result == ActionResult.FAIL) {
+                ci.cancel();
+                return;
+            }
+        }
+
+        ChatChannel chatChannel = ((HasChatChannel) sender).getChatChannel();
+        if (chatChannel == ChatChannel.TEAM && this.isTeamChatAllowed(sender)) {
             this.sendTeamChat(message, sender);
             ci.cancel();
         }

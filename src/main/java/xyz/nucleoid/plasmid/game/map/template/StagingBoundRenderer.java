@@ -73,14 +73,6 @@ public final class StagingBoundRenderer {
     private static void renderOutline(ServerPlayerEntity player, BlockPos min, BlockPos max, float red, float green, float blue) {
         DustParticleEffect effect = new DustParticleEffect(red, green, blue, 2.0F);
 
-        if (min.equals(max)) {
-            spawnParticleIfVisible(
-                    player, effect,
-                    min.getX() + 0.5, min.getY() + 0.5, min.getZ() + 0.5
-            );
-            return;
-        }
-
         Edge[] edges = edges(min, max);
 
         int maxInterval = 5;
@@ -133,9 +125,9 @@ public final class StagingBoundRenderer {
         int minX = min.getX();
         int minY = min.getY();
         int minZ = min.getZ();
-        int maxX = max.getX();
-        int maxY = max.getY();
-        int maxZ = max.getZ();
+        int maxX = max.getX() + 1;
+        int maxY = max.getY() + 1;
+        int maxZ = max.getZ() + 1;
 
         return new Edge[] {
                 // edges
@@ -172,15 +164,15 @@ public final class StagingBoundRenderer {
         }
 
         double projX(double m) {
-            return this.startX + (this.endX - this.startX) * m + 0.5;
+            return this.startX + (this.endX - this.startX) * m;
         }
 
         double projY(double m) {
-            return this.startY + (this.endY - this.startY) * m + 0.5;
+            return this.startY + (this.endY - this.startY) * m;
         }
 
         double projZ(double m) {
-            return this.startZ + (this.endZ - this.startZ) * m + 0.5;
+            return this.startZ + (this.endZ - this.startZ) * m;
         }
 
         int length() {

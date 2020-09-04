@@ -9,3 +9,5 @@ accessible class net/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTrac
 
 accessible field net/minecraft/entity/EntityType factory Lnet/minecraft/entity/EntityType$EntityFactory;
 accessible field net/minecraft/entity/EntityType canSpawnInside Lcom/google/common/collect/ImmutableSet;
+
+extendable method net/minecraft/util/collection/IdList get (I)Ljava/lang/Object;

@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.fake;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
 /**
  * Represents an item that should be remapped to some vanilla "proxy" counterpart when being sent to clients
@@ -16,7 +17,16 @@ public interface FakeItem {
      * @return The stack to send to the client
      */
     default ItemStack asProxy(ItemStack stack) {
-        return stack;
+        ItemStack proxy = new ItemStack(this.asProxy(), stack.getCount());
+
+        CompoundTag tag = stack.getTag();
+        if (tag != null) {
+            proxy.setTag(tag.copy());
+        }
+
+        proxy.setCustomName(((Item) this).getName(stack));
+
+        return proxy;
     }
 
     static ItemStack getProxy(ItemStack stack) {

@@ -9,7 +9,6 @@ import xyz.nucleoid.plasmid.fake.FakeItem;
 
 @Mixin(PacketByteBuf.class)
 public class PacketByteBufMixin {
-
     @ModifyVariable(method = "writeItemStack", at = @At("HEAD"), argsOnly = true, index = 1)
     private ItemStack modify(ItemStack stack) {
         return FakeItem.getProxy(stack);

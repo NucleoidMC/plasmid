@@ -34,7 +34,7 @@ public abstract class ClientConnectionMixin {
      */
     @ModifyVariable(method = "sendImmediately", at = @At("HEAD"), argsOnly = true, index = 1)
     private Packet<?> modify(Packet<?> packet) throws IOException {
-        if (!this.isLocal() || this.side != NetworkSide.CLIENTBOUND) {
+        if (!this.isLocal()) {
             return packet;
         }
 

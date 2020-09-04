@@ -1,4 +1,6 @@
 {
+  "item.plasmid.add_region": "Add Region",
+
   "text.plasmid.game.started.player": "%s has started the game!",
   "text.plasmid.game.stopped.player": "%s has stopped the game!",
   "text.plasmid.game.stopped.error": "An unexpected error was thrown while stopping the game!",

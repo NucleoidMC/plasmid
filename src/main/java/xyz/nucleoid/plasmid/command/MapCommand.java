@@ -11,7 +11,6 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.command.argument.NbtCompoundTagArgumentType;
-import net.minecraft.command.argument.NbtTagArgumentType;
 import net.minecraft.data.client.model.BlockStateVariantMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.command.CommandSource;
@@ -22,7 +21,6 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.map.template.*;
 import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
@@ -32,7 +30,6 @@ import xyz.nucleoid.plasmid.util.BlockBounds;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -199,10 +196,10 @@ public final class MapCommand {
     }
 
     private static int addRegion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        return addRegion(context, null);
+        return addRegion(context, new CompoundTag());
     }
 
-    private static int addRegion(CommandContext<ServerCommandSource> context, @Nullable CompoundTag data) throws CommandSyntaxException {
+    private static int addRegion(CommandContext<ServerCommandSource> context, CompoundTag data) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ServerWorld world = source.getWorld();
 
@@ -326,10 +323,10 @@ public final class MapCommand {
     }
 
     private static int commitRegion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        return commitRegion(context, null);
+        return commitRegion(context, new CompoundTag());
     }
 
-    private static int commitRegion(CommandContext<ServerCommandSource> context, @Nullable CompoundTag data) throws CommandSyntaxException {
+    private static int commitRegion(CommandContext<ServerCommandSource> context, CompoundTag data) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
         ServerWorld world = source.getWorld();

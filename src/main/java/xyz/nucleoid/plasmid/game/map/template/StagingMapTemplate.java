@@ -8,6 +8,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.ArrayList;
@@ -31,8 +32,8 @@ public final class StagingMapTemplate {
         StagingMapManager.get(this.world).setDirty(true);
     }
 
-    public void addRegion(String marker, BlockBounds bounds) {
-        this.regions.add(new TemplateRegion(marker, bounds));
+    public void addRegion(String marker, BlockBounds bounds, @Nullable CompoundTag tag) {
+        this.regions.add(new TemplateRegion(marker, bounds, tag));
         this.setDirty();
     }
 
@@ -88,7 +89,8 @@ public final class StagingMapTemplate {
         for (TemplateRegion region : this.regions) {
             map.addRegion(
                     region.getMarker(),
-                    this.globalToLocal(region.getBounds())
+                    this.globalToLocal(region.getBounds()),
+                    region.getData()
             );
         }
 

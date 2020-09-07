@@ -10,6 +10,10 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
+import net.minecraft.command.argument.NbtCompoundTagArgumentType;
+import net.minecraft.command.argument.NbtTagArgumentType;
+import net.minecraft.data.client.model.BlockStateVariantMap;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,6 +22,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.map.template.*;
 import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
@@ -27,15 +32,16 @@ import xyz.nucleoid.plasmid.util.BlockBounds;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public final class MapCommand {
-    public static final DynamicCommandExceptionType MAP_NOT_FOUND = new DynamicCommandExceptionType(arg -> {
-        return new TranslatableText("Map with id '%s' was not found!", arg);
-    });
+    public static final DynamicCommandExceptionType MAP_NOT_FOUND = new DynamicCommandExceptionType(arg ->
+            new TranslatableText("Map with id '%s' was not found!", arg)
+    );
 
     public static final SimpleCommandExceptionType MAP_NOT_FOUND_AT = new SimpleCommandExceptionType(
             new LiteralText("No map found here")
@@ -70,7 +76,28 @@ public final class MapCommand {
                         .then(argument("min", BlockPosArgumentType.blockPos())
                         .then(argument("max", BlockPosArgumentType.blockPos())
                         .executes(MapCommand::addRegion)
-                    ))))
+                        .then(argument("data", NbtCompoundTagArgumentType.nbtCompound())
+                        .executes(context -> addRegion(context, NbtCompoundTagArgumentType.getCompoundTag(context, "data")))
+                    )))))
+                    .then(literal("rename")
+                        .then(literal("all")
+                            .then(argument("old", StringArgumentType.word())
+                            .then(argument("new", StringArgumentType.word())
+                            .executes(context -> renameRegions(context, (region, oldMarker, pos) -> region.getMarker().equals(oldMarker)))
+                        )))
+                        .then(literal("here")
+                            .then(argument("old", StringArgumentType.word())
+                            .then(argument("new", StringArgumentType.word())
+                            .executes(context -> renameRegions(context, (region, oldMarker, pos) -> region.getMarker().equals(oldMarker) && region.getBounds().contains(pos)))
+                        )))
+                    )
+                    .then(literal("edit")
+                        .then(literal("data")
+                            .then(argument("marker", StringArgumentType.word())
+                            .then(argument("data", NbtCompoundTagArgumentType.nbtCompound())
+                            .executes(MapCommand::editRegionData)
+                        )))
+                    )
                     .then(literal("remove")
                         .then(literal("here")
                         .executes(MapCommand::removeRegionHere)
@@ -78,7 +105,9 @@ public final class MapCommand {
                     .then(literal("commit")
                         .then(argument("marker", StringArgumentType.word())
                         .executes(MapCommand::commitRegion)
-                    ))
+                        .then(argument("data", NbtCompoundTagArgumentType.nbtCompound())
+                        .executes(context -> commitRegion(context, NbtCompoundTagArgumentType.getCompoundTag(context, "data")))
+                    )))
                 )
         );
     }
@@ -170,6 +199,10 @@ public final class MapCommand {
     }
 
     private static int addRegion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return addRegion(context, null);
+    }
+
+    private static int addRegion(CommandContext<ServerCommandSource> context, @Nullable CompoundTag data) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ServerWorld world = source.getWorld();
 
@@ -178,14 +211,83 @@ public final class MapCommand {
         String marker = StringArgumentType.getString(context, "marker");
         BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
         BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
+
         Optional<StagingMapTemplate> mapOpt = stagingMapManager.getStagingMaps().stream()
                 .filter(stagingMap -> stagingMap.getBounds().contains(min) && stagingMap.getBounds().contains(max))
                 .findFirst();
 
         if (mapOpt.isPresent()) {
             StagingMapTemplate map = mapOpt.get();
-            map.addRegion(marker, new BlockBounds(min, max));
+            map.addRegion(marker, new BlockBounds(min, max), data);
             source.sendFeedback(new LiteralText("Added region '" + marker + "' to '" + map.getIdentifier() + "'"), false);
+        } else {
+            throw MAP_NOT_FOUND_AT.create();
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int renameRegions(CommandContext<ServerCommandSource> context, BlockStateVariantMap.TriFunction<TemplateRegion, String, BlockPos, Boolean> predicate) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        ServerWorld world = source.getWorld();
+        BlockPos pos = source.getPlayer().getBlockPos();
+
+        StagingMapManager stagingMapManager = StagingMapManager.get(world);
+
+        String oldMarker = StringArgumentType.getString(context, "old");
+        String newMarker = StringArgumentType.getString(context, "new");
+
+        Optional<StagingMapTemplate> mapOpt = stagingMapManager.getStagingMaps().stream()
+                .filter(stagingMap -> stagingMap.getBounds().contains(pos))
+                .findFirst();
+
+        if (mapOpt.isPresent()) {
+            StagingMapTemplate map = mapOpt.get();
+
+            List<TemplateRegion> regions = map.getRegions().stream()
+                    .filter(region -> predicate.apply(region, oldMarker, pos))
+                    .collect(Collectors.toList());
+
+            for (TemplateRegion region : regions) {
+                map.removeRegion(region);
+                map.addRegion(newMarker, region.getBounds(), region.getData());
+            }
+
+            source.sendFeedback(new LiteralText("Renamed " + regions.size() + " regions from '" + map.getIdentifier() + "'"), false);
+        } else {
+            throw MAP_NOT_FOUND_AT.create();
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int editRegionData(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        ServerWorld world = source.getWorld();
+        BlockPos pos = source.getPlayer().getBlockPos();
+
+        StagingMapManager stagingMapManager = StagingMapManager.get(world);
+
+        String marker = StringArgumentType.getString(context, "marker");
+        CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "data");
+
+        Optional<StagingMapTemplate> mapOpt = stagingMapManager.getStagingMaps().stream()
+                .filter(stagingMap -> stagingMap.getBounds().contains(pos))
+                .findFirst();
+
+        if (mapOpt.isPresent()) {
+            StagingMapTemplate map = mapOpt.get();
+
+            List<TemplateRegion> regions = map.getRegions().stream()
+                    .filter(region -> region.getBounds().contains(pos) && region.getMarker().equals(marker))
+                    .collect(Collectors.toList());
+
+            for (TemplateRegion region : regions) {
+                map.removeRegion(region);
+                map.addRegion(marker, region.getBounds(), data);
+            }
+
+            source.sendFeedback(new LiteralText("Edited " + regions.size() + " regions from '" + map.getIdentifier() + "'"), false);
         } else {
             throw MAP_NOT_FOUND_AT.create();
         }
@@ -224,6 +326,10 @@ public final class MapCommand {
     }
 
     private static int commitRegion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return commitRegion(context, null);
+    }
+
+    private static int commitRegion(CommandContext<ServerCommandSource> context, @Nullable CompoundTag data) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
         ServerWorld world = source.getWorld();
@@ -249,7 +355,7 @@ public final class MapCommand {
 
             if (mapOpt.isPresent()) {
                 StagingMapTemplate map = mapOpt.get();
-                map.addRegion(marker, new BlockBounds(min, max));
+                map.addRegion(marker, new BlockBounds(min, max), data);
                 source.sendFeedback(new LiteralText("Added region '" + marker + "' to '" + map.getIdentifier() + "'"), false);
             } else {
                 throw MAP_NOT_FOUND_AT.create();

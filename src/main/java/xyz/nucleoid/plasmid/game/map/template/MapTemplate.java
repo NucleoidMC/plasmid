@@ -77,9 +77,16 @@ public final class MapTemplate {
         }
     }
 
-    public void addRegion(String marker, BlockBounds bounds) {
-        this.regions.add(new TemplateRegion(marker, bounds));
+    public TemplateRegion addRegion(String marker, BlockBounds bounds) {
+        return this.addRegion(marker, bounds, null);
     }
+
+    public TemplateRegion addRegion(String marker, BlockBounds bounds, @Nullable CompoundTag tag) {
+        TemplateRegion region = new TemplateRegion(marker, bounds, tag);
+        this.regions.add(region);
+        return region;
+    }
+
 
     public void addRegion(TemplateRegion region) {
         this.regions.add(region);

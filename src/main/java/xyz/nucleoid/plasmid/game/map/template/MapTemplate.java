@@ -87,7 +87,6 @@ public final class MapTemplate {
         return region;
     }
 
-
     public void addRegion(TemplateRegion region) {
         this.regions.add(region);
     }
@@ -127,10 +126,19 @@ public final class MapTemplate {
         return new BlockPos(x, y, z);
     }
 
-    public Stream<BlockBounds> getRegions(String marker) {
+    public Stream<TemplateRegion> getTemplateRegions(String marker) {
         return this.regions.stream()
-                .filter(region -> region.getMarker().equals(marker))
+                .filter(region -> region.getMarker().equals(marker));
+    }
+
+    public Stream<BlockBounds> getRegions(String marker) {
+        return this.getTemplateRegions(marker)
                 .map(TemplateRegion::getBounds);
+    }
+
+    @Nullable
+    public TemplateRegion getFirstTemplateRegion(String marker) {
+        return this.getTemplateRegions(marker).findFirst().orElse(null);
     }
 
     @Nullable

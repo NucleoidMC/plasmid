@@ -40,8 +40,7 @@ public final class TemplateRegion {
 
     public static TemplateRegion deserialize(CompoundTag tag) {
         String marker = tag.getString("marker");
-        CompoundTag data;
-        if (!tag.contains("data")) { data = new CompoundTag(); } else { data = tag.getCompound("data"); }
+        CompoundTag data = tag.getCompound("data");
         return new TemplateRegion(marker, BlockBounds.deserialize(tag), data);
     }
 }

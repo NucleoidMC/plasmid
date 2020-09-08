@@ -11,3 +11,5 @@ accessible field net/minecraft/entity/EntityType factory Lnet/minecraft/entity/E
 accessible field net/minecraft/entity/EntityType canSpawnInside Lcom/google/common/collect/ImmutableSet;
 
 extendable method net/minecraft/util/collection/IdList get (I)Ljava/lang/Object;
+
+accessible method net/minecraft/world/GameRules$Rule deserialize (Ljava/lang/String;)V

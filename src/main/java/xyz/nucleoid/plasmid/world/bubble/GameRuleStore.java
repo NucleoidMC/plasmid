@@ -25,8 +25,8 @@ final class GameRuleStore {
         });
 
         Reference2IntMaps.fastForEach(this.intRules, entry -> {
-            GameRules.Rule<?> rule = rules.get(entry.getKey());
-            rule.deserialize(rule.serialize());
+            GameRules.IntRule rule = rules.get(entry.getKey());
+            rule.value = entry.getIntValue();
         });
     }
 }

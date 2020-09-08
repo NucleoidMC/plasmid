@@ -12,4 +12,4 @@ accessible field net/minecraft/entity/EntityType canSpawnInside Lcom/google/comm
 
 extendable method net/minecraft/util/collection/IdList get (I)Ljava/lang/Object;
 
-accessible method net/minecraft/world/GameRules$Rule deserialize (Ljava/lang/String;)V
+accessible field net/minecraft/world/GameRules$IntRule value I

@@ -20,6 +20,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.map.template.*;
 import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
@@ -71,34 +72,35 @@ public final class MapCommand {
                         .then(argument("marker", StringArgumentType.word())
                         .then(argument("min", BlockPosArgumentType.blockPos())
                         .then(argument("max", BlockPosArgumentType.blockPos())
-                        .executes(MapExecutor.make(MapCommand::addRegion))
+                        .executes(MapCommand::addRegion)
                         .then(argument("data", NbtCompoundTagArgumentType.nbtCompound())
-                        .executes(MapExecutor.make((context, map, pos) -> addRegion(context, map, NbtCompoundTagArgumentType.getCompoundTag(context, "data"))))
+                        .executes(context -> addRegion(context, NbtCompoundTagArgumentType.getCompoundTag(context, "data")))
                     )))))
                     .then(literal("rename")
                         .then(literal("all")
                             .then(argument("old", StringArgumentType.word())
                             .then(argument("new", StringArgumentType.word())
-                            .executes(MapExecutor.make((context, map, pos) -> renameRegions(context, map, (region, oldMarker) -> region.getMarker().equals(oldMarker))))
+                            .executes(context -> renameRegions(context, (region, oldMarker, pos) -> region.getMarker().equals(oldMarker)))
                         )))
                         .then(literal("here")
                             .then(argument("old", StringArgumentType.word())
                             .then(argument("new", StringArgumentType.word())
-                            .executes(MapExecutor.make(
-                                (context, map, pos) -> renameRegions(context, map, (region, oldMarker) -> region.getMarker().equals(oldMarker) && region.getBounds().contains(pos))
-                            ))
+                            .executes(
+                                context -> renameRegions(context, (region, oldMarker, pos) -> region.getMarker().equals(oldMarker)
+                                        && region.getBounds().contains(pos))
+                            )
                         )))
                     )
                     .then(literal("edit")
                         .then(literal("data")
                             .then(argument("marker", StringArgumentType.word())
                             .then(argument("data", NbtCompoundTagArgumentType.nbtCompound())
-                            .executes(MapExecutor.make(MapCommand::editRegionData))
+                            .executes(MapCommand::editRegionData)
                         )))
                     )
                     .then(literal("remove")
                         .then(literal("here")
-                        .executes(MapExecutor.make(MapCommand::removeRegionHere))
+                        .executes(MapCommand::removeRegionHere)
                     ))
                     .then(literal("commit")
                         .then(argument("marker", StringArgumentType.word())
@@ -196,31 +198,35 @@ public final class MapCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int addRegion(CommandContext<ServerCommandSource> context, StagingMapTemplate map, BlockPos pos) throws CommandSyntaxException {
-        return addRegion(context, map, new CompoundTag());
+    private static int addRegion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return addRegion(context, new CompoundTag());
     }
 
-    private static int addRegion(CommandContext<ServerCommandSource> context, StagingMapTemplate map, CompoundTag data) throws CommandSyntaxException {
+    private static int addRegion(CommandContext<ServerCommandSource> context, CompoundTag data) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
 
         String marker = StringArgumentType.getString(context, "marker");
         BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
         BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
 
+        StagingMapTemplate map = getMap(context);
         map.addRegion(marker, new BlockBounds(min, max), data);
         source.sendFeedback(new LiteralText("Added region '" + marker + "' to '" + map.getIdentifier() + "'"), false);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int renameRegions(CommandContext<ServerCommandSource> context, StagingMapTemplate map, RegionPredicate predicate) {
+    private static int renameRegions(CommandContext<ServerCommandSource> context, RegionPredicate predicate) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
+        BlockPos pos = source.getPlayer().getBlockPos();
 
         String oldMarker = StringArgumentType.getString(context, "old");
         String newMarker = StringArgumentType.getString(context, "new");
 
+        StagingMapTemplate map = getMap(context);
+
         List<TemplateRegion> regions = map.getRegions().stream()
-                .filter(region -> predicate.test(region, oldMarker))
+                .filter(region -> predicate.test(region, oldMarker, pos))
                 .collect(Collectors.toList());
 
         for (TemplateRegion region : regions) {
@@ -233,12 +239,14 @@ public final class MapCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int editRegionData(CommandContext<ServerCommandSource> context, StagingMapTemplate map, BlockPos pos) {
+    private static int editRegionData(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
+        BlockPos pos = source.getPlayer().getBlockPos();
 
         String marker = StringArgumentType.getString(context, "marker");
         CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "data");
 
+        StagingMapTemplate map = getMap(context);
         List<TemplateRegion> regions = map.getRegions().stream()
                 .filter(region -> region.getBounds().contains(pos) && region.getMarker().equals(marker))
                 .collect(Collectors.toList());
@@ -253,8 +261,10 @@ public final class MapCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int removeRegionHere(CommandContext<ServerCommandSource> context, StagingMapTemplate map, BlockPos pos) {
+    private static int removeRegionHere(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
+        BlockPos pos = source.getPlayer().getBlockPos();
+        StagingMapTemplate map = getMap(context);
 
         List<TemplateRegion> regions = map.getRegions().stream()
                 .filter(region -> region.getBounds().contains(pos))
@@ -319,33 +329,26 @@ public final class MapCommand {
         };
     }
 
-    @FunctionalInterface
-    private interface MapExecutor {
-        int execute(CommandContext<ServerCommandSource> context, StagingMapTemplate map, BlockPos pos) throws CommandSyntaxException;
+    private static @NotNull StagingMapTemplate getMap(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        ServerWorld world = source.getWorld();
+        BlockPos pos = source.getPlayer().getBlockPos();
 
-        static Command<ServerCommandSource> make(MapExecutor executor) {
-            return context -> {
-                ServerCommandSource source = context.getSource();
-                ServerWorld world = source.getWorld();
-                BlockPos pos = source.getPlayer().getBlockPos();
+        StagingMapManager stagingMapManager = StagingMapManager.get(world);
 
-                StagingMapManager stagingMapManager = StagingMapManager.get(world);
+        Optional<StagingMapTemplate> mapOpt = stagingMapManager.getStagingMaps().stream()
+                .filter(stagingMap -> stagingMap.getBounds().contains(pos))
+                .findFirst();
 
-                Optional<StagingMapTemplate> mapOpt = stagingMapManager.getStagingMaps().stream()
-                        .filter(stagingMap -> stagingMap.getBounds().contains(pos))
-                        .findFirst();
-
-                if (mapOpt.isPresent()) {
-                    return executor.execute(context, mapOpt.get(), pos);
-                } else {
-                    throw MAP_NOT_FOUND_AT.create();
-                }
-            };
+        if (mapOpt.isPresent()) {
+            return mapOpt.get();
+        } else {
+            throw MAP_NOT_FOUND_AT.create();
         }
     }
 
     @FunctionalInterface
     private interface RegionPredicate {
-        boolean test(TemplateRegion region, String marker);
+        boolean test(TemplateRegion region, String marker, BlockPos pos);
     }
 }

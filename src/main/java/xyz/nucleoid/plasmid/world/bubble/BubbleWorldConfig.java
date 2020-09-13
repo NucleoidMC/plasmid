@@ -4,6 +4,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameMode;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 
@@ -17,6 +18,7 @@ public final class BubbleWorldConfig {
     private BubbleWorldSpawner spawner = BubbleWorldSpawner.at(new Vec3d(0.0, 64.0, 0.0));
     private int timeOfDay = 6000;
     private Difficulty difficulty = Difficulty.NORMAL;
+    private final GameRuleStore gameRules = new GameRuleStore();
 
     public BubbleWorldConfig setSeed(long seed) {
         this.seed = seed;
@@ -62,6 +64,16 @@ public final class BubbleWorldConfig {
         return this;
     }
 
+    public BubbleWorldConfig setGameRule(GameRules.Key<GameRules.BooleanRule> key, boolean value) {
+        this.gameRules.set(key, value);
+        return this;
+    }
+
+    public BubbleWorldConfig setGameRule(GameRules.Key<GameRules.IntRule> key, int value) {
+        this.gameRules.set(key, value);
+        return this;
+    }
+
     public long getSeed() {
         return this.seed;
     }
@@ -94,5 +106,9 @@ public final class BubbleWorldConfig {
     @Nullable
     public Difficulty getDifficulty() {
         return this.difficulty;
+    }
+
+    public GameRuleStore getGameRules() {
+        return this.gameRules;
     }
 }

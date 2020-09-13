@@ -22,6 +22,9 @@ public final class BubbleWorldProperties extends UnmodifiableLevelProperties {
             bubbleRules.get(GameRules.DO_DAYLIGHT_CYCLE).set(false, null);
         }
 
+        GameRuleStore rules = config.getGameRules();
+        rules.applyTo(bubbleRules, null);
+
         return bubbleRules;
     }
 

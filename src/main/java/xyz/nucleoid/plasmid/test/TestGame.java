@@ -6,6 +6,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameWorld;
@@ -28,7 +29,10 @@ public final class TestGame {
                     BubbleWorldConfig worldConfig = new BubbleWorldConfig()
                             .setGenerator(generator)
                             .setSpawner(BubbleWorldSpawner.atSurface(BlockPos.ORIGIN))
-                            .setDefaultGameMode(GameMode.ADVENTURE);
+                            .setDefaultGameMode(GameMode.ADVENTURE)
+                            .setTimeOfDay(6000)
+                            .setGameRule(GameRules.DO_MOB_SPAWNING, false)
+                            .setGameRule(GameRules.DO_WEATHER_CYCLE, false);
 
                     return context.openWorld(worldConfig);
                 })

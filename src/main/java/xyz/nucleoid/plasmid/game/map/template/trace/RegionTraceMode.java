@@ -6,8 +6,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public enum RegionTraceMode {
     OFFSET(new LiteralText("offset mode")),
@@ -26,7 +25,7 @@ public enum RegionTraceMode {
             return player.getBlockPos();
         }
 
-        HitResult traceResult = player.rayTrace(64.0, 1.0F, true);
+        HitResult traceResult = player.raycast(64.0, 1.0F, true);
         if (traceResult.getType() == HitResult.Type.BLOCK) {
             BlockHitResult blockResult = (BlockHitResult) traceResult;
             BlockPos pos = blockResult.getBlockPos();

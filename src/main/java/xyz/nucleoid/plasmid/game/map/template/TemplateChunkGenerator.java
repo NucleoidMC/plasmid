@@ -1,17 +1,17 @@
 package xyz.nucleoid.plasmid.game.map.template;
 
+import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.world.*;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
@@ -120,6 +120,58 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    public void populateEntities(ChunkRegion region) {
+        int chunkX = region.getCenterChunkX();
+        int chunkZ = region.getCenterChunkZ();
+
+        ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
+
+        BlockBounds chunkBounds = BlockBounds.of(chunkPos);
+        if (!this.worldBounds.intersects(chunkBounds)) {
+            return;
+        }
+
+        ProtoChunk protoChunk = (ProtoChunk) region.getChunk(chunkX, chunkZ);
+
+        int minWorldX = chunkPos.getStartX();
+        int minWorldZ = chunkPos.getStartZ();
+
+        int minSectionY = this.worldBounds.getMin().getY() >> 4;
+        int maxSectionY = this.worldBounds.getMax().getY() >> 4;
+
+        BlockPos.Mutable currentPos = new BlockPos.Mutable();
+        for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
+            int minWorldY = sectionY << 4;
+
+            int offsetX = minWorldX - this.origin.getX();
+            int offsetY = minWorldY - this.origin.getY();
+            int offsetZ = minWorldZ - this.origin.getZ();
+
+            currentPos.set(offsetX, offsetY, offsetZ);
+
+            this.template.getEntitiesInChunk(currentPos).forEach(entityTag -> {
+                ListTag posTag = entityTag.getList("Pos", NbtType.DOUBLE);
+                posTag.set(0, DoubleTag.of(posTag.getDouble(0) + minWorldX));
+                posTag.set(1, DoubleTag.of(posTag.getDouble(1) + minWorldY));
+                posTag.set(2, DoubleTag.of(posTag.getDouble(2) + minWorldZ));
+
+                // For AbstractDecorationEntity.
+                this.fixPos(entityTag, "TileX", minWorldX);
+                this.fixPos(entityTag, "TileY", minWorldY);
+                this.fixPos(entityTag, "TileZ", minWorldZ);
+
+                protoChunk.addEntity(entityTag);
+            });
+        }
+    }
+
+    private void fixPos(CompoundTag tag, String key, int offset) {
+        if (tag.contains(key, NbtType.INT)) {
+            tag.putInt(key, tag.getInt(key) + offset);
         }
     }
 

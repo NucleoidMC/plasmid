@@ -3,17 +3,24 @@ package xyz.nucleoid.plasmid.game.map.template;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Represents a staging map template.
+ */
 public final class StagingMapTemplate {
     private final ServerWorld world;
     private final Identifier identifier;
@@ -81,6 +88,11 @@ public final class StagingMapTemplate {
         return map;
     }
 
+    /**
+     * Compiles this staging map template into a map template.
+     *
+     * @return The compiled map.
+     */
     public MapTemplate compile() {
         MapTemplate map = MapTemplate.createEmpty();
         map.bounds = this.globalToLocal(this.bounds);
@@ -105,11 +117,55 @@ public final class StagingMapTemplate {
             }
         }
 
+        this.compileEntities(map, EntityType.ARMOR_STAND);
+        this.compileEntities(map, EntityType.ITEM_FRAME);
+        this.compileEntities(map, EntityType.PAINTING);
+
         return map;
+    }
+
+    /**
+     * Compiles the entities of the specified type which are inside the map.
+     *
+     * @param map The map.
+     * @param type The entity type.
+     * @param <T> The entity type.
+     */
+    private <T extends Entity> void compileEntities(MapTemplate map, EntityType<T> type) {
+        this.world.getEntitiesByType(type, entity -> this.bounds.contains(entity.getBlockPos()))
+                .forEach(entity -> {
+                    final Vec3d oldPos = entity.getPos();
+                    final Vec3d localPos = this.globalToLocal(oldPos);
+                    BlockPos oldBlockPos = null;
+                    entity.setPos(localPos.getX(), localPos.getY(), localPos.getZ());
+
+                    if (entity instanceof AbstractDecorationEntity) {
+                        AbstractDecorationEntity decorationEntity = (AbstractDecorationEntity) entity;
+                        oldBlockPos = decorationEntity.getDecorationBlockPos();
+                        decorationEntity.attachmentPos = this.globalToLocal(oldBlockPos);
+                    }
+
+                    map.addEntity(entity);
+
+                    entity.setPos(oldPos.getX(), oldPos.getY(), oldPos.getZ());
+                    if (entity instanceof AbstractDecorationEntity) {
+                        AbstractDecorationEntity decorationEntity = (AbstractDecorationEntity) entity;
+                        decorationEntity.attachmentPos = oldBlockPos;
+                    }
+                });
     }
 
     private BlockPos globalToLocal(BlockPos pos) {
         return pos.subtract(this.bounds.getMin());
+    }
+
+    private Vec3d globalToLocal(Vec3d pos) {
+        BlockPos min = this.bounds.getMin();
+        return new Vec3d(
+                pos.getX() - (double) min.getX(),
+                pos.getY() - (double) min.getY(),
+                pos.getZ() - (double) min.getZ()
+        );
     }
 
     private BlockBounds globalToLocal(BlockBounds bounds) {

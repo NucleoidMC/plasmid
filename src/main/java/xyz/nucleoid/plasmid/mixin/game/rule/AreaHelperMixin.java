@@ -1,9 +1,9 @@
 package xyz.nucleoid.plasmid.mixin.game.rule;
 
-import net.minecraft.AreaHelper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.ServerWorldAccess;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.dimension.AreaHelper;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

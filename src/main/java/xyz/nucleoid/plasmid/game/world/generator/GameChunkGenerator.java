@@ -10,6 +10,7 @@ import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.biome.BuiltinBiomes;
 import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.biome.source.FixedBiomeSource;
@@ -28,7 +29,7 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
     }
 
     public GameChunkGenerator(MinecraftServer server) {
-        this(createBiomeSource(server, BuiltinBiomes.THE_VOID), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
+        this(createBiomeSource(server, BiomeKeys.THE_VOID), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
     }
 
     protected static FixedBiomeSource createBiomeSource(MinecraftServer server, RegistryKey<Biome> biome) {

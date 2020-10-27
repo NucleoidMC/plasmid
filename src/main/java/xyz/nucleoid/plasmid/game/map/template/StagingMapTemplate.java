@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Represents bounds inside a world that contains a staging map.
+ * A staging map represents an in-world map template before it has been compiled to a static file.
  * <p>
  * It stores regions and arbitrary data destined to be compiled into a {@link MapTemplate}.
  */
@@ -141,14 +141,7 @@ public final class StagingMapTemplate {
         this.world.getEntitiesByType(type, this.bounds.toBox(), entity -> !entity.removed)
                 .forEach(entity -> {
                     final Vec3d localPos = this.globalToLocal(entity.getPos());
-                    BlockPos blockPos = this.globalToLocal(entity.getBlockPos());
-
-                    if (entity instanceof AbstractDecorationEntity) {
-                        AbstractDecorationEntity decorationEntity = (AbstractDecorationEntity) entity;
-                        blockPos = this.globalToLocal(decorationEntity.getDecorationBlockPos());
-                    }
-
-                    map.addEntity(entity, localPos, blockPos);
+                    map.addEntity(entity, localPos);
                 });
     }
 

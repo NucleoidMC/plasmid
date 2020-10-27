@@ -143,7 +143,6 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
         int minSectionY = this.worldBounds.getMin().getY() >> 4;
         int maxSectionY = this.worldBounds.getMax().getY() >> 4;
 
-        BlockPos.Mutable currentPos = new BlockPos.Mutable();
         for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
             int minWorldY = sectionY << 4;
 
@@ -151,9 +150,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
             int offsetY = minWorldY - this.origin.getY();
             int offsetZ = minWorldZ - this.origin.getZ();
 
-            currentPos.set(offsetX, offsetY, offsetZ);
-
-            this.template.getEntitiesInChunk(currentPos).forEach(entityTag -> {
+            this.template.getEntitiesInChunk(offsetX >> 4, offsetY >> 4, offsetZ >> 4).forEach(entityTag -> {
                 ListTag posTag = entityTag.getList("Pos", NbtType.DOUBLE);
                 posTag.set(0, DoubleTag.of(posTag.getDouble(0) + minWorldX));
                 posTag.set(1, DoubleTag.of(posTag.getDouble(1) + minWorldY));

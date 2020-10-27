@@ -14,8 +14,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
@@ -32,7 +34,12 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * Represents a map template
+ * Represents a map template.
+ * <p>
+ * A map template stores serialized chunks, block entities, entities, the bounds, the biome, and regions.
+ * <p>
+ * It can be loaded from resources with {@link MapTemplateSerializer#load(Identifier)},
+ * and used for generation with {@link TemplateChunkGenerator}
  */
 public final class MapTemplate {
     private static final BlockState AIR = Blocks.AIR.getDefaultState();
@@ -127,9 +134,11 @@ public final class MapTemplate {
      * The position of the entity must be relative to the map template.
      *
      * @param entity The entity to add.
+     * @param pos The entity position relatives to the map.
+     * @param blockPos The entity block position relatives to the map. For decoration entities it's the attachment position.
      */
-    void addEntity(Entity entity) {
-        this.chunks.computeIfAbsent(chunkPos(entity.getBlockPos()), p -> new Chunk()).addEntity(entity);
+    void addEntity(Entity entity, Vec3d pos, BlockPos blockPos) {
+        this.chunks.computeIfAbsent(chunkPos(entity.getBlockPos()), p -> new Chunk()).addEntity(entity, pos, blockPos);
     }
 
     /**
@@ -138,7 +147,7 @@ public final class MapTemplate {
      * @param pos A block position.
      * @return The stream of entities.
      */
-    public Stream<CompoundTag> getEntitiesInChunk(BlockPos pos) {
+    Stream<CompoundTag> getEntitiesInChunk(BlockPos pos) {
         return this.getEntitiesInChunk(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
     }
 
@@ -271,8 +280,10 @@ public final class MapTemplate {
          * The position of the entity must be relative to the map template.
          *
          * @param entity The entity to add.
+         * @param pos The entity position relatives to the map.
+         * @param blockPos The entity block position relatives to the map. For decoration entities it's the attachment position.
          */
-        public void addEntity(Entity entity) {
+        public void addEntity(Entity entity, Vec3d pos, BlockPos blockPos) {
             CompoundTag tag = new CompoundTag();
 
             if (!entity.saveToTag(tag)) { return; }
@@ -281,33 +292,26 @@ public final class MapTemplate {
             tag.remove("UUID");
 
             ListTag posTag = new ListTag();
-            BlockPos pos = entity.getBlockPos();
 
-            int offsetX = pos.getX() & 15;
-            int offsetY = pos.getY() & 15;
-            int offsetZ = pos.getZ() & 15;
+            int offsetX = (int) pos.getX() & 15;
+            int offsetY = (int) pos.getY() & 15;
+            int offsetZ = (int) pos.getZ() & 15;
 
-            posTag.add(DoubleTag.of(entity.getX() - (double) (pos.getX() - offsetX)));
-            posTag.add(DoubleTag.of(entity.getY() - (double) (pos.getY() - offsetY)));
-            posTag.add(DoubleTag.of(entity.getZ() - (double) (pos.getZ() - offsetZ)));
+            posTag.add(DoubleTag.of(pos.getX() - (double) ((int) pos.getX() - offsetX)));
+            posTag.add(DoubleTag.of(pos.getY() - (double) ((int) pos.getY() - offsetY)));
+            posTag.add(DoubleTag.of(pos.getZ() - (double) ((int) pos.getZ() - offsetZ)));
 
             tag.put("Pos", posTag);
 
             // AbstractDecorationEntity has special position handling with an attachment position.
             if (entity instanceof AbstractDecorationEntity) {
-                AbstractDecorationEntity decorationEntity = (AbstractDecorationEntity) entity;
-                pos = decorationEntity.getDecorationBlockPos();
+                int minChunkX = (int) pos.getX() & ~15;
+                int minChunkY = (int) pos.getY() & ~15;
+                int minChunkZ = (int) pos.getZ() & ~15;
 
-                int blockPosX = pos.getX() & 15;
-                if (offsetX == 0 && blockPosX == 15) { blockPosX = -1; }
-                int blockPosY = pos.getY() & 15;
-                if (offsetY == 0 && blockPosY == 15) { blockPosY = -1; }
-                int blockPosZ = pos.getZ() & 15;
-                if (offsetZ == 0 && blockPosZ == 15) { blockPosZ = -1; }
-
-                tag.putInt("TileX", blockPosX);
-                tag.putInt("TileY", blockPosY);
-                tag.putInt("TileZ", blockPosZ);
+                tag.putInt("TileX", blockPos.getX() - minChunkX);
+                tag.putInt("TileY", blockPos.getY() - minChunkY);
+                tag.putInt("TileZ", blockPos.getZ() - minChunkZ);
             }
 
             this.entities.add(tag);

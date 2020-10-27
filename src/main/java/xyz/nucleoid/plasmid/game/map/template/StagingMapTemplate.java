@@ -20,6 +20,8 @@ import java.util.List;
 
 /**
  * Represents a staging map template.
+ * <p>
+ * It is bounds inside the world with regions and arbitrary data destined to be compiled into a {@link MapTemplate}.
  */
 public final class StagingMapTemplate {
     private final ServerWorld world;
@@ -90,6 +92,9 @@ public final class StagingMapTemplate {
 
     /**
      * Compiles this staging map template into a map template.
+     * <p>
+     * It copies the block and entity data from the world and stores it within the template.
+     * All positions are made relative.
      *
      * @return The compiled map.
      */
@@ -117,6 +122,7 @@ public final class StagingMapTemplate {
             }
         }
 
+        // @TODO Make this more flexible
         this.compileEntities(map, EntityType.ARMOR_STAND);
         this.compileEntities(map, EntityType.ITEM_FRAME);
         this.compileEntities(map, EntityType.PAINTING);
@@ -132,26 +138,17 @@ public final class StagingMapTemplate {
      * @param <T> The entity type.
      */
     private <T extends Entity> void compileEntities(MapTemplate map, EntityType<T> type) {
-        this.world.getEntitiesByType(type, entity -> this.bounds.contains(entity.getBlockPos()))
+        this.world.getEntitiesByType(type, this.bounds.toBox(), entity -> !entity.removed)
                 .forEach(entity -> {
-                    final Vec3d oldPos = entity.getPos();
-                    final Vec3d localPos = this.globalToLocal(oldPos);
-                    BlockPos oldBlockPos = null;
-                    entity.setPos(localPos.getX(), localPos.getY(), localPos.getZ());
+                    final Vec3d localPos = this.globalToLocal(entity.getPos());
+                    BlockPos blockPos = this.globalToLocal(entity.getBlockPos());
 
                     if (entity instanceof AbstractDecorationEntity) {
                         AbstractDecorationEntity decorationEntity = (AbstractDecorationEntity) entity;
-                        oldBlockPos = decorationEntity.getDecorationBlockPos();
-                        decorationEntity.attachmentPos = this.globalToLocal(oldBlockPos);
+                        blockPos = this.globalToLocal(decorationEntity.getDecorationBlockPos());
                     }
 
-                    map.addEntity(entity);
-
-                    entity.setPos(oldPos.getX(), oldPos.getY(), oldPos.getZ());
-                    if (entity instanceof AbstractDecorationEntity) {
-                        AbstractDecorationEntity decorationEntity = (AbstractDecorationEntity) entity;
-                        decorationEntity.attachmentPos = oldBlockPos;
-                    }
+                    map.addEntity(entity, localPos, blockPos);
                 });
     }
 
@@ -161,11 +158,7 @@ public final class StagingMapTemplate {
 
     private Vec3d globalToLocal(Vec3d pos) {
         BlockPos min = this.bounds.getMin();
-        return new Vec3d(
-                pos.getX() - (double) min.getX(),
-                pos.getY() - (double) min.getY(),
-                pos.getZ() - (double) min.getZ()
-        );
+        return pos.subtract(min.getX(), min.getY(), min.getZ());
     }
 
     private BlockBounds globalToLocal(BlockBounds bounds) {

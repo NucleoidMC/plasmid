@@ -138,7 +138,7 @@ public final class MapTemplate {
      * @param pos The entity position relatives to the map.
      */
     void addEntity(Entity entity, Vec3d pos) {
-        this.chunks.computeIfAbsent(chunkPos(entity.getBlockPos()), p -> new Chunk()).addEntity(entity, pos);
+        this.chunks.computeIfAbsent(chunkPos(pos), p -> new Chunk()).addEntity(entity, pos);
     }
 
     /**
@@ -201,6 +201,10 @@ public final class MapTemplate {
 
     private static long chunkPos(BlockPos pos) {
         return ChunkSectionPos.asLong(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
+    }
+
+    private static long chunkPos(Vec3d pos) {
+        return ChunkSectionPos.asLong(MathHelper.floor(pos.getX()) >> 4, MathHelper.floor(pos.getY()) >> 4, MathHelper.floor(pos.getZ()) >> 4);
     }
 
     public void setBounds(BlockBounds bounds) {

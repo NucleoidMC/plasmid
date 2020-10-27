@@ -19,9 +19,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Represents a staging map template.
+ * Represents bounds inside a world that contains a staging map.
  * <p>
- * It is bounds inside the world with regions and arbitrary data destined to be compiled into a {@link MapTemplate}.
+ * It stores regions and arbitrary data destined to be compiled into a {@link MapTemplate}.
  */
 public final class StagingMapTemplate {
     private final ServerWorld world;

@@ -248,7 +248,7 @@ public final class MapTemplate {
     }
 
     /**
-     * Represents a cubic chunk.
+     * Represents a 16x16x16 holder of block states and entities.
      */
     static class Chunk {
         private static final Palette<BlockState> PALETTE = new IdListPalette<>(Block.STATE_IDS, Blocks.AIR.getDefaultState());
@@ -310,9 +310,9 @@ public final class MapTemplate {
         }
 
         /**
-         * Returns the entities of this chunk.
+         * Returns the entities in this chunk.
          *
-         * @return The entities of this chunk.
+         * @return The entities in this chunk.
          */
         public List<CompoundTag> getEntities() {
             return this.entities;

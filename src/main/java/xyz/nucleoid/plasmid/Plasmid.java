@@ -13,10 +13,10 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.Unit;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.*;
+import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xyz.nucleoid.plasmid.command.*;
@@ -35,8 +35,10 @@ import xyz.nucleoid.plasmid.game.event.UseBlockListener;
 import xyz.nucleoid.plasmid.game.event.UseItemListener;
 import xyz.nucleoid.plasmid.game.map.template.MapTemplateSerializer;
 import xyz.nucleoid.plasmid.game.map.template.StagingBoundRenderer;
+import xyz.nucleoid.plasmid.game.map.template.StagingMapManager;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
+import xyz.nucleoid.plasmid.item.IncludeEntityItem;
 import xyz.nucleoid.plasmid.item.PlasmidItems;
 import xyz.nucleoid.plasmid.test.TestGame;
 
@@ -122,6 +124,44 @@ public final class Plasmid implements ModInitializer {
                     if (gameWorld.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
                         return ActionResult.FAIL;
                     }
+                }
+
+                ItemStack stack = player.getStackInHand(hand);
+                if (stack.getItem() instanceof IncludeEntityItem) {
+                    BlockPos pos = player.getBlockPos();
+
+                    StagingMapManager stagingMapManager = StagingMapManager.get((ServerWorld) world);
+
+                    return stagingMapManager.getStagingMaps().stream()
+                            .filter(stagingMap -> stagingMap.getBounds().contains(pos))
+                            .findFirst()
+                            .map(map -> {
+                                if (!map.getBounds().contains(entity.getBlockPos())) {
+                                    player.sendMessage(
+                                            new LiteralText("The targeted entity is not in the map \"" + map.getIdentifier() + "\".")
+                                                    .formatted(Formatting.RED),
+                                            false);
+                                    return ActionResult.FAIL;
+                                }
+
+                                if (map.containsEntity(entity.getUuid())) {
+                                    map.removeEntity(entity.getUuid());
+                                    player.sendMessage(
+                                            new LiteralText("The targeted entity has been removed from the map\"" + map.getIdentifier() + "\"."),
+                                            true);
+                                } else {
+                                    map.addEntity(entity.getUuid());
+                                    player.sendMessage(
+                                            new LiteralText("The targeted entity has been added in the map\"" + map.getIdentifier() + "\"."),
+                                            true);
+                                }
+                                return ActionResult.SUCCESS;
+                            })
+                            .orElseGet(() -> {
+                                player.sendMessage(new LiteralText("You are not in any map.").formatted(Formatting.RED),
+                                        false);
+                                return ActionResult.FAIL;
+                            });
                 }
 
                 CustomEntity customEntity = CustomEntity.match(entity);

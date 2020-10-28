@@ -10,8 +10,11 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.BlockPosArgumentType;
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.command.argument.NbtCompoundTagArgumentType;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -19,7 +22,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.map.template.*;
@@ -36,6 +41,10 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public final class MapCommand {
+    public static final DynamicCommandExceptionType ENTITY_TYPE_NOT_FOUND = new DynamicCommandExceptionType(arg ->
+            new TranslatableText("Entity type with id '%s' was not found!", arg)
+    );
+
     public static final DynamicCommandExceptionType MAP_NOT_FOUND = new DynamicCommandExceptionType(arg ->
             new TranslatableText("Map with id '%s' was not found!", arg)
     );
@@ -65,7 +74,10 @@ public final class MapCommand {
                 .then(literal("exit").executes(MapCommand::exitMap))
                 .then(literal("compile")
                     .then(argument("identifier", IdentifierArgumentType.identifier()).suggests(stagingSuggestions())
-                    .executes(MapCommand::compileMap)
+                    .executes(context -> MapCommand.compileMap(context, false))
+                    .then(literal("withEntities")
+                        .executes(context -> MapCommand.compileMap(context, true))
+                    )
                 ))
                 .then(literal("region")
                     .then(literal("add")
@@ -100,14 +112,41 @@ public final class MapCommand {
                     )
                     .then(literal("remove")
                         .then(literal("here")
-                        .executes(MapCommand::removeRegionHere)
-                    ))
+                            .executes(MapCommand::removeRegionHere)
+                        )
+                        .then(literal("at")
+                            .then(argument("pos", BlockPosArgumentType.blockPos())
+                            .executes(MapCommand::removeRegionAt)
+                        ))
+                    )
                     .then(literal("commit")
                         .then(argument("marker", StringArgumentType.word())
                         .executes(MapCommand::commitRegion)
                         .then(argument("data", NbtCompoundTagArgumentType.nbtCompound())
                         .executes(context -> commitRegion(context, NbtCompoundTagArgumentType.getCompoundTag(context, "data")))
                     )))
+                )
+                .then(literal("entity")
+                    .then(literal("add")
+                        .then(argument("entities", EntityArgumentType.entities())
+                        .executes(MapCommand::addEntities)
+                    ))
+                    .then(literal("remove")
+                        .then(argument("entities", EntityArgumentType.entities())
+                        .executes(MapCommand::removeEntities)
+                    ))
+                    .then(literal("filter")
+                        .then(literal("type")
+                            .then(literal("add")
+                                .then(argument("entity_type", IdentifierArgumentType.identifier()).suggests(entityTypeSuggestions())
+                                .executes(MapCommand::addEntityType)
+                            ))
+                            .then(literal("remove")
+                                .then(argument("entity_type", IdentifierArgumentType.identifier()).suggests(entityTypeSuggestions())
+                                .executes(MapCommand::removeEntityType)
+                            ))
+                        )
+                    )
                 )
         );
     }
@@ -170,7 +209,7 @@ public final class MapCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int compileMap(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int compileMap(CommandContext<ServerCommandSource> context, boolean includeEntities) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ServerWorld world = source.getWorld();
 
@@ -182,7 +221,7 @@ public final class MapCommand {
             throw MAP_NOT_FOUND.create(identifier);
         }
 
-        MapTemplate template = stagingMap.compile();
+        MapTemplate template = stagingMap.compile(includeEntities);
         CompletableFuture<Void> future = MapTemplateSerializer.INSTANCE.save(template, stagingMap.getIdentifier());
 
         future.handle((v, throwable) -> {
@@ -262,8 +301,15 @@ public final class MapCommand {
     }
 
     private static int removeRegionHere(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return removeRegion(context, context.getSource().getPlayer().getBlockPos());
+    }
+
+    private static int removeRegionAt(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return removeRegion(context, BlockPosArgumentType.getBlockPos(context, "pos"));
+    }
+
+    private static int removeRegion(CommandContext<ServerCommandSource> context, BlockPos pos) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
-        BlockPos pos = source.getPlayer().getBlockPos();
         StagingMapTemplate map = getMap(context);
 
         List<TemplateRegion> regions = map.getRegions().stream()
@@ -317,6 +363,86 @@ public final class MapCommand {
         }
 
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int addEntities(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        ServerWorld world = source.getWorld();
+
+        StagingMapTemplate map = getMap(context);
+
+        long result = EntityArgumentType.getEntities(context, "entities").stream()
+                .filter(entity -> entity.getEntityWorld().equals(world) && !(entity instanceof PlayerEntity)
+                        && map.getBounds().contains(entity.getBlockPos()))
+                .filter(entity -> map.addEntity(entity.getUuid()))
+                .count();
+
+        if (result == 0) {
+            source.sendError(new LiteralText("Could not add entities in map \"" + map.getIdentifier() + "\"."));
+        } else {
+            source.sendFeedback(new LiteralText("Added " + result + " entities in map \"" + map.getIdentifier() + "\"."),
+                    false);
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int removeEntities(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        ServerWorld world = source.getWorld();
+
+        StagingMapTemplate map = getMap(context);
+
+        long result = EntityArgumentType.getEntities(context, "entities").stream()
+                .filter(entity -> entity.getEntityWorld().equals(world) && !(entity instanceof PlayerEntity))
+                .filter(entity -> map.removeEntity(entity.getUuid()))
+                .count();
+
+        if (result == 0) {
+            source.sendError(new LiteralText("Could not remove entities in map \"" + map.getIdentifier() + "\"."));
+        } else {
+            source.sendFeedback(new LiteralText("Removed " + result + " entities in map \"" + map.getIdentifier() + "\"."),
+                    false);
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int addEntityType(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+
+        StagingMapTemplate map = getMap(context);
+        Pair<Identifier, EntityType<?>> type = getEntityType(context);
+
+        if (!map.addEntityType(type.getRight())) {
+            source.sendError(new LiteralText("Entity type \"" + type.getLeft() + "\" is already present in map \"" + map.getIdentifier() + "\"."));
+        } else {
+            source.sendFeedback(new LiteralText("Added entity type \"" + type.getLeft() + "\" in map \"" + map.getIdentifier() + "\"."), false);
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int removeEntityType(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+
+        StagingMapTemplate map = getMap(context);
+        Pair<Identifier, EntityType<?>> type = getEntityType(context);
+
+        if (!map.removeEntityType(type.getRight())) {
+            source.sendError(new LiteralText("Entity type \"" + type.getLeft() + "\" is not present in map \"" + map.getIdentifier() + "\"."));
+        } else {
+            source.sendFeedback(new LiteralText("Removed entity type \"" + type.getLeft() + "\" in map \"" + map.getIdentifier() + "\"."), false);
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static Pair<Identifier, EntityType<?>> getEntityType(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Identifier id = IdentifierArgumentType.getIdentifier(context, "entity_type");
+        return new Pair<>(id, Registry.ENTITY_TYPE.getOrEmpty(id).orElseThrow(() -> ENTITY_TYPE_NOT_FOUND.create(id)));
+    }
+
+    private static SuggestionProvider<ServerCommandSource> entityTypeSuggestions() {
+        return (ctx, builder) -> CommandSource.suggestIdentifiers(Registry.ENTITY_TYPE.getIds(), builder);
     }
 
     private static SuggestionProvider<ServerCommandSource> stagingSuggestions() {

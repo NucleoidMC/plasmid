@@ -8,25 +8,40 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BuiltinBiomes;
+import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.chunk.IdListPalette;
 import net.minecraft.world.chunk.Palette;
 import net.minecraft.world.chunk.PalettedContainer;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+/**
+ * Represents a map template.
+ * <p>
+ * A map template stores serialized chunks, block entities, entities, the bounds, the biome, and regions.
+ * <p>
+ * It can be loaded from resources with {@link MapTemplateSerializer#load(Identifier)},
+ * and used for generation with {@link TemplateChunkGenerator}
+ */
 public final class MapTemplate {
     private static final BlockState AIR = Blocks.AIR.getDefaultState();
 
@@ -34,7 +49,7 @@ public final class MapTemplate {
     final Long2ObjectMap<CompoundTag> blockEntities = new Long2ObjectOpenHashMap<>();
     final List<TemplateRegion> regions = new ArrayList<>();
 
-    RegistryKey<Biome> biome = BuiltinBiomes.THE_VOID;
+    RegistryKey<Biome> biome = BiomeKeys.THE_VOID;
 
     BlockBounds bounds = null;
 
@@ -45,10 +60,20 @@ public final class MapTemplate {
         return new MapTemplate();
     }
 
+    /**
+     * Sets the biome key of the map template.
+     *
+     * @param biome The biome key.
+     */
     public void setBiome(RegistryKey<Biome> biome) {
         this.biome = biome;
     }
 
+    /**
+     * Returns the biome key of the map template.
+     *
+     * @return The biome key.
+     */
     public RegistryKey<Biome> getBiome() {
         return this.biome;
     }
@@ -104,6 +129,30 @@ public final class MapTemplate {
         return this.blockEntities.get(pos.asLong());
     }
 
+    /**
+     * Adds an entity to the map template.
+     * <p>
+     * The position of the entity must be relative to the map template.
+     *
+     * @param entity The entity to add.
+     * @param pos The entity position relatives to the map.
+     */
+    void addEntity(Entity entity, Vec3d pos) {
+        this.chunks.computeIfAbsent(chunkPos(pos), p -> new Chunk()).addEntity(entity, pos);
+    }
+
+    /**
+     * Returns a stream of serialized entities from a chunk.
+     *
+     * @param chunkX The chunk X-coordinate.
+     * @param chunkY The chunk Y-coordinate.
+     * @param chunkZ The chunk Z-coordinate.
+     * @return The stream of entities.
+     */
+    public Stream<CompoundTag> getEntitiesInChunk(int chunkX, int chunkY, int chunkZ) {
+        return this.chunks.get(ChunkSectionPos.asLong(chunkX, chunkY, chunkZ)).getEntities().stream();
+    }
+
     // TODO: store / lookup more efficiently?
     public int getTopY(int x, int z, Heightmap.Type heightmap) {
         Predicate<BlockState> predicate = heightmap.getBlockPredicate();
@@ -154,6 +203,10 @@ public final class MapTemplate {
         return ChunkSectionPos.asLong(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
     }
 
+    private static long chunkPos(Vec3d pos) {
+        return ChunkSectionPos.asLong(MathHelper.floor(pos.getX()) >> 4, MathHelper.floor(pos.getY()) >> 4, MathHelper.floor(pos.getZ()) >> 4);
+    }
+
     public void setBounds(BlockBounds bounds) {
         this.bounds = bounds;
     }
@@ -194,6 +247,9 @@ public final class MapTemplate {
         );
     }
 
+    /**
+     * Represents a 16x16x16 holder of block states and entities.
+     */
     static class Chunk {
         private static final Palette<BlockState> PALETTE = new IdListPalette<>(Block.STATE_IDS, Blocks.AIR.getDefaultState());
 
@@ -202,6 +258,7 @@ public final class MapTemplate {
                 NbtHelper::toBlockState, NbtHelper::fromBlockState,
                 Blocks.AIR.getDefaultState()
         );
+        private final List<CompoundTag> entities = new ArrayList<>();
 
         public void set(int x, int y, int z, BlockState state) {
             this.container.set(x, y, z, state);
@@ -211,13 +268,68 @@ public final class MapTemplate {
             return this.container.get(x, y, z);
         }
 
+        /**
+         * Adds an entity to this chunk.
+         * <p>
+         * The position of the entity must be relative to the map template.
+         *
+         * @param entity The entity to add.
+         * @param pos The entity position relatives to the map.
+         */
+        public void addEntity(Entity entity, Vec3d pos) {
+            CompoundTag tag = new CompoundTag();
+
+            if (!entity.saveToTag(tag)) { return; }
+
+            // Avoid conflicts.
+            tag.remove("UUID");
+
+            ListTag posTag = new ListTag();
+
+            int minChunkX = MathHelper.floor(pos.getX()) & ~15;
+            int minChunkY = MathHelper.floor(pos.getY()) & ~15;
+            int minChunkZ = MathHelper.floor(pos.getZ()) & ~15;
+
+            posTag.add(DoubleTag.of(pos.getX() - minChunkX));
+            posTag.add(DoubleTag.of(pos.getY() - minChunkY));
+            posTag.add(DoubleTag.of(pos.getZ() - minChunkZ));
+
+            tag.put("Pos", posTag);
+
+            // AbstractDecorationEntity has special position handling with an attachment position.
+            if (entity instanceof AbstractDecorationEntity) {
+                BlockPos blockPos = ((AbstractDecorationEntity) entity).getDecorationBlockPos()
+                        .subtract(entity.getBlockPos())
+                        .add(pos.getX(), pos.getY(), pos.getZ());
+                tag.putInt("TileX", blockPos.getX() - minChunkX);
+                tag.putInt("TileY", blockPos.getY() - minChunkY);
+                tag.putInt("TileZ", blockPos.getZ() - minChunkZ);
+            }
+
+            this.entities.add(tag);
+        }
+
+        /**
+         * Returns the entities in this chunk.
+         *
+         * @return The entities in this chunk.
+         */
+        public List<CompoundTag> getEntities() {
+            return this.entities;
+        }
+
         public void serialize(CompoundTag tag) {
             this.container.write(tag, "palette", "block_states");
+            ListTag entitiesTag = new ListTag();
+            entitiesTag.addAll(this.entities);
+            tag.put("entities", entitiesTag);
         }
 
         public static Chunk deserialize(CompoundTag tag) {
             Chunk chunk = new Chunk();
             chunk.container.read(tag.getList("palette", NbtType.COMPOUND), tag.getLongArray("block_states"));
+            ListTag entitiesTag = tag.getList("entities", NbtType.COMPOUND);
+            entitiesTag.forEach(entityTag -> chunk.entities.add((CompoundTag) entityTag));
             return chunk;
         }
     }

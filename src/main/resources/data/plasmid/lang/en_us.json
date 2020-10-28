@@ -1,5 +1,6 @@
 {
   "item.plasmid.add_region": "Add Region",
+  "item.plasmid.include_entity": "Include Entity",
 
   "text.plasmid.game.started.player": "%s has started the game!",
   "text.plasmid.game.stopped.player": "%s has stopped the game!",

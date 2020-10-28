@@ -11,6 +11,7 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.registry.RegistryLookupCodec;
 import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.biome.BuiltinBiomes;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.biome.source.FixedBiomeSource;
@@ -34,7 +35,7 @@ public class VoidChunkGenerator extends ChunkGenerator {
     private final Registry<Biome> biomeRegistry;
 
     public VoidChunkGenerator(Registry<Biome> biomeRegistry) {
-        this(biomeRegistry, BuiltinBiomes.THE_VOID);
+        this(biomeRegistry, BiomeKeys.THE_VOID);
     }
 
     public VoidChunkGenerator(Registry<Biome> biomeRegistry, RegistryKey<Biome> biome) {

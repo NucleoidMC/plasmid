@@ -8,7 +8,7 @@ import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biomes;
+import net.minecraft.world.biome.BuiltinBiomes;
 import net.minecraft.world.biome.SpawnSettings;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.biome.source.BiomeSource;
@@ -26,7 +26,7 @@ import java.util.Optional;
 
 public final class GameGeneratorBuilder {
     StructuresConfig structures = new StructuresConfig(Optional.empty(), Collections.emptyMap());
-    BiomeSource biomes = new FixedBiomeSource(Biomes.THE_VOID);
+    BiomeSource biomes = new FixedBiomeSource(BuiltinBiomes.THE_VOID);
     GameSurfaceComposer surface = GameSurfaceComposer.none();
     GameFeatureComposer features = GameFeatureComposer.none();
 

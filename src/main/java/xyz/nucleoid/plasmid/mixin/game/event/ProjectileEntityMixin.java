@@ -28,13 +28,13 @@ public abstract class ProjectileEntityMixin extends Entity {
 
         if (gameWorld != null) {
             if (hitResult.getType() == HitResult.Type.ENTITY) {
-                ActionResult result = gameWorld.invoker(EntityHitListener.EVENT).onEntityHit((EntityHitResult) hitResult);
+                ActionResult result = gameWorld.invoker(EntityHitListener.EVENT).onEntityHit((ProjectileEntity) (Object) this, (EntityHitResult) hitResult);
 
                 if (result == ActionResult.FAIL) {
                     ci.cancel();
                 }
             } else if (hitResult.getType() == HitResult.Type.BLOCK) {
-                ActionResult result = gameWorld.invoker(BlockHitListener.EVENT).onBlockHit((BlockHitResult) hitResult);
+                ActionResult result = gameWorld.invoker(BlockHitListener.EVENT).onBlockHit((ProjectileEntity) (Object) this, (BlockHitResult) hitResult);
 
                 if (result == ActionResult.FAIL) {
                     ci.cancel();

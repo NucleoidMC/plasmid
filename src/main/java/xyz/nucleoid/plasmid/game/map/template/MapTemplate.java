@@ -150,7 +150,10 @@ public final class MapTemplate {
      * @return The stream of entities.
      */
     public Stream<CompoundTag> getEntitiesInChunk(int chunkX, int chunkY, int chunkZ) {
-        return this.chunks.get(ChunkSectionPos.asLong(chunkX, chunkY, chunkZ)).getEntities().stream();
+        Chunk chunk = this.chunks.get(ChunkSectionPos.asLong(chunkX, chunkY, chunkZ));
+        if (chunk == null)
+            return Stream.empty();
+        return chunk.getEntities().stream();
     }
 
     // TODO: store / lookup more efficiently?

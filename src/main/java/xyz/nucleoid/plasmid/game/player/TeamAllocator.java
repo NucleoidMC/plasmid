@@ -2,84 +2,101 @@ package xyz.nucleoid.plasmid.game.player;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.mojang.datafixers.util.Pair;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.BiConsumer;
 
-public final class TeamAllocator<K, V> {
-    private final List<K> keys;
+public final class TeamAllocator<T, V> {
+    private final List<T> teams;
+    private final List<V> players = new ArrayList<>();
+    private final Map<V, T> teamPreferences = new Object2ObjectOpenHashMap<>();
 
-    private final List<Pair<K, V>> withRequest = new ArrayList<>();
-    private final List<V> withoutRequest = new ArrayList<>();
-
-    public TeamAllocator(Collection<K> keys) {
-        this.keys = new ArrayList<>(keys);
-        Collections.shuffle(this.keys);
+    public TeamAllocator(Collection<T> teams) {
+        this.teams = new ArrayList<>(teams);
+        Collections.shuffle(this.teams);
     }
 
-    public void add(V value, @Nullable K request) {
-        if (request != null) {
-            this.withRequest.add(Pair.of(request, value));
-        } else {
-            this.withoutRequest.add(value);
+    public void add(V player, @Nullable T preference) {
+        this.players.add(player);
+        if (preference != null) {
+            this.teamPreferences.put(player, preference);
         }
     }
 
-    // TODO: we don't ensure that every team has players
-    public Multimap<K, V> build() {
-        Multimap<K, V> map = HashMultimap.create();
+    public void allocate(BiConsumer<T, V> apply) {
+        Multimap<T, V> teamToPlayers = this.build();
+        teamToPlayers.forEach(apply);
+    }
 
-        Collections.shuffle(this.withRequest);
-        Collections.shuffle(this.withoutRequest);
+    public Multimap<T, V> build() {
+        Multimap<T, V> teamToPlayers = HashMultimap.create();
+        Map<V, T> playerToTeam = new Object2ObjectOpenHashMap<>();
 
-        int totalKeys = this.keys.size();
-        int totalValues = this.withRequest.size() + this.withoutRequest.size();
+        // shuffle the player and teams list for random initial allocation
+        Collections.shuffle(this.teams);
+        Collections.shuffle(this.players);
 
-        int keyCapacity = (totalValues + totalKeys - 1) / totalKeys;
+        // 1. place everyone in all the teams in an even distribution
+        int teamIndex = 0;
+        for (V player : this.players) {
+            T team = this.teams.get(teamIndex++ % this.teams.size());
+            teamToPlayers.put(team, player);
+            playerToTeam.put(player, team);
+        }
 
-        for (Pair<K, V> request : this.withRequest) {
-            K key = request.getFirst();
-            V value = request.getSecond();
+        // we want to do swapping in a different order to how we initially allocated
+        Collections.shuffle(this.players);
 
-            if (!this.tryInsertInto(map, keyCapacity, key, value)) {
-                this.insertIntoSmallest(map, value);
+        // 2. go through and try to swap players whose preferences mismatch with their assigned team
+        for (V player : this.players) {
+            T preference = this.teamPreferences.get(player);
+            T current = playerToTeam.get(player);
+
+            // we have no preference or we are already in our desired position, continue
+            if (preference == null || current == preference) {
+                continue;
+            }
+
+            Collection<V> currentTeamMembers = teamToPlayers.get(current);
+            Collection<V> swapCandidates = teamToPlayers.get(preference);
+
+            // we can move without swapping if the other team is smaller than ours
+            // we only care about keeping the teams balanced, so this is safe
+            if (swapCandidates.size() < currentTeamMembers.size()) {
+                teamToPlayers.remove(current, player);
+                teamToPlayers.put(preference, player);
+                playerToTeam.put(player, preference);
+            } else {
+                V swapWith = null;
+
+                for (V swapCandidate : swapCandidates) {
+                    T swapCandidatePreference = this.teamPreferences.get(swapCandidate);
+                    if (swapCandidatePreference == preference) {
+                        // we can't swap with this player: they are already in their chosen team
+                        continue;
+                    }
+
+                    // we want to prioritise swapping with someone who wants to join our team
+                    if (swapWith == null || swapCandidatePreference == current) {
+                        swapWith = swapCandidate;
+                    }
+                }
+
+                // we found somebody to swap with! swap 'em
+                if (swapWith != null) {
+                    teamToPlayers.remove(current, player);
+                    teamToPlayers.put(preference, player);
+                    playerToTeam.put(player, preference);
+
+                    teamToPlayers.remove(preference, swapWith);
+                    teamToPlayers.put(current, swapWith);
+                    playerToTeam.put(swapWith, current);
+                }
             }
         }
 
-        for (V value : this.withoutRequest) {
-            this.insertIntoSmallest(map, value);
-        }
-
-        return map;
-    }
-
-    private void insertIntoSmallest(Multimap<K, V> map, V value) {
-        Collection<V> smallestBucket = null;
-
-        for (K key : this.keys) {
-            Collection<V> bucket = map.get(key);
-            if (smallestBucket == null || bucket.size() < smallestBucket.size()) {
-                smallestBucket = bucket;
-            }
-        }
-
-        if (smallestBucket == null) {
-            throw new Error("no available buckets");
-        }
-
-        smallestBucket.add(value);
-    }
-
-    private boolean tryInsertInto(Multimap<K, V> map, int keyCapacity, K key, V value) {
-        Collection<V> bucket = map.get(key);
-        if (bucket.size() < keyCapacity) {
-            bucket.add(value);
-            return true;
-        }
-        return false;
+        return teamToPlayers;
     }
 }

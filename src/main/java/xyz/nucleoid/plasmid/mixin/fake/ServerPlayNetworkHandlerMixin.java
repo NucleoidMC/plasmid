@@ -11,7 +11,7 @@ import xyz.nucleoid.plasmid.fake.FakeItem;
 public class ServerPlayNetworkHandlerMixin {
 
     // Code made by TheEpicBlock_TEB from PolyMC.
-    @Redirect(method = "onClickWindow(Lnet/minecraft/network/packet/c2s/play/ClickWindowC2SPacket;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;areEqual(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z"))
+    @Redirect(method = "onClickSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;areEqual(Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)Z"))
     public boolean areEqualRedirect(ItemStack left, ItemStack right) {
         return ItemStack.areEqual(left, FakeItem.getProxy(right));
     }

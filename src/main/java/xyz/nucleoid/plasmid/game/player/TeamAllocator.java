@@ -15,7 +15,6 @@ public final class TeamAllocator<T, V> {
 
     public TeamAllocator(Collection<T> teams) {
         this.teams = new ArrayList<>(teams);
-        Collections.shuffle(this.teams);
     }
 
     public void add(V player, @Nullable T preference) {

@@ -33,7 +33,7 @@
     "game.rule.CraftingResultInventoryMixin",
     "game.rule.HungerManagerMixin",
     "game.rule.PlayerEntityMixin",
-    "game.rule.ScreenHandlerMixin",
+    "game.event.ScreenHandlerMixin",
     "game.rule.ServerPlayerEntityMixin",
     "game.rule.ServerPlayerInteractionManagerMixin",
     "game.rule.TntBlockMixin",

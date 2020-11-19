@@ -10,6 +10,7 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.event.DropItemListener;
 import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
 import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.game.map.template.TemplateChunkGenerator;
@@ -41,7 +42,7 @@ public final class TestGame {
                         game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
                         game.setRule(GameRule.HUNGER, RuleResult.DENY);
                         game.setRule(GameRule.PVP, RuleResult.DENY);
-                        game.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
+                        game.on(DropItemListener.EVENT, (player, slot, stack) -> ActionResult.FAIL);
 
                         game.on(PlayerDeathListener.EVENT, (player, source) -> {
                             player.teleport(0.0, 65.0, 0.0);

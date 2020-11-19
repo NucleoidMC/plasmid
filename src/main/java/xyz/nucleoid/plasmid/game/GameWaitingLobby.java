@@ -47,22 +47,18 @@ public final class GameWaitingLobby {
             game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
             game.setRule(GameRule.HUNGER, RuleResult.DENY);
             game.setRule(GameRule.INTERACTION, RuleResult.DENY);
+            game.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
 
             game.on(GameTickListener.EVENT, lobby::onTick);
             game.on(RequestStartListener.EVENT, lobby::requestStart);
             game.on(OfferPlayerListener.EVENT, lobby::offerPlayer);
             game.on(PlayerRemoveListener.EVENT, lobby::onRemovePlayer);
             game.on(GameCloseListener.EVENT, lobby::onClose);
-            game.on(DropItemListener.EVENT, lobby::onDrop);
 
             gameBuilder.accept(game);
         });
 
         return gameWorld;
-    }
-
-    private ActionResult onDrop(PlayerEntity playerEntity, int slot, ItemStack stack) {
-        return ActionResult.FAIL;
     }
 
     private void onTick() {

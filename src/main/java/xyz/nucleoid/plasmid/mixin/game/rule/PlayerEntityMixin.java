@@ -56,9 +56,18 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
             int slot = player.inventory.selectedSlot;
             ItemStack stack = player.inventory.getStack(slot);
-            ActionResult dropResult = gameWorld.invoker(DropItemListener.EVENT).onDrop((PlayerEntity)(Object)this, slot, stack);
 
-            if (dropResult == ActionResult.FAIL) {
+            // Check the gamerule first
+            RuleResult ruleResult = gameWorld.testRule(GameRule.THROW_ITEMS);
+            boolean shouldCancel = ruleResult == RuleResult.DENY;
+
+            // If the gamerule doesn't cancel it, check the event
+            if (!shouldCancel) {
+                ActionResult dropResult = gameWorld.invoker(DropItemListener.EVENT).onDrop((PlayerEntity) (Object) this, slot, stack);
+                shouldCancel = dropResult == ActionResult.FAIL;
+            }
+
+            if (shouldCancel) {
                 player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, slot, stack));
 
                 ci.setReturnValue(false);

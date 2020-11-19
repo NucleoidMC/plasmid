@@ -6,7 +6,8 @@ import net.minecraft.util.ActionResult;
 
 /**
  * Called when a player attempts to drop an item, from the hotbar or from the inventory. Do note that the provided slot may be negative on
- * certain circumstances, so proceed with caution.
+ * certain circumstances, so proceed with caution. In addition, this event will never fire if the THROW_ITEMS gamerule is set to deny.
+ * The gamerule overrides the event checking, so the event is only fired if the game rule is not set, or is set to allow.
  *
  * <p>Upon return:
  * <ul>

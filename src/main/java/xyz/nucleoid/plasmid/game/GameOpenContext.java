@@ -14,7 +14,7 @@ public final class GameOpenContext<C> {
         this.game = game;
     }
 
-    public GameOpenProcedure opens(BubbleWorldConfig worldConfig, Consumer<GameLogic> configureGame) {
+    public GameOpenProcedure createOpenProcedure(BubbleWorldConfig worldConfig, Consumer<GameLogic> configureGame) {
         return new GameOpenProcedure(this.server, this.game, worldConfig, configureGame);
     }
 

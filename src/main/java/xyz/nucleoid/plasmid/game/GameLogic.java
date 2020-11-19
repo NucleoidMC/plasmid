@@ -7,20 +7,20 @@ import xyz.nucleoid.plasmid.game.rule.GameRuleSet;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
 /**
- * Represents the logic of a game in a {@link ManagedGameSpace} through events ({@link EventListeners}) and rules ({@link GameRuleSet}).
+ * Represents the logic of a game in a {@link GameSpace} through events ({@link EventListeners}) and rules ({@link GameRuleSet}).
  *
  * <p>Each GameSpace contains one {@link GameLogic} instance instance at a time.
- * Games can be opened through {@link ManagedGameSpace#openGame}.
+ * Games can be opened through {@link GameSpace#openGame}.
  */
 public final class GameLogic {
-    private final GameSpace world;
+    private final GameSpace space;
 
     private final EventListeners listeners = new EventListeners();
     private final GameRuleSet rules = new GameRuleSet();
     private final GameResources resources = new GameResources();
 
-    GameLogic(GameSpace world) {
-        this.world = world;
+    GameLogic(GameSpace space) {
+        this.space = space;
     }
 
     public GameLogic setRule(GameRule rule, RuleResult result) {
@@ -38,8 +38,8 @@ public final class GameLogic {
         return this;
     }
 
-    public GameSpace getWorld() {
-        return this.world;
+    public GameSpace getSpace() {
+        return this.space;
     }
 
     /**

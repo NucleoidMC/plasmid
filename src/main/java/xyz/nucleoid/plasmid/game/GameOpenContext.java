@@ -3,7 +3,7 @@ package xyz.nucleoid.plasmid.game;
 import net.minecraft.server.MinecraftServer;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public final class GameOpenContext<C> {
     private final MinecraftServer server;
@@ -14,8 +14,8 @@ public final class GameOpenContext<C> {
         this.game = game;
     }
 
-    public CompletableFuture<ManagedGameSpace> openWorld(BubbleWorldConfig config) {
-        return ManagedGameSpace.open(this.server, this.game, config);
+    public GameOpenProcedure opens(BubbleWorldConfig worldConfig, Consumer<GameLogic> configureGame) {
+        return new GameOpenProcedure(this.server, this.game, worldConfig, configureGame);
     }
 
     public MinecraftServer getServer() {

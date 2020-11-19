@@ -3,13 +3,12 @@ package xyz.nucleoid.plasmid.test;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Unit;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
-import xyz.nucleoid.plasmid.game.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
 import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.game.map.template.TemplateChunkGenerator;
@@ -18,39 +17,31 @@ import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
 import xyz.nucleoid.plasmid.world.bubble.BubbleWorldSpawner;
 
-import java.util.concurrent.CompletableFuture;
-
 public final class TestGame {
-    public static CompletableFuture<ManagedGameSpace> open(GameOpenContext<Unit> context) {
-        return CompletableFuture.supplyAsync(TestGame::buildTemplate, Util.getMainWorkerExecutor())
-                .thenCompose(template -> {
-                    ChunkGenerator generator = new TemplateChunkGenerator(context.getServer(), template, BlockPos.ORIGIN);
+    public static GameOpenProcedure open(GameOpenContext<Unit> context) {
+        MapTemplate template = TestGame.buildTemplate();
 
-                    BubbleWorldConfig worldConfig = new BubbleWorldConfig()
-                            .setGenerator(generator)
-                            .setSpawner(BubbleWorldSpawner.atSurface(BlockPos.ORIGIN))
-                            .setDefaultGameMode(GameMode.ADVENTURE)
-                            .setTimeOfDay(6000)
-                            .setGameRule(GameRules.DO_MOB_SPAWNING, false)
-                            .setGameRule(GameRules.DO_WEATHER_CYCLE, false);
+        ChunkGenerator generator = new TemplateChunkGenerator(context.getServer(), template, BlockPos.ORIGIN);
 
-                    return context.openWorld(worldConfig);
-                })
-                .thenApply(space -> {
-                    space.openGame(game -> {
-                        game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
-                        game.setRule(GameRule.HUNGER, RuleResult.DENY);
-                        game.setRule(GameRule.PVP, RuleResult.DENY);
-                        game.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
+        BubbleWorldConfig worldConfig = new BubbleWorldConfig()
+                .setGenerator(generator)
+                .setSpawner(BubbleWorldSpawner.atSurface(BlockPos.ORIGIN))
+                .setDefaultGameMode(GameMode.ADVENTURE)
+                .setTimeOfDay(6000)
+                .setGameRule(GameRules.DO_MOB_SPAWNING, false)
+                .setGameRule(GameRules.DO_WEATHER_CYCLE, false);
 
-                        game.on(PlayerDeathListener.EVENT, (player, source) -> {
-                            player.teleport(0.0, 65.0, 0.0);
-                            return ActionResult.FAIL;
-                        });
-                    });
+        return context.opens(worldConfig, game -> {
+            game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
+            game.setRule(GameRule.HUNGER, RuleResult.DENY);
+            game.setRule(GameRule.PVP, RuleResult.DENY);
+            game.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
 
-                    return space;
-                });
+            game.on(PlayerDeathListener.EVENT, (player, source) -> {
+                player.teleport(0.0, 65.0, 0.0);
+                return ActionResult.FAIL;
+            });
+        });
     }
 
     private static MapTemplate buildTemplate() {

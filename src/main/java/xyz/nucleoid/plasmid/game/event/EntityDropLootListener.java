@@ -4,12 +4,12 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.TypedActionResult;
-import xyz.nucleoid.plasmid.game.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.GameSpace;
 
 import java.util.List;
 
 /**
- * Called when any {@link net.minecraft.entity.LivingEntity} drops loot in a {@link ManagedGameSpace}.
+ * Called when any {@link net.minecraft.entity.LivingEntity} drops loot in a {@link GameSpace}.
  *
  * <p>Upon return:
  * <ul>

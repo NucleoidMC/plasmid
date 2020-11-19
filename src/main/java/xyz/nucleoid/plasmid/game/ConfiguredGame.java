@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Util;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -17,9 +18,14 @@ public final class ConfiguredGame<C> {
         this.config = config;
     }
 
-    public CompletableFuture<ManagedGameSpace> open(MinecraftServer server) {
+    public GameOpenProcedure openProcedure(MinecraftServer server) {
         GameOpenContext<C> context = new GameOpenContext<>(server, this);
         return this.type.open(context);
+    }
+
+    public CompletableFuture<ManagedGameSpace> open(MinecraftServer server) {
+        return CompletableFuture.supplyAsync(() -> this.openProcedure(server), Util.getMainWorkerExecutor())
+                .thenCompose(GameOpenProcedure::open);
     }
 
     public GameType<C> getType() {

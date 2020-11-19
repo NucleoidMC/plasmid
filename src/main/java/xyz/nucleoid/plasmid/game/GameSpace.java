@@ -13,10 +13,25 @@ import java.util.function.Consumer;
  * Represents the space within which a game occurs through attached {@link GameLogic}
  */
 public interface GameSpace {
+    /**
+     * Swaps out the active {@link GameLogic} within this {@link GameSpace}.
+     *
+     * @param builder the builder to apply on the newly constructed {@link GameLogic}
+     */
     void openGame(Consumer<GameLogic> builder);
 
     CompletableFuture<StartResult> requestStart();
 
+    /**
+     * Adds a resource to this {@link GameSpace} object that will be automatically closed when this {@link GameSpace}
+     * is closed.
+     *
+     * This differs from {@link GameLogic#addResource(AutoCloseable)}, which will be closed when the {@link GameLogic}
+     * instance is closed.
+     *
+     * @param resource the resource to close when this {@link GameSpace} closes
+     * @return the added resource
+     */
     <T extends AutoCloseable> T addResource(T resource);
 
     /**
@@ -62,11 +77,20 @@ public interface GameSpace {
      */
     ServerWorld getWorld();
 
+    /**
+     * @return the host server of this {@link GameSpace}
+     */
     default MinecraftServer getServer() {
         return this.getWorld().getServer();
     }
 
+    /**
+     * @return the game config that created this {@link GameSpace}
+     */
     ConfiguredGame<?> getGameConfig();
 
+    /**
+     * @return the lifecycle manager for this {@link GameSpace}
+     */
     GameLifecycle getLifecycle();
 }

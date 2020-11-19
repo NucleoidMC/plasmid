@@ -31,7 +31,7 @@ public final class TestGame {
                 .setGameRule(GameRules.DO_MOB_SPAWNING, false)
                 .setGameRule(GameRules.DO_WEATHER_CYCLE, false);
 
-        return context.opens(worldConfig, game -> {
+        return context.createOpenProcedure(worldConfig, game -> {
             game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
             game.setRule(GameRule.HUNGER, RuleResult.DENY);
             game.setRule(GameRule.PVP, RuleResult.DENY);

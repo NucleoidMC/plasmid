@@ -178,24 +178,24 @@ public final class MapTemplate {
         return new BlockPos(x, y, z);
     }
 
-    public Stream<TemplateRegion> getTemplateRegions(String marker) {
+    public Stream<TemplateRegion> getRegions(String marker) {
         return this.regions.stream()
                 .filter(region -> region.getMarker().equals(marker));
     }
 
-    public Stream<BlockBounds> getRegions(String marker) {
-        return this.getTemplateRegions(marker)
+    public Stream<BlockBounds> getRegionBounds(String marker) {
+        return this.getRegions(marker)
                 .map(TemplateRegion::getBounds);
     }
 
     @Nullable
-    public TemplateRegion getFirstTemplateRegion(String marker) {
-        return this.getTemplateRegions(marker).findFirst().orElse(null);
+    public TemplateRegion getFirstRegion(String marker) {
+        return this.getRegions(marker).findFirst().orElse(null);
     }
 
     @Nullable
-    public BlockBounds getFirstRegion(String marker) {
-        return this.getRegions(marker).findFirst().orElse(null);
+    public BlockBounds getFirstRegionBounds(String marker) {
+        return this.getRegionBounds(marker).findFirst().orElse(null);
     }
 
     public boolean containsBlock(BlockPos pos) {

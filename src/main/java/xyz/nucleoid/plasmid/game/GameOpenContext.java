@@ -14,8 +14,8 @@ public final class GameOpenContext<C> {
         this.game = game;
     }
 
-    public CompletableFuture<GameWorld> openWorld(BubbleWorldConfig config) {
-        return GameWorld.open(this.server, this.game, config);
+    public CompletableFuture<ManagedGameSpace> openWorld(BubbleWorldConfig config) {
+        return ManagedGameSpace.open(this.server, this.game, config);
     }
 
     public MinecraftServer getServer() {

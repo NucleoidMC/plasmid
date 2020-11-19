@@ -14,7 +14,7 @@ import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ConfiguredGame;
 import xyz.nucleoid.plasmid.game.GameLifecycle;
 import xyz.nucleoid.plasmid.game.GameOpenException;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 
@@ -36,8 +36,8 @@ public final class SimpleGameChannel implements GameChannel {
 
     private final LifecycleListeners lifecycleListeners = new LifecycleListeners();
 
-    private GameWorld openGame;
-    private CompletableFuture<GameWorld> openGameFuture;
+    private ManagedGameSpace openGame;
+    private CompletableFuture<ManagedGameSpace> openGameFuture;
 
     public SimpleGameChannel(Identifier id, Identifier gameId) {
         this.id = id;
@@ -79,25 +79,25 @@ public final class SimpleGameChannel implements GameChannel {
                 .thenCompose(openGame -> openGame.offerPlayer(player));
     }
 
-    private CompletableFuture<GameWorld> getOpenGame(MinecraftServer server) {
+    private CompletableFuture<ManagedGameSpace> getOpenGame(MinecraftServer server) {
         if (this.openGame != null) {
             return CompletableFuture.completedFuture(this.openGame);
         }
 
         if (this.openGameFuture == null) {
-            this.openGameFuture = this.openGame(server).thenApply(gameWorld -> {
-                this.openGame(gameWorld);
-                return gameWorld;
+            this.openGameFuture = this.openGame(server).thenApply(gameSpace -> {
+                this.openGame(gameSpace);
+                return gameSpace;
             });
         }
 
         return this.openGameFuture;
     }
 
-    private void openGame(GameWorld gameWorld) {
-        gameWorld.getLifecycle().addListeners(this.lifecycleListeners);
+    private void openGame(ManagedGameSpace gameSpace) {
+        gameSpace.getLifecycle().addListeners(this.lifecycleListeners);
 
-        this.openGame = gameWorld;
+        this.openGame = gameSpace;
         this.openGameFuture = null;
         this.updateDisplay();
     }
@@ -108,10 +108,10 @@ public final class SimpleGameChannel implements GameChannel {
         this.updateDisplay();
     }
 
-    private CompletableFuture<GameWorld> openGame(MinecraftServer server) {
+    private CompletableFuture<ManagedGameSpace> openGame(MinecraftServer server) {
         ConfiguredGame<?> config = GameConfigs.get(this.gameId);
         if (config == null) {
-            CompletableFuture<GameWorld> future = new CompletableFuture<>();
+            CompletableFuture<ManagedGameSpace> future = new CompletableFuture<>();
             TranslatableText error = new TranslatableText("Game config with id '%s' does not exist!", this.gameId);
             future.completeExceptionally(new GameOpenException(error));
             return future;
@@ -155,17 +155,17 @@ public final class SimpleGameChannel implements GameChannel {
 
     private class LifecycleListeners implements GameLifecycle.Listeners {
         @Override
-        public void onAddPlayer(GameWorld gameWorld, ServerPlayerEntity player) {
+        public void onAddPlayer(ManagedGameSpace gameSpace, ServerPlayerEntity player) {
             SimpleGameChannel.this.updateDisplay();
         }
 
         @Override
-        public void onRemovePlayer(GameWorld gameWorld, ServerPlayerEntity player) {
+        public void onRemovePlayer(ManagedGameSpace gameSpace, ServerPlayerEntity player) {
             SimpleGameChannel.this.updateDisplay();
         }
 
         @Override
-        public void onClose(GameWorld gameWorld, List<ServerPlayerEntity> players) {
+        public void onClose(ManagedGameSpace gameSpace, List<ServerPlayerEntity> players) {
             SimpleGameChannel.this.closeGame();
         }
     }

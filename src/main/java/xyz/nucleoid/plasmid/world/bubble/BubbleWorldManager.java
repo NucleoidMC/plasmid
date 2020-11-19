@@ -95,6 +95,10 @@ public final class BubbleWorldManager {
                     FileUtils.deleteDirectory(worldDirectory);
                 } catch (IOException e) {
                     Plasmid.LOGGER.warn("Failed to delete bubble world directory", e);
+                    try {
+                        FileUtils.forceDeleteOnExit(worldDirectory);
+                    } catch (IOException ignored) {
+                    }
                 }
             }
 

@@ -3,9 +3,10 @@ package xyz.nucleoid.plasmid.game.event;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.util.ActionResult;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 
 /**
- * Called when any {@link net.minecraft.entity.LivingEntity} is killed in a {@link xyz.nucleoid.plasmid.game.GameWorld}.
+ * Called when any {@link net.minecraft.entity.LivingEntity} is killed in a {@link ManagedGameSpace}.
  *
  * <p>Upon return:
  * <ul>

@@ -7,38 +7,38 @@ import xyz.nucleoid.plasmid.game.rule.GameRuleSet;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
 /**
- * Represents the logic of a game in a {@link GameWorld} through events ({@link EventListeners}) and rules ({@link GameRuleSet}).
+ * Represents the logic of a game in a {@link ManagedGameSpace} through events ({@link EventListeners}) and rules ({@link GameRuleSet}).
  *
- * <p>Each GameWorld contains one {@link Game} instance instance at a time.
- * Games can be opened through {@link GameWorld#openGame}.
+ * <p>Each GameSpace contains one {@link GameLogic} instance instance at a time.
+ * Games can be opened through {@link ManagedGameSpace#openGame}.
  */
-public final class Game {
-    private final GameWorld world;
+public final class GameLogic {
+    private final GameSpace world;
 
     private final EventListeners listeners = new EventListeners();
     private final GameRuleSet rules = new GameRuleSet();
     private final GameResources resources = new GameResources();
 
-    Game(GameWorld world) {
+    GameLogic(GameSpace world) {
         this.world = world;
     }
 
-    public Game setRule(GameRule rule, RuleResult result) {
+    public GameLogic setRule(GameRule rule, RuleResult result) {
         this.rules.put(rule, result);
         return this;
     }
 
-    public <T> Game on(EventType<T> event, T listener) {
+    public <T> GameLogic on(EventType<T> event, T listener) {
         this.listeners.add(event, listener);
         return this;
     }
 
-    public Game addResource(AutoCloseable resource) {
+    public GameLogic addResource(AutoCloseable resource) {
         this.resources.add(resource);
         return this;
     }
 
-    public GameWorld getWorld() {
+    public GameSpace getWorld() {
         return this.world;
     }
 

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
@@ -57,9 +57,9 @@ public class ScreenHandlerMixin {
     }
 
     private boolean shouldBlockThrowingItems(PlayerEntity player) {
-        GameWorld gameWorld = GameWorld.forWorld(player.world);
-        if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
-            return gameWorld.testRule(GameRule.THROW_ITEMS) == RuleResult.DENY;
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(player.world);
+        if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
+            return gameSpace.testRule(GameRule.THROW_ITEMS) == RuleResult.DENY;
         }
         return false;
     }

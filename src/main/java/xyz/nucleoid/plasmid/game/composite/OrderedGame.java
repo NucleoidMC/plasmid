@@ -21,7 +21,7 @@ public final class OrderedGame implements GameLifecycle.Listeners {
         this.games = games;
     }
 
-    public static CompletableFuture<GameWorld> open(GameOpenContext<CompositeGameConfig> context) {
+    public static CompletableFuture<ManagedGameSpace> open(GameOpenContext<CompositeGameConfig> context) {
         CompositeGameConfig config = context.getConfig();
         List<ConfiguredGame<?>> games = config.collectGames();
 
@@ -34,15 +34,15 @@ public final class OrderedGame implements GameLifecycle.Listeners {
     }
 
     @Nullable
-    private CompletableFuture<GameWorld> openNextGame(MinecraftServer server) {
+    private CompletableFuture<ManagedGameSpace> openNextGame(MinecraftServer server) {
         ConfiguredGame<?> game = this.nextGame();
         if (game == null) {
             return null;
         }
 
-        return game.open(server).thenApply(gameWorld -> {
-            this.openNewGame(gameWorld);
-            return gameWorld;
+        return game.open(server).thenApply(gameSpace -> {
+            this.openNewGame(gameSpace);
+            return gameSpace;
         });
     }
 
@@ -56,32 +56,32 @@ public final class OrderedGame implements GameLifecycle.Listeners {
         return this.games.get(index);
     }
 
-    private void openNewGame(GameWorld gameWorld) {
+    private void openNewGame(ManagedGameSpace gameSpace) {
         if (this.playersToTransfer != null) {
             List<ServerPlayerEntity> playersToTransfer = this.playersToTransfer;
             this.playersToTransfer = null;
 
             Scheduler.INSTANCE.submit(server -> {
                 for (ServerPlayerEntity player : playersToTransfer) {
-                    gameWorld.addPlayer(player);
+                    gameSpace.addPlayer(player);
                 }
             }, 10);
         }
 
-        gameWorld.getLifecycle().addListeners(this);
+        gameSpace.getLifecycle().addListeners(this);
     }
 
     @Override
-    public void onClose(GameWorld gameWorld, List<ServerPlayerEntity> players) {
+    public void onClose(ManagedGameSpace gameSpace, List<ServerPlayerEntity> players) {
         this.playersToTransfer = new ArrayList<>(players);
-        this.openNextGame(gameWorld.getWorld().getServer());
+        this.openNextGame(gameSpace.getWorld().getServer());
     }
 
     @Override
-    public void onAddPlayer(GameWorld gameWorld, ServerPlayerEntity player) {
+    public void onAddPlayer(ManagedGameSpace gameSpace, ServerPlayerEntity player) {
     }
 
     @Override
-    public void onRemovePlayer(GameWorld gameWorld, ServerPlayerEntity player) {
+    public void onRemovePlayer(ManagedGameSpace gameSpace, ServerPlayerEntity player) {
     }
 }

@@ -9,7 +9,7 @@ import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
 import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.game.map.template.TemplateChunkGenerator;
@@ -21,7 +21,7 @@ import xyz.nucleoid.plasmid.world.bubble.BubbleWorldSpawner;
 import java.util.concurrent.CompletableFuture;
 
 public final class TestGame {
-    public static CompletableFuture<GameWorld> open(GameOpenContext<Unit> context) {
+    public static CompletableFuture<ManagedGameSpace> open(GameOpenContext<Unit> context) {
         return CompletableFuture.supplyAsync(TestGame::buildTemplate, Util.getMainWorkerExecutor())
                 .thenCompose(template -> {
                     ChunkGenerator generator = new TemplateChunkGenerator(context.getServer(), template, BlockPos.ORIGIN);
@@ -36,8 +36,8 @@ public final class TestGame {
 
                     return context.openWorld(worldConfig);
                 })
-                .thenApply(gameWorld -> {
-                    gameWorld.openGame(game -> {
+                .thenApply(space -> {
+                    space.openGame(game -> {
                         game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
                         game.setRule(GameRule.HUNGER, RuleResult.DENY);
                         game.setRule(GameRule.PVP, RuleResult.DENY);
@@ -49,7 +49,7 @@ public final class TestGame {
                         });
                     });
 
-                    return gameWorld;
+                    return space;
                 });
     }
 

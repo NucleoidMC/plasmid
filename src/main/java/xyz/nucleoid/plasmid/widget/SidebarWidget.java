@@ -9,7 +9,7 @@ import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 
 import java.util.Arrays;
@@ -26,8 +26,8 @@ public final class SidebarWidget implements GameWidget {
 
     private String[] display = new String[0];
 
-    public SidebarWidget(GameWorld gameWorld, Text title) {
-        this.players = new MutablePlayerSet(gameWorld.getServer());
+    public SidebarWidget(GameSpace gameSpace, Text title) {
+        this.players = new MutablePlayerSet(gameSpace.getServer());
         this.title = title;
     }
 

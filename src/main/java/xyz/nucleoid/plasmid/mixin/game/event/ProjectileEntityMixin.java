@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.BlockHitListener;
 import xyz.nucleoid.plasmid.game.event.EntityHitListener;
 
@@ -24,17 +24,17 @@ public abstract class ProjectileEntityMixin extends Entity {
 
     @Inject(method = "onCollision", at = @At("HEAD"), cancellable = true)
     private void onCollision(HitResult hitResult, CallbackInfo ci) {
-        GameWorld gameWorld = GameWorld.forWorld(this.world);
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(this.world);
 
-        if (gameWorld != null) {
+        if (gameSpace != null) {
             if (hitResult.getType() == HitResult.Type.ENTITY) {
-                ActionResult result = gameWorld.invoker(EntityHitListener.EVENT).onEntityHit((EntityHitResult) hitResult);
+                ActionResult result = gameSpace.invoker(EntityHitListener.EVENT).onEntityHit((EntityHitResult) hitResult);
 
                 if (result == ActionResult.FAIL) {
                     ci.cancel();
                 }
             } else if (hitResult.getType() == HitResult.Type.BLOCK) {
-                ActionResult result = gameWorld.invoker(BlockHitListener.EVENT).onBlockHit((BlockHitResult) hitResult);
+                ActionResult result = gameSpace.invoker(BlockHitListener.EVENT).onBlockHit((BlockHitResult) hitResult);
 
                 if (result == ActionResult.FAIL) {
                     ci.cancel();

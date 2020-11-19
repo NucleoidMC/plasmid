@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.ExplosionListener;
 
 import java.util.List;
@@ -26,9 +26,9 @@ public class ExplosionMixin {
 
     @Inject(method = "affectWorld", at = @At("HEAD"))
     private void affectWorld(boolean blocks, CallbackInfo ci) {
-        GameWorld gameWorld = GameWorld.forWorld(this.world);
-        if (gameWorld != null) {
-            gameWorld.invoker(ExplosionListener.EVENT).onExplosion(this.affectedBlocks);
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(this.world);
+        if (gameSpace != null) {
+            gameSpace.invoker(ExplosionListener.EVENT).onExplosion(this.affectedBlocks);
         }
     }
 }

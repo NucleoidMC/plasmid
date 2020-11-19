@@ -27,7 +27,7 @@ public final class PlayerRef {
 
     @Nullable
     public ServerPlayerEntity getEntity(ServerWorld world) {
-        return (ServerPlayerEntity) world.getPlayerByUuid(this.id);
+        return this.getEntity(world.getServer());
     }
 
     @Nullable

@@ -38,6 +38,6 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         ServerPlayerEntity self = (ServerPlayerEntity) (Object) this;
 
         BubbleWorld bubble = BubbleWorld.forWorld(targetWorld);
-        return bubble == null || bubble.containsPlayer(self);
+        return bubble == null || bubble.getPlayers().contains(self);
     }
 }

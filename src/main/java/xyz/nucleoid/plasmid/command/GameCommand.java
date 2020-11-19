@@ -146,7 +146,7 @@ public final class GameCommand {
                 .withClickEvent(joinClick)
                 .withHoverEvent(joinHover);
 
-        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), gameId)
+        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), new LiteralText(gameId.toString()).formatted(Formatting.GRAY))
                 .append(new TranslatableText("text.plasmid.game.open.join").setStyle(joinStyle));
         playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
     }
@@ -181,7 +181,7 @@ public final class GameCommand {
 
         Collection<GameWorld> games = GameWorld.getOpen();
         GameWorld gameWorld = games.stream()
-                .filter(gw -> gw.getGame() == game)
+                .filter(gw -> gw.getGameConfg() == game)
                 .max(Comparator.comparingInt(GameWorld::getPlayerCount))
                 .orElse(null);
 
@@ -240,7 +240,7 @@ public final class GameCommand {
                         .formatted(Formatting.GRAY);
             }
 
-            gameWorld.getPlayerSet().sendMessage(message);
+            gameWorld.getPlayers().sendMessage(message);
         });
 
         return Command.SINGLE_SUCCESS;
@@ -253,7 +253,7 @@ public final class GameCommand {
             throw NO_GAME_IN_WORLD.create();
         }
 
-        PlayerSet playerSet = gameWorld.getPlayerSet().copy();
+        PlayerSet playerSet = gameWorld.getPlayers().copy();
 
         try {
             gameWorld.close();

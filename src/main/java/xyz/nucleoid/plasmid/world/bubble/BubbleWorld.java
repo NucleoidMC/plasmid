@@ -8,12 +8,16 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
+import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerSnapshot;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public final class BubbleWorld implements AutoCloseable {
@@ -21,15 +25,17 @@ public final class BubbleWorld implements AutoCloseable {
     private final BubbleWorldConfig config;
     private final Identifier bubbleKey;
 
-    private final PlayerSet players = new PlayerSet();
-    private final Map<ServerPlayerEntity, PlayerSnapshot> playerSnapshots = new Object2ObjectOpenHashMap<>();
+    private final MutablePlayerSet players;
+    private final Map<UUID, PlayerSnapshot> playerSnapshots = new Object2ObjectOpenHashMap<>();
 
-    private final Set<ServerPlayerEntity> playerView = Collections.unmodifiableSet(this.playerSnapshots.keySet());
+    private final List<PlayerListener> playerListeners = new ArrayList<>();
 
     BubbleWorld(ServerWorld world, BubbleWorldConfig config, Identifier bubbleKey) {
         this.world = world;
         this.config = config;
         this.bubbleKey = bubbleKey;
+
+        this.players = new MutablePlayerSet(world.getServer());
     }
 
     @Nullable
@@ -42,6 +48,10 @@ public final class BubbleWorld implements AutoCloseable {
             BubbleWorldManager manager = BubbleWorldManager.get(server);
             return manager.open(config);
         }, server);
+    }
+
+    public void addPlayerListener(PlayerListener listener) {
+        this.playerListeners.add(listener);
     }
 
     @Override
@@ -70,9 +80,11 @@ public final class BubbleWorld implements AutoCloseable {
     public boolean addPlayer(ServerPlayerEntity player) {
         this.assertServerThread();
 
-        if (!this.players.contains(player)) {
-            this.players.add(player);
-            this.playerSnapshots.put(player, PlayerSnapshot.take(player));
+        if (this.players.add(player)) {
+            this.playerSnapshots.put(player.getUuid(), PlayerSnapshot.take(player));
+            for (PlayerListener listener : this.playerListeners) {
+                listener.onAddPlayer(player);
+            }
             this.joinPlayer(player);
             return true;
         }
@@ -85,7 +97,13 @@ public final class BubbleWorld implements AutoCloseable {
 
         boolean removed = this.players.remove(player);
 
-        PlayerSnapshot snapshot = this.playerSnapshots.remove(player);
+        if (removed) {
+            for (PlayerListener listener : this.playerListeners) {
+                listener.onRemovePlayer(player);
+            }
+        }
+
+        PlayerSnapshot snapshot = this.playerSnapshots.remove(player.getUuid());
         if (snapshot != null) {
             snapshot.restore(player);
         }
@@ -146,17 +164,8 @@ public final class BubbleWorld implements AutoCloseable {
         return this.config;
     }
 
-    public Set<ServerPlayerEntity> getPlayers() {
-        return this.playerView;
-    }
-
-    // TODO: 0.4: this should entirely replace getPlayers()
-    public PlayerSet getPlayerSet() {
+    public PlayerSet getPlayers() {
         return this.players;
-    }
-
-    public boolean containsPlayer(ServerPlayerEntity player) {
-        return this.players.contains(player);
     }
 
     private void assertServerThread() {
@@ -164,6 +173,14 @@ public final class BubbleWorld implements AutoCloseable {
         Thread serverThread = this.world.getServer().getThread();
         if (currentThread != serverThread) {
             throw new UnsupportedOperationException("cannot execute on " + currentThread.getName() + ": expected server thread (" + serverThread.getName() + ")!");
+        }
+    }
+
+    public interface PlayerListener {
+        default void onAddPlayer(ServerPlayerEntity player) {
+        }
+
+        default void onRemovePlayer(ServerPlayerEntity player) {
         }
     }
 }

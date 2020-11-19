@@ -1,104 +1,86 @@
 package xyz.nucleoid.plasmid.game.player;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
+import xyz.nucleoid.plasmid.util.PlayerRef;
 
-import java.util.Iterator;
-import java.util.Set;
+import javax.annotation.Nullable;
+import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-public final class PlayerSet implements Iterable<ServerPlayerEntity> {
-    private final Set<ServerPlayerEntity> players = new ObjectOpenHashSet<>();
-    private final Set<Listener> listeners = new ReferenceOpenHashSet<>();
+public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
+    boolean contains(UUID id);
 
-    public boolean add(ServerPlayerEntity player) {
-        if (this.players.add(player)) {
-            for (Listener listener : this.listeners) {
-                listener.onAddPlayer(player);
-            }
-            return true;
-        }
-        return false;
+    @Nullable
+    ServerPlayerEntity getEntity(UUID id);
+
+    default boolean contains(PlayerRef ref) {
+        return this.contains(ref.getId());
     }
 
-    public boolean remove(ServerPlayerEntity player) {
-        if (this.players.remove(player)) {
-            for (Listener listener : this.listeners) {
-                listener.onRemovePlayer(player);
-            }
-            return true;
-        }
-        return false;
+    default boolean contains(ServerPlayerEntity player) {
+        return this.contains(player.getUuid());
     }
 
-    public boolean contains(ServerPlayerEntity player) {
-        return this.players.contains(player);
+    int size();
+
+    default boolean isEmpty() {
+        return this.size() <= 0;
     }
 
-    public void addListener(Listener listener) {
-        this.listeners.add(listener);
+    PlayerSet copy();
+
+    default Stream<ServerPlayerEntity> stream() {
+        return StreamSupport.stream(this.spliterator(), false);
     }
 
-    public void removeListener(Listener listener) {
-        this.listeners.remove(listener);
-    }
-
-    public void sendPacket(Packet<?> packet) {
-        for (ServerPlayerEntity player : this.players) {
+    @Override
+    default void sendPacket(Packet<?> packet) {
+        for (ServerPlayerEntity player : this) {
             player.networkHandler.sendPacket(packet);
         }
     }
 
-    public void sendMessage(Text message) {
-        for (ServerPlayerEntity player : this.players) {
+    @Override
+    default void sendMessage(Text message) {
+        for (ServerPlayerEntity player : this) {
             player.sendMessage(message, false);
         }
     }
 
-    public void sendTitle(Text message) {
+    @Override
+    default void sendTitle(Text message) {
         this.sendTitle(message, 1, 5, 3);
     }
 
-    public void sendTitle(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+    @Override
+    default void sendTitle(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks) {
         this.sendPacket(new TitleS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
         this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, message));
     }
 
-    public void sendSound(SoundEvent sound) {
+    @Override
+    default void sendSound(SoundEvent sound) {
         this.sendSound(sound, SoundCategory.PLAYERS, 1.0F, 1.0F);
     }
 
-    public void sendSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        for (ServerPlayerEntity player : this.players) {
+    @Override
+    default void sendSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
+        for (ServerPlayerEntity player : this) {
             player.playSound(sound, category, volume, pitch);
         }
     }
 
     @Override
-    public Iterator<ServerPlayerEntity> iterator() {
-        return this.players.iterator();
-    }
-
-    public int size() {
-        return this.players.size();
-    }
-
-    public PlayerSet copy() {
-        PlayerSet copy = new PlayerSet();
-        copy.players.addAll(this.players);
-        return copy;
-    }
-
-    public interface Listener {
-        default void onAddPlayer(ServerPlayerEntity player) {
-        }
-
-        default void onRemovePlayer(ServerPlayerEntity player) {
+    default void addStatusEffect(StatusEffectInstance effect) {
+        for (ServerPlayerEntity player : this) {
+            player.addStatusEffect(effect);
         }
     }
 }

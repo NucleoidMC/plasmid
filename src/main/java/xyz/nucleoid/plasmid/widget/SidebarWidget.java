@@ -9,35 +9,26 @@ import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.player.PlayerSet;
+import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 
 import java.util.Arrays;
 
-public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
+public final class SidebarWidget implements GameWidget {
     private static final int SIDEBAR_SLOT = 1;
     private static final int ADD_OBJECTIVE = 0;
     private static final int REMOVE_OBJECTIVE = 1;
 
     private static final String OBJECTIVE_NAME = Plasmid.ID + ":sidebar";
 
-    private final PlayerSet players;
+    private final MutablePlayerSet players;
     private final Text title;
 
     private String[] display = new String[0];
 
-    private SidebarWidget(Text title, PlayerSet players) {
-        this.players = players;
+    public SidebarWidget(GameWorld gameWorld, Text title) {
+        this.players = new MutablePlayerSet(gameWorld.getServer());
         this.title = title;
-        this.players.addListener(this);
-    }
-
-    public static SidebarWidget open(Text title, PlayerSet players) {
-        SidebarWidget widget = new SidebarWidget(title, players);
-        for (ServerPlayerEntity player : players) {
-            widget.onAddPlayer(player);
-        }
-
-        return widget;
     }
 
     public void set(String[] display) {
@@ -64,7 +55,9 @@ public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
     }
 
     @Override
-    public void onAddPlayer(ServerPlayerEntity player) {
+    public void addPlayer(ServerPlayerEntity player) {
+        this.players.add(player);
+
         ScoreboardObjective objective = this.createDummyObjective();
 
         player.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(objective, ADD_OBJECTIVE));
@@ -74,7 +67,9 @@ public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
     }
 
     @Override
-    public void onRemovePlayer(ServerPlayerEntity player) {
+    public void removePlayer(ServerPlayerEntity player) {
+        this.players.remove(player);
+
         ScoreboardObjective objective = this.createDummyObjective();
         player.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(objective, REMOVE_OBJECTIVE));
     }
@@ -101,10 +96,8 @@ public final class SidebarWidget implements PlayerSet.Listener, AutoCloseable {
 
     @Override
     public void close() {
-        this.players.removeListener(this);
-
         for (ServerPlayerEntity player : this.players) {
-            this.onRemovePlayer(player);
+            this.removePlayer(player);
         }
     }
 }

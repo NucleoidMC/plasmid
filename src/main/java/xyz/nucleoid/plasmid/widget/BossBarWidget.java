@@ -4,35 +4,23 @@ import net.minecraft.entity.boss.BossBar;
 import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import xyz.nucleoid.plasmid.game.player.PlayerSet;
+import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 
-public final class BossBarWidget implements PlayerSet.Listener, AutoCloseable {
-    private final PlayerSet players;
+public final class BossBarWidget implements GameWidget {
+    private final MutablePlayerSet players;
     private final ServerBossBar bar;
 
-    private BossBarWidget(PlayerSet players, ServerBossBar bar) {
-        this.players = players;
-        this.bar = bar;
-
-        this.players.addListener(this);
+    public BossBarWidget(GameWorld gameWorld, Text title, BossBar.Color color, BossBar.Style style) {
+        this.players = new MutablePlayerSet(gameWorld.getServer());
+        this.bar = new ServerBossBar(title, color, style);
+        this.bar.setDarkenSky(false);
+        this.bar.setThickenFog(false);
+        this.bar.setDragonMusic(false);
     }
 
-    public static BossBarWidget open(PlayerSet players, Text title) {
-        return BossBarWidget.open(players, title, BossBar.Color.PURPLE, BossBar.Style.PROGRESS);
-    }
-
-    public static BossBarWidget open(PlayerSet players, Text title, BossBar.Color color, BossBar.Style style) {
-        ServerBossBar bossBar = new ServerBossBar(title, color, style);
-        bossBar.setDarkenSky(false);
-        bossBar.setThickenFog(false);
-        bossBar.setDragonMusic(false);
-
-        BossBarWidget bar = new BossBarWidget(players, bossBar);
-        for (ServerPlayerEntity player : players) {
-            bar.onAddPlayer(player);
-        }
-
-        return bar;
+    public BossBarWidget(GameWorld gameWorld, Text title) {
+        this(gameWorld, title, BossBar.Color.PURPLE, BossBar.Style.PROGRESS);
     }
 
     public void setTitle(Text title) {
@@ -49,20 +37,20 @@ public final class BossBarWidget implements PlayerSet.Listener, AutoCloseable {
     }
 
     @Override
-    public void onAddPlayer(ServerPlayerEntity player) {
+    public void addPlayer(ServerPlayerEntity player) {
         this.bar.addPlayer(player);
     }
 
     @Override
-    public void onRemovePlayer(ServerPlayerEntity player) {
+    public void removePlayer(ServerPlayerEntity player) {
         this.bar.removePlayer(player);
     }
 
     @Override
     public void close() {
+        this.players.clear();
+
         this.bar.clearPlayers();
         this.bar.setVisible(false);
-
-        this.players.removeListener(this);
     }
 }

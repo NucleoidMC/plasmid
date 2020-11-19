@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.game;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -10,7 +10,6 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
-import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
@@ -22,7 +21,9 @@ import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -35,14 +36,17 @@ import java.util.function.Consumer;
  * It is important to note that not all chunks will be loaded on start, and the game logic must take care to handle this.
  * Players can only be added to this game world through {@link GameWorld#addPlayer} or {@link GameWorld#offerPlayer}.
  */
+// TODO: split into interface
 public final class GameWorld implements AutoCloseable {
     private static final Map<RegistryKey<World>, GameWorld> DIMENSION_TO_WORLD = new Reference2ObjectOpenHashMap<>();
 
     private final BubbleWorld bubble;
     private final ConfiguredGame<?> configuredGame;
-    private final AtomicReference<Game> game = new AtomicReference<>(Game.empty());
 
-    private final List<AutoCloseable> resources = new ArrayList<>();
+    private final Game emptyGame = new Game(this);
+    private final AtomicReference<Game> game = new AtomicReference<>(this.emptyGame);
+
+    private final GameResources resources = new GameResources();
 
     private final AtomicBoolean closed = new AtomicBoolean();
 
@@ -52,11 +56,7 @@ public final class GameWorld implements AutoCloseable {
         this.bubble = bubble;
         this.configuredGame = configuredGame;
 
-        this.addPlayerListeners(bubble.getPlayerSet());
-    }
-
-    private void addPlayerListeners(PlayerSet players) {
-        players.addListener(new PlayerSet.Listener() {
+        bubble.addPlayerListener(new BubbleWorld.PlayerListener() {
             @Override
             public void onRemovePlayer(ServerPlayerEntity player) {
                 GameWorld.this.onRemovePlayer(player);
@@ -109,33 +109,25 @@ public final class GameWorld implements AutoCloseable {
     /**
      * Opens a new {@link Game} in this {@link GameWorld} with properties set by the given {@link Consumer}.
      *
-     * @param builder {@link Consumer} that modifies the given {@link Game} instance
-     */
-    public void openGame(Consumer<Game> builder) {
-        Game game = new Game();
-        builder.accept(game);
-
-        this.setGame(game);
-    }
-
-    /**
-     * Directly sets the current {@link Game} in this {@link GameWorld}.
-     *
      * <p>On the new game, {@link PlayerAddListener} will be invoked with existing players, followed by
      * {@link GameOpenListener} once all players have been added.
      *
      * <p>Before the new game is open, {@link GameCloseListener} will be invoked on the former game instance
      *
-     * @param game {@link Game} to set on this {@link GameWorld}
+     * @param builder {@link Consumer} that modifies the given {@link Game} instance
      */
-    public void setGame(Game game) {
+    public void openGame(Consumer<Game> builder) {
         if (this.closed.get()) {
             return;
         }
 
+        Game game = new Game(this);
+        builder.accept(game);
+
         Scheduler.INSTANCE.submit(server -> {
             Game closedGame = this.game.getAndSet(game);
 
+            closedGame.getResources().close();
             closedGame.getListeners().invoker(GameCloseListener.EVENT).onClose();
 
             for (ServerPlayerEntity player : this.bubble.getPlayers()) {
@@ -154,10 +146,7 @@ public final class GameWorld implements AutoCloseable {
      * @return the added resource
      */
     public <T extends AutoCloseable> T addResource(T resource) {
-        synchronized (this.resources) {
-            this.resources.add(resource);
-            return resource;
-        }
+        return this.resources.add(resource);
     }
 
     /**
@@ -244,7 +233,7 @@ public final class GameWorld implements AutoCloseable {
                 Text joinMessage = new TranslatableText("text.plasmid.game.join", player.getDisplayName())
                         .formatted(Formatting.YELLOW);
 
-                this.getPlayerSet().sendMessage(joinMessage);
+                this.getPlayers().sendMessage(joinMessage);
 
                 return JoinResult.ok();
             } else {
@@ -264,13 +253,13 @@ public final class GameWorld implements AutoCloseable {
             return;
         }
 
-        Game game = this.game.getAndSet(Game.empty());
+        Game game = this.game.getAndSet(this.emptyGame);
 
         Scheduler.INSTANCE.submit(server -> {
             try {
                 List<ServerPlayerEntity> players = this.bubble.kickPlayers();
 
-                this.closeResources();
+                this.resources.close();
                 game.getListeners().invoker(GameCloseListener.EVENT).onClose();
                 this.lifecycle.close(this, players);
 
@@ -281,39 +270,22 @@ public final class GameWorld implements AutoCloseable {
         });
     }
 
-    private void closeResources() {
-        synchronized (this.resources) {
-            for (AutoCloseable resource : this.resources) {
-                try {
-                    resource.close();
-                } catch (Exception e) {
-                    Plasmid.LOGGER.warn("Failed to close resource on GameWorld", e);
-                }
-            }
-            this.resources.clear();
-        }
-    }
-
     /**
      * Returns all {@link ServerPlayerEntity}s in this {@link GameWorld}.
      *
      * <p>{@link GameWorld#containsPlayer(ServerPlayerEntity)} can be used to check if a {@link ServerPlayerEntity} is in this {@link GameWorld} instead.
      *
-     * @return a {@link Set} that contains all {@link ServerPlayerEntity}s in this {@link GameWorld}
+     * @return a {@link PlayerSet} that contains all {@link ServerPlayerEntity}s in this {@link GameWorld}
      */
-    public Set<ServerPlayerEntity> getPlayers() {
+    public PlayerSet getPlayers() {
         return this.bubble.getPlayers();
-    }
-
-    public PlayerSet getPlayerSet() {
-        return this.bubble.getPlayerSet();
     }
 
     /**
      * @return the number of players in this {@link GameWorld}.
      */
     public int getPlayerCount() {
-        return this.bubble.getPlayerSet().size();
+        return this.bubble.getPlayers().size();
     }
 
     /**
@@ -327,12 +299,12 @@ public final class GameWorld implements AutoCloseable {
     }
 
     /**
-     * Returns whether this {@link GameWorld} contains the given {@link LivingEntity}.
+     * Returns whether this {@link GameWorld} contains the given {@link Entity}.
      *
-     * @param entity {@link LivingEntity} to check existence of
-     * @return whether the given {@link LivingEntity} exists in this {@link GameWorld}
+     * @param entity {@link Entity} to check existence of
+     * @return whether the given {@link Entity} exists in this {@link GameWorld}
      */
-    public boolean containsEntity(LivingEntity entity) {
+    public boolean containsEntity(Entity entity) {
         return this.bubble.getWorld().getEntity(entity.getUuid()) != null;
     }
 
@@ -364,7 +336,11 @@ public final class GameWorld implements AutoCloseable {
         return this.bubble.getWorld();
     }
 
-    public ConfiguredGame<?> getGame() {
+    public MinecraftServer getServer() {
+        return this.bubble.getWorld().getServer();
+    }
+
+    public ConfiguredGame<?> getGameConfg() {
         return this.configuredGame;
     }
 

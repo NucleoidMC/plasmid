@@ -36,11 +36,11 @@ public final class GameWaitingLobby {
         this.bar = bar;
     }
 
-    public static void addTo(GameLogic logic, PlayerConfig playerConfig) {
-        GlobalWidgets widgets = new GlobalWidgets(logic.getWorld(), logic);
+    public static void applyTo(GameLogic logic, PlayerConfig playerConfig) {
+        GlobalWidgets widgets = new GlobalWidgets(logic.getSpace(), logic);
         BossBarWidget bar = widgets.addBossBar(WAITING_TITLE);
 
-        GameWaitingLobby lobby = new GameWaitingLobby(logic.getWorld(), playerConfig, bar);
+        GameWaitingLobby lobby = new GameWaitingLobby(logic.getSpace(), playerConfig, bar);
 
         logic.setRule(GameRule.CRAFTING, RuleResult.DENY);
         logic.setRule(GameRule.PORTALS, RuleResult.DENY);

@@ -4,14 +4,13 @@ import net.minecraft.text.LiteralText;
 import xyz.nucleoid.plasmid.game.ConfiguredGame;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenException;
-import xyz.nucleoid.plasmid.game.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 
 public final class RandomGame {
-    public static CompletableFuture<ManagedGameSpace> open(GameOpenContext<CompositeGameConfig> context) {
+    public static GameOpenProcedure open(GameOpenContext<CompositeGameConfig> context) {
         CompositeGameConfig config = context.getConfig();
         List<ConfiguredGame<?>> games = config.collectGames();
 
@@ -22,6 +21,6 @@ public final class RandomGame {
         Random random = new Random();
         ConfiguredGame<?> game = games.get(random.nextInt(games.size()));
 
-        return game.open(context.getServer());
+        return game.openProcedure(context.getServer());
     }
 }

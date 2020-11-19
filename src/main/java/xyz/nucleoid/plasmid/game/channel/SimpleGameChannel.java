@@ -11,10 +11,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.ConfiguredGame;
-import xyz.nucleoid.plasmid.game.GameLifecycle;
-import xyz.nucleoid.plasmid.game.GameOpenException;
-import xyz.nucleoid.plasmid.game.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 
@@ -155,17 +152,17 @@ public final class SimpleGameChannel implements GameChannel {
 
     private class LifecycleListeners implements GameLifecycle.Listeners {
         @Override
-        public void onAddPlayer(ManagedGameSpace gameSpace, ServerPlayerEntity player) {
+        public void onAddPlayer(GameSpace gameSpace, ServerPlayerEntity player) {
             SimpleGameChannel.this.updateDisplay();
         }
 
         @Override
-        public void onRemovePlayer(ManagedGameSpace gameSpace, ServerPlayerEntity player) {
+        public void onRemovePlayer(GameSpace gameSpace, ServerPlayerEntity player) {
             SimpleGameChannel.this.updateDisplay();
         }
 
         @Override
-        public void onClose(ManagedGameSpace gameSpace, List<ServerPlayerEntity> players) {
+        public void onClose(GameSpace gameSpace, List<ServerPlayerEntity> players) {
             SimpleGameChannel.this.closeGame();
         }
     }

@@ -281,6 +281,7 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
         return this.configuredGame;
     }
 
+    @Override
     public GameLifecycle getLifecycle() {
         return this.lifecycle;
     }

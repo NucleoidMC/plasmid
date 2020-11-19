@@ -7,7 +7,7 @@ import net.minecraft.text.TranslatableText;
 import javax.annotation.Nullable;
 
 /**
- * Describes the result of a {@link ManagedGameSpace} attempting to start.
+ * Describes the result of a {@link GameSpace} attempting to start.
  */
 public final class StartResult {
     public static final StartResult ALREADY_STARTED = error(new TranslatableText("text.plasmid.game.start_result.already_started"));

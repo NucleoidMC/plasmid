@@ -5,7 +5,6 @@ import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import javax.annotation.Nullable;
-import java.util.concurrent.CompletableFuture;
 
 public final class GameType<C> {
     public static final TinyRegistry<GameType<?>> REGISTRY = TinyRegistry.newStable();
@@ -26,7 +25,7 @@ public final class GameType<C> {
         return type;
     }
 
-    public CompletableFuture<ManagedGameSpace> open(GameOpenContext<C> context) {
+    public GameOpenProcedure open(GameOpenContext<C> context) {
         return this.open.open(context);
     }
 
@@ -60,6 +59,6 @@ public final class GameType<C> {
     }
 
     public interface Open<C> {
-        CompletableFuture<ManagedGameSpace> open(GameOpenContext<C> context);
+        GameOpenProcedure open(GameOpenContext<C> context);
     }
 }

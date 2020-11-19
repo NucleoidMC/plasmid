@@ -12,29 +12,32 @@ public final class GameLifecycle {
         this.listeners.add(listeners);
     }
 
-    void addPlayer(ManagedGameSpace gameSpace, ServerPlayerEntity player) {
+    void addPlayer(GameSpace gameSpace, ServerPlayerEntity player) {
         for (Listeners listener : this.listeners) {
             listener.onAddPlayer(gameSpace, player);
         }
     }
 
-    void removePlayer(ManagedGameSpace gameSpace, ServerPlayerEntity player) {
+    void removePlayer(GameSpace gameSpace, ServerPlayerEntity player) {
         for (Listeners listener : this.listeners) {
             listener.onRemovePlayer(gameSpace, player);
         }
     }
 
-    void close(ManagedGameSpace gameSpace, List<ServerPlayerEntity> players) {
+    void close(GameSpace gameSpace, List<ServerPlayerEntity> players) {
         for (Listeners listener : this.listeners) {
             listener.onClose(gameSpace, players);
         }
     }
 
     public interface Listeners {
-        void onAddPlayer(ManagedGameSpace gameSpace, ServerPlayerEntity player);
+        default void onAddPlayer(GameSpace gameSpace, ServerPlayerEntity player) {
+        }
 
-        void onRemovePlayer(ManagedGameSpace gameSpace, ServerPlayerEntity player);
+        default void onRemovePlayer(GameSpace gameSpace, ServerPlayerEntity player) {
+        }
 
-        void onClose(ManagedGameSpace gameSpace, List<ServerPlayerEntity> players);
+        default void onClose(GameSpace gameSpace, List<ServerPlayerEntity> players) {
+        }
     }
 }

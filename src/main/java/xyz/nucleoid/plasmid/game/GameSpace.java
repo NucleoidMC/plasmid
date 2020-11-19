@@ -67,4 +67,6 @@ public interface GameSpace {
     }
 
     ConfiguredGame<?> getGameConfig();
+
+    GameLifecycle getLifecycle();
 }

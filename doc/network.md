@@ -13,14 +13,7 @@ and a table of the fields and type of the packet.
 
 ## Types
 
-### BlockPos
-
-`BlockPos` type represents a block position in the world,
-`x` as a 26-bit integer, followed by `y` as a 12-bit integer, followed by `z` as a 26-bit integer (all signed, two's complement).
-Currently, encoded as a 64-bit integer split into three parts:
- - x: 26 MSBs
- - z: 26 middle bits
- - y: 12 LSBs
+Some data types used in this documentation are documented [here](https://wiki.vg/Protocol#Data_types).
 
 ### Bounds
 
@@ -41,84 +34,107 @@ A region represents a named box in a Plasmid map which can contain arbitrary dat
 | bounds | [Bounds]   | The bounds of the region.            |
 | data   | NBT Tag    | Arbitrary data stored in the region. |
 
+### Array `A[]`
+
+An array holds a list of values of the specified type.
+It also contains the size `N` of the array.
+
+| Fields | Type   | Description                                 |
+|:------:|:------:|:--------------------------------------------|
+| size   | VarI32 | The size of the array.                      |
+| 0      | A      | The first element of the array if present.  |
+| 1      | A      | The second element of the array if present. |
+| ...    | A      | An element of the array if present.         |
+| N-1    | A      | The N-1 element of the array if present.    |
+
+### Pair `(A, B)`
+
+A pair is a type which holds the content of 2 types specified in its name.
+The pair type is very abstract and acts as 2 fields.
+
+| Fields | Type | Description                   |
+|:------:|:----:|:------------------------------|
+| first  | A    | The first value of the pair.  |
+| second | B    | The second value of the pair. |
+
 ## Packets
 
-### `plasmid:staging_map/enter`
+### `plasmid:workspace/enter`
 
-Packet sent when a player enters a staging map editor. The client should render the bounds of the map if present,
+Packet sent when a player enters a workspace editor. The client should render the bounds of the map if present,
 and the contained regions, points, etc.  
-A `plasmid:staging_map/regions` packet should be sent with this packet if the staging map contains regions.
+A `plasmid:workspace/regions` packet should be sent with this packet if the workspace contains regions.
 
 Direction: `C<-S`
 
-| Fields |  Type      | Description                                                                    |
-|:------:|:----------:|:-------------------------------------------------------------------------------|
-| id     | Identifier | The identifier of the entered staging map.                                     |
-| bounds | [Bounds]   | The bounds of the staging map, may be `[[0, 0, 0], [0, 0, 0]]` if not present. |
-| world  | Identifier | The world of the staging map.                                                  |
-| data   | NBT Tag    | Arbitrary data assigned to the staging map.                                    |
+| Fields |  Type      | Description                                                            |
+|:------:|:----------:|:-----------------------------------------------------------------------|
+| id     | Identifier | The identifier of the entered workspace.                               |
+| bounds | [Bounds]   | The bounds of the map, may be `[[0, 0, 0], [0, 0, 0]]` if not present. |
+| world  | Identifier | The world in which the workspace is present.                           |
+| data   | NBT Tag    | Arbitrary data assigned to the map template.                           |
 
-### `plasmid:staging_map/region`
+### `plasmid:workspace/region`
 
 Specifies a single region to the client, the client should render a box, and a marker tag for it.
 
 Direction: `C<-S`
 
-| Fields | Type       | Description                                                            |
-|:------:|:----------:|:-----------------------------------------------------------------------|
-| map    | Identifier | The identifier of the staging map in which the region should be added. |
-| id     | VarI32     | The region runtime identifier.                                         |
-| region | [Region]   | The region to add.                                                     |
+| Fields    | Type       | Description                                                          |
+|:---------:|:----------:|:---------------------------------------------------------------------|
+| workspace | Identifier | The identifier of the workspace in which the region should be added. |
+| id        | [VarI32]   | The region runtime identifier.                                       |
+| region    | [Region]   | The region to add.                                                   |
 
-### `plasmid:staging_map/regions`
+### `plasmid:workspace/regions`
 
 Specifies regions to the client, for each region the client should render a box, and a marker tag.
 
 Direction: `C<-S`
 
-| Fields  | Type                   | Description                                                         |
-|:-------:|:----------------------:|:--------------------------------------------------------------------|
-| map     | Identifier             | The identifier of the staging map containing the following regions. |
-| count   | VarI32                 | The count of regions to update.                                     |
-| regions | (VarI32, [Region])\[\] | The array of regions to update. The first of the pair is the runtime ID and the second the region data. |
+| Fields    | Type                     | Description                                                       |
+|:---------:|:------------------------:|:------------------------------------------------------------------|
+| workspace | Identifier               | The identifier of the workspace containing the following regions. |
+| regions   | ([VarI32], [Region])\[\] | The array of regions to update. The first of the pair is the runtime ID and the second the region data. |
 
-### `plasmid:staging_map/region/add`
+### `plasmid:workspace/region/add`
 
-Requests the server to add a new region in the specified staging map.
-The client should not assume the region exists until the server sends a `plasmid:staging_map/region` packet.
-
-Direction: `C->S`
-
-| Fields |  Type      | Description                                                            |
-|:------:|:----------:|:-----------------------------------------------------------------------|
-| map    | Identifier | The identifier of the staging map in which the region should be added. |
-| region | [Region]   | The region to add.                                                     |
-
-### `plasmid:staging_map/region/update`
-
-Requests the server to update a region from the specified staging map.
+Requests the server to add a new region in the specified workspace.
+The client should not assume the region exists until the server sends a `plasmid:workspace/region` packet.
 
 Direction: `C->S`
 
-| Fields |  Type      | Description                                                              |
-|:------:|:----------:|:-------------------------------------------------------------------------|
-| map    | Identifier | The identifier of the staging map in which the region should be updated. |
-| id     | VarI32     | The region runtime ID.                                                   |
-| region | [Region]   | The updated region.                                                      |
+| Fields    |  Type      | Description                                                          |
+|:---------:|:----------:|:---------------------------------------------------------------------|
+| workspace | Identifier | The identifier of the workspace in which the region should be added. |
+| region    | [Region]   | The region to add.                                                   |
 
-### `plasmid:staging_map/region/remove`
+### `plasmid:workspace/region/update`
 
-Remove a region from the specified staging map.
+Requests the server to update a region from the specified workspace.
+
+Direction: `C->S`
+
+| Fields    |  Type      | Description                                                            |
+|:---------:|:----------:|:-----------------------------------------------------------------------|
+| workspace | Identifier | The identifier of the workspace in which the region should be updated. |
+| id        | [VarI32]   | The region runtime ID.                                                 |
+| region    | [Region]   | The updated region.                                                    |
+
+### `plasmid:workspace/region/remove`
+
+Remove a region from the specified workspace.
 When sent from a client, this packet should be treated as a request which can be rejected.
 
 Direction: `C<->S`
 
-| Fields |  Type      | Description                                                              |
-|:------:|:----------:|:-------------------------------------------------------------------------|
-| map    | Identifier | The identifier of the staging map in which the region should be removed. |
-| id     | VarI32     | The region runtime ID.                                                   |
-| region | [Region]   | The region to remove.                                                    |
+| Fields    |  Type      | Description                                                            |
+|:---------:|:----------:|:-----------------------------------------------------------------------|
+| workspace | Identifier | The identifier of the workspace in which the region should be removed. |
+| id        | [VarI32]   | The region runtime ID.                                                 |
+| region    | [Region]   | The region to remove.                                                  |
 
-[BlockPos]: #blockpos
+[VarI32]: https://wiki.vg/Protocol#VarInt_and_VarLong "wiki.vg documentation"
+[BlockPos]: https://wiki.vg/Protocol#Position "wiki.vg documentation"
 [Bounds]: #bounds
 [Region]: #region

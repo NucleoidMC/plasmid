@@ -187,11 +187,12 @@ public final class MapCommand {
                         .then(literal("merge")
                             .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
                                 .executes(MapCommand::executeDataMerge)
-                            )/*.then(argument("nbt", NbtTagArgumentType.nbtTag())
+                            )
+                            .then(argument("nbt", NbtTagArgumentType.nbtTag())
                                 .then(literal("at")
-                                    .then(argument("path", NbtPathArgumentType.nbtPath())
-                                        .executes(MapCommand::executeDataMergeAt)
-                            )))*/
+                                .then(argument("path", NbtPathArgumentType.nbtPath())
+                                .executes(MapCommand::executeDataMergeAt)
+                            )))
                         )
                         .then(literal("remove")
                             .executes(context -> executeDataRemove(context, null))
@@ -497,43 +498,46 @@ public final class MapCommand {
     }
 
     private static int executeDataMergeAt(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        // @TODO fix this, I have no idea how it works
         ServerCommandSource source = context.getSource();
         StagingMapTemplate map = getMap(context);
-        CompoundTag nbt = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
+
+        CompoundTag sourceData = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
         NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
 
-        List<Tag> list = path.get(map.getData());
-        Collection<Tag> dataTags = path.getOrInit(nbt, CompoundTag::new);
-        int i = 0;
+        List<Tag> sourceTags = path.getOrInit(sourceData, CompoundTag::new);
+        List<Tag> mergeIntoTags = path.get(map.getData());
 
-        CompoundTag mergedTag;
-        CompoundTag sourceTag;
-        for (Iterator<Tag> dataIterator = dataTags.iterator(); dataIterator.hasNext(); i += sourceTag.equals(mergedTag) ? 0 : 1) {
-            Tag tag = dataIterator.next();
-            if (!(tag instanceof CompoundTag)) {
-                throw MODIFY_EXPECTED_OBJECT_EXCEPTION.create(tag);
+        int mergeCount = 0;
+
+        for (Tag mergeIntoTag : mergeIntoTags) {
+            if (!(mergeIntoTag instanceof CompoundTag)) {
+                throw MODIFY_EXPECTED_OBJECT_EXCEPTION.create(mergeIntoTag);
             }
 
-            mergedTag = (CompoundTag) tag;
-            sourceTag = mergedTag.copy();
+            CompoundTag mergedCompound = (CompoundTag) mergeIntoTag;
+            CompoundTag previousCompound = mergedCompound.copy();
 
-            for (Tag tag2 : list) {
-                if (!(tag2 instanceof CompoundTag)) {
-                    throw MODIFY_EXPECTED_OBJECT_EXCEPTION.create(tag2);
+            for (Tag sourceTag : sourceTags) {
+                if (!(sourceTag instanceof CompoundTag)) {
+                    throw MODIFY_EXPECTED_OBJECT_EXCEPTION.create(sourceTag);
                 }
 
-                mergedTag.copyFrom((CompoundTag) tag2);
+                mergedCompound.copyFrom((CompoundTag) sourceTag);
+            }
+
+            if (!previousCompound.equals(mergedCompound)) {
+                mergeCount++;
             }
         }
 
-        if (i == 0) {
+        if (mergeCount == 0) {
             throw MERGE_FAILED_EXCEPTION.create();
-        } else {
-            map.setData(map.getData());
-            source.sendFeedback(withMapPrefix(map, new LiteralText("Merged map data.")), false);
-            return i;
         }
+
+        map.setData(map.getData());
+        source.sendFeedback(withMapPrefix(map, new LiteralText("Merged map data.")), false);
+
+        return mergeCount;
     }
 
     private static int executeDataGet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {

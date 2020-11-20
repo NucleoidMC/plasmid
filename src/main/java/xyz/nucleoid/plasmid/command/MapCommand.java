@@ -234,14 +234,19 @@ public final class MapCommand {
 
         MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
 
+        ServerWorld workspaceWorld = workspace.getWorld();
+
+        ReturnPosition returnPosition = WorkspaceTraveler.getReturnFor(player, workspaceWorld.getRegistryKey());
+        if (returnPosition != null) {
+            returnPosition.applyTo(player);
+        } else {
+            player.teleport(workspaceWorld, 0.0, 64.0, 0.0, 0.0F, 0.0F);
+        }
+
         if (player.abilities.allowFlying) {
             player.abilities.flying = true;
             player.sendAbilitiesUpdate();
         }
-
-        // TODO: remember position
-        ServerWorld workspaceWorld = workspace.getWorld();
-        player.teleport(workspaceWorld, 0.0, 64.0, 0.0, 0.0F, 0.0F);
 
         source.sendFeedback(
                 new LiteralText("You have joined '" + workspace.getIdentifier() + "'! Use ")
@@ -264,8 +269,14 @@ public final class MapCommand {
             throw MAP_NOT_HERE.create();
         }
 
-        // TODO: restore position
-        player.teleport(source.getMinecraftServer().getOverworld(), 0.0, 64.0, 0.0, 0.0F, 0.0F);
+        ReturnPosition returnPosition = WorkspaceTraveler.getLeaveReturn(player);
+        if (returnPosition != null) {
+            returnPosition.applyTo(player);
+        } else {
+            ServerWorld overworld = source.getMinecraftServer().getOverworld();
+            BlockPos spawnPos = overworld.getSpawnPos();
+            player.teleport(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0.0F, 0.0F);
+        }
 
         source.sendFeedback(
                 new LiteralText("You have left '" + workspace.getIdentifier() + "'!"),

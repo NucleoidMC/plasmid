@@ -66,6 +66,10 @@ public final class MapWorkspaceManager extends PersistentState {
         return this.workspacesByDimension.get(dimension);
     }
 
+    public boolean isWorkspace(RegistryKey<World> dimension) {
+        return this.workspacesByDimension.containsKey(dimension);
+    }
+
     public Set<Identifier> getWorkspaceIds() {
         return this.workspacesById.keySet();
     }

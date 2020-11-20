@@ -69,12 +69,36 @@ A `plasmid:workspace/regions` packet should be sent with this packet if the work
 
 Direction: `C<-S`
 
-| Fields |  Type      | Description                                                            |
+| Fields | Type       | Description                                                            |
 |:------:|:----------:|:-----------------------------------------------------------------------|
 | id     | Identifier | The identifier of the entered workspace.                               |
 | bounds | [Bounds]   | The bounds of the map, may be `[[0, 0, 0], [0, 0, 0]]` if not present. |
 | world  | Identifier | The world in which the workspace is present.                           |
 | data   | NBT Tag    | Arbitrary data assigned to the map template.                           |
+
+### `plasmid:workspace/bounds`
+
+Sets the bounds of the workspace map. The client should render those bounds if non-null.
+A client can request bounds change, but can be rejected. If a request is accepted, the packet is sent back to the client.
+
+Direction `C<->S`
+
+| Fields | Type       | Description                                                                      |
+|:------:|:----------:|:---------------------------------------------------------------------------------|
+| id     | Identifier | The identifier of the affected workspace.                                        |
+| bounds | [Bounds]   | The new bounds of the workspace map, `[[0, 0, 0], [0, 0, 0]]` if bounds is null. |
+
+### `plasmid:workspace/data`
+
+Sets the associated data on the workspace map.
+A client can request data change, but can be rejected. If a request is accepted, the packet is sent back to the client.
+
+Direction: `C<->S`
+
+| Fields | Type       | Description                               |
+|:------:|:----------:|:------------------------------------------|
+| id     | Identifier | The identifier of the affected workspace. |
+| data   | NBT Tag    | The NBT data.                             |
 
 ### `plasmid:workspace/region`
 

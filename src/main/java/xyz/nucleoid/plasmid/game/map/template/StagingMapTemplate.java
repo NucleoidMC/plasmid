@@ -28,19 +28,24 @@ public final class StagingMapTemplate {
     private final Identifier identifier;
     private final BlockBounds bounds;
 
+    /* Regions */
     private final List<TemplateRegion> regions = new ArrayList<>();
 
     /* Entities */
     private final Set<UUID> entitiesToInclude = new HashSet<>();
     private final Set<EntityType<?>> entityTypesToInclude = new HashSet<>();
 
+    /* Data */
+    private CompoundTag data;
+
     public StagingMapTemplate(ServerWorld world, Identifier identifier, BlockBounds bounds) {
         this.world = world;
         this.identifier = identifier;
         this.bounds = bounds;
+        this.data = new CompoundTag();
     }
 
-    private void setDirty() {
+    public void setDirty() {
         StagingMapManager.get(this.world).setDirty(true);
     }
 
@@ -98,16 +103,37 @@ public final class StagingMapTemplate {
         return result;
     }
 
+    /**
+     * Gets the arbitrary data of the map.
+     *
+     * @return the data as a compound tag
+     */
+    public CompoundTag getData() {
+        return this.data;
+    }
+
+    /**
+     * Sets the arbitrary data of the map.
+     *
+     * @param data the data as a compound tag
+     */
+    public void setData(CompoundTag data) {
+        this.data = data;
+        this.setDirty();
+    }
+
     public CompoundTag serialize(CompoundTag root) {
         root.putString("identifier", this.identifier.toString());
         this.bounds.serialize(root);
 
+        // Regions
         ListTag regionList = new ListTag();
         for (TemplateRegion region : this.regions) {
             regionList.add(region.serialize(new CompoundTag()));
         }
         root.put("regions", regionList);
 
+        // Entities
         CompoundTag entitiesTag = new CompoundTag();
         ListTag entityList = new ListTag();
         for (UUID uuid : this.entitiesToInclude) {
@@ -121,21 +147,26 @@ public final class StagingMapTemplate {
         entitiesTag.put("types", entityTypeList);
         root.put("entities", entitiesTag);
 
+        // Data
+        root.put("data", this.getData());
+
         return root;
     }
 
     public static StagingMapTemplate deserialize(ServerWorld world, CompoundTag root) {
         Identifier identifier = new Identifier(root.getString("identifier"));
-
         BlockBounds bounds = BlockBounds.deserialize(root);
 
         StagingMapTemplate map = new StagingMapTemplate(world, identifier, bounds);
+
+        // Regions
         ListTag regionList = root.getList("regions", NbtType.COMPOUND);
         for (int i = 0; i < regionList.size(); i++) {
             CompoundTag regionRoot = regionList.getCompound(i);
             map.regions.add(TemplateRegion.deserialize(regionRoot));
         }
 
+        // Entities
         CompoundTag entitiesTag = root.getCompound("entities");
         ListTag entityList = entitiesTag.getList("uuids", NbtType.INT_ARRAY);
         entityList.stream().map(NbtHelper::toUuid).forEach(map.entitiesToInclude::add);
@@ -143,6 +174,9 @@ public final class StagingMapTemplate {
         entityTypeList.stream().map(tag -> new Identifier(tag.asString()))
                 .map(Registry.ENTITY_TYPE::get)
                 .forEach(map.entityTypesToInclude::add);
+
+        // Data
+        map.data = root.getCompound("data");
 
         return map;
     }
@@ -159,6 +193,7 @@ public final class StagingMapTemplate {
     public MapTemplate compile(boolean includeEntities) {
         MapTemplate map = MapTemplate.createEmpty();
         map.bounds = this.globalToLocal(this.bounds);
+        map.setData(this.getData());
 
         for (TemplateRegion region : this.regions) {
             map.addRegion(

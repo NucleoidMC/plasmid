@@ -52,6 +52,7 @@ public final class MapTemplate {
     RegistryKey<Biome> biome = BiomeKeys.THE_VOID;
 
     BlockBounds bounds = null;
+    private CompoundTag data = new CompoundTag();
 
     private MapTemplate() {
     }
@@ -76,6 +77,24 @@ public final class MapTemplate {
      */
     public RegistryKey<Biome> getBiome() {
         return this.biome;
+    }
+
+    /**
+     * Gets the arbitrary data of the map.
+     *
+     * @return the data as a compound tag
+     */
+    public CompoundTag getData() {
+        return this.data;
+    }
+
+    /**
+     * Sets the arbitrary data of the map.
+     *
+     * @param data the data as a compound tag
+     */
+    public void setData(CompoundTag data) {
+        this.data = data;
     }
 
     public void setBlockState(BlockPos pos, BlockState state) {

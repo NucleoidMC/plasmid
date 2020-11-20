@@ -6,7 +6,7 @@ import xyz.nucleoid.plasmid.util.BlockBounds;
 public final class TemplateRegion {
     private final String marker;
     private final BlockBounds bounds;
-    private final CompoundTag data;
+    private CompoundTag data;
 
     public TemplateRegion(String marker, BlockBounds bounds, CompoundTag data) {
         this.marker = marker;
@@ -23,12 +23,21 @@ public final class TemplateRegion {
     }
 
     /**
-     * Returns extra data assigned to this region.
+     * Returns the extra data assigned to this region.
      *
-     * @return The extra data.
+     * @return the extra data
      */
     public CompoundTag getData() {
         return this.data;
+    }
+
+    /**
+     * Sets the extra data assigned to this region.
+     *
+     * @param data the extra data
+     */
+    public void setData(CompoundTag data) {
+        this.data = data;
     }
 
     public CompoundTag serialize(CompoundTag tag) {

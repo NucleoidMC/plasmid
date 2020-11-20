@@ -270,4 +270,8 @@ public final class MapWorkspace {
     public ServerWorld getWorld() {
         return this.worldHandle.asWorld();
     }
+
+    PersistentWorldHandle getWorldHandle() {
+        return this.worldHandle;
+    }
 }

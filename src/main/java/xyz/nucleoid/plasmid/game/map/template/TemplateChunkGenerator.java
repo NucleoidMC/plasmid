@@ -32,14 +32,12 @@ import java.util.function.Predicate;
 public class TemplateChunkGenerator extends GameChunkGenerator {
     private final MapTemplate template;
     private final BlockBounds worldBounds;
-    private final BlockPos origin;
 
-    public TemplateChunkGenerator(MinecraftServer server, MapTemplate template, BlockPos origin) {
+    public TemplateChunkGenerator(MinecraftServer server, MapTemplate template) {
         super(createBiomeSource(server, template.getBiome()), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
 
         this.template = template;
-        this.worldBounds = template.getBounds().offset(origin);
-        this.origin = origin;
+        this.worldBounds = template.getBounds();
     }
 
     @Override
@@ -86,17 +84,13 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     }
 
     private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable templatePos, ProtoChunk chunk, ChunkSection section) {
-        int offsetX = minWorldX - this.origin.getX();
-        int offsetY = minWorldY - this.origin.getY();
-        int offsetZ = minWorldZ - this.origin.getZ();
-
         Heightmap oceanFloor = chunk.getHeightmap(Heightmap.Type.OCEAN_FLOOR_WG);
         Heightmap worldSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
 
         for (int y = 0; y < 16; y++) {
             for (int z = 0; z < 16; z++) {
                 for (int x = 0; x < 16; x++) {
-                    templatePos.set(x + offsetX, y + offsetY, z + offsetZ);
+                    templatePos.set(x + minWorldX, y + minWorldY, z + minWorldZ);
 
                     BlockState state = this.template.getBlockState(templatePos);
                     if (!state.isAir()) {
@@ -146,11 +140,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
         for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
             int minWorldY = sectionY << 4;
 
-            int offsetX = minWorldX - this.origin.getX();
-            int offsetY = minWorldY - this.origin.getY();
-            int offsetZ = minWorldZ - this.origin.getZ();
-
-            this.template.getEntitiesInChunk(offsetX >> 4, offsetY >> 4, offsetZ >> 4).forEach(entityTag -> {
+            this.template.getEntitiesInChunk(minWorldX >> 4, minWorldY >> 4, minWorldZ >> 4).forEach(entityTag -> {
                 ListTag posTag = entityTag.getList("Pos", NbtType.DOUBLE);
                 posTag.set(0, DoubleTag.of(posTag.getDouble(0) + minWorldX));
                 posTag.set(1, DoubleTag.of(posTag.getDouble(1) + minWorldY));

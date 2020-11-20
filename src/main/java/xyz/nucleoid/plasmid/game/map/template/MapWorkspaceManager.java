@@ -4,6 +4,8 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
@@ -19,6 +21,7 @@ import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -56,6 +59,26 @@ public final class MapWorkspaceManager extends PersistentState {
             this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
             return workspace;
         }, this.server);
+    }
+
+    public boolean delete(MapWorkspace workspace) {
+        if (this.workspacesById.remove(workspace.getIdentifier(), workspace)) {
+            ServerWorld world = workspace.getWorld();
+            this.workspacesByDimension.remove(world.getRegistryKey());
+
+            for (ServerPlayerEntity player : new ArrayList<>(world.getPlayers())) {
+                ReturnPosition returnPosition = WorkspaceTraveler.getLeaveReturn(player);
+                if (returnPosition != null) {
+                    returnPosition.applyTo(player);
+                }
+            }
+
+            workspace.getWorldHandle().delete();
+
+            return true;
+        }
+
+        return false;
     }
 
     @Nullable

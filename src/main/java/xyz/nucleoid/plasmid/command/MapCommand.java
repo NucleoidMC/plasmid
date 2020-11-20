@@ -61,6 +61,10 @@ public final class MapCommand {
             new LiteralText("No region ready")
     );
 
+    public static final SimpleCommandExceptionType MAP_MISMATCH = new SimpleCommandExceptionType(
+            new LiteralText("The given workspaces do not match! Are you sure you want to delete that?")
+    );
+
     private static final SimpleCommandExceptionType MERGE_FAILED_EXCEPTION = new SimpleCommandExceptionType(
             new TranslatableText("commands.data.merge.failed")
     );
@@ -75,7 +79,7 @@ public final class MapCommand {
 
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        // TODO: delete and import functionality
+        // TODO: import functionality
         dispatcher.register(
             literal("map").requires(source -> source.hasPermissionLevel(4))
                 .then(literal("open")
@@ -105,6 +109,11 @@ public final class MapCommand {
                         .executes(context -> MapCommand.compileMap(context, true))
                     )
                 ))
+                .then(literal("delete")
+                    .then(MapWorkspaceArgument.argument("workspace_once")
+                    .then(MapWorkspaceArgument.argument("workspace_again")
+                    .executes(MapCommand::deleteWorkspace)
+                )))
                 .then(literal("region")
                     .then(literal("add")
                         .then(argument("marker", StringArgumentType.word())
@@ -345,6 +354,29 @@ public final class MapCommand {
             }
             return null;
         });
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int deleteWorkspace(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+
+        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace_once");
+        MapWorkspace workspaceAgain = MapWorkspaceArgument.get(context, "workspace_again");
+        if (workspace != workspaceAgain) {
+            throw MAP_MISMATCH.create();
+        }
+
+        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
+
+        MutableText message;
+        if (workspaceManager.delete(workspace)) {
+            message = new LiteralText("Deleted workspace '" + workspace.getIdentifier() + "'!");
+        } else {
+            message = new LiteralText("Failed to delete workspace '" + workspace.getIdentifier() + "'!");
+        }
+
+        source.sendFeedback(message.formatted(Formatting.RED), false);
 
         return Command.SINGLE_SUCCESS;
     }

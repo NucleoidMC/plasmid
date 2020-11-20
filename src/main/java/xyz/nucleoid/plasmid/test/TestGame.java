@@ -21,7 +21,7 @@ public final class TestGame {
     public static GameOpenProcedure open(GameOpenContext<Unit> context) {
         MapTemplate template = TestGame.buildTemplate();
 
-        ChunkGenerator generator = new TemplateChunkGenerator(context.getServer(), template, BlockPos.ORIGIN);
+        ChunkGenerator generator = new TemplateChunkGenerator(context.getServer(), template);
 
         BubbleWorldConfig worldConfig = new BubbleWorldConfig()
                 .setGenerator(generator)

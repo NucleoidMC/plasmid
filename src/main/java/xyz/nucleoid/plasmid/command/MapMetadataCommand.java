@@ -28,9 +28,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.command.argument.MapWorkspaceArgument;
-import xyz.nucleoid.plasmid.game.map.template.*;
+import xyz.nucleoid.plasmid.game.map.template.MapWorkspace;
+import xyz.nucleoid.plasmid.game.map.template.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.game.map.template.TemplateRegion;
 import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
 import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
 import xyz.nucleoid.plasmid.util.BlockBounds;
@@ -38,13 +38,12 @@ import xyz.nucleoid.plasmid.util.BlockBounds;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public final class MapCommand {
+public final class MapMetadataCommand {
     public static final DynamicCommandExceptionType ENTITY_TYPE_NOT_FOUND = new DynamicCommandExceptionType(arg ->
             new TranslatableText("Entity type with id '%s' was not found!", arg)
     );
@@ -53,16 +52,8 @@ public final class MapCommand {
             new LiteralText("No map found here")
     );
 
-    public static final DynamicCommandExceptionType MAP_ALREADY_EXISTS = new DynamicCommandExceptionType(arg ->
-            new TranslatableText("Map with id '%s' already exists!", arg)
-    );
-
     public static final SimpleCommandExceptionType NO_REGION_READY = new SimpleCommandExceptionType(
             new LiteralText("No region ready")
-    );
-
-    public static final SimpleCommandExceptionType MAP_MISMATCH = new SimpleCommandExceptionType(
-            new LiteralText("The given workspaces do not match! Are you sure you want to delete that?")
     );
 
     private static final SimpleCommandExceptionType MERGE_FAILED_EXCEPTION = new SimpleCommandExceptionType(
@@ -79,47 +70,14 @@ public final class MapCommand {
 
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        // TODO: import functionality
         dispatcher.register(
             literal("map").requires(source -> source.hasPermissionLevel(4))
-                .then(literal("open")
-                    .then(argument("workspace", IdentifierArgumentType.identifier())
-                    .executes(MapCommand::openWorkspace)
-                ))
-                .then(literal("origin")
-                    .then(MapWorkspaceArgument.argument("workspace")
-                    .then(argument("origin", BlockPosArgumentType.blockPos())
-                    .executes(MapCommand::setWorkspaceOrigin)
-                )))
-                .then(literal("bounds")
-                    .then(MapWorkspaceArgument.argument("workspace")
-                    .then(argument("min", BlockPosArgumentType.blockPos())
-                    .then(argument("max", BlockPosArgumentType.blockPos())
-                    .executes(MapCommand::setWorkspaceBounds)
-                ))))
-                .then(literal("join")
-                    .then(MapWorkspaceArgument.argument("workspace")
-                    .executes(MapCommand::joinWorkspace)
-                ))
-                .then(literal("leave").executes(MapCommand::leaveMap))
-                .then(literal("compile")
-                    .then(MapWorkspaceArgument.argument("workspace")
-                    .executes(context -> MapCommand.compileMap(context, false))
-                    .then(literal("withEntities")
-                        .executes(context -> MapCommand.compileMap(context, true))
-                    )
-                ))
-                .then(literal("delete")
-                    .then(MapWorkspaceArgument.argument("workspace_once")
-                    .then(MapWorkspaceArgument.argument("workspace_again")
-                    .executes(MapCommand::deleteWorkspace)
-                )))
                 .then(literal("region")
                     .then(literal("add")
                         .then(argument("marker", StringArgumentType.word())
                         .then(argument("min", BlockPosArgumentType.blockPos())
                         .then(argument("max", BlockPosArgumentType.blockPos())
-                        .executes(MapCommand::addRegion)
+                        .executes(MapMetadataCommand::addRegion)
                         .then(argument("data", NbtCompoundTagArgumentType.nbtCompound())
                         .executes(context -> addRegion(context, NbtCompoundTagArgumentType.getCompoundTag(context, "data")))
                     )))))
@@ -140,32 +98,32 @@ public final class MapCommand {
                     )
                     .then(literal("data")
                         .then(argument("marker", StringArgumentType.word()).suggests(localRegionSuggestions())
-                            .then(literal("get").executes(executeInRegions("", MapCommand::executeRegionDataGet)))
+                            .then(literal("get").executes(executeInRegions("", MapMetadataCommand::executeRegionDataGet)))
                             .then(literal("merge")
                                 .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
-                                    .executes(executeInRegions("Merged data in %d regions.", MapCommand::executeRegionDataMerge))
+                                    .executes(executeInRegions("Merged data in %d regions.", MapMetadataCommand::executeRegionDataMerge))
                             ))
                             .then(literal("set")
                                 .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
-                                    .executes(executeInRegions("Set data in %d regions.", MapCommand::executeRegionDataSet))
+                                    .executes(executeInRegions("Set data in %d regions.", MapMetadataCommand::executeRegionDataSet))
                             ))
                             .then(literal("remove")
                                 .then(argument("path", NbtPathArgumentType.nbtPath())
-                                    .executes(executeInRegions("Removed data in %d regions.", MapCommand::executeRegionDataRemove))
+                                    .executes(executeInRegions("Removed data in %d regions.", MapMetadataCommand::executeRegionDataRemove))
                             ))
                     ))
                     .then(literal("remove")
                         .then(literal("here")
-                            .executes(MapCommand::removeRegionHere)
+                            .executes(MapMetadataCommand::removeRegionHere)
                         )
                         .then(literal("at")
                             .then(argument("pos", BlockPosArgumentType.blockPos())
-                            .executes(MapCommand::removeRegionAt)
+                            .executes(MapMetadataCommand::removeRegionAt)
                         ))
                     )
                     .then(literal("commit")
                         .then(argument("marker", StringArgumentType.word())
-                        .executes(MapCommand::commitRegion)
+                        .executes(MapMetadataCommand::commitRegion)
                         .then(argument("data", NbtCompoundTagArgumentType.nbtCompound())
                         .executes(context -> commitRegion(context, NbtCompoundTagArgumentType.getCompoundTag(context, "data")))
                     )))
@@ -173,40 +131,40 @@ public final class MapCommand {
                 .then(literal("entity")
                     .then(literal("add")
                         .then(argument("entities", EntityArgumentType.entities())
-                        .executes(MapCommand::addEntities)
+                        .executes(MapMetadataCommand::addEntities)
                     ))
                     .then(literal("remove")
                         .then(argument("entities", EntityArgumentType.entities())
-                        .executes(MapCommand::removeEntities)
+                        .executes(MapMetadataCommand::removeEntities)
                     ))
                     .then(literal("filter")
                         .then(literal("type")
                             .then(literal("add")
                                 .then(argument("entity_type", IdentifierArgumentType.identifier()).suggests(entityTypeSuggestions())
-                                .executes(MapCommand::addEntityType)
+                                .executes(MapMetadataCommand::addEntityType)
                             ))
                             .then(literal("remove")
                                 .then(argument("entity_type", IdentifierArgumentType.identifier()).suggests(entityTypeSuggestions())
-                                .executes(MapCommand::removeEntityType)
+                                .executes(MapMetadataCommand::removeEntityType)
                             ))
                         )
                     )
                 )
                 .then(literal("data")
                         .then(literal("get")
-                            .executes(MapCommand::executeDataGet)
+                            .executes(MapMetadataCommand::executeDataGet)
                             .then(literal("at")
                                 .then(argument("path", NbtPathArgumentType.nbtPath())
-                                .executes(MapCommand::executeDataGetAt)
+                                .executes(MapMetadataCommand::executeDataGetAt)
                         )))
                         .then(literal("merge")
                             .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
-                                .executes(MapCommand::executeDataMerge)
+                                .executes(MapMetadataCommand::executeDataMerge)
                             )
                             .then(argument("nbt", NbtTagArgumentType.nbtTag())
                                 .then(literal("at")
                                 .then(argument("path", NbtPathArgumentType.nbtPath())
-                                .executes(MapCommand::executeDataMergeAt)
+                                .executes(MapMetadataCommand::executeDataMergeAt)
                             )))
                         )
                         .then(literal("remove")
@@ -217,169 +175,18 @@ public final class MapCommand {
                         )))
                         .then(literal("set")
                             .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
-                                .executes(MapCommand::executeDataSet)
+                                .executes(MapMetadataCommand::executeDataSet)
                             )
                             .then(literal("at")
                                 .then(argument("path", NbtPathArgumentType.nbtPath())
                                     .then(argument("nbt", NbtTagArgumentType.nbtTag())
-                                    .executes(MapCommand::executeDataSetAt)
+                                    .executes(MapMetadataCommand::executeDataSetAt)
                             )))
                         )
                 )
         );
     }
     // @formatter:on
-
-    private static int openWorkspace(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-
-        Identifier identifier = IdentifierArgumentType.getIdentifier(context, "workspace");
-
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
-        if (workspaceManager.byId(identifier) != null) {
-            throw MAP_ALREADY_EXISTS.create(identifier);
-        }
-
-        workspaceManager.open(identifier);
-
-        source.sendFeedback(
-                new LiteralText("Opened workspace '" + identifier + "'! Use ")
-                        .append(new LiteralText("/map join " + identifier).formatted(Formatting.GRAY))
-                        .append(" to join this map"),
-                false
-        );
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static int setWorkspaceOrigin(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-
-        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
-        BlockPos origin = BlockPosArgumentType.getBlockPos(context, "origin");
-
-        workspace.setOrigin(origin);
-
-        source.sendFeedback(new LiteralText("Updated origin for workspace"), false);
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static int setWorkspaceBounds(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-
-        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
-        BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
-        BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
-
-        workspace.setBounds(new BlockBounds(min, max));
-
-        source.sendFeedback(new LiteralText("Updated bounds for workspace"), false);
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static int joinWorkspace(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
-
-        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
-
-        ServerWorld workspaceWorld = workspace.getWorld();
-
-        ReturnPosition returnPosition = WorkspaceTraveler.getReturnFor(player, workspaceWorld.getRegistryKey());
-        if (returnPosition != null) {
-            returnPosition.applyTo(player);
-        } else {
-            player.teleport(workspaceWorld, 0.0, 64.0, 0.0, 0.0F, 0.0F);
-        }
-
-        if (player.abilities.allowFlying) {
-            player.abilities.flying = true;
-            player.sendAbilitiesUpdate();
-        }
-
-        source.sendFeedback(
-                new LiteralText("You have joined '" + workspace.getIdentifier() + "'! Use ")
-                        .append(new LiteralText("/map leave").formatted(Formatting.GRAY))
-                        .append(" to return to your original position"),
-                false
-        );
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static int leaveMap(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
-
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
-        MapWorkspace workspace = workspaceManager.byDimension(player.world.getRegistryKey());
-
-        if (workspace == null) {
-            throw MAP_NOT_HERE.create();
-        }
-
-        ReturnPosition returnPosition = WorkspaceTraveler.getLeaveReturn(player);
-        if (returnPosition != null) {
-            returnPosition.applyTo(player);
-        } else {
-            ServerWorld overworld = source.getMinecraftServer().getOverworld();
-            BlockPos spawnPos = overworld.getSpawnPos();
-            player.teleport(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0.0F, 0.0F);
-        }
-
-        source.sendFeedback(
-                new LiteralText("You have left '" + workspace.getIdentifier() + "'!"),
-                false
-        );
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static int compileMap(CommandContext<ServerCommandSource> context, boolean includeEntities) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-
-        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
-
-        MapTemplate template = workspace.compile(includeEntities);
-        CompletableFuture<Void> future = MapTemplateSerializer.INSTANCE.save(template, workspace.getIdentifier());
-
-        future.handle((v, throwable) -> {
-            if (throwable == null) {
-                source.sendFeedback(new LiteralText("Compiled and saved map '" + workspace.getIdentifier() + "'"), false);
-            } else {
-                Plasmid.LOGGER.error("Failed to compile map to '{}'", workspace.getIdentifier(), throwable);
-                source.sendError(new LiteralText("Failed to compile map! An unexpected exception was thrown"));
-            }
-            return null;
-        });
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static int deleteWorkspace(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-
-        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace_once");
-        MapWorkspace workspaceAgain = MapWorkspaceArgument.get(context, "workspace_again");
-        if (workspace != workspaceAgain) {
-            throw MAP_MISMATCH.create();
-        }
-
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
-
-        MutableText message;
-        if (workspaceManager.delete(workspace)) {
-            message = new LiteralText("Deleted workspace '" + workspace.getIdentifier() + "'!");
-        } else {
-            message = new LiteralText("Failed to delete workspace '" + workspace.getIdentifier() + "'!");
-        }
-
-        source.sendFeedback(message.formatted(Formatting.RED), false);
-
-        return Command.SINGLE_SUCCESS;
-    }
 
     private static int addRegion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         return addRegion(context, new CompoundTag());
@@ -478,8 +285,6 @@ public final class MapCommand {
     private static int commitRegion(CommandContext<ServerCommandSource> context, CompoundTag data) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
-
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
 
         String marker = StringArgumentType.getString(context, "marker");
 

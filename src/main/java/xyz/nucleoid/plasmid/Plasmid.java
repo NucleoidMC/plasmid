@@ -67,7 +67,8 @@ public final class Plasmid implements ModInitializer {
 
     private void registerCallbacks() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            MapCommand.register(dispatcher);
+            MapManageCommand.register(dispatcher);
+            MapMetadataCommand.register(dispatcher);
             GameCommand.register(dispatcher);
             PartyCommand.register(dispatcher);
             ChatCommand.register(dispatcher);

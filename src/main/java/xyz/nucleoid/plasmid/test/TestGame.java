@@ -7,6 +7,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
+import xyz.nucleoid.fantasy.BubbleWorldConfig;
+import xyz.nucleoid.fantasy.BubbleWorldSpawner;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
@@ -14,8 +16,6 @@ import xyz.nucleoid.plasmid.game.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.game.map.template.TemplateChunkGenerator;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
-import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
-import xyz.nucleoid.plasmid.world.bubble.BubbleWorldSpawner;
 
 public final class TestGame {
     public static GameOpenProcedure open(GameOpenContext<Unit> context) {

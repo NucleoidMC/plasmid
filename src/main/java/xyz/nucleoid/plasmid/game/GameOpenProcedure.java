@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.server.MinecraftServer;
-import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
+import xyz.nucleoid.fantasy.BubbleWorldConfig;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;

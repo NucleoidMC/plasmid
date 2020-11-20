@@ -4,13 +4,6 @@
   "package": "xyz.nucleoid.plasmid.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "bubble.MinecraftServerAccess",
-    "bubble.PlayerManagerMixin",
-    "bubble.ServerChunkManagerMixin",
-    "bubble.ServerPlayerEntityMixin",
-    "bubble.ServerTickSchedulerMixin",
-    "bubble.ServerWorldMixin",
-    "bubble.ThreadedAnvilChunkStorageMixin",
     "chat.PlayerManagerMixin",
     "chat.ServerPlayerEntityMixin",
     "custom.EntityMixin",

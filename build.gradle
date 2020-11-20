@@ -27,6 +27,7 @@ minecraft {
 repositories {
   maven { url = "https://jitpack.io/" }
   maven { url = "https://maven.gegy.dev/" }
+  mavenLocal()
 }
 
 dependencies {
@@ -42,8 +43,11 @@ dependencies {
     exclude module: "fabric-loader"
   }
 
-  modCompile 'fr.catcore:server-translations-api:1.3.7'
+  modImplementation 'fr.catcore:server-translations-api:1.3.7'
   include 'fr.catcore:server-translations-api:1.3.7'
+
+  modImplementation 'xyz.nucleoid:fantasy:0.1'
+  include 'xyz.nucleoid:fantasy:0.1'
 }
 
 processResources {

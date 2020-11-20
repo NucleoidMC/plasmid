@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
@@ -46,10 +47,14 @@ public abstract class PlayerManagerMixin {
 
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(sender.world);
         if (gameSpace != null && gameSpace.containsEntity(sender)) {
-            ActionResult result = gameSpace.invoker(PlayerChatListener.EVENT).onSendChatMessage(message, sender);
-            if (result == ActionResult.FAIL) {
-                ci.cancel();
-                return;
+            try {
+                ActionResult result = gameSpace.invoker(PlayerChatListener.EVENT).onSendChatMessage(message, sender);
+                if (result == ActionResult.FAIL) {
+                    ci.cancel();
+                    return;
+                }
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player chat event", e);
             }
         }
 

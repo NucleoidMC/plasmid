@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.PlayerDamageListener;
 import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
@@ -23,11 +24,15 @@ public class ServerPlayerEntityMixin {
 
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(player.world);
         if (gameSpace != null && gameSpace.containsPlayer(player)) {
-            ActionResult result = gameSpace.invoker(PlayerDeathListener.EVENT).onDeath(player, source);
+            try {
+                ActionResult result = gameSpace.invoker(PlayerDeathListener.EVENT).onDeath(player, source);
 
-            if (result == ActionResult.FAIL) {
-                player.setHealth(20.0F);
-                ci.cancel();
+                if (result == ActionResult.FAIL) {
+                    player.setHealth(20.0F);
+                    ci.cancel();
+                }
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player death event", e);
             }
         }
     }
@@ -41,9 +46,13 @@ public class ServerPlayerEntityMixin {
 
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(player.world);
         if (gameSpace != null && gameSpace.containsPlayer(player)) {
-            boolean cancel = gameSpace.invoker(PlayerDamageListener.EVENT).onDamage(player, source, amount);
-            if (cancel) {
-                ci.cancel();
+            try {
+                boolean cancel = gameSpace.invoker(PlayerDamageListener.EVENT).onDamage(player, source, amount);
+                if (cancel) {
+                    ci.cancel();
+                }
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player damage event", e);
             }
         }
     }

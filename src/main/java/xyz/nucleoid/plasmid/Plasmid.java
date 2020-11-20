@@ -79,8 +79,12 @@ public final class Plasmid implements ModInitializer {
                         return TypedActionResult.fail(ItemStack.EMPTY);
                     }
 
-                    UseItemListener invoker = gameSpace.invoker(UseItemListener.EVENT);
-                    return invoker.onUseItem((ServerPlayerEntity) player, hand);
+                    try {
+                        UseItemListener invoker = gameSpace.invoker(UseItemListener.EVENT);
+                        return invoker.onUseItem((ServerPlayerEntity) player, hand);
+                    } catch (Exception e) {
+                        LOGGER.error("An unexpected exception occurred while dispatching use item event", e);
+                    }
                 }
             }
 
@@ -95,8 +99,12 @@ public final class Plasmid implements ModInitializer {
                         return ActionResult.FAIL;
                     }
 
-                    UseBlockListener invoker = gameSpace.invoker(UseBlockListener.EVENT);
-                    return invoker.onUseBlock((ServerPlayerEntity) player, hand, hitResult);
+                    try {
+                        UseBlockListener invoker = gameSpace.invoker(UseBlockListener.EVENT);
+                        return invoker.onUseBlock((ServerPlayerEntity) player, hand, hitResult);
+                    } catch (Exception e) {
+                        LOGGER.error("An unexpected exception occurred while dispatching use block event", e);
+                    }
                 }
             }
 
@@ -109,8 +117,12 @@ public final class Plasmid implements ModInitializer {
 
                 ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
                 if (gameSpace != null && gameSpace.containsPlayer(serverPlayer)) {
-                    AttackEntityListener invoker = gameSpace.invoker(AttackEntityListener.EVENT);
-                    return invoker.onAttackEntity(serverPlayer, hand, entity, hitResult);
+                    try {
+                        AttackEntityListener invoker = gameSpace.invoker(AttackEntityListener.EVENT);
+                        return invoker.onAttackEntity(serverPlayer, hand, entity, hitResult);
+                    } catch (Exception e) {
+                        LOGGER.error("An unexpected exception occurred while dispatching attack entity event", e);
+                    }
                 }
             }
 
@@ -176,7 +188,12 @@ public final class Plasmid implements ModInitializer {
         ServerTickEvents.END_WORLD_TICK.register(world -> {
             ManagedGameSpace game = ManagedGameSpace.forWorld(world);
             if (game != null) {
-                game.invoker(GameTickListener.EVENT).onTick();
+                try {
+                    game.invoker(GameTickListener.EVENT).onTick();
+                } catch (Exception e) {
+                    LOGGER.error("An unexpected exception occurred while ticking the game", e);
+                    game.close();
+                }
             }
         });
 

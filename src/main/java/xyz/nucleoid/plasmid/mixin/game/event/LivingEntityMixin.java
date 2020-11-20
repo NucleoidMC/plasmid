@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.EntityDeathListener;
 import xyz.nucleoid.plasmid.game.event.EntityDropLootListener;
@@ -40,11 +41,15 @@ public abstract class LivingEntityMixin extends Entity {
 
         // validate world & only trigger if this entity is inside it
         if (gameSpace != null && gameSpace.containsEntity(entity)) {
-            ActionResult result = gameSpace.invoker(EntityDeathListener.EVENT).onDeath(entity, source);
+            try {
+                ActionResult result = gameSpace.invoker(EntityDeathListener.EVENT).onDeath(entity, source);
 
-            // cancel death if FAIL was returned from any listener
-            if (result == ActionResult.FAIL) {
-                ci.cancel();
+                // cancel death if FAIL was returned from any listener
+                if (result == ActionResult.FAIL) {
+                    ci.cancel();
+                }
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity death event", e);
             }
         }
     }
@@ -62,11 +67,15 @@ public abstract class LivingEntityMixin extends Entity {
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(this.world);
 
         if (gameSpace != null && gameSpace.containsEntity((LivingEntity) (Object) this)) {
-            TypedActionResult<List<ItemStack>> result = gameSpace.invoker(EntityDropLootListener.EVENT).onDropLoot((LivingEntity) (Object) this, droppedStacks);
+            try {
+                TypedActionResult<List<ItemStack>> result = gameSpace.invoker(EntityDropLootListener.EVENT).onDropLoot((LivingEntity) (Object) this, droppedStacks);
 
-            // drop potentially modified stacks from listeners
-            if (result.getResult() != ActionResult.FAIL) {
-                result.getValue().forEach(this::dropStack);
+                // drop potentially modified stacks from listeners
+                if (result.getResult() != ActionResult.FAIL) {
+                    result.getValue().forEach(this::dropStack);
+                }
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity drop loot event", e);
             }
 
             return;

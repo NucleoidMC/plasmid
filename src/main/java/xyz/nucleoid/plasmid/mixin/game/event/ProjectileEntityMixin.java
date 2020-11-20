@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.BlockHitListener;
 import xyz.nucleoid.plasmid.game.event.EntityHitListener;
@@ -28,16 +29,22 @@ public abstract class ProjectileEntityMixin extends Entity {
 
         if (gameSpace != null) {
             if (hitResult.getType() == HitResult.Type.ENTITY) {
-                ActionResult result = gameSpace.invoker(EntityHitListener.EVENT).onEntityHit((EntityHitResult) hitResult);
-
-                if (result == ActionResult.FAIL) {
-                    ci.cancel();
+                try {
+                    ActionResult result = gameSpace.invoker(EntityHitListener.EVENT).onEntityHit((EntityHitResult) hitResult);
+                    if (result == ActionResult.FAIL) {
+                        ci.cancel();
+                    }
+                } catch (Exception e) {
+                    Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity hit event", e);
                 }
             } else if (hitResult.getType() == HitResult.Type.BLOCK) {
-                ActionResult result = gameSpace.invoker(BlockHitListener.EVENT).onBlockHit((BlockHitResult) hitResult);
-
-                if (result == ActionResult.FAIL) {
-                    ci.cancel();
+                try {
+                    ActionResult result = gameSpace.invoker(BlockHitListener.EVENT).onBlockHit((BlockHitResult) hitResult);
+                    if (result == ActionResult.FAIL) {
+                        ci.cancel();
+                    }
+                } catch (Exception e) {
+                    Plasmid.LOGGER.error("An unexpected exception occurred while dispatching block hit event", e);
                 }
             }
         }

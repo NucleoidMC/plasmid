@@ -47,15 +47,17 @@ It also contains the size `N` of the array.
 | ...    | A      | An element of the array if present.         |
 | N-1    | A      | The N-1 element of the array if present.    |
 
-### Pair `(A, B)`
+### Tuple `(A, B, ...)`
 
-A pair is a type which holds the content of 2 types specified in its name.
-The pair type is very abstract and acts as 2 fields.
+A tuple is a type which holds the content of multiple types specified in its name.
+The tuple type is very abstract and acts as many fields as the tuple should hold.
 
-| Fields | Type | Description                   |
-|:------:|:----:|:------------------------------|
-| first  | A    | The first value of the pair.  |
-| second | B    | The second value of the pair. |
+| Fields | Type | Description                    |
+|:------:|:----:|:-------------------------------|
+| first  | A    | The first value of the tuple.  |
+| second | B    | The second value of the tuple. |
+| ...    | ...  | Another value of the tuple.    |
+
 
 ## Packets
 
@@ -76,9 +78,10 @@ Direction: `C<-S`
 
 ### `plasmid:workspace/region`
 
-Specifies a single region to the client, the client should render a box, and a marker tag for it.
+Specifies a single region, the client should render a box, and a marker tag for it.
+If sent from a client, this is considered as an update request which can be rejected.
 
-Direction: `C<-S`
+Direction: `C<->S`
 
 | Fields    | Type       | Description                                                          |
 |:---------:|:----------:|:---------------------------------------------------------------------|
@@ -92,10 +95,11 @@ Specifies regions to the client, for each region the client should render a box,
 
 Direction: `C<-S`
 
-| Fields    | Type                     | Description                                                       |
-|:---------:|:------------------------:|:------------------------------------------------------------------|
-| workspace | Identifier               | The identifier of the workspace containing the following regions. |
-| regions   | ([VarI32], [Region])\[\] | The array of regions to update. The first of the pair is the runtime ID and the second the region data. |
+| Fields    | Type                              | Description                                                       |
+|:---------:|:---------------------------------:|:------------------------------------------------------------------|
+| workspace | Identifier                        | The identifier of the workspace containing the following regions. |
+| marker    | string                            | The marker of the regions to update.                              |
+| regions   | ([VarI32], [Bounds], NBT Tag)\[\] | The array of regions to update. The tuple is, in order, `(runtime id, bounds, data)`. |
 
 ### `plasmid:workspace/region/add`
 
@@ -108,18 +112,6 @@ Direction: `C->S`
 |:---------:|:----------:|:---------------------------------------------------------------------|
 | workspace | Identifier | The identifier of the workspace in which the region should be added. |
 | region    | [Region]   | The region to add.                                                   |
-
-### `plasmid:workspace/region/update`
-
-Requests the server to update a region from the specified workspace.
-
-Direction: `C->S`
-
-| Fields    |  Type      | Description                                                            |
-|:---------:|:----------:|:-----------------------------------------------------------------------|
-| workspace | Identifier | The identifier of the workspace in which the region should be updated. |
-| id        | [VarI32]   | The region runtime ID.                                                 |
-| region    | [Region]   | The updated region.                                                    |
 
 ### `plasmid:workspace/region/remove`
 

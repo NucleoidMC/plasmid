@@ -18,7 +18,10 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
@@ -58,10 +61,20 @@ public final class MapCommand {
             new LiteralText("No region ready")
     );
 
-    private static final SimpleCommandExceptionType MERGE_FAILED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("commands.data.merge.failed"));
+    private static final SimpleCommandExceptionType MERGE_FAILED_EXCEPTION = new SimpleCommandExceptionType(
+            new TranslatableText("commands.data.merge.failed")
+    );
 
     private static final SimpleCommandExceptionType GET_MULTIPLE_EXCEPTION = new SimpleCommandExceptionType(
             new TranslatableText("commands.data.get.multiple")
+    );
+
+    private static final DynamicCommandExceptionType MODIFY_EXPECTED_LIST_EXCEPTION = new DynamicCommandExceptionType(
+            arg -> new TranslatableText("commands.data.modify.expected_list", arg)
+    );
+
+    private static final DynamicCommandExceptionType MODIFY_EXPECTED_OBJECT_EXCEPTION = new DynamicCommandExceptionType(
+            arg -> new TranslatableText("commands.data.modify.expected_object", arg)
     );
 
     // @formatter:off
@@ -97,12 +110,12 @@ public final class MapCommand {
                     )))))
                     .then(literal("rename")
                         .then(literal("all")
-                            .then(argument("old", StringArgumentType.word())
+                            .then(argument("old", StringArgumentType.word()).suggests(regionSuggestions())
                             .then(argument("new", StringArgumentType.word())
                             .executes(context -> renameRegions(context, (region, oldMarker, pos) -> region.getMarker().equals(oldMarker)))
                         )))
                         .then(literal("here")
-                            .then(argument("old", StringArgumentType.word())
+                            .then(argument("old", StringArgumentType.word()).suggests(localRegionSuggestions())
                             .then(argument("new", StringArgumentType.word())
                             .executes(
                                 context -> renameRegions(context, (region, oldMarker, pos) -> region.getMarker().equals(oldMarker)
@@ -110,13 +123,22 @@ public final class MapCommand {
                             )
                         )))
                     )
-                    .then(literal("edit")
-                        .then(literal("data")
-                            .then(argument("marker", StringArgumentType.word())
-                            .then(argument("data", NbtCompoundTagArgumentType.nbtCompound())
-                            .executes(MapCommand::editRegionData)
-                        )))
-                    )
+                    .then(literal("data")
+                        .then(argument("marker", StringArgumentType.word()).suggests(localRegionSuggestions())
+                            .then(literal("get").executes(executeInRegions("", MapCommand::executeRegionDataGet)))
+                            .then(literal("merge")
+                                .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
+                                    .executes(executeInRegions("Merged data in %d regions.", MapCommand::executeRegionDataMerge))
+                            ))
+                            .then(literal("set")
+                                .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
+                                    .executes(executeInRegions("Set data in %d regions.", MapCommand::executeRegionDataSet))
+                            ))
+                            .then(literal("remove")
+                                .then(argument("path", NbtPathArgumentType.nbtPath())
+                                    .executes(executeInRegions("Removed data in %d regions.", MapCommand::executeRegionDataRemove))
+                            ))
+                    ))
                     .then(literal("remove")
                         .then(literal("here")
                             .executes(MapCommand::removeRegionHere)
@@ -156,7 +178,6 @@ public final class MapCommand {
                     )
                 )
                 .then(literal("data")
-                .then(argument("identifier", IdentifierArgumentType.identifier()).suggests(stagingSuggestions())
                         .then(literal("get")
                             .executes(MapCommand::executeDataGet)
                             .then(literal("at")
@@ -166,14 +187,29 @@ public final class MapCommand {
                         .then(literal("merge")
                             .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
                                 .executes(MapCommand::executeDataMerge)
-                        ))
+                            )/*.then(argument("nbt", NbtTagArgumentType.nbtTag())
+                                .then(literal("at")
+                                    .then(argument("path", NbtPathArgumentType.nbtPath())
+                                        .executes(MapCommand::executeDataMergeAt)
+                            )))*/
+                        )
                         .then(literal("remove")
                             .executes(context -> executeDataRemove(context, null))
                             .then(literal("at")
                                 .then(argument("path", NbtPathArgumentType.nbtPath())
                                 .executes(context -> executeDataRemove(context, NbtPathArgumentType.getNbtPath(context, "path")))
                         )))
-                ))
+                        .then(literal("set")
+                            .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
+                                .executes(MapCommand::executeDataSet)
+                            )
+                            .then(literal("at")
+                                .then(argument("path", NbtPathArgumentType.nbtPath())
+                                    .then(argument("nbt", NbtTagArgumentType.nbtTag())
+                                    .executes(MapCommand::executeDataSetAt)
+                            )))
+                        )
+                )
         );
     }
     // @formatter:on
@@ -196,21 +232,14 @@ public final class MapCommand {
 
     private static int enterMap(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
-        ServerWorld world = source.getWorld();
         ServerPlayerEntity player = source.getPlayer();
 
-        Identifier identifier = IdentifierArgumentType.getIdentifier(context, "identifier");
-
-        StagingMapManager stagingMapManager = StagingMapManager.get(world);
-        StagingMapTemplate map = stagingMapManager.get(identifier);
-        if (map == null) {
-            throw MAP_NOT_FOUND.create(identifier);
-        }
+        StagingMapTemplate map = getMapFromArg(context);
 
         if (player instanceof MapTemplateViewer) {
             MapTemplateViewer viewer = (MapTemplateViewer) player;
             viewer.setViewing(map);
-            source.sendFeedback(new LiteralText("Viewing: '" + identifier + "'"), false);
+            source.sendFeedback(new LiteralText("Viewing: '" + map.getIdentifier() + "'"), false);
         }
 
         return Command.SINGLE_SUCCESS;
@@ -237,24 +266,17 @@ public final class MapCommand {
 
     private static int compileMap(CommandContext<ServerCommandSource> context, boolean includeEntities) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
-        ServerWorld world = source.getWorld();
 
-        Identifier identifier = IdentifierArgumentType.getIdentifier(context, "identifier");
-
-        StagingMapManager stagingMapManager = StagingMapManager.get(world);
-        StagingMapTemplate stagingMap = stagingMapManager.get(identifier);
-        if (stagingMap == null) {
-            throw MAP_NOT_FOUND.create(identifier);
-        }
+        StagingMapTemplate stagingMap = getMapFromArg(context);
 
         MapTemplate template = stagingMap.compile(includeEntities);
         CompletableFuture<Void> future = MapTemplateSerializer.INSTANCE.save(template, stagingMap.getIdentifier());
 
         future.handle((v, throwable) -> {
             if (throwable == null) {
-                source.sendFeedback(new LiteralText("Compiled and saved map '" + identifier + "'"), false);
+                source.sendFeedback(new LiteralText("Compiled and saved map '" + stagingMap.getIdentifier() + "'"), false);
             } else {
-                Plasmid.LOGGER.error("Failed to compile map to '{}'", identifier, throwable);
+                Plasmid.LOGGER.error("Failed to compile map to '{}'", stagingMap.getIdentifier(), throwable);
                 source.sendError(new LiteralText("Failed to compile map! An unexpected exception was thrown"));
             }
             return null;
@@ -276,7 +298,7 @@ public final class MapCommand {
 
         StagingMapTemplate map = getMap(context);
         map.addRegion(marker, new BlockBounds(min, max), data);
-        source.sendFeedback(new LiteralText("Added region '" + marker + "' to '" + map.getIdentifier() + "'"), false);
+        source.sendFeedback(withMapPrefix(map, new LiteralText("Added region '" + marker + "'.")), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -299,31 +321,33 @@ public final class MapCommand {
             map.addRegion(newMarker, region.getBounds(), region.getData());
         }
 
-        source.sendFeedback(new LiteralText("Renamed " + regions.size() + " regions from '" + map.getIdentifier() + "'"), false);
+        source.sendFeedback(withMapPrefix(map, new LiteralText("Renamed " + regions.size() + " regions.")), false);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int editRegionData(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        BlockPos pos = source.getPlayer().getBlockPos();
+    private static boolean executeRegionDataGet(CommandContext<ServerCommandSource> context, StagingMapTemplate map, TemplateRegion region) {
+        context.getSource().sendFeedback(withMapPrefix(map, new TranslatableText("Data of region \"%s\":\n%s",
+                        region.getMarker(), region.getData().toText("  ", 0))),
+                false);
+        return false;
+    }
 
-        String marker = StringArgumentType.getString(context, "marker");
-        CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "data");
+    private static boolean executeRegionDataMerge(CommandContext<ServerCommandSource> context, StagingMapTemplate map, TemplateRegion region) {
+        CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
+        region.setData(region.getData().copy().copyFrom(data));
+        return true;
+    }
 
-        StagingMapTemplate map = getMap(context);
-        List<TemplateRegion> regions = map.getRegions().stream()
-                .filter(region -> region.getBounds().contains(pos) && region.getMarker().equals(marker))
-                .collect(Collectors.toList());
+    private static boolean executeRegionDataSet(CommandContext<ServerCommandSource> context, StagingMapTemplate map, TemplateRegion region) {
+        CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
+        region.setData(data);
+        return true;
+    }
 
-        for (TemplateRegion region : regions) {
-            map.removeRegion(region);
-            map.addRegion(marker, region.getBounds(), data);
-        }
-
-        source.sendFeedback(new LiteralText("Edited " + regions.size() + " regions from '" + map.getIdentifier() + "'"), false);
-
-        return Command.SINGLE_SUCCESS;
+    private static boolean executeRegionDataRemove(CommandContext<ServerCommandSource> context, StagingMapTemplate map, TemplateRegion region) {
+        NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
+        return path.remove(region.getData()) > 0;
     }
 
     private static int removeRegionHere(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -346,7 +370,7 @@ public final class MapCommand {
             map.removeRegion(region);
         }
 
-        source.sendFeedback(new LiteralText("Removed " + regions.size() + " regions from '" + map.getIdentifier() + "'"), false);
+        source.sendFeedback(withMapPrefix(map, new LiteralText("Removed " + regions.size() + " regions.")), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -468,15 +492,55 @@ public final class MapCommand {
         CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
         CompoundTag originalData = map.getData();
         map.setData(originalData.copy().copyFrom(data));
-        source.sendFeedback(new LiteralText("Merged map data."), false);
+        source.sendFeedback(withMapPrefix(map, new LiteralText("Merged map data.")), false);
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeDataMergeAt(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        // @TODO fix this, I have no idea how it works
+        ServerCommandSource source = context.getSource();
+        StagingMapTemplate map = getMap(context);
+        CompoundTag nbt = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
+        NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
+
+        List<Tag> list = path.get(map.getData());
+        Collection<Tag> dataTags = path.getOrInit(nbt, CompoundTag::new);
+        int i = 0;
+
+        CompoundTag mergedTag;
+        CompoundTag sourceTag;
+        for (Iterator<Tag> dataIterator = dataTags.iterator(); dataIterator.hasNext(); i += sourceTag.equals(mergedTag) ? 0 : 1) {
+            Tag tag = dataIterator.next();
+            if (!(tag instanceof CompoundTag)) {
+                throw MODIFY_EXPECTED_OBJECT_EXCEPTION.create(tag);
+            }
+
+            mergedTag = (CompoundTag) tag;
+            sourceTag = mergedTag.copy();
+
+            for (Tag tag2 : list) {
+                if (!(tag2 instanceof CompoundTag)) {
+                    throw MODIFY_EXPECTED_OBJECT_EXCEPTION.create(tag2);
+                }
+
+                mergedTag.copyFrom((CompoundTag) tag2);
+            }
+        }
+
+        if (i == 0) {
+            throw MERGE_FAILED_EXCEPTION.create();
+        } else {
+            map.setData(map.getData());
+            source.sendFeedback(withMapPrefix(map, new LiteralText("Merged map data.")), false);
+            return i;
+        }
     }
 
     private static int executeDataGet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         StagingMapTemplate map = getMap(context);
-        source.sendFeedback(new TranslatableText("Map data of \"%s\":\n%s",
-                        map.getIdentifier().toString(), map.getData().toText("  ", 0)),
+        source.sendFeedback(new TranslatableText("Map data of %s:\n%s",
+                        getMapPrefix(map), map.getData().toText("  ", 0)),
                 false);
         return Command.SINGLE_SUCCESS;
     }
@@ -497,17 +561,43 @@ public final class MapCommand {
         StagingMapTemplate map = getMap(context);
         if (path == null) {
             map.setData(new CompoundTag());
-            source.sendFeedback(new TranslatableText("The root tag of the map data of \"%s\" is now empty.",
-                    map.getIdentifier().toString()), false);
+            source.sendFeedback(withMapPrefix(map, new LiteralText("The map data root tag has been reset.")),
+                    false);
         } else {
             int count = path.remove(map.getData());
             if (count == 0) {
                 throw MERGE_FAILED_EXCEPTION.create();
             } else {
-                source.sendFeedback(new TranslatableText("Removed tag of map data \"%s\" at \"%s\".",
-                        map.getIdentifier().toString(), path.toString()),
+                source.sendFeedback(new TranslatableText("%s Removed tag from map data at \"%s\".",
+                                getMapPrefix(map), path.toString()),
                         false);
             }
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeDataSet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        StagingMapTemplate map = getMap(context);
+        CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
+        map.setData(data);
+        source.sendFeedback(withMapPrefix(map, new LiteralText("Set map data.")), false);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeDataSetAt(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        StagingMapTemplate map = getMap(context);
+        NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
+        Tag tag = NbtTagArgumentType.getTag(context, "nbt");
+        CompoundTag data = map.getData().copy();
+        if (path.put(data, tag::copy) == 0) {
+            throw MERGE_FAILED_EXCEPTION.create();
+        } else {
+            map.setData(data);
+            source.sendFeedback(withMapPrefix(map, new TranslatableText("Set map data at \"%s\".",
+                            path.toString())),
+                    false);
         }
         return Command.SINGLE_SUCCESS;
     }
@@ -523,7 +613,8 @@ public final class MapCommand {
         }
     }
 
-    private static Pair<Identifier, EntityType<?>> getEntityType(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static Pair<Identifier, EntityType<?>> getEntityType(CommandContext<ServerCommandSource> context) throws
+            CommandSyntaxException {
         Identifier id = IdentifierArgumentType.getIdentifier(context, "entity_type");
         return new Pair<>(id, Registry.ENTITY_TYPE.getOrEmpty(id).orElseThrow(() -> ENTITY_TYPE_NOT_FOUND.create(id)));
     }
@@ -535,14 +626,37 @@ public final class MapCommand {
     private static SuggestionProvider<ServerCommandSource> stagingSuggestions() {
         return (ctx, builder) -> {
             ServerWorld world = ctx.getSource().getWorld();
-            return CommandSource.suggestMatching(
-                    StagingMapManager.get(world).getStagingMapKeys().stream().map(Identifier::toString),
+            return CommandSource.suggestIdentifiers(
+                    StagingMapManager.get(world).getStagingMapKeys().stream(),
                     builder
             );
         };
     }
 
-    private static @NotNull StagingMapTemplate getMap(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static SuggestionProvider<ServerCommandSource> regionSuggestions() {
+        return (context, builder) -> {
+            StagingMapTemplate map = getMap(context);
+            return CommandSource.suggestMatching(
+                    map.getRegions().stream().map(TemplateRegion::getMarker),
+                    builder
+            );
+        };
+    }
+
+    private static SuggestionProvider<ServerCommandSource> localRegionSuggestions() {
+        return (context, builder) -> {
+            StagingMapTemplate map = getMap(context);
+            BlockPos sourcePos = context.getSource().getPlayer().getBlockPos();
+            return CommandSource.suggestMatching(
+                    map.getRegions().stream().filter(region -> region.getBounds().contains(sourcePos))
+                            .map(TemplateRegion::getMarker),
+                    builder
+            );
+        };
+    }
+
+    private static @NotNull StagingMapTemplate getMap(CommandContext<ServerCommandSource> context) throws
+            CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ServerWorld world = source.getWorld();
         BlockPos pos = source.getPlayer().getBlockPos();
@@ -558,6 +672,62 @@ public final class MapCommand {
         } else {
             throw MAP_NOT_FOUND_AT.create();
         }
+    }
+
+    private static @NotNull StagingMapTemplate getMapFromArg(CommandContext<ServerCommandSource> context) throws
+            CommandSyntaxException {
+        Identifier identifier = IdentifierArgumentType.getIdentifier(context, "identifier");
+
+        StagingMapManager stagingMapManager = StagingMapManager.get(context.getSource().getWorld());
+        StagingMapTemplate stagingMap = stagingMapManager.get(identifier);
+        if (stagingMap == null) {
+            throw MAP_NOT_FOUND.create(identifier);
+        }
+
+        return stagingMap;
+    }
+
+    private static Command<ServerCommandSource> executeInRegions(String message, RegionExecutor executor) {
+        return context -> {
+            ServerCommandSource source = context.getSource();
+            BlockPos pos = source.getPlayer().getBlockPos();
+
+            String marker = StringArgumentType.getString(context, "marker");
+
+            StagingMapTemplate map = getMap(context);
+            List<TemplateRegion> regions = map.getRegions().stream()
+                    .filter(region -> region.getBounds().contains(pos) && region.getMarker().equals(marker))
+                    .collect(Collectors.toList());
+
+            int count = 0;
+            for (TemplateRegion region : regions) {
+                if (executor.execute(context, map, region)) { count++; }
+            }
+
+            if (count > 0) {
+                map.setDirty();
+                source.sendFeedback(withMapPrefix(map, new LiteralText(String.format(message, count))), false);
+            }
+            return 2;
+        };
+    }
+
+    private static Text getMapPrefix(StagingMapTemplate map) {
+        return withMapPrefix(map, null);
+    }
+
+    private static Text withMapPrefix(StagingMapTemplate map, @Nullable Text text) {
+        MutableText prefix = new LiteralText("")
+                .append(new LiteralText("[").formatted(Formatting.GRAY))
+                .append(new LiteralText(map.getIdentifier().toString()).formatted(Formatting.GOLD))
+                .append(new LiteralText("] ").formatted(Formatting.GRAY));
+        if (text != null) prefix.append(text);
+        return prefix;
+    }
+
+    @FunctionalInterface
+    private interface RegionExecutor {
+        boolean execute(CommandContext<ServerCommandSource> context, StagingMapTemplate map, TemplateRegion region);
     }
 
     @FunctionalInterface

@@ -45,7 +45,7 @@ public final class StagingMapTemplate {
         this.data = new CompoundTag();
     }
 
-    private void setDirty() {
+    public void setDirty() {
         StagingMapManager.get(this.world).setDirty(true);
     }
 

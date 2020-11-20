@@ -29,6 +29,8 @@ public final class MapWorkspace {
     private final PersistentWorldHandle worldHandle;
 
     private final Identifier identifier;
+
+    private BlockPos origin = BlockPos.ORIGIN;
     private BlockBounds bounds;
 
     /* Regions */
@@ -63,8 +65,16 @@ public final class MapWorkspace {
         this.bounds = bounds;
     }
 
+    public void setOrigin(BlockPos origin) {
+        this.origin = origin;
+    }
+
     public BlockBounds getBounds() {
         return this.bounds;
+    }
+
+    public BlockPos getOrigin() {
+        return this.origin;
     }
 
     public Collection<TemplateRegion> getRegions() {
@@ -117,6 +127,8 @@ public final class MapWorkspace {
         root.putString("identifier", this.identifier.toString());
         this.bounds.serialize(root);
 
+        root.putIntArray("origin", new int[] { this.origin.getX(), this.origin.getY(), this.origin.getZ() });
+
         // Regions
         ListTag regionList = new ListTag();
         for (TemplateRegion region : this.regions) {
@@ -150,6 +162,13 @@ public final class MapWorkspace {
         BlockBounds bounds = BlockBounds.deserialize(root);
 
         MapWorkspace map = new MapWorkspace(worldHandle, identifier, bounds);
+
+        if (root.contains("origin", NbtType.INT_ARRAY)) {
+            int[] origin = root.getIntArray("origin");
+            map.setOrigin(new BlockPos(origin[0], origin[1], origin[2]));
+        } else {
+            map.setOrigin(bounds.getMin());
+        }
 
         // Regions
         ListTag regionList = root.getList("regions", NbtType.COMPOUND);
@@ -199,6 +218,16 @@ public final class MapWorkspace {
 
         ServerWorld world = this.worldHandle.asWorld();
 
+        this.writeBlocksToTemplate(map, world);
+
+        if (includeEntities) {
+            this.writeEntitiesToTemplate(map, world);
+        }
+
+        return map;
+    }
+
+    private void writeBlocksToTemplate(MapTemplate map, ServerWorld world) {
         for (BlockPos pos : this.bounds.iterate()) {
             BlockPos localPos = this.globalToLocal(pos);
 
@@ -210,23 +239,28 @@ public final class MapWorkspace {
                 map.setBlockEntity(localPos, entity);
             }
         }
+    }
 
-        if (includeEntities) {
-            world.getEntitiesByClass(Entity.class, this.bounds.toBox(), entity -> !entity.removed
-                    && (this.containsEntity(entity.getUuid()) || this.hasEntityType(entity.getType())))
-                    .forEach(entity -> map.addEntity(entity, this.globalToLocal(entity.getPos())));
+    private void writeEntitiesToTemplate(MapTemplate map, ServerWorld world) {
+        List<Entity> entities = world.getEntitiesByClass(Entity.class, this.bounds.toBox(), entity -> {
+            if (entity.removed) {
+                return false;
+            }
+            return this.containsEntity(entity.getUuid()) || this.hasEntityType(entity.getType());
+        });
+
+        for (Entity entity : entities) {
+            map.addEntity(entity, this.globalToLocal(entity.getPos()));
         }
-
-        return map;
     }
 
     private BlockPos globalToLocal(BlockPos pos) {
-        return pos.subtract(this.bounds.getMin());
+        return pos.subtract(this.origin);
     }
 
     private Vec3d globalToLocal(Vec3d pos) {
-        BlockPos min = this.bounds.getMin();
-        return pos.subtract(min.getX(), min.getY(), min.getZ());
+        BlockPos origin = this.origin;
+        return pos.subtract(origin.getX(), origin.getY(), origin.getZ());
     }
 
     private BlockBounds globalToLocal(BlockBounds bounds) {

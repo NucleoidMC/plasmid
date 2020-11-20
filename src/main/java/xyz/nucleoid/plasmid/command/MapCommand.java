@@ -14,7 +14,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -83,6 +82,11 @@ public final class MapCommand {
                     .then(argument("workspace", IdentifierArgumentType.identifier())
                     .executes(MapCommand::openWorkspace)
                 ))
+                .then(literal("origin")
+                    .then(MapWorkspaceArgument.argument("workspace")
+                    .then(argument("origin", BlockPosArgumentType.blockPos())
+                    .executes(MapCommand::setWorkspaceOrigin)
+                )))
                 .then(literal("bounds")
                     .then(MapWorkspaceArgument.argument("workspace")
                     .then(argument("min", BlockPosArgumentType.blockPos())
@@ -235,6 +239,19 @@ public final class MapCommand {
                         .append(" to join this map"),
                 false
         );
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int setWorkspaceOrigin(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+
+        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
+        BlockPos origin = BlockPosArgumentType.getBlockPos(context, "origin");
+
+        workspace.setOrigin(origin);
+
+        source.sendFeedback(new LiteralText("Updated origin for workspace"), false);
 
         return Command.SINGLE_SUCCESS;
     }

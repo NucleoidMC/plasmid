@@ -29,7 +29,7 @@ public final class MapWorkspace {
     private final PersistentWorldHandle worldHandle;
 
     private final Identifier identifier;
-    private final BlockBounds bounds;
+    private BlockBounds bounds;
 
     /* Regions */
     private final List<TemplateRegion> regions = new ArrayList<>();
@@ -57,6 +57,10 @@ public final class MapWorkspace {
 
     public Identifier getIdentifier() {
         return this.identifier;
+    }
+
+    public void setBounds(BlockBounds bounds) {
+        this.bounds = bounds;
     }
 
     public BlockBounds getBounds() {

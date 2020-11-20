@@ -27,6 +27,8 @@ import java.util.concurrent.CompletableFuture;
 public final class MapWorkspaceManager extends PersistentState {
     public static final String KEY = Plasmid.ID + ":map_workspaces";
 
+    private static final BlockBounds DEFAULT_BOUNDS = new BlockBounds(-16, 64, -16, 16, 96, 16);
+
     private final MinecraftServer server;
 
     private final Map<Identifier, MapWorkspace> workspacesById = new Object2ObjectOpenHashMap<>();
@@ -41,7 +43,7 @@ public final class MapWorkspaceManager extends PersistentState {
         return server.getOverworld().getPersistentStateManager().getOrCreate(() -> new MapWorkspaceManager(server), KEY);
     }
 
-    public CompletableFuture<MapWorkspace> open(Identifier identifier, BlockBounds bounds) {
+    public CompletableFuture<MapWorkspace> open(Identifier identifier) {
         MapWorkspace existingWorkspace = this.workspacesById.get(identifier);
         if (existingWorkspace != null) {
             return CompletableFuture.completedFuture(existingWorkspace);
@@ -49,7 +51,7 @@ public final class MapWorkspaceManager extends PersistentState {
 
         CompletableFuture<PersistentWorldHandle> dimension = this.getOrCreateDimension(identifier);
         return dimension.thenApplyAsync(worldHandle -> {
-            MapWorkspace workspace = new MapWorkspace(worldHandle, identifier, bounds);
+            MapWorkspace workspace = new MapWorkspace(worldHandle, identifier, DEFAULT_BOUNDS);
             this.workspacesById.put(identifier, workspace);
             this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
             return workspace;

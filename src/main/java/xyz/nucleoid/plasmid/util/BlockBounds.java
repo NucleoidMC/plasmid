@@ -19,6 +19,10 @@ public final class BlockBounds {
         this.max = max(min, max);
     }
 
+    public BlockBounds(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        this(new BlockPos(minX, minY, minZ), new BlockPos(maxX, maxY, maxZ));
+    }
+
     public static BlockBounds of(BlockPos pos) {
         return new BlockBounds(pos, pos);
     }

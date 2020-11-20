@@ -54,6 +54,10 @@ public final class MapCommand {
             new LiteralText("No map found here")
     );
 
+    public static final DynamicCommandExceptionType MAP_ALREADY_EXISTS = new DynamicCommandExceptionType(arg ->
+            new TranslatableText("Map with id '%s' already exists!", arg)
+    );
+
     public static final SimpleCommandExceptionType NO_REGION_READY = new SimpleCommandExceptionType(
             new LiteralText("No region ready")
     );
@@ -72,13 +76,18 @@ public final class MapCommand {
 
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+        // TODO: delete and import functionality
         dispatcher.register(
             literal("map").requires(source -> source.hasPermissionLevel(4))
                 .then(literal("open")
+                    .then(argument("workspace", IdentifierArgumentType.identifier())
+                    .executes(MapCommand::openWorkspace)
+                ))
+                .then(literal("bounds")
                     .then(MapWorkspaceArgument.argument("workspace")
                     .then(argument("min", BlockPosArgumentType.blockPos())
                     .then(argument("max", BlockPosArgumentType.blockPos())
-                    .executes(MapCommand::openWorkspace)
+                    .executes(MapCommand::setWorkspaceBounds)
                 ))))
                 .then(literal("join")
                     .then(MapWorkspaceArgument.argument("workspace")
@@ -212,11 +221,13 @@ public final class MapCommand {
         ServerCommandSource source = context.getSource();
 
         Identifier identifier = IdentifierArgumentType.getIdentifier(context, "workspace");
-        BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
-        BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
 
         MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
-        workspaceManager.open(identifier, new BlockBounds(min, max));
+        if (workspaceManager.byId(identifier) != null) {
+            throw MAP_ALREADY_EXISTS.create(identifier);
+        }
+
+        workspaceManager.open(identifier);
 
         source.sendFeedback(
                 new LiteralText("Opened workspace '" + identifier + "'! Use ")
@@ -224,6 +235,20 @@ public final class MapCommand {
                         .append(" to join this map"),
                 false
         );
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int setWorkspaceBounds(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+
+        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
+        BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
+        BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
+
+        workspace.setBounds(new BlockBounds(min, max));
+
+        source.sendFeedback(new LiteralText("Updated bounds for workspace"), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -637,16 +662,6 @@ public final class MapCommand {
 
     private static SuggestionProvider<ServerCommandSource> entityTypeSuggestions() {
         return (ctx, builder) -> CommandSource.suggestIdentifiers(Registry.ENTITY_TYPE.getIds(), builder);
-    }
-
-    private static SuggestionProvider<ServerCommandSource> workspaceSuggestions() {
-        return (ctx, builder) -> {
-            MinecraftServer server = ctx.getSource().getMinecraftServer();
-            return CommandSource.suggestIdentifiers(
-                    MapWorkspaceManager.get(server).getWorkspaceIds().stream(),
-                    builder
-            );
-        };
     }
 
     private static SuggestionProvider<ServerCommandSource> regionSuggestions() {

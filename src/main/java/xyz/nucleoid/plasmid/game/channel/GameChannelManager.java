@@ -38,7 +38,7 @@ public final class GameChannelManager extends PersistentState {
         Identifier id = channel.getId();
         if (!this.channels.containsKey(id)) {
             this.channels.put(id, channel);
-            this.setDirty(true);
+            this.markDirty();
             return true;
         }
 
@@ -49,7 +49,7 @@ public final class GameChannelManager extends PersistentState {
         GameChannel channel = this.channels.remove(identifier);
         if (channel != null) {
             channel.invalidate();
-            this.setDirty(true);
+            this.markDirty();
             return true;
         }
         return false;

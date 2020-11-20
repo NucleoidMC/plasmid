@@ -6,8 +6,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplateViewer;
-import xyz.nucleoid.plasmid.game.map.template.StagingMapTemplate;
 import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
 import xyz.nucleoid.plasmid.game.map.template.trace.RegionTraceMode;
 import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
@@ -15,9 +13,7 @@ import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
 import javax.annotation.Nullable;
 
 @Mixin(ServerPlayerEntity.class)
-public abstract class ServerPlayerEntityMixin extends PlayerEntity implements MapTemplateViewer, RegionTracer {
-    private StagingMapTemplate viewing;
-
+public abstract class ServerPlayerEntityMixin extends PlayerEntity implements RegionTracer {
     private PartialRegion tracing;
     private PartialRegion ready;
 
@@ -25,17 +21,6 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Ma
 
     private ServerPlayerEntityMixin(World world, BlockPos blockPos, float yaw, GameProfile gameProfile) {
         super(world, blockPos, yaw, gameProfile);
-    }
-
-    @Override
-    public void setViewing(StagingMapTemplate map) {
-        this.viewing = map;
-    }
-
-    @Nullable
-    @Override
-    public StagingMapTemplate getViewing() {
-        return this.viewing;
     }
 
     @Override

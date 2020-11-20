@@ -9,13 +9,11 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.command.argument.NbtCompoundTagArgumentType;
+import net.minecraft.command.argument.*;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -26,12 +24,15 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.map.template.*;
 import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
 import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -55,6 +56,12 @@ public final class MapCommand {
 
     public static final SimpleCommandExceptionType NO_REGION_READY = new SimpleCommandExceptionType(
             new LiteralText("No region ready")
+    );
+
+    private static final SimpleCommandExceptionType MERGE_FAILED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("commands.data.merge.failed"));
+
+    private static final SimpleCommandExceptionType GET_MULTIPLE_EXCEPTION = new SimpleCommandExceptionType(
+            new TranslatableText("commands.data.get.multiple")
     );
 
     // @formatter:off
@@ -148,6 +155,25 @@ public final class MapCommand {
                         )
                     )
                 )
+                .then(literal("data")
+                .then(argument("identifier", IdentifierArgumentType.identifier()).suggests(stagingSuggestions())
+                        .then(literal("get")
+                            .executes(MapCommand::executeDataGet)
+                            .then(literal("at")
+                                .then(argument("path", NbtPathArgumentType.nbtPath())
+                                .executes(MapCommand::executeDataGetAt)
+                        )))
+                        .then(literal("merge")
+                            .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
+                                .executes(MapCommand::executeDataMerge)
+                        ))
+                        .then(literal("remove")
+                            .executes(context -> executeDataRemove(context, null))
+                            .then(literal("at")
+                                .then(argument("path", NbtPathArgumentType.nbtPath())
+                                .executes(context -> executeDataRemove(context, NbtPathArgumentType.getNbtPath(context, "path")))
+                        )))
+                ))
         );
     }
     // @formatter:on
@@ -434,6 +460,67 @@ public final class MapCommand {
             source.sendFeedback(new LiteralText("Removed entity type \"" + type.getLeft() + "\" in map \"" + map.getIdentifier() + "\"."), false);
         }
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeDataMerge(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        StagingMapTemplate map = getMap(context);
+        CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
+        CompoundTag originalData = map.getData();
+        map.setData(originalData.copy().copyFrom(data));
+        source.sendFeedback(new LiteralText("Merged map data."), false);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeDataGet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        StagingMapTemplate map = getMap(context);
+        source.sendFeedback(new TranslatableText("Map data of \"%s\":\n%s",
+                        map.getIdentifier().toString(), map.getData().toText("  ", 0)),
+                false);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeDataGetAt(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        StagingMapTemplate map = getMap(context);
+        NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
+        source.sendFeedback(new TranslatableText("Map data of \"%s\" at \"%s\":\n%s",
+                        map.getIdentifier().toString(), path.toString(),
+                        getTagAt(map.getData(), path).toText("  ", 0)),
+                false);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeDataRemove(CommandContext<ServerCommandSource> context, @Nullable NbtPathArgumentType.NbtPath path) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        StagingMapTemplate map = getMap(context);
+        if (path == null) {
+            map.setData(new CompoundTag());
+            source.sendFeedback(new TranslatableText("The root tag of the map data of \"%s\" is now empty.",
+                    map.getIdentifier().toString()), false);
+        } else {
+            int count = path.remove(map.getData());
+            if (count == 0) {
+                throw MERGE_FAILED_EXCEPTION.create();
+            } else {
+                source.sendFeedback(new TranslatableText("Removed tag of map data \"%s\" at \"%s\".",
+                        map.getIdentifier().toString(), path.toString()),
+                        false);
+            }
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static Tag getTagAt(CompoundTag data, NbtPathArgumentType.NbtPath path) throws CommandSyntaxException {
+        Collection<Tag> collection = path.get(data);
+        Iterator<Tag> iterator = collection.iterator();
+        Tag tag = iterator.next();
+        if (iterator.hasNext()) {
+            throw GET_MULTIPLE_EXCEPTION.create();
+        } else {
+            return tag;
+        }
     }
 
     private static Pair<Identifier, EntityType<?>> getEntityType(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {

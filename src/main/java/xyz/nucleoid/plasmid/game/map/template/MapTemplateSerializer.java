@@ -120,6 +120,7 @@ public final class MapTemplateSerializer {
         }
 
         template.bounds = BlockBounds.deserialize(root.getCompound("bounds"));
+        template.setData(root.getCompound("data"));
 
         String biomeId = root.getString("biome");
         if (!Strings.isNullOrEmpty(biomeId)) {
@@ -157,6 +158,7 @@ public final class MapTemplateSerializer {
         root.put("block_entities", blockEntityList);
 
         root.put("bounds", template.bounds.serialize(new CompoundTag()));
+        root.put("data", template.getData());
 
         if (template.biome != null) {
             root.putString("biome", template.biome.getValue().toString());

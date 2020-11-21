@@ -9,13 +9,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
 import net.minecraft.util.UserCache;
 import xyz.nucleoid.plasmid.storage.FriendList;
 import xyz.nucleoid.plasmid.storage.FriendListManager;
 
-import java.awt.print.PageFormat;
-import java.util.ArrayList;
 import java.util.UUID;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -23,7 +20,7 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class FriendCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register( literal("friend")
+        dispatcher.register(literal("friend")
                 .then(literal("accept").executes(FriendCommand::acceptFriend))
                 .then(literal("add").then(argument("playerName", GameProfileArgumentType.gameProfile()).executes(FriendCommand::registerFriendAdd)))
                 .then(literal("list").executes(FriendCommand::ListFriends)));
@@ -41,12 +38,12 @@ public class FriendCommand {
             int i = 0;
             FriendList f = FriendListManager.returnFlist(context.getSource().getPlayer().getUuid());
             System.out.println("Listing friends");
-            for ( UUID ids : f.returnFlistIds()) {
+            for (UUID ids : f.returnFlistIds()) {
                 i++;
-                player.sendMessage(new LiteralText("["+ i +"] "+uCache.getByUuid(ids).getName()),false);
+                player.sendMessage(new LiteralText("[" + i + "] " + uCache.getByUuid(ids).getName()), false);
             }
             return 1;
-        }catch(Exception err) {
+        } catch (Exception err) {
             err.printStackTrace();
         }
         return 1;
@@ -57,9 +54,9 @@ public class FriendCommand {
         return 1;
     }
 
-    private static int registerFriendAdd(CommandContext<ServerCommandSource> context) throws CommandSyntaxException{
+    private static int registerFriendAdd(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         try {
-            for (GameProfile Profile: GameProfileArgumentType.getProfileArgument(context, "playerName")) {
+            for (GameProfile Profile : GameProfileArgumentType.getProfileArgument(context, "playerName")) {
                 if (Profile.equals(context.getSource().getPlayer().getGameProfile())) {
                     context.getSource().getPlayer().sendMessage(new LiteralText("You can't friend yourself silly!"), false);
                     return 0;
@@ -70,11 +67,10 @@ public class FriendCommand {
                 FriendListManager.returnFlist(context.getSource().getPlayer().getUuid()).addFreind(Profile.getId());
                 System.out.println("Added friend");
             }
-        }catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         return 1;
     }
-
 }

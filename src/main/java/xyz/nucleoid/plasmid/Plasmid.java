@@ -20,7 +20,6 @@ import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xyz.nucleoid.plasmid.command.*;
-import xyz.nucleoid.plasmid.entity.CustomEntity;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.GameWorld;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
@@ -162,11 +161,6 @@ public final class Plasmid implements ModInitializer {
                                         false);
                                 return ActionResult.FAIL;
                             });
-                }
-
-                CustomEntity customEntity = CustomEntity.match(entity);
-                if (customEntity != null) {
-                    return customEntity.interact(player, world, hand, entity, hitResult);
                 }
             }
 

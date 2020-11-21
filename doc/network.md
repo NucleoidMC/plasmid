@@ -171,10 +171,10 @@ Direction: `C<-S`
 
 | Fields        | Type       | Description                                                                       |
 |:-------------:|:----------:|:----------------------------------------------------------------------------------|
-| id            | VarI32     | The runtime ID of the particle source.                                            |
-| duration      | VarI32     | Duration in ticks of a loop.                                                      |
+| id            | [VarI32]   | The runtime ID of the particle source.                                            |
+| duration      | [VarI32]   | Duration in ticks of a loop.                                                      |
 | offset        | u8         | Bounds of a duration offset to randomize the duration of loops, 0 if unspecified. |
-| loops         | VarI32     | The maximum number of loops to do, 0 is indefinite and requires a stop packet.    |
+| loops         | [VarI32]   | The maximum number of loops to do, 0 is indefinite and requires a stop packet.    |
 | ...           | ...        | [Content of the Particle packet.](https://wiki.vg/Protocol#Particle_2)            |
 
 #### `plasmid:env/particle/stop`
@@ -183,9 +183,9 @@ Tells the client to stop emitting the specified environment particle.
 
 Direction: `C<-S`
 
-| Fields        | Type       | Description                                                                    |
-|:-------------:|:----------:|:-------------------------------------------------------------------------------|
-| ids           | VarI32[]   | The IDs of the particle sources to remove.                                     |
+| Fields        | Type         | Description                                                                    |
+|:-------------:|:------------:|:-------------------------------------------------------------------------------|
+| ids           | [VarI32]\[\] | The IDs of the particle sources to remove.                                     |
 
 [VarI32]: https://wiki.vg/Protocol#VarInt_and_VarLong "wiki.vg documentation"
 [BlockPos]: https://wiki.vg/Protocol#Position "wiki.vg documentation"

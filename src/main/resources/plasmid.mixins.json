@@ -37,7 +37,8 @@
     "game.rule.ServerPlayerEntityMixin",
     "game.rule.ServerPlayerInteractionManagerMixin",
     "game.rule.TntBlockMixin",
-    "storage.ServerWorldMixin"
+    "storage.ServerWorldMixin",
+    "sever.onJoinMixin"
   ],
   "client": [
     "fake.ClientConnectionMixin"

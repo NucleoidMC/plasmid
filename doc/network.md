@@ -61,7 +61,12 @@ The tuple type is very abstract and acts as many fields as the tuple should hold
 
 ## Packets
 
-### `plasmid:workspace/enter`
+### Workspace-related Packets
+
+The server controls most of the requests sent by a client for workspace-related packets as it requires some permissions.
+Those packets are most likely sent only on build servers.
+
+#### `plasmid:workspace/enter`
 
 Packet sent when a player enters a workspace editor. The client should render the bounds of the map if present,
 and the contained regions, points, etc.  
@@ -76,7 +81,7 @@ Direction: `C<-S`
 | world  | Identifier | The world in which the workspace is present.                           |
 | data   | NBT Tag    | Arbitrary data assigned to the map template.                           |
 
-### `plasmid:workspace/bounds`
+#### `plasmid:workspace/bounds`
 
 Sets the bounds of the workspace map. The client should render those bounds if non-null.
 A client can request bounds change, but can be rejected. If a request is accepted, the packet is sent back to the client.
@@ -88,7 +93,7 @@ Direction `C<->S`
 | id     | Identifier | The identifier of the affected workspace.                                        |
 | bounds | [Bounds]   | The new bounds of the workspace map, `[[0, 0, 0], [0, 0, 0]]` if bounds is null. |
 
-### `plasmid:workspace/data`
+#### `plasmid:workspace/data`
 
 Sets the associated data on the workspace map.
 A client can request data change, but can be rejected. If a request is accepted, the packet is sent back to the client.
@@ -100,7 +105,7 @@ Direction: `C<->S`
 | id     | Identifier | The identifier of the affected workspace. |
 | data   | NBT Tag    | The NBT data.                             |
 
-### `plasmid:workspace/region`
+#### `plasmid:workspace/region`
 
 Specifies a single region, the client should render a box, and a marker tag for it.
 If sent from a client, this is considered as an update request which can be rejected.
@@ -113,7 +118,7 @@ Direction: `C<->S`
 | id        | [VarI32]   | The region runtime identifier.                                       |
 | region    | [Region]   | The region to add.                                                   |
 
-### `plasmid:workspace/regions`
+#### `plasmid:workspace/regions`
 
 Specifies regions to the client, for each region the client should render a box, and a marker tag.
 
@@ -125,30 +130,62 @@ Direction: `C<-S`
 | marker    | string                            | The marker of the regions to update.                              |
 | regions   | ([VarI32], [Bounds], NBT Tag)\[\] | The array of regions to update. The tuple is, in order, `(runtime id, bounds, data)`. |
 
-### `plasmid:workspace/region/add`
+#### `plasmid:workspace/region/add`
 
 Requests the server to add a new region in the specified workspace.
 The client should not assume the region exists until the server sends a `plasmid:workspace/region` packet.
 
 Direction: `C->S`
 
-| Fields    |  Type      | Description                                                          |
+| Fields    | Type       | Description                                                          |
 |:---------:|:----------:|:---------------------------------------------------------------------|
 | workspace | Identifier | The identifier of the workspace in which the region should be added. |
 | region    | [Region]   | The region to add.                                                   |
 
-### `plasmid:workspace/region/remove`
+#### `plasmid:workspace/region/remove`
 
 Remove a region from the specified workspace.
 When sent from a client, this packet should be treated as a request which can be rejected.
 
 Direction: `C<->S`
 
-| Fields    |  Type      | Description                                                            |
+| Fields    | Type       | Description                                                            |
 |:---------:|:----------:|:-----------------------------------------------------------------------|
 | workspace | Identifier | The identifier of the workspace in which the region should be removed. |
 | id        | [VarI32]   | The region runtime ID.                                                 |
 | region    | [Region]   | The region to remove.                                                  |
+
+### Environment Packets
+
+Those packets can be seen as an extension to reduce the bandwidth usage, like particles which have a start and end packet
+to avoid continuously send particle packets.
+
+Those packets mostly affects the environment/are cosmetics.
+
+#### `plasmid:env/particle`
+
+Sends an environment particle to the client.
+An environment particle will loop through until the client receives a stop packet unless the packet specifies a loop count.
+
+Direction: `C<-S`
+
+| Fields        | Type       | Description                                                                       |
+|:-------------:|:----------:|:----------------------------------------------------------------------------------|
+| id            | VarI32     | The runtime ID of the particle source.                                            |
+| duration      | VarI32     | Duration in ticks of a loop.                                                      |
+| offset        | u8         | Bounds of a duration offset to randomize the duration of loops, 0 if unspecified. |
+| loops         | VarI32     | The maximum number of loops to do, 0 is indefinite and requires a stop packet.    |
+| ...           | ...        | [Content of the Particle packet.](https://wiki.vg/Protocol#Particle_2)            |
+
+#### `plasmid:env/particle/stop`
+
+Tells the client to stop emitting the specified environment particle.
+
+Direction: `C<-S`
+
+| Fields        | Type       | Description                                                                    |
+|:-------------:|:----------:|:-------------------------------------------------------------------------------|
+| ids           | VarI32[]   | The IDs of the particle sources to remove.                                     |
 
 [VarI32]: https://wiki.vg/Protocol#VarInt_and_VarLong "wiki.vg documentation"
 [BlockPos]: https://wiki.vg/Protocol#Position "wiki.vg documentation"

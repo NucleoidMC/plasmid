@@ -1,10 +1,12 @@
 package xyz.nucleoid.plasmid.game;
 
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.game.config.PlayerConfig;
 import xyz.nucleoid.plasmid.game.event.*;
@@ -44,8 +46,8 @@ public final class GameWaitingLobby {
             game.setRule(GameRule.PVP, RuleResult.DENY);
             game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
             game.setRule(GameRule.HUNGER, RuleResult.DENY);
-            game.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
             game.setRule(GameRule.INTERACTION, RuleResult.DENY);
+            game.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
 
             game.on(GameTickListener.EVENT, lobby::onTick);
             game.on(RequestStartListener.EVENT, lobby::requestStart);

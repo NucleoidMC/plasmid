@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.mixin.game.rule;
+package xyz.nucleoid.plasmid.mixin.game.event;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -6,6 +6,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.ActionResult;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.event.DropItemListener;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
@@ -32,11 +34,16 @@ public class ScreenHandlerMixin {
         }
 
         if (type == SlotActionType.THROW || type == SlotActionType.PICKUP) {
-            if (this.shouldBlockThrowingItems(player)) {
-                if (type == SlotActionType.PICKUP && slot == -999) {
-                    ci.setReturnValue(player.inventory.getCursorStack());
-                } else if (type == SlotActionType.THROW && slot >= 0 && slot < this.slots.size()) {
-                    ci.setReturnValue(this.slots.get(slot).getStack());
+            ItemStack stack = null;
+            if (type == SlotActionType.PICKUP && slot == -999) {
+                stack = player.inventory.getCursorStack();
+            } else if (type == SlotActionType.THROW && slot >= 0 && slot < this.slots.size()) {
+                stack = this.slots.get(slot).getStack();
+            }
+
+            if (this.shouldBlockThrowingItems(player, slot, stack)) {
+                if (stack != null) {
+                    ci.setReturnValue(stack);
                 }
             }
         }
@@ -49,18 +56,26 @@ public class ScreenHandlerMixin {
             return;
         }
 
-        if (this.shouldBlockThrowingItems(player)) {
+        if (this.shouldBlockThrowingItems(player, -999, cursor)) {
             if (player.inventory.insertStack(cursor)) {
                 player.inventory.setCursorStack(ItemStack.EMPTY);
             }
         }
     }
 
-    private boolean shouldBlockThrowingItems(PlayerEntity player) {
+    private boolean shouldBlockThrowingItems(PlayerEntity player, int slot, ItemStack stack) {
         GameWorld gameWorld = GameWorld.forWorld(player.world);
         if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
-            return gameWorld.testRule(GameRule.THROW_ITEMS) == RuleResult.DENY;
+            // Gamerule is checked first, then the event is checked
+            if (gameWorld.testRule(GameRule.THROW_ITEMS) == RuleResult.DENY) {
+                return true;
+            }
+
+            ActionResult dropResult = gameWorld.invoker(DropItemListener.EVENT).onDrop(player, slot, stack);
+
+            return dropResult == ActionResult.FAIL;
         }
+
         return false;
     }
 }

@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.event;
 
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 
@@ -13,9 +14,9 @@ import net.minecraft.util.hit.BlockHitResult;
  * <li>{@link ActionResult#PASS} moves on to the next listener.</ul>
  */
 public interface BlockHitListener {
-    EventType<BlockHitListener> EVENT = EventType.create(BlockHitListener.class, listeners -> (hitResult) -> {
+    EventType<BlockHitListener> EVENT = EventType.create(BlockHitListener.class, listeners -> (entity, hitResult) -> {
         for (BlockHitListener listener : listeners) {
-            ActionResult result = listener.onBlockHit(hitResult);
+            ActionResult result = listener.onBlockHit(entity, hitResult);
 
             if (result != ActionResult.PASS) {
                 return result;
@@ -25,5 +26,5 @@ public interface BlockHitListener {
         return ActionResult.PASS;
     });
 
-    ActionResult onBlockHit(BlockHitResult hitResult);
+    ActionResult onBlockHit(ProjectileEntity entity, BlockHitResult hitResult);
 }

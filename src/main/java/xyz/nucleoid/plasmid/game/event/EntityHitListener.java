@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.event;
 
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.EntityHitResult;
 
@@ -13,9 +14,9 @@ import net.minecraft.util.hit.EntityHitResult;
  * <li>{@link ActionResult#PASS} moves on to the next listener.</ul>
  */
 public interface EntityHitListener {
-    EventType<EntityHitListener> EVENT = EventType.create(EntityHitListener.class, listeners -> (hitResult) -> {
+    EventType<EntityHitListener> EVENT = EventType.create(EntityHitListener.class, listeners -> (entity, hitResult) -> {
         for (EntityHitListener listener : listeners) {
-            ActionResult result = listener.onEntityHit(hitResult);
+            ActionResult result = listener.onEntityHit(entity, hitResult);
 
             if (result != ActionResult.PASS) {
                 return result;
@@ -25,5 +26,5 @@ public interface EntityHitListener {
         return ActionResult.PASS;
     });
 
-    ActionResult onEntityHit(EntityHitResult hitResult);
+    ActionResult onEntityHit(ProjectileEntity entity, EntityHitResult hitResult);
 }

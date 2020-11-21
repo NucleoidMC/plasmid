@@ -5,11 +5,14 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import xyz.nucleoid.fantasy.BubbleWorldConfig;
 import xyz.nucleoid.fantasy.BubbleWorldHandle;
 import xyz.nucleoid.fantasy.Fantasy;
@@ -40,6 +43,8 @@ import java.util.function.Consumer;
  * Players can only be added to this game space through {@link ManagedGameSpace#addPlayer} or {@link ManagedGameSpace#offerPlayer}.
  */
 public final class ManagedGameSpace implements GameSpace, AutoCloseable {
+    private static final Logger LOGGER = LogManager.getLogger(ManagedGameSpace.class);
+
     private static final Map<RegistryKey<World>, ManagedGameSpace> DIMENSION_TO_WORLD = new Reference2ObjectOpenHashMap<>();
 
     private final BubbleWorldHandle bubble;
@@ -125,13 +130,31 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
             GameLogic closedGameLogic = this.logic.getAndSet(logic);
 
             closedGameLogic.getResources().close();
-            closedGameLogic.getListeners().invoker(GameCloseListener.EVENT).onClose();
 
-            for (ServerPlayerEntity player : this.players) {
-                this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
+            try {
+                closedGameLogic.getListeners().invoker(GameCloseListener.EVENT).onClose();
+            } catch (Exception e) {
+                LOGGER.error("An unexpected exception occurred while closing the game", e);
             }
 
-            this.invoker(GameOpenListener.EVENT).onOpen();
+            List<ServerPlayerEntity> playersToJoin = Lists.newArrayList(this.players);
+            for (ServerPlayerEntity player : playersToJoin) {
+                try {
+                    this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
+                } catch (Exception e) {
+                    LOGGER.error("An unexpected exception occurred while adding {} to game", player.getDisplayName(), e);
+                    player.sendMessage(new LiteralText("An unexpected error occurred while adding you to the game!").formatted(Formatting.RED), false);
+
+                    this.removePlayer(player);
+                }
+            }
+
+            try {
+                this.invoker(GameOpenListener.EVENT).onOpen();
+            } catch (Exception e) {
+                LOGGER.error("An unexpected exception occurred while opening the game", e);
+                this.closeWithError("An unexpected error occurred while opening the game");
+            }
         });
     }
 
@@ -155,8 +178,18 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
 
         if (this.bubble.addPlayer(player)) {
             this.players.add(player);
-            this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
+            try {
+                this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
+            } catch (Exception e) {
+                LOGGER.error("An unexpected exception occurred while adding {} to game", player.getDisplayName(), e);
+                player.sendMessage(new LiteralText("An unexpected error occurred while adding you to the game!").formatted(Formatting.RED), false);
+                this.removePlayer(player);
+
+                return false;
+            }
+
             this.lifecycle.addPlayer(this, player);
+
             return true;
         }
 
@@ -178,7 +211,12 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
     }
 
     private void onRemovePlayer(ServerPlayerEntity player) {
-        this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
+        try {
+            this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
+        } catch (Exception e) {
+            LOGGER.error("An unexpected exception occurred while removing {} from game", player.getDisplayName(), e);
+        }
+
         this.players.remove(player);
         this.lifecycle.removePlayer(this, player);
 
@@ -190,7 +228,12 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
     @Override
     public CompletableFuture<StartResult> requestStart() {
         return Scheduler.INSTANCE.submit(server -> {
-            return this.invoker(RequestStartListener.EVENT).requestStart();
+            try {
+                return this.invoker(RequestStartListener.EVENT).requestStart();
+            } catch (Exception e) {
+                LOGGER.error("An unexpected exception occurred while requesting start", e);
+                return StartResult.error(new LiteralText("An unexpected error occurred"));
+            }
         });
     }
 
@@ -209,7 +252,15 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
                 return JoinResult.inOtherGame();
             }
 
-            JoinResult result = this.invoker(OfferPlayerListener.EVENT).offerPlayer(player);
+            JoinResult result;
+
+            try {
+                result = this.invoker(OfferPlayerListener.EVENT).offerPlayer(player);
+            } catch (Exception e) {
+                LOGGER.error("An unexpected exception occurred while offering {} to game", player.getDisplayName(), e);
+                result = JoinResult.err(new LiteralText("An unexpected error occurred"));
+            }
+
             if (result.isError()) {
                 return result;
             }
@@ -248,7 +299,13 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
                 }
 
                 this.resources.close();
-                logic.getListeners().invoker(GameCloseListener.EVENT).onClose();
+
+                try {
+                    logic.getListeners().invoker(GameCloseListener.EVENT).onClose();
+                } catch (Exception e) {
+                    LOGGER.error("An unexpected exception occurred while closing the game", e);
+                }
+
                 this.lifecycle.close(this, players);
 
                 this.bubble.delete();
@@ -256,6 +313,11 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
                 DIMENSION_TO_WORLD.remove(this.bubble.asWorld().getRegistryKey(), this);
             }
         });
+    }
+
+    public void closeWithError(String message) {
+        this.getPlayers().sendMessage(new LiteralText(message).formatted(Formatting.RED));
+        this.close();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.command;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -26,51 +27,46 @@ public class FriendCommand {
                 .then(literal("list").executes(FriendCommand::ListFriends)));
     }
 
+
     private static int ListFriends(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         MinecraftServer server = context.getSource().getMinecraftServer();
         ServerPlayerEntity player = context.getSource().getPlayer();
         UserCache uCache = server.getUserCache();
-        try {
-            if (FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()).returnFlistIds().size() <= 0) {
-                player.sendMessage(new LiteralText("You have no friends..."), false);
-                return 0;
-            }
-            int i = 0;
-            FriendList f = FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid());
-            System.out.println("Listing friends");
-            for (UUID ids : f.returnFlistIds()) {
-                i++;
-                player.sendMessage(new LiteralText("[" + i + "] " + uCache.getByUuid(ids).getName()), false);
-            }
-            return 1;
-        } catch (Exception err) {
-            err.printStackTrace();
+
+        if (FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()).returnFlistIds().size() <= 0) {
+            player.sendMessage(new LiteralText("You have no friends..."), false);
+            return Command.SINGLE_SUCCESS;
         }
-        return 1;
+
+        int i = 0;
+        FriendList f = FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid());
+        System.out.println("Listing friends");
+
+        for (UUID ids : f.returnFlistIds()) {
+            i++;
+            player.sendMessage(new LiteralText("[" + i + "] " + uCache.getByUuid(ids).getName()), false);
+        }
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int acceptFriend(CommandContext<ServerCommandSource> context) {
         System.out.println("accepting");
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int registerFriendAdd(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        try {
-            for (GameProfile Profile : GameProfileArgumentType.getProfileArgument(context, "playerName")) {
-                if (Profile.equals(context.getSource().getPlayer().getGameProfile())) {
-                    context.getSource().getPlayer().sendMessage(new LiteralText("You can't friend yourself silly!"), false);
-                    return 0;
-                }
-                System.out.println(Profile.getName());
-                System.out.println(FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()));
-
-                FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()).addFreind(Profile.getId());
-                System.out.println("Added friend");
+        for (GameProfile Profile : GameProfileArgumentType.getProfileArgument(context, "playerName")) {
+            if (Profile.equals(context.getSource().getPlayer().getGameProfile())) {
+                context.getSource().getPlayer().sendMessage(new LiteralText("You can't friend yourself silly!"), false);
+                return Command.SINGLE_SUCCESS;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(Profile.getName());
+            System.out.println(FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()));
+
+            FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()).addFreind(Profile.getId());
+            System.out.println("Added friend");
         }
 
-        return 1;
+        return Command.SINGLE_SUCCESS;
     }
 }

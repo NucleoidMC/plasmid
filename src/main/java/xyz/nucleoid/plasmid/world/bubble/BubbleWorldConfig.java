@@ -16,9 +16,15 @@ public final class BubbleWorldConfig {
     private ChunkGenerator generator = null;
     private GameMode defaultGameMode = GameMode.ADVENTURE;
     private BubbleWorldSpawner spawner = BubbleWorldSpawner.at(new Vec3d(0.0, 64.0, 0.0));
-    private int timeOfDay = 6000;
+    private long timeOfDay = 6000;
     private Difficulty difficulty = Difficulty.NORMAL;
     private final GameRuleStore gameRules = new GameRuleStore();
+
+    private int sunnyTime = Integer.MAX_VALUE;
+    private boolean raining;
+    private int rainTime;
+    private boolean thundering;
+    private int thunderTime;
 
     public BubbleWorldConfig setSeed(long seed) {
         this.seed = seed;
@@ -49,17 +55,12 @@ public final class BubbleWorldConfig {
         return this;
     }
 
-    public BubbleWorldConfig setTimeOfDay(int timeOfDay) {
+    public BubbleWorldConfig setTimeOfDay(long timeOfDay) {
         this.timeOfDay = timeOfDay;
         return this;
     }
 
-    public BubbleWorldConfig removeTimeOfDay() {
-        this.timeOfDay = Integer.MIN_VALUE;
-        return this;
-    }
-
-    public BubbleWorldConfig setDifficulty(@Nullable Difficulty difficulty) {
+    public BubbleWorldConfig setDifficulty(Difficulty difficulty) {
         this.difficulty = difficulty;
         return this;
     }
@@ -71,6 +72,35 @@ public final class BubbleWorldConfig {
 
     public BubbleWorldConfig setGameRule(GameRules.Key<GameRules.IntRule> key, int value) {
         this.gameRules.set(key, value);
+        return this;
+    }
+
+    public BubbleWorldConfig setSunny(int sunnyTime) {
+        this.sunnyTime = sunnyTime;
+        this.raining = false;
+        this.thundering = false;
+        return this;
+    }
+
+    public BubbleWorldConfig setRaining(int rainTime) {
+        this.raining = rainTime > 0;
+        this.rainTime = rainTime;
+        return this;
+    }
+
+    public BubbleWorldConfig setRaining(boolean raining) {
+        this.raining = raining;
+        return this;
+    }
+
+    public BubbleWorldConfig setThundering(int thunderTime) {
+        this.thundering = thunderTime > 0;
+        this.thunderTime = thunderTime;
+        return this;
+    }
+
+    public BubbleWorldConfig setThundering(boolean thundering) {
+        this.thundering = thundering;
         return this;
     }
 
@@ -95,20 +125,35 @@ public final class BubbleWorldConfig {
         return this.spawner;
     }
 
-    public int getTimeOfDay() {
+    public long getTimeOfDay() {
         return this.timeOfDay;
     }
 
-    public boolean hasTimeOfDay() {
-        return this.timeOfDay != Integer.MIN_VALUE;
-    }
-
-    @Nullable
     public Difficulty getDifficulty() {
         return this.difficulty;
     }
 
     public GameRuleStore getGameRules() {
         return this.gameRules;
+    }
+
+    public int getSunnyTime() {
+        return this.sunnyTime;
+    }
+
+    public int getRainTime() {
+        return this.rainTime;
+    }
+
+    public int getThunderTime() {
+        return this.thunderTime;
+    }
+
+    public boolean isRaining() {
+        return this.raining;
+    }
+
+    public boolean isThundering() {
+        return this.thundering;
     }
 }

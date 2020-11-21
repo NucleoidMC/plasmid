@@ -30,7 +30,7 @@ public abstract class ProjectileEntityMixin extends Entity {
         if (gameSpace != null) {
             if (hitResult.getType() == HitResult.Type.ENTITY) {
                 try {
-                    ActionResult result = gameSpace.invoker(EntityHitListener.EVENT).onEntityHit((EntityHitResult) hitResult);
+                    ActionResult result = gameSpace.invoker(EntityHitListener.EVENT).onEntityHit((ProjectileEntity) (Object) this, (EntityHitResult) hitResult);
                     if (result == ActionResult.FAIL) {
                         ci.cancel();
                     }
@@ -39,7 +39,7 @@ public abstract class ProjectileEntityMixin extends Entity {
                 }
             } else if (hitResult.getType() == HitResult.Type.BLOCK) {
                 try {
-                    ActionResult result = gameSpace.invoker(BlockHitListener.EVENT).onBlockHit((BlockHitResult) hitResult);
+                    ActionResult result = gameSpace.invoker(BlockHitListener.EVENT).onBlockHit((ProjectileEntity) (Object) this, (BlockHitResult) hitResult);
                     if (result == ActionResult.FAIL) {
                         ci.cancel();
                     }

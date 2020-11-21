@@ -2,6 +2,9 @@ package xyz.nucleoid.plasmid.storage;
 
 import java.util.ArrayList;
 import java.util.UUID;
+/*
+    Please only touch this if you know what you are doing
+ */
 
 public class FriendList {
     private int playerId;

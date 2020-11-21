@@ -31,12 +31,12 @@ public class FriendCommand {
         ServerPlayerEntity player = context.getSource().getPlayer();
         UserCache uCache = server.getUserCache();
         try {
-            if (FriendListManager.returnFlist(context.getSource().getPlayer().getUuid()).returnFlistIds().size() <= 0) {
+            if (FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()).returnFlistIds().size() <= 0) {
                 player.sendMessage(new LiteralText("You have no friends..."), false);
                 return 0;
             }
             int i = 0;
-            FriendList f = FriendListManager.returnFlist(context.getSource().getPlayer().getUuid());
+            FriendList f = FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid());
             System.out.println("Listing friends");
             for (UUID ids : f.returnFlistIds()) {
                 i++;
@@ -62,9 +62,9 @@ public class FriendCommand {
                     return 0;
                 }
                 System.out.println(Profile.getName());
-                System.out.println(FriendListManager.returnFlist(context.getSource().getPlayer().getUuid()));
+                System.out.println(FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()));
 
-                FriendListManager.returnFlist(context.getSource().getPlayer().getUuid()).addFreind(Profile.getId());
+                FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()).addFreind(Profile.getId());
                 System.out.println("Added friend");
             }
         } catch (Exception e) {

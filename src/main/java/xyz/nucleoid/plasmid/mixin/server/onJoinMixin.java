@@ -16,7 +16,7 @@ public class onJoinMixin<class_3222> {
     private void injectMethod(ClientConnection connection, ServerPlayerEntity player, CallbackInfo info) {
         System.out.println("Player connected");
         FriendList temp = new FriendList();
-        FriendListManager.appendNewFreindList(player.getUuid(), temp);
+        FriendListManager.appendNewFriendList(player.getUuid(), temp);
         System.out.println("Created new list for " + player.getUuid().toString());
     }
 }

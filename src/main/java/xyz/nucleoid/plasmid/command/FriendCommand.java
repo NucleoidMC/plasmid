@@ -35,6 +35,7 @@ public class FriendCommand {
         UserCache uCache = server.getUserCache();
         try {
             if (FriendListManager.returnFlist(context.getSource().getPlayer().getUuid()).returnFlistIds().size() <= 0) {
+                player.sendMessage(new LiteralText("You have no friends..."), false);
                 return 0;
             }
             int i = 0;
@@ -59,6 +60,10 @@ public class FriendCommand {
     private static int registerFriendAdd(CommandContext<ServerCommandSource> context) throws CommandSyntaxException{
         try {
             for (GameProfile Profile: GameProfileArgumentType.getProfileArgument(context, "playerName")) {
+                if (Profile.equals(context.getSource().getPlayer().getGameProfile())) {
+                    context.getSource().getPlayer().sendMessage(new LiteralText("You can't friend yourself silly!"), false);
+                    return 0;
+                }
                 System.out.println(Profile.getName());
                 System.out.println(FriendListManager.returnFlist(context.getSource().getPlayer().getUuid()));
 

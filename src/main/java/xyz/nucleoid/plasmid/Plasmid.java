@@ -69,6 +69,7 @@ public final class Plasmid implements ModInitializer {
             PartyCommand.register(dispatcher);
             ChatCommand.register(dispatcher);
             ShoutCommand.register(dispatcher);
+            FriendCommand.register(dispatcher);
         });
 
         UseItemCallback.EVENT.register((player, world, hand) -> {

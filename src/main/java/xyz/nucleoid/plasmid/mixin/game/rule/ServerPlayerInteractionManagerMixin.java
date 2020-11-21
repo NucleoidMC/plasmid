@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
@@ -31,9 +31,9 @@ public class ServerPlayerInteractionManagerMixin {
             return;
         }
 
-        GameWorld gameWorld = GameWorld.forWorld(this.player.world);
-        if (gameWorld != null && gameWorld.containsPlayer(this.player)) {
-            RuleResult result = gameWorld.testRule(GameRule.BLOCK_DROPS);
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(this.player.world);
+        if (gameSpace != null && gameSpace.containsPlayer(this.player)) {
+            RuleResult result = gameSpace.testRule(GameRule.BLOCK_DROPS);
             if (result == RuleResult.DENY) {
                 ci.setReturnValue(true);
             }

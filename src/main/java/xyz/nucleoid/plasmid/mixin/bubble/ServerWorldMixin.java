@@ -67,7 +67,7 @@ public abstract class ServerWorldMixin extends World implements BubbleWorldHolde
     @Inject(method = "addPlayer", at = @At("RETURN"))
     private void onPlayerAdded(ServerPlayerEntity player, CallbackInfo ci) {
         BubbleWorld bubble = BubbleWorld.forWorld(this);
-        if (bubble != null && !bubble.containsPlayer(player)) {
+        if (bubble != null && !bubble.getPlayers().contains(player)) {
             bubble.kickPlayer(player);
         }
     }

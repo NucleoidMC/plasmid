@@ -21,7 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xyz.nucleoid.plasmid.command.*;
 import xyz.nucleoid.plasmid.game.GameType;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
 import xyz.nucleoid.plasmid.game.channel.SimpleGameChannel;
 import xyz.nucleoid.plasmid.game.composite.CompositeGameConfig;
@@ -72,14 +72,18 @@ public final class Plasmid implements ModInitializer {
 
         UseItemCallback.EVENT.register((player, world, hand) -> {
             if (!world.isClient) {
-                GameWorld gameWorld = GameWorld.forWorld(world);
-                if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
-                    if (gameWorld.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
+                ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
+                if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
+                    if (gameSpace.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
                         return TypedActionResult.fail(ItemStack.EMPTY);
                     }
 
-                    UseItemListener invoker = gameWorld.invoker(UseItemListener.EVENT);
-                    return invoker.onUseItem((ServerPlayerEntity) player, hand);
+                    try {
+                        UseItemListener invoker = gameSpace.invoker(UseItemListener.EVENT);
+                        return invoker.onUseItem((ServerPlayerEntity) player, hand);
+                    } catch (Exception e) {
+                        LOGGER.error("An unexpected exception occurred while dispatching use item event", e);
+                    }
                 }
             }
 
@@ -88,14 +92,18 @@ public final class Plasmid implements ModInitializer {
 
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (!world.isClient) {
-                GameWorld gameWorld = GameWorld.forWorld(world);
-                if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
-                    if (gameWorld.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
+                ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
+                if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
+                    if (gameSpace.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
                         return ActionResult.FAIL;
                     }
 
-                    UseBlockListener invoker = gameWorld.invoker(UseBlockListener.EVENT);
-                    return invoker.onUseBlock((ServerPlayerEntity) player, hand, hitResult);
+                    try {
+                        UseBlockListener invoker = gameSpace.invoker(UseBlockListener.EVENT);
+                        return invoker.onUseBlock((ServerPlayerEntity) player, hand, hitResult);
+                    } catch (Exception e) {
+                        LOGGER.error("An unexpected exception occurred while dispatching use block event", e);
+                    }
                 }
             }
 
@@ -106,10 +114,14 @@ public final class Plasmid implements ModInitializer {
             if (!world.isClient) {
                 ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 
-                GameWorld gameWorld = GameWorld.forWorld(world);
-                if (gameWorld != null && gameWorld.containsPlayer(serverPlayer)) {
-                    AttackEntityListener invoker = gameWorld.invoker(AttackEntityListener.EVENT);
-                    return invoker.onAttackEntity(serverPlayer, hand, entity, hitResult);
+                ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
+                if (gameSpace != null && gameSpace.containsPlayer(serverPlayer)) {
+                    try {
+                        AttackEntityListener invoker = gameSpace.invoker(AttackEntityListener.EVENT);
+                        return invoker.onAttackEntity(serverPlayer, hand, entity, hitResult);
+                    } catch (Exception e) {
+                        LOGGER.error("An unexpected exception occurred while dispatching attack entity event", e);
+                    }
                 }
             }
 
@@ -118,9 +130,9 @@ public final class Plasmid implements ModInitializer {
 
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (!world.isClient) {
-                GameWorld gameWorld = GameWorld.forWorld(world);
-                if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
-                    if (gameWorld.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
+                ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
+                if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
+                    if (gameSpace.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
                         return ActionResult.FAIL;
                     }
                 }
@@ -168,24 +180,29 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerTickEvents.END_WORLD_TICK.register(world -> {
-            GameWorld game = GameWorld.forWorld(world);
+            ManagedGameSpace game = ManagedGameSpace.forWorld(world);
             if (game != null) {
-                game.invoker(GameTickListener.EVENT).onTick();
+                try {
+                    game.invoker(GameTickListener.EVENT).onTick();
+                } catch (Exception e) {
+                    LOGGER.error("An unexpected exception occurred while ticking the game", e);
+                    game.close();
+                }
             }
         });
 
         ServerTickEvents.START_SERVER_TICK.register(StagingBoundRenderer::onTick);
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            for (GameWorld gameWorld : GameWorld.getOpen()) {
-                gameWorld.close();
+            for (ManagedGameSpace gameSpace : ManagedGameSpace.getOpen()) {
+                gameSpace.close();
             }
         });
 
         ServerWorldEvents.UNLOAD.register((server, world) -> {
-            GameWorld gameWorld = GameWorld.forWorld(world);
-            if (gameWorld != null) {
-                gameWorld.close();
+            ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
+            if (gameSpace != null) {
+                gameSpace.close();
             }
         });
     }

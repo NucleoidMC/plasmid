@@ -3,9 +3,10 @@ package xyz.nucleoid.plasmid.game.event;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import xyz.nucleoid.plasmid.game.GameSpace;
 
 /**
- * Called when any {@link net.minecraft.server.network.ServerPlayerEntity} sends a message in chat in a {@link xyz.nucleoid.plasmid.game.GameWorld}.
+ * Called when any {@link net.minecraft.server.network.ServerPlayerEntity} sends a message in chat in a {@link GameSpace}.
  *
  * <p>Upon return:
  * <ul>

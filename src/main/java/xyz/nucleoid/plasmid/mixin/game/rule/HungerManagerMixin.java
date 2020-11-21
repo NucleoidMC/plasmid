@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
@@ -27,9 +27,9 @@ public class HungerManagerMixin {
         }
 
         if (this.exhaustion > 4.0F || this.foodSaturationLevel > 0.0F) {
-            GameWorld gameWorld = GameWorld.forWorld(player.world);
-            if (gameWorld != null && gameWorld.containsPlayer((ServerPlayerEntity) player)) {
-                if (gameWorld.testRule(GameRule.HUNGER) == RuleResult.DENY) {
+            ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(player.world);
+            if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
+                if (gameSpace.testRule(GameRule.HUNGER) == RuleResult.DENY) {
                     this.exhaustion = 0.0F;
                     this.foodSaturationLevel = 0.0F;
                 }

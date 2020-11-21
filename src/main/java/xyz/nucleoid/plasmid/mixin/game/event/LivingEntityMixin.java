@@ -15,7 +15,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.EntityDeathListener;
 import xyz.nucleoid.plasmid.game.event.EntityDropLootListener;
 
@@ -36,15 +37,19 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        GameWorld gameWorld = GameWorld.forWorld(entity.world);
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(entity.world);
 
         // validate world & only trigger if this entity is inside it
-        if (gameWorld != null && gameWorld.containsEntity(entity)) {
-            ActionResult result = gameWorld.invoker(EntityDeathListener.EVENT).onDeath(entity, source);
+        if (gameSpace != null && gameSpace.containsEntity(entity)) {
+            try {
+                ActionResult result = gameSpace.invoker(EntityDeathListener.EVENT).onDeath(entity, source);
 
-            // cancel death if FAIL was returned from any listener
-            if (result == ActionResult.FAIL) {
-                ci.cancel();
+                // cancel death if FAIL was returned from any listener
+                if (result == ActionResult.FAIL) {
+                    ci.cancel();
+                }
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity death event", e);
             }
         }
     }
@@ -59,20 +64,24 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        GameWorld gameWorld = GameWorld.forWorld(this.world);
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(this.world);
 
-        if (gameWorld != null && gameWorld.containsEntity((LivingEntity) (Object) this)) {
-            TypedActionResult<List<ItemStack>> result = gameWorld.invoker(EntityDropLootListener.EVENT).onDropLoot((LivingEntity) (Object) this, droppedStacks);
+        if (gameSpace != null && gameSpace.containsEntity((LivingEntity) (Object) this)) {
+            try {
+                TypedActionResult<List<ItemStack>> result = gameSpace.invoker(EntityDropLootListener.EVENT).onDropLoot((LivingEntity) (Object) this, droppedStacks);
 
-            // drop potentially modified stacks from listeners
-            if (result.getResult() != ActionResult.FAIL) {
-                result.getValue().forEach(this::dropStack);
+                // drop potentially modified stacks from listeners
+                if (result.getResult() != ActionResult.FAIL) {
+                    result.getValue().forEach(this::dropStack);
+                }
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity drop loot event", e);
             }
 
             return;
         }
 
-        // default stack dropping for non-gameworld on server
+        // default stack dropping for non-gamespace on server
         droppedStacks.forEach(this::dropStack);
     }
 }

@@ -13,9 +13,10 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.PlayerChatListener;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
@@ -44,12 +45,16 @@ public abstract class PlayerManagerMixin {
             return;
         }
 
-        GameWorld gameWorld = GameWorld.forWorld(sender.world);
-        if (gameWorld != null && gameWorld.containsEntity(sender)) {
-            ActionResult result = gameWorld.invoker(PlayerChatListener.EVENT).onSendChatMessage(message, sender);
-            if (result == ActionResult.FAIL) {
-                ci.cancel();
-                return;
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(sender.world);
+        if (gameSpace != null && gameSpace.containsEntity(sender)) {
+            try {
+                ActionResult result = gameSpace.invoker(PlayerChatListener.EVENT).onSendChatMessage(message, sender);
+                if (result == ActionResult.FAIL) {
+                    ci.cancel();
+                    return;
+                }
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player chat event", e);
             }
         }
 
@@ -65,8 +70,8 @@ public abstract class PlayerManagerMixin {
             return false;
         }
 
-        GameWorld gameWorld = GameWorld.forWorld(sender.world);
-        return gameWorld != null && gameWorld.testRule(GameRule.TEAM_CHAT) == RuleResult.ALLOW;
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(sender.world);
+        return gameSpace != null && gameSpace.testRule(GameRule.TEAM_CHAT) == RuleResult.ALLOW;
     }
 
     private void sendTeamChat(Text message, ServerPlayerEntity sender) {

@@ -28,7 +28,7 @@ import xyz.nucleoid.plasmid.command.argument.GameChannelArgument;
 import xyz.nucleoid.plasmid.command.argument.GameConfigArgument;
 import xyz.nucleoid.plasmid.game.ConfiguredGame;
 import xyz.nucleoid.plasmid.game.GameOpenException;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.channel.ChannelEndpoint;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
 import xyz.nucleoid.plasmid.game.channel.GameChannelManager;
@@ -146,7 +146,7 @@ public final class GameCommand {
                 .withClickEvent(joinClick)
                 .withHoverEvent(joinHover);
 
-        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), gameId)
+        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), new LiteralText(gameId.toString()).formatted(Formatting.GRAY))
                 .append(new TranslatableText("text.plasmid.game.open.join").setStyle(joinStyle));
         playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
     }
@@ -165,13 +165,13 @@ public final class GameCommand {
     }
 
     private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Collection<GameWorld> games = GameWorld.getOpen();
-        GameWorld gameWorld = games.stream().max(Comparator.comparingInt(GameWorld::getPlayerCount)).orElse(null);
-        if (gameWorld == null) {
+        Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
+        ManagedGameSpace gameSpace = games.stream().max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount)).orElse(null);
+        if (gameSpace == null) {
             throw NO_GAME_OPEN.create();
         }
 
-        joinPlayerToGame(context, gameWorld);
+        joinPlayerToGame(context, gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -179,26 +179,26 @@ public final class GameCommand {
     private static int joinQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ConfiguredGame<?> game = GameConfigArgument.get(context, "game_type").getRight();
 
-        Collection<GameWorld> games = GameWorld.getOpen();
-        GameWorld gameWorld = games.stream()
-                .filter(gw -> gw.getGame() == game)
-                .max(Comparator.comparingInt(GameWorld::getPlayerCount))
+        Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
+        ManagedGameSpace gameSpace = games.stream()
+                .filter(gw -> gw.getGameConfig() == game)
+                .max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount))
                 .orElse(null);
 
-        if (gameWorld == null) {
+        if (gameSpace == null) {
             throw NO_GAME_OPEN.create();
         }
 
-        joinPlayerToGame(context, gameWorld);
+        joinPlayerToGame(context, gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void joinPlayerToGame(CommandContext<ServerCommandSource> context, GameWorld gameWorld) throws CommandSyntaxException {
+    private static void joinPlayerToGame(CommandContext<ServerCommandSource> context, ManagedGameSpace gameSpace) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        gameWorld.offerPlayer(player).thenAccept(joinResult -> {
+        gameSpace.offerPlayer(player).thenAccept(joinResult -> {
             if (joinResult.isError()) {
                 Text error = joinResult.getError();
                 source.sendError(error.shallowCopy().formatted(Formatting.RED));
@@ -210,13 +210,13 @@ public final class GameCommand {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        GameWorld gameWorld = GameWorld.forWorld(source.getWorld());
-        if (gameWorld == null) {
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(source.getWorld());
+        if (gameSpace == null) {
             throw NO_GAME_IN_WORLD.create();
         }
 
         Scheduler.INSTANCE.submit(server -> {
-            gameWorld.removePlayer(player);
+            gameSpace.removePlayer(player);
         });
 
         return Command.SINGLE_SUCCESS;
@@ -225,12 +225,12 @@ public final class GameCommand {
     private static int startGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
 
-        GameWorld gameWorld = GameWorld.forWorld(source.getWorld());
-        if (gameWorld == null) {
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(source.getWorld());
+        if (gameSpace == null) {
             throw NO_GAME_IN_WORLD.create();
         }
 
-        gameWorld.requestStart().thenAccept(startResult -> {
+        gameSpace.requestStart().thenAccept(startResult -> {
             Text message;
             if (startResult.isError()) {
                 Text error = startResult.getError();
@@ -240,7 +240,7 @@ public final class GameCommand {
                         .formatted(Formatting.GRAY);
             }
 
-            gameWorld.getPlayerSet().sendMessage(message);
+            gameSpace.getPlayers().sendMessage(message);
         });
 
         return Command.SINGLE_SUCCESS;
@@ -248,15 +248,15 @@ public final class GameCommand {
 
     private static int stopGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
-        GameWorld gameWorld = GameWorld.forWorld(source.getWorld());
-        if (gameWorld == null) {
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(source.getWorld());
+        if (gameSpace == null) {
             throw NO_GAME_IN_WORLD.create();
         }
 
-        PlayerSet playerSet = gameWorld.getPlayerSet().copy();
+        PlayerSet playerSet = gameSpace.getPlayers().copy();
 
         try {
-            gameWorld.close();
+            gameSpace.close();
 
             MutableText message = new TranslatableText("text.plasmid.game.stopped.player", source.getDisplayName());
             playerSet.sendMessage(message.formatted(Formatting.GRAY));

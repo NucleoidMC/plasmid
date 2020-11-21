@@ -9,7 +9,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.BreakBlockListener;
 
 @Mixin(ServerPlayerInteractionManager.class)
@@ -23,12 +24,16 @@ public class ServerPlayerInteractionManagerMixin {
             return;
         }
 
-        GameWorld gameWorld = GameWorld.forWorld(this.player.world);
-        if (gameWorld != null && gameWorld.containsPlayer(this.player)) {
-            ActionResult result = gameWorld.invoker(BreakBlockListener.EVENT).onBreak(this.player, pos);
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(this.player.world);
+        if (gameSpace != null && gameSpace.containsPlayer(this.player)) {
+            try {
+                ActionResult result = gameSpace.invoker(BreakBlockListener.EVENT).onBreak(this.player, pos);
 
-            if (result == ActionResult.FAIL) {
-                ci.setReturnValue(false);
+                if (result == ActionResult.FAIL) {
+                    ci.setReturnValue(false);
+                }
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching block break event", e);
             }
         }
     }

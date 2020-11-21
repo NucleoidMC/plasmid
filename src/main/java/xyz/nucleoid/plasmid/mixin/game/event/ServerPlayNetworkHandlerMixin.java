@@ -9,7 +9,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.nucleoid.plasmid.game.GameWorld;
+import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.HandSwingListener;
 
 @Mixin(ServerPlayNetworkHandler.class)
@@ -21,9 +22,13 @@ public class ServerPlayNetworkHandlerMixin {
     private void onHandSwing(HandSwingC2SPacket packet, CallbackInfo ci) {
         Hand hand = packet.getHand();
 
-        GameWorld gameWorld = GameWorld.forWorld(this.player.world);
-        if (gameWorld != null && gameWorld.containsPlayer(this.player)) {
-            gameWorld.invoker(HandSwingListener.EVENT).onSwingHand(this.player, hand);
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(this.player.world);
+        if (gameSpace != null && gameSpace.containsPlayer(this.player)) {
+            try {
+                gameSpace.invoker(HandSwingListener.EVENT).onSwingHand(this.player, hand);
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player hand swing event", e);
+            }
         }
     }
 }

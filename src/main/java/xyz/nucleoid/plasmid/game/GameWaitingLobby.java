@@ -1,27 +1,27 @@
 package xyz.nucleoid.plasmid.game;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.game.config.PlayerConfig;
-import xyz.nucleoid.plasmid.game.event.*;
+import xyz.nucleoid.plasmid.game.event.GameTickListener;
+import xyz.nucleoid.plasmid.game.event.OfferPlayerListener;
+import xyz.nucleoid.plasmid.game.event.PlayerRemoveListener;
+import xyz.nucleoid.plasmid.game.event.RequestStartListener;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.widget.BossBarWidget;
+import xyz.nucleoid.plasmid.widget.GlobalWidgets;
 
 import javax.annotation.Nullable;
-import java.util.function.Consumer;
 
 public final class GameWaitingLobby {
     private static final Text WAITING_TITLE = new TranslatableText("text.plasmid.game.waiting_lobby.bar.waiting");
 
-    private final GameWorld gameWorld;
+    private final GameSpace gameSpace;
     private final PlayerConfig playerConfig;
 
     private final BossBarWidget bar;
@@ -30,35 +30,30 @@ public final class GameWaitingLobby {
 
     private boolean started;
 
-    private GameWaitingLobby(GameWorld gameWorld, PlayerConfig playerConfig) {
-        this.gameWorld = gameWorld;
+    private GameWaitingLobby(GameSpace gameSpace, PlayerConfig playerConfig, BossBarWidget bar) {
+        this.gameSpace = gameSpace;
         this.playerConfig = playerConfig;
-
-        this.bar = BossBarWidget.open(gameWorld.getPlayerSet(), WAITING_TITLE);
+        this.bar = bar;
     }
 
-    public static GameWorld open(GameWorld gameWorld, PlayerConfig playerConfig, Consumer<Game> gameBuilder) {
-        GameWaitingLobby lobby = new GameWaitingLobby(gameWorld, playerConfig);
+    public static void applyTo(GameLogic logic, PlayerConfig playerConfig) {
+        GlobalWidgets widgets = new GlobalWidgets(logic.getSpace(), logic);
+        BossBarWidget bar = widgets.addBossBar(WAITING_TITLE);
 
-        gameWorld.openGame(game -> {
-            game.setRule(GameRule.CRAFTING, RuleResult.DENY);
-            game.setRule(GameRule.PORTALS, RuleResult.DENY);
-            game.setRule(GameRule.PVP, RuleResult.DENY);
-            game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
-            game.setRule(GameRule.HUNGER, RuleResult.DENY);
-            game.setRule(GameRule.INTERACTION, RuleResult.DENY);
-            game.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
+        GameWaitingLobby lobby = new GameWaitingLobby(logic.getSpace(), playerConfig, bar);
 
-            game.on(GameTickListener.EVENT, lobby::onTick);
-            game.on(RequestStartListener.EVENT, lobby::requestStart);
-            game.on(OfferPlayerListener.EVENT, lobby::offerPlayer);
-            game.on(PlayerRemoveListener.EVENT, lobby::onRemovePlayer);
-            game.on(GameCloseListener.EVENT, lobby::onClose);
+        logic.setRule(GameRule.CRAFTING, RuleResult.DENY);
+        logic.setRule(GameRule.PORTALS, RuleResult.DENY);
+        logic.setRule(GameRule.PVP, RuleResult.DENY);
+        logic.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
+        logic.setRule(GameRule.HUNGER, RuleResult.DENY);
+        logic.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
+        logic.setRule(GameRule.INTERACTION, RuleResult.DENY);
 
-            gameBuilder.accept(game);
-        });
-
-        return gameWorld;
+        logic.on(GameTickListener.EVENT, lobby::onTick);
+        logic.on(RequestStartListener.EVENT, lobby::requestStart);
+        logic.on(OfferPlayerListener.EVENT, lobby::offerPlayer);
+        logic.on(PlayerRemoveListener.EVENT, lobby::onRemovePlayer);
     }
 
     private void onTick() {
@@ -66,14 +61,14 @@ public final class GameWaitingLobby {
             return;
         }
 
-        long time = this.gameWorld.getWorld().getTime();
+        long time = this.gameSpace.getWorld().getTime();
 
         if (this.countdownStart != -1 && time >= this.countdownStart + this.countdownDuration) {
             this.started = true;
-            this.gameWorld.requestStart().thenAccept(startResult -> {
+            this.gameSpace.requestStart().thenAccept(startResult -> {
                 if (startResult.isError()) {
                     MutableText message = new TranslatableText("text.plasmid.game.waiting_lobby.bar.cancel").append(startResult.getError());
-                    this.gameWorld.getPlayerSet().sendMessage(message.formatted(Formatting.RED));
+                    this.gameSpace.getPlayers().sendMessage(message.formatted(Formatting.RED));
                     this.started = false;
                 }
             });
@@ -85,13 +80,9 @@ public final class GameWaitingLobby {
         }
     }
 
-    private void onClose() {
-        this.bar.close();
-    }
-
     @Nullable
     private StartResult requestStart() {
-        if (this.gameWorld.getPlayerCount() < this.playerConfig.getMinPlayers()) {
+        if (this.gameSpace.getPlayerCount() < this.playerConfig.getMinPlayers()) {
             return StartResult.NOT_ENOUGH_PLAYERS;
         }
         return null;
@@ -114,7 +105,7 @@ public final class GameWaitingLobby {
         long targetCountdown = this.getTargetCountdownDuration();
         if (targetCountdown != -1) {
             if (this.countdownStart == -1) {
-                this.countdownStart = this.gameWorld.getWorld().getTime();
+                this.countdownStart = this.gameSpace.getWorld().getTime();
             }
             this.countdownDuration = targetCountdown;
         } else {
@@ -135,7 +126,7 @@ public final class GameWaitingLobby {
 
     private void tickCountdownBar() {
         if (this.countdownStart != -1) {
-            long time = this.gameWorld.getWorld().getTime();
+            long time = this.gameSpace.getWorld().getTime();
             long remainingTicks = Math.max(this.countdownStart + this.countdownDuration - time, 0);
             long remainingSeconds = remainingTicks / 20;
 
@@ -148,10 +139,10 @@ public final class GameWaitingLobby {
     }
 
     private boolean isReady() {
-        return this.gameWorld.getPlayerCount() >= this.playerConfig.getThresholdPlayers();
+        return this.gameSpace.getPlayerCount() >= this.playerConfig.getThresholdPlayers();
     }
 
     private boolean isFull() {
-        return this.gameWorld.getPlayerCount() >= this.playerConfig.getMaxPlayers();
+        return this.gameSpace.getPlayerCount() >= this.playerConfig.getMaxPlayers();
     }
 }

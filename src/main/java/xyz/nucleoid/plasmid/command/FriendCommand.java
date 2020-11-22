@@ -87,7 +87,7 @@ public class FriendCommand {
                 sender.removeRequest(Profile.getId()); // not needed but you never know
                 target.removeRequest(context.getSource().getPlayer().getUuid());
                 context.getSource().sendFeedback(new LiteralText("You accepted " + Profile.getName() + "friend request."), false);
-                context.getSource().getMinecraftServer().getPlayerManager().getPlayer(Profile.getId()).sendMessage(new LiteralText(context.getSource().getName() + " accepted your friend request"),MessageType.SYSTEM,context.getSource().getPlayer().getUuid());
+                context.getSource().getMinecraftServer().getPlayerManager().getPlayer(Profile.getId()).sendMessage(new LiteralText(context.getSource().getName() + " accepted your friend request"), MessageType.SYSTEM, context.getSource().getPlayer().getUuid());
             } else {
                 context.getSource().sendFeedback(new LiteralText("There are no incoming requests from that player"), false);
             }
@@ -111,7 +111,7 @@ public class FriendCommand {
             }
             if (FriendListManager.getFriendList(Profile.getId()).addRequest(commandSender.getUuid())) {
                 context.getSource().sendFeedback(new LiteralText("You sent a request to " + Profile.getName()), false);
-                server.getPlayerManager().getPlayer(Profile.getId()).sendMessage(new LiteralText("You received a friend request from " + server.getUserCache().getByUuid(commandSender.getUuid()).getName()), MessageType.SYSTEM,commandSender.getUuid());
+                server.getPlayerManager().getPlayer(Profile.getId()).sendMessage(new LiteralText("You received a friend request from " + server.getUserCache().getByUuid(commandSender.getUuid()).getName()), MessageType.SYSTEM, commandSender.getUuid());
             } else {
                 context.getSource().sendFeedback(new LiteralText("You already sent that player a request."), false);
                 return 0;

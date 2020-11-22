@@ -33,11 +33,9 @@ public class FriendList {
 
     public void addFriend(UUID addedFriend) {
         if (this.friends.contains(addedFriend)) {
-            System.out.println("no adding");
             return;
         } else {
             this.friends.add(addedFriend);
-            System.out.println("added");
         }
         for (UUID ids : this.friends) {
             System.out.println(ids);

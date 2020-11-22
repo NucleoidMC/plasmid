@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.command.Friend;
+package xyz.nucleoid.plasmid.storage.FriendSystem;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -11,19 +11,19 @@ public class FriendList {
     private final ArrayList<UUID> friends = new ArrayList<UUID>(); // holds accepted friends
     private final ArrayList<UUID> requests = new ArrayList<UUID>(); // holds friend requests
 
-    public ArrayList<UUID> returnFlistIds() {
+    public ArrayList<UUID> getFriends() {
         return this.friends;
     }
 
-    public int returnOwnerId() {
+    public int getOwnerId() {
         return this.playerId;
     }
 
-    public ArrayList<UUID> returnRequestList() {
+    public ArrayList<UUID> getRequests() {
         return this.requests;
     }
 
-    public boolean requestListContains(UUID targetId) {
+    public boolean hasSentRequest(UUID targetId) {
         return this.requests.contains(targetId);
     }
 
@@ -46,7 +46,7 @@ public class FriendList {
         this.requests.remove(request);
     }
 
-    public boolean addRequests(UUID requesterId) {
+    public boolean addRequest(UUID requesterId) {
         if (this.requests.contains(requesterId)) {
             return false;
         }

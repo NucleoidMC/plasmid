@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.command.Friend;
+package xyz.nucleoid.plasmid.storage.FriendSystem;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class FriendListManager {
         }
     }
 
-    public static FriendList returnFriendlist(UUID playerUUID) { // return friend list of a player
+    public static FriendList getFriendList(UUID playerUUID) { // return friend list of a player
         return fArrays.get(playerUUID);
     }
 

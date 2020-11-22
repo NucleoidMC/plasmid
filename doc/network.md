@@ -34,30 +34,67 @@ A region represents a named box in a Plasmid map which can contain arbitrary dat
 | bounds | [Bounds]   | The bounds of the region.            |
 | data   | NBT Tag    | Arbitrary data stored in the region. |
 
+### GameProfile
+
+GameProfile represents a player.
+
+| Fields     | Type                       | Description             |
+|:----------:|:--------------------------:|:------------------------|
+| uuid       | UUID                       | The UUID of the player. |
+| name       | string (16)                | The name of the player. |
+| properties | [GameProfile.Property]\[\] | The properties.         |
+
+### GameProfile.Property
+
+GameProfile.Property represents a named property with an assigned value, it can also be signed.
+
+| Fields    | Type              | Description                     |
+|:---------:|:-----------------:|:--------------------------------|
+| name      | string (32767)    | The name of the property.       |
+| value     | string (32767)    | The value of the property.      |
+| signed    | bool              | `true` if signed, else `false`. |
+| signature | (string (32767))? | Only if `signed` is `true`.     |
+
+### Friend
+
+Represents a player's friend.
+
+| Fields    | Type          | Description                             |
+|:---------:|:-------------:|:----------------------------------------|
+| profile   | [GameProfile] | The profile of the friend.              |
+| online    | bool          | `true` if currently only, else `false`. |
+
 ### Array `A[]`
 
 An array holds a list of values of the specified type.
 It also contains the size `N` of the array.
 
-| Fields | Type   | Description                                 |
-|:------:|:------:|:--------------------------------------------|
-| size   | VarI32 | The size of the array.                      |
-| 0      | A      | The first element of the array if present.  |
-| 1      | A      | The second element of the array if present. |
-| ...    | A      | An element of the array if present.         |
-| N-1    | A      | The N-1 element of the array if present.    |
+| Fields | Type     | Description                                 |
+|:------:|:--------:|:--------------------------------------------|
+| size   | [VarI32] | The size of the array.                      |
+| 0      | A        | The first element of the array if present.  |
+| 1      | A        | The second element of the array if present. |
+| ...    | A        | An element of the array if present.         |
+| N-1    | A        | The N-1 element of the array if present.    |
 
 ### Tuple `(A, B, ...)`
 
 A tuple is a type which holds the content of multiple types specified in its name.
 The tuple type is very abstract and acts as many fields as the tuple should hold.
 
+Size: size of `A` + size of `B` + ...
+
 | Fields | Type | Description                    |
 |:------:|:----:|:-------------------------------|
-| first  | A    | The first value of the tuple.  |
-| second | B    | The second value of the tuple. |
+| first  | `A`  | The first value of the tuple.  |
+| second | `B`  | The second value of the tuple. |
 | ...    | ...  | Another value of the tuple.    |
 
+### Optional `X?`
+
+An optional is a value which may or may not be present.
+
+Size: 0 if non-present, else size of `X`.
 
 ## Packets
 
@@ -153,7 +190,6 @@ Direction: `C<->S`
 |:---------:|:----------:|:-----------------------------------------------------------------------|
 | workspace | Identifier | The identifier of the workspace in which the region should be removed. |
 | id        | [VarI32]   | The region runtime ID.                                                 |
-| region    | [Region]   | The region to remove.                                                  |
 
 ### Environment Packets
 
@@ -187,7 +223,103 @@ Direction: `C<-S`
 |:-------------:|:------------:|:-------------------------------------------------------------------------------|
 | ids           | [VarI32]\[\] | The IDs of the particle sources to remove.                                     |
 
+### Friend Packets
+
+#### `plasmid:friend`
+
+Sent by the server to update a friend information.
+
+Direction: `C<-S`
+
+| Fields | Type     | Description             |
+|:------:|:--------:|:------------------------|
+| friend | [Friend] | The friend information. |
+
+#### `plasmid:friend/add/by_name`
+
+Sent by the client to send a friend request.
+
+Direction: `C->S`
+
+| Fields | Type        | Description                                         |
+|:------:|:-----------:|:----------------------------------------------------|
+| name   | string (16) | The name of the player to send a friend request to. |
+
+#### `plasmid:friend/add/by_uuid`
+
+Sent by the client to send a friend request.
+
+Direction: `C->S`
+
+| Fields | Type | Description                                         |
+|:------:|:----:|:----------------------------------------------------|
+| uuid   | UUID | The UUID of the player to send a friend request to. |
+
+#### `plasmid:friend/request`
+
+Sent by the server to tells the player they received a friend request by another player.
+
+Direction: `C<-S`
+
+| Fields  | Type          | Description                                           |
+|:-------:|:-------------:|:------------------------------------------------------|
+| profile | [GameProfile] | The profile of the player who requested to be friend. |
+
+#### `plasmid:friend/request/answer`
+
+Sent by the client to answer a friend request.
+
+Direction: `C->S`
+
+| Fields | Type | Description                                      |
+|:------:|:----:|:-------------------------------------------------|
+| uuid   | UUID | The sender UUID of the request to answer.        |
+| accept | bool | `true` if the request is accepted, else `false`. |
+
+#### `plasmid:friend/remove`
+
+Sent by the server to inform the player that a player unfriended them.
+
+Direction: `C<-S`
+
+| Fields  | Type          | Description                                                       |
+|:-------:|:-------------:|:------------------------------------------------------------------|
+| profile | [GameProfile] | The profile of the player which was removed from the friend list. |
+
+#### `plasmid:friend/remove/by_name`
+
+Sent by the client to remove a friend.
+
+Direction: `C->S`
+
+| Fields | Type        | Description                                          |
+|:------:|:-----------:|:-----------------------------------------------------|
+| name   | string (16) | The name of the player to remove in the friend list. |
+
+#### `plasmid:friend/remove/by_uuid`
+
+Sent by the client to remove a friend.
+
+Direction: `C->S`
+
+| Fields | Type | Description                                          |
+|:------:|:----:|:-----------------------------------------------------|
+| uuid   | UUID | The UUID of the player to remove in the friend list. |
+
+#### `plasmid:friend/list`
+
+The friend list sent by the server.
+
+Direction: `C<-S`
+
+| Fields  | Type         | Description  |
+|:-------:|:------------:|:-------------|
+| friends | [Friend]\[\] | The friends. |
+
 [VarI32]: https://wiki.vg/Protocol#VarInt_and_VarLong "wiki.vg documentation"
 [BlockPos]: https://wiki.vg/Protocol#Position "wiki.vg documentation"
 [Bounds]: #bounds
 [Region]: #region
+[GameProfile]: #gameprofile
+[GameProfile.Property]: #gameprofileproperty
+[Friend]: #friend

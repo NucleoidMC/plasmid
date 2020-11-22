@@ -79,10 +79,10 @@ public class FriendCommand {
             // TODO: prettify this code
             FriendList target = FriendListManager.returnFriendlist(Profile.getId());
             FriendList sender = FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid());
+
             if (FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()).requestListContains(Profile.getId())) {
                 sender.addFriend(Profile.getId());
                 target.addFriend(context.getSource().getPlayer().getUuid());
-
                 sender.removeRequest(Profile.getId()); // not needed but you never know
                 target.removeRequest(context.getSource().getPlayer().getUuid());
                 context.getSource().getPlayer().sendMessage(new LiteralText("You accepted " + Profile.getName() + "friend request."), false);

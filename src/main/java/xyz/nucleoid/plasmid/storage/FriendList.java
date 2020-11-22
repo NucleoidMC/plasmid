@@ -8,7 +8,8 @@ import java.util.UUID;
 
 public class FriendList {
     private int playerId;
-    private ArrayList<UUID> friends = new ArrayList<UUID>();
+    private final ArrayList<UUID> friends = new ArrayList<UUID>();
+    private final ArrayList<UUID> requests = new ArrayList<UUID>();
 
     public ArrayList<UUID> returnFlistIds() {
         return this.friends;
@@ -18,7 +19,19 @@ public class FriendList {
         return this.playerId;
     }
 
-    public void addFreind(UUID addedFriend) {
+    public ArrayList<UUID> returnRequestList() {
+        return this.requests;
+    }
+
+    public boolean requestListContains(UUID targetId) {
+        return this.requests.contains(targetId);
+    }
+
+    public boolean hasFriend(UUID target) {
+        return this.friends.contains(target);
+    }
+
+    public void addFriend(UUID addedFriend) {
         if (this.friends.contains(addedFriend)) {
             System.out.println("no adding");
             return;
@@ -29,6 +42,18 @@ public class FriendList {
         for (UUID ids : this.friends) {
             System.out.println(ids);
         }
+    }
+
+    public void removeRequest(UUID request) {
+        this.requests.remove(request);
+    }
+
+    public boolean addRequests(UUID requesterId) {
+        if (this.requests.contains(requesterId)) {
+            return false;
+        }
+        this.requests.add(requesterId);
+        return true;
     }
 
     public void removeFriend(UUID removeId) {

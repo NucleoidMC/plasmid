@@ -40,16 +40,16 @@ public class FriendCommand {
         UserCache userCache = server.getUserCache();
 
         if (FriendListManager.getFriendList(context.getSource().getPlayer().getUuid()).getRequests().size() <= 0) {
-            player.sendMessage(new LiteralText("No incoming friend requests"), false);
+            context.getSource().sendFeedback(new LiteralText("No incoming friend requests"), false);
         }
 
         int i = 0;
-        player.sendMessage(new LiteralText("### incoming friend requests ###"), false);
+        context.getSource().sendFeedback(new LiteralText("### incoming friend requests ###"), false);
         for (UUID ids : FriendListManager.getFriendList(context.getSource().getPlayer().getUuid()).getRequests()) {
             i++;
-            player.sendMessage(new LiteralText("[" + i + "] Request from " + userCache.getByUuid(ids).getName()), false);
+            context.getSource().sendFeedback(new LiteralText("[" + i + "] Request from " + userCache.getByUuid(ids).getName()), false);
         }
-        player.sendMessage(new LiteralText("### incoming friend requests ###"), false);
+        context.getSource().sendFeedback(new LiteralText("### incoming friend requests ###"), false);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -59,7 +59,7 @@ public class FriendCommand {
         UserCache uCache = server.getUserCache();
 
         if (FriendListManager.getFriendList(context.getSource().getPlayer().getUuid()).getFriends().size() <= 0) {
-            player.sendMessage(new LiteralText("You have no friends..."), false);
+            context.getSource().sendFeedback(new LiteralText("You have no friends..."), false);
             return Command.SINGLE_SUCCESS;
         }
 
@@ -68,13 +68,13 @@ public class FriendCommand {
 
         for (UUID ids : friendList.getFriends()) {
             i++;
-            player.sendMessage(new LiteralText("[" + i + "] " + uCache.getByUuid(ids).getName()), false);
+            context.getSource().sendFeedback(new LiteralText("[" + i + "] " + uCache.getByUuid(ids).getName()), false);
         }
         return Command.SINGLE_SUCCESS;
     }
 
     private static int acceptFriend(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        // this will break if more then one GameProfile is specified
+        // this may break if more then one GameProfile is specified
         for (GameProfile Profile : GameProfileArgumentType.getProfileArgument(context, "player")) {
             // TODO: prettify this code
             FriendList target = FriendListManager.getFriendList(Profile.getId());
@@ -85,10 +85,10 @@ public class FriendCommand {
                 target.addFriend(context.getSource().getPlayer().getUuid());
                 sender.removeRequest(Profile.getId()); // not needed but you never know
                 target.removeRequest(context.getSource().getPlayer().getUuid());
-                context.getSource().getPlayer().sendMessage(new LiteralText("You accepted " + Profile.getName() + "friend request."), false);
+                context.getSource().sendFeedback(new LiteralText("You accepted " + Profile.getName() + "friend request."), false);
                 context.getSource().getMinecraftServer().getPlayerManager().getPlayer(Profile.getId()).sendMessage(new LiteralText(context.getSource().getName() + " accepted your friend request"), false);
             } else {
-                context.getSource().getPlayer().sendMessage(new LiteralText("There are no incoming requests from that player"), false);
+                context.getSource().sendFeedback(new LiteralText("There are no incoming requests from that player"), false);
             }
             return Command.SINGLE_SUCCESS;
         }
@@ -98,21 +98,21 @@ public class FriendCommand {
     private static int registerFriendAdd(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerPlayerEntity commandSender = context.getSource().getPlayer();
         MinecraftServer server = context.getSource().getMinecraftServer();
-        // this will not break if more then one GameProfile is specified but it wil send it to ALL specified, so pls no do ty
+
         for (GameProfile Profile : GameProfileArgumentType.getProfileArgument(context, "playerName")) {
-            //if (Profile.equals(context.getSource().getPlayer().getGameProfile())) {
-                //context.getSource().getPlayer().sendMessage(new LiteralText("You can't friend yourself silly!"), false);
-                //return Command.SINGLE_SUCCESS;
-            //}
+            if (Profile.equals(context.getSource().getPlayer().getGameProfile())) {
+                context.getSource().getPlayer().sendMessage(new LiteralText("You can't friend yourself silly!"), false);
+                return Command.SINGLE_SUCCESS;
+            }
             if (FriendListManager.getFriendList(commandSender.getUuid()).hasFriend(Profile.getId())) {
-                commandSender.sendMessage(new LiteralText("You are already friends with that player"), false);
+                context.getSource().sendFeedback(new LiteralText("You are already friends with that player"), false);
                 return Command.SINGLE_SUCCESS;
             }
             if (FriendListManager.getFriendList(Profile.getId()).addRequest(commandSender.getUuid())) {
-                commandSender.sendMessage(new LiteralText("You sent a request to " + Profile.getName()), false);
+                context.getSource().sendFeedback(new LiteralText("You sent a request to " + Profile.getName()), false);
                 server.getPlayerManager().getPlayer(Profile.getId()).sendMessage(new LiteralText("You received a friend request from " + server.getUserCache().getByUuid(commandSender.getUuid()).getName()), false);
             } else {
-                commandSender.sendMessage(new LiteralText("You already sent that player a request."), false);
+                context.getSource().sendFeedback(new LiteralText("You already sent that player a request."), false);
                 return 0;
             }
         }

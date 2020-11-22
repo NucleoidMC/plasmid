@@ -64,9 +64,9 @@ public class FriendCommand {
         }
 
         int i = 0;
-        FriendList f = FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid());
+        FriendList friendList = FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid());
 
-        for (UUID ids : f.returnFlistIds()) {
+        for (UUID ids : friendList.returnFlistIds()) {
             i++;
             player.sendMessage(new LiteralText("[" + i + "] " + uCache.getByUuid(ids).getName()), false);
         }
@@ -75,15 +75,16 @@ public class FriendCommand {
 
     private static int acceptFriend(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         // this will break if more then one GameProfile is specified
-
         for (GameProfile Profile : GameProfileArgumentType.getProfileArgument(context, "player")) {
             // TODO: prettify this code
+            FriendList target = FriendListManager.returnFriendlist(Profile.getId());
+            FriendList sender = FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid());
             if (FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()).requestListContains(Profile.getId())) {
-                FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()).addFriend(Profile.getId());
-                FriendListManager.returnFriendlist(Profile.getId()).addFriend(context.getSource().getPlayer().getUuid());
+                sender.addFriend(Profile.getId());
+                target.addFriend(context.getSource().getPlayer().getUuid());
 
-                FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()).removeRequest(Profile.getId());
-                FriendListManager.returnFriendlist(Profile.getId()).removeRequest(context.getSource().getPlayer().getUuid());
+                sender.removeRequest(Profile.getId()); // not needed but you never know
+                target.removeRequest(context.getSource().getPlayer().getUuid());
                 context.getSource().getPlayer().sendMessage(new LiteralText("You accepted " + Profile.getName() + "friend request."), false);
                 context.getSource().getMinecraftServer().getPlayerManager().getPlayer(Profile.getId()).sendMessage(new LiteralText(context.getSource().getName() + " accepted your friend request"), false);
             } else {

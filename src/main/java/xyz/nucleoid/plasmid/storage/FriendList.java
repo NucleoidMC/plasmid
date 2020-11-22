@@ -8,8 +8,8 @@ import java.util.UUID;
 
 public class FriendList {
     private int playerId;
-    private final ArrayList<UUID> friends = new ArrayList<UUID>();
-    private final ArrayList<UUID> requests = new ArrayList<UUID>();
+    private final ArrayList<UUID> friends = new ArrayList<UUID>(); // holds accepted friends
+    private final ArrayList<UUID> requests = new ArrayList<UUID>(); // holds friend requests
 
     public ArrayList<UUID> returnFlistIds() {
         return this.friends;

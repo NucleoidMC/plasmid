@@ -11,9 +11,9 @@ import java.util.UUID;
 
  */
 public class FriendListManager {
-    public static Map<UUID, FriendList> fArrays = new HashMap<UUID, FriendList>();
+    public static Map<UUID, FriendList> fArrays = new HashMap<UUID, FriendList>(); // manages all payers friend lists
 
-    public static void appendNewFriendList(UUID playerUUID, FriendList fList) {
+    public static void appendNewFriendList(UUID playerUUID, FriendList fList) { // add new friend list
         if (fArrays.containsValue(playerUUID)) {
             fArrays.computeIfPresent(playerUUID, (k, v) -> v = fList);
         } else {
@@ -21,11 +21,11 @@ public class FriendListManager {
         }
     }
 
-    public static FriendList returnFriendlist(UUID playerUUID) {
+    public static FriendList returnFriendlist(UUID playerUUID) { // return friend list of a player
         return fArrays.get(playerUUID);
     }
 
-    public static void removeFriendList(UUID OwnerUUID) {
+    public static void removeFriendList(UUID OwnerUUID) { // remove friend list CAUTION ONY CALL THIS METHOD IF THE PLAYER IS DISCONNECTING OR THEY ARE PERM BANNED 
         if (fArrays.containsValue(OwnerUUID)) {
             fArrays.remove(OwnerUUID);
         }

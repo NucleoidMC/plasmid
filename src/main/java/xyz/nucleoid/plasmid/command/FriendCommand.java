@@ -104,10 +104,10 @@ public class FriendCommand {
         MinecraftServer server = context.getSource().getMinecraftServer();
         // this will not break if more then one GameProfile is specified but it wil send it to ALL specified, so pls no do ty
         for (GameProfile Profile : GameProfileArgumentType.getProfileArgument(context, "playerName")) {
-            //if (Profile.equals(context.getSource().getPlayer().getGameProfile())) {
-            //context.getSource().getPlayer().sendMessage(new LiteralText("You can't friend yourself silly!"), false);
-            //return Command.SINGLE_SUCCESS;
-            //}
+            if (Profile.equals(context.getSource().getPlayer().getGameProfile())) {
+                context.getSource().getPlayer().sendMessage(new LiteralText("You can't friend yourself silly!"), false);
+                return Command.SINGLE_SUCCESS;
+            }
             System.out.println(Profile.getName());
             System.out.println(FriendListManager.returnFriendlist(context.getSource().getPlayer().getUuid()));
             if (FriendListManager.returnFriendlist(commandSender.getUuid()).hasFriend(Profile.getId())) {

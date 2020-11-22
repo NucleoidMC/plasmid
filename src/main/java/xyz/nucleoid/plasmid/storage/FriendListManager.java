@@ -25,7 +25,7 @@ public class FriendListManager {
         return fArrays.get(playerUUID);
     }
 
-    public static void removeFriendList(UUID OwnerUUID) { // remove friend list CAUTION ONY CALL THIS METHOD IF THE PLAYER IS DISCONNECTING OR THEY ARE PERM BANNED 
+    public static void removeFriendList(UUID OwnerUUID) { // remove friend list CAUTION ONY CALL THIS METHOD IF THE PLAYER IS DISCONNECTING OR THEY ARE PERM BANNED
         if (fArrays.containsValue(OwnerUUID)) {
             fArrays.remove(OwnerUUID);
         }

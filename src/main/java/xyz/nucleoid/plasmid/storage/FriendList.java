@@ -54,7 +54,7 @@ public class FriendList {
         return true;
     }
 
-    public void removeFriend(UUID removeId) {
+    public void removeFriend(UUID removeId) { // only call this method if you are using the /friend remove command or you 100% know what you are doing
         this.friends.remove(removeId);
     }
 }

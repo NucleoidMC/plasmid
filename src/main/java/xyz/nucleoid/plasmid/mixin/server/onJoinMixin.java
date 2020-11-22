@@ -7,8 +7,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.nucleoid.plasmid.storage.FriendList;
-import xyz.nucleoid.plasmid.storage.FriendListManager;
+import xyz.nucleoid.plasmid.command.Friend.FriendList;
+import xyz.nucleoid.plasmid.command.Friend.FriendListManager;
 
 @Mixin(PlayerManager.class)
 public class onJoinMixin<class_3222> {

@@ -11,8 +11,8 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.UserCache;
-import xyz.nucleoid.plasmid.storage.FriendList;
-import xyz.nucleoid.plasmid.storage.FriendListManager;
+import xyz.nucleoid.plasmid.command.Friend.FriendList;
+import xyz.nucleoid.plasmid.command.Friend.FriendListManager;
 
 import java.util.UUID;
 

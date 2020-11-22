@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.storage;
+package xyz.nucleoid.plasmid.command.Friend;
 
 import java.util.ArrayList;
 import java.util.UUID;

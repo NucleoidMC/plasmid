@@ -6,6 +6,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.argument.GameProfileArgumentType;
+import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -86,7 +87,7 @@ public class FriendCommand {
                 sender.removeRequest(Profile.getId()); // not needed but you never know
                 target.removeRequest(context.getSource().getPlayer().getUuid());
                 context.getSource().sendFeedback(new LiteralText("You accepted " + Profile.getName() + "friend request."), false);
-                context.getSource().getMinecraftServer().getPlayerManager().getPlayer(Profile.getId()).sendMessage(new LiteralText(context.getSource().getName() + " accepted your friend request"), false);
+                context.getSource().getMinecraftServer().getPlayerManager().getPlayer(Profile.getId()).sendMessage(new LiteralText(context.getSource().getName() + " accepted your friend request"),MessageType.SYSTEM,context.getSource().getPlayer().getUuid());
             } else {
                 context.getSource().sendFeedback(new LiteralText("There are no incoming requests from that player"), false);
             }
@@ -101,7 +102,7 @@ public class FriendCommand {
 
         for (GameProfile Profile : GameProfileArgumentType.getProfileArgument(context, "playerName")) {
             if (Profile.equals(context.getSource().getPlayer().getGameProfile())) {
-                context.getSource().getPlayer().sendMessage(new LiteralText("You can't friend yourself silly!"), false);
+                context.getSource().sendFeedback(new LiteralText("You can't friend yourself silly!"), false);
                 return Command.SINGLE_SUCCESS;
             }
             if (FriendListManager.getFriendList(commandSender.getUuid()).hasFriend(Profile.getId())) {
@@ -110,7 +111,7 @@ public class FriendCommand {
             }
             if (FriendListManager.getFriendList(Profile.getId()).addRequest(commandSender.getUuid())) {
                 context.getSource().sendFeedback(new LiteralText("You sent a request to " + Profile.getName()), false);
-                server.getPlayerManager().getPlayer(Profile.getId()).sendMessage(new LiteralText("You received a friend request from " + server.getUserCache().getByUuid(commandSender.getUuid()).getName()), false);
+                server.getPlayerManager().getPlayer(Profile.getId()).sendMessage(new LiteralText("You received a friend request from " + server.getUserCache().getByUuid(commandSender.getUuid()).getName()), MessageType.SYSTEM,commandSender.getUuid());
             } else {
                 context.getSource().sendFeedback(new LiteralText("You already sent that player a request."), false);
                 return 0;

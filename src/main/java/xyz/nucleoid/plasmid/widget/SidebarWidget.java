@@ -14,6 +14,7 @@ import net.minecraft.text.TranslatableText;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
+import xyz.nucleoid.plasmid.util.TranslatableString;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,11 +60,11 @@ public final class SidebarWidget implements GameWidget {
         }
     }
 
-    public void set(Text[] display) {
+    public void set(TranslatableString[] display) {
         List<String> stringList = new ArrayList<>();
 
-        for (Text text : display) {
-            stringList.add(text.getString());
+        for (TranslatableString text : display) {
+            stringList.add(text.getDefaultTranslation());
         }
 
         String[] stringDisplay = stringList.toArray(new String[0]);
@@ -75,7 +76,7 @@ public final class SidebarWidget implements GameWidget {
         // clear old lines
         for (int i = 0; i < this.display.length; i++) {
             int score = display.length - i;
-            if (i >= display.length || !this.display[i].equals(display[i].getString())) {
+            if (i >= display.length || !this.display[i].equals(display[i].getDefaultTranslation())) {
                 this.players.sendPacket(new ScoreboardPlayerUpdateS2CPacket(
                         ServerScoreboard.UpdateMode.REMOVE, null,
                         this.display[i], score
@@ -127,13 +128,13 @@ public final class SidebarWidget implements GameWidget {
         }
     }
 
-    private void sendDisplay(ServerPlayerEntity player, Text[] lines) {
+    private void sendDisplay(ServerPlayerEntity player, TranslatableString[] lines) {
         for (int i = 0; i < lines.length; i++) {
-            Text line = LocalizableText.asLocalizedFor(lines[i], (LocalizationTarget) player);
+            String line = lines[i].localizeFor((LocalizationTarget) player);
             int score = lines.length - i;
             player.networkHandler.sendPacket(new ScoreboardPlayerUpdateS2CPacket(
                     ServerScoreboard.UpdateMode.CHANGE, OBJECTIVE_NAME,
-                    line.getString(), score
+                    line, score
             ));
         }
     }

@@ -111,12 +111,12 @@ A `plasmid:workspace/regions` packet should be sent with this packet if the work
 
 Direction: `C<-S`
 
-| Fields | Type       | Description                                                            |
-|:------:|:----------:|:-----------------------------------------------------------------------|
-| id     | Identifier | The identifier of the entered workspace.                               |
-| bounds | [Bounds]   | The bounds of the map, may be `[[0, 0, 0], [0, 0, 0]]` if not present. |
-| world  | Identifier | The world in which the workspace is present.                           |
-| data   | NBT Tag    | Arbitrary data assigned to the map template.                           |
+| Fields    | Type       | Description                                                            |
+|:---------:|:----------:|:-----------------------------------------------------------------------|
+| workspace | Identifier | The identifier of the entered workspace.                               |
+| bounds    | [Bounds]   | The bounds of the map, may be `[[0, 0, 0], [0, 0, 0]]` if not present. |
+| world     | Identifier | The world in which the workspace is present.                           |
+| data      | NBT Tag    | Arbitrary data assigned to the map template.                           |
 
 #### `plasmid:workspace/bounds`
 
@@ -125,10 +125,10 @@ A client can request bounds change, but can be rejected. If a request is accepte
 
 Direction `C<->S`
 
-| Fields | Type       | Description                                                                      |
-|:------:|:----------:|:---------------------------------------------------------------------------------|
-| id     | Identifier | The identifier of the affected workspace.                                        |
-| bounds | [Bounds]   | The new bounds of the workspace map, `[[0, 0, 0], [0, 0, 0]]` if bounds is null. |
+| Fields    | Type       | Description                                                                      |
+|:---------:|:----------:|:---------------------------------------------------------------------------------|
+| workspace | Identifier | The identifier of the affected workspace.                                        |
+| bounds    | [Bounds]   | The new bounds of the workspace map, `[[0, 0, 0], [0, 0, 0]]` if bounds is null. |
 
 #### `plasmid:workspace/data`
 
@@ -137,10 +137,10 @@ A client can request data change, but can be rejected. If a request is accepted,
 
 Direction: `C<->S`
 
-| Fields | Type       | Description                               |
-|:------:|:----------:|:------------------------------------------|
-| id     | Identifier | The identifier of the affected workspace. |
-| data   | NBT Tag    | The NBT data.                             |
+| Fields    | Type       | Description                               |
+|:---------:|:----------:|:------------------------------------------|
+| workspace | Identifier | The identifier of the affected workspace. |
+| data      | NBT Tag    | The NBT data.                             |
 
 #### `plasmid:workspace/region`
 
@@ -149,11 +149,11 @@ If sent from a client, this is considered as an update request which can be reje
 
 Direction: `C<->S`
 
-| Fields    | Type       | Description                                                          |
-|:---------:|:----------:|:---------------------------------------------------------------------|
-| workspace | Identifier | The identifier of the workspace in which the region should be added. |
-| id        | [VarI32]   | The region runtime identifier.                                       |
-| region    | [Region]   | The region to add.                                                   |
+| Fields     | Type       | Description                                                          |
+|:----------:|:----------:|:---------------------------------------------------------------------|
+| workspace  | Identifier | The identifier of the workspace in which the region should be added. |
+| runtime_id | [VarI32]   | The region runtime identifier.                                       |
+| region     | [Region]   | The region to add or update.                                         |
 
 #### `plasmid:workspace/regions`
 
@@ -186,10 +186,10 @@ When sent from a client, this packet should be treated as a request which can be
 
 Direction: `C<->S`
 
-| Fields    | Type       | Description                                                            |
-|:---------:|:----------:|:-----------------------------------------------------------------------|
-| workspace | Identifier | The identifier of the workspace in which the region should be removed. |
-| id        | [VarI32]   | The region runtime ID.                                                 |
+| Fields     | Type       | Description                                                            |
+|:----------:|:----------:|:-----------------------------------------------------------------------|
+| workspace  | Identifier | The identifier of the workspace in which the region should be removed. |
+| runtime_id | [VarI32]   | The region runtime ID.                                                 |
 
 ### Environment Packets
 

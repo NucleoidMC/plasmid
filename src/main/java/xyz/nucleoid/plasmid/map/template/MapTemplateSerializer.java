@@ -22,6 +22,7 @@ import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,34 +56,56 @@ public final class MapTemplateSerializer {
         });
     }
 
-    public CompletableFuture<MapTemplate> load(Identifier identifier) {
+    public CompletableFuture<MapTemplate> loadFromResource(Identifier identifier) {
         return CompletableFuture.supplyAsync(() -> {
             Identifier path = getResourcePathFor(identifier);
 
             try (Resource resource = this.resourceManager.getResource(path)) {
-                MapTemplate template = MapTemplate.createEmpty();
-                this.load(template, NbtIo.readCompressed(resource.getInputStream()));
-                return template;
+                return this.loadFrom(resource.getInputStream());
             } catch (IOException e) {
                 throw new CompletionException(e);
             }
         }, Util.getIoWorkerExecutor());
     }
 
-    public CompletableFuture<Void> save(MapTemplate template, Identifier identifier) {
+    public CompletableFuture<MapTemplate> loadFromExport(Identifier location) {
+        return CompletableFuture.supplyAsync(() -> {
+            Path path = getExportPathFor(location);
+            try {
+                Files.createDirectories(path.getParent());
+                try (InputStream input = Files.newInputStream(path)) {
+                    return this.loadFrom(input);
+                }
+            } catch (IOException e) {
+                throw new CompletionException(e);
+            }
+        }, Util.getIoWorkerExecutor());
+    }
+
+    public CompletableFuture<Void> saveToExport(MapTemplate template, Identifier identifier) {
         return CompletableFuture.supplyAsync(() -> {
             Path path = getExportPathFor(identifier);
             try {
                 Files.createDirectories(path.getParent());
                 try (OutputStream output = Files.newOutputStream(path)) {
-                    CompoundTag root = this.save(template);
-                    NbtIo.writeCompressed(root, output);
+                    this.saveTo(template, output);
                     return null;
                 }
             } catch (IOException e) {
                 throw new CompletionException(e);
             }
         }, Util.getIoWorkerExecutor());
+    }
+
+    public MapTemplate loadFrom(InputStream input) throws IOException {
+        MapTemplate template = MapTemplate.createEmpty();
+        this.load(template, NbtIo.readCompressed(input));
+        return template;
+    }
+
+    public void saveTo(MapTemplate template, OutputStream output) throws IOException {
+        CompoundTag root = this.save(template);
+        NbtIo.writeCompressed(root, output);
     }
 
     private void load(MapTemplate template, CompoundTag root) {

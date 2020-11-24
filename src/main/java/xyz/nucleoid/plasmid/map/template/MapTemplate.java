@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  * <p>
  * A map template stores serialized chunks, block entities, entities, the bounds, the biome, and regions.
  * <p>
- * It can be loaded from resources with {@link MapTemplateSerializer#load(Identifier)},
+ * It can be loaded from resources with {@link MapTemplateSerializer#loadFromResource(Identifier)},
  * and used for generation with {@link TemplateChunkGenerator}
  */
 public final class MapTemplate {

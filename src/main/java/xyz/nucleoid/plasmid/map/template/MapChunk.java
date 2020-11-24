@@ -73,20 +73,24 @@ final class MapChunk {
     public void serialize(CompoundTag tag) {
         this.container.write(tag, "palette", "block_states");
 
-        ListTag entitiesTag = new ListTag();
-        for (MapEntity entity : this.entities) {
-            entitiesTag.add(entity.tag);
+        if (!this.entities.isEmpty()) {
+            ListTag entitiesTag = new ListTag();
+            for (MapEntity entity : this.entities) {
+                entitiesTag.add(entity.tag);
+            }
+            tag.put("entities", entitiesTag);
         }
-        tag.put("entities", entitiesTag);
     }
 
     public static MapChunk deserialize(ChunkSectionPos pos, CompoundTag tag) {
         MapChunk chunk = new MapChunk(pos);
         chunk.container.read(tag.getList("palette", NbtType.COMPOUND), tag.getLongArray("block_states"));
 
-        ListTag entitiesTag = tag.getList("entities", NbtType.COMPOUND);
-        for (Tag entityTag : entitiesTag) {
-            chunk.entities.add(MapEntity.fromTag(pos, (CompoundTag) entityTag));
+        if (tag.contains("entities", NbtType.LIST)) {
+            ListTag entitiesTag = tag.getList("entities", NbtType.COMPOUND);
+            for (Tag entityTag : entitiesTag) {
+                chunk.entities.add(MapEntity.fromTag(pos, (CompoundTag) entityTag));
+            }
         }
 
         return chunk;

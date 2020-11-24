@@ -19,7 +19,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.command.argument.MapWorkspaceArgument;
-import xyz.nucleoid.plasmid.map.template.*;
+import xyz.nucleoid.plasmid.map.template.MapTemplate;
+import xyz.nucleoid.plasmid.map.template.MapTemplatePlacer;
+import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 import xyz.nucleoid.plasmid.map.workspace.ReturnPosition;
@@ -46,7 +48,6 @@ public final class MapManageCommand {
 
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        // TODO: import functionality
         dispatcher.register(
             literal("map").requires(source -> source.hasPermissionLevel(4))
                 .then(literal("open")
@@ -69,17 +70,28 @@ public final class MapManageCommand {
                     .executes(MapManageCommand::joinWorkspace)
                 ))
                 .then(literal("leave").executes(MapManageCommand::leaveMap))
-                .then(literal("compile")
+                .then(literal("export")
                     .then(MapWorkspaceArgument.argument("workspace")
-                    .executes(context -> MapManageCommand.compileMap(context, false))
+                    .executes(context -> MapManageCommand.exportMap(context, false))
                     .then(literal("withEntities")
-                        .executes(context -> MapManageCommand.compileMap(context, true))
+                        .executes(context -> MapManageCommand.exportMap(context, true))
                     )
                 ))
                 .then(literal("delete")
                     .then(MapWorkspaceArgument.argument("workspace_once")
                     .then(MapWorkspaceArgument.argument("workspace_again")
                     .executes(MapManageCommand::deleteWorkspace)
+                )))
+                .then(literal("import")
+                    .then(argument("location", IdentifierArgumentType.identifier())
+                    .then(argument("to_workspace", IdentifierArgumentType.identifier())
+                        .then(argument("origin", BlockPosArgumentType.blockPos())
+                            .executes(context -> {
+                                BlockPos origin = BlockPosArgumentType.getBlockPos(context, "origin");
+                                return MapManageCommand.importWorkspace(context, origin);
+                            })
+                        )
+                    .executes(context -> MapManageCommand.importWorkspace(context, BlockPos.ORIGIN))
                 )))
         );
     }
@@ -192,20 +204,20 @@ public final class MapManageCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int compileMap(CommandContext<ServerCommandSource> context, boolean includeEntities) throws CommandSyntaxException {
+    private static int exportMap(CommandContext<ServerCommandSource> context, boolean includeEntities) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
 
         MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
 
         MapTemplate template = workspace.compile(includeEntities);
-        CompletableFuture<Void> future = MapTemplateSerializer.INSTANCE.save(template, workspace.getIdentifier());
+        CompletableFuture<Void> future = MapTemplateSerializer.INSTANCE.saveToExport(template, workspace.getIdentifier());
 
         future.handle((v, throwable) -> {
             if (throwable == null) {
-                source.sendFeedback(new LiteralText("Compiled and saved map '" + workspace.getIdentifier() + "'"), false);
+                source.sendFeedback(new LiteralText("Compiled and exported map '" + workspace.getIdentifier() + "'"), false);
             } else {
-                Plasmid.LOGGER.error("Failed to compile map to '{}'", workspace.getIdentifier(), throwable);
-                source.sendError(new LiteralText("Failed to compile map! An unexpected exception was thrown"));
+                Plasmid.LOGGER.error("Failed to export map to '{}'", workspace.getIdentifier(), throwable);
+                source.sendError(new LiteralText("Failed to export map! An unexpected exception was thrown"));
             }
             return null;
         });
@@ -234,5 +246,45 @@ public final class MapManageCommand {
         source.sendFeedback(message.formatted(Formatting.RED), false);
 
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int importWorkspace(CommandContext<ServerCommandSource> context, BlockPos origin) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+
+        Identifier location = IdentifierArgumentType.getIdentifier(context, "location");
+        Identifier toWorkspaceId = IdentifierArgumentType.getIdentifier(context, "to_workspace");
+
+        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
+        if (workspaceManager.byId(toWorkspaceId) != null) {
+            throw MAP_ALREADY_EXISTS.create(toWorkspaceId);
+        }
+
+        CompletableFuture<MapTemplate> future = tryLoadTemplateForImport(location);
+
+        future.thenAcceptAsync(template -> {
+            if (template != null) {
+                workspaceManager.open(toWorkspaceId).thenAcceptAsync(workspace -> {
+                    MapTemplatePlacer placer = new MapTemplatePlacer(template);
+                    placer.placeAt(workspace.getWorld(), BlockPos.ORIGIN);
+
+                    source.sendFeedback(new LiteralText("Imported workspace into '" + toWorkspaceId + "'!"), false);
+                }, source.getMinecraftServer());
+            } else {
+                source.sendError(new LiteralText("No template found at '" + location + "'!"));
+            }
+        }, source.getMinecraftServer());
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static CompletableFuture<MapTemplate> tryLoadTemplateForImport(Identifier location) {
+        return MapTemplateSerializer.INSTANCE.loadFromExport(location).handle((ok, err) -> ok)
+                .thenCompose(template -> {
+                    if (template != null) {
+                        return CompletableFuture.completedFuture(template);
+                    }
+
+                    return MapTemplateSerializer.INSTANCE.loadFromResource(location).handle((ok, err) -> ok);
+                });
     }
 }

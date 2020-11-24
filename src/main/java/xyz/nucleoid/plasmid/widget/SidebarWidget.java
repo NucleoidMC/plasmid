@@ -157,7 +157,7 @@ public final class SidebarWidget implements GameWidget {
                         if (i < this.lastLength) {
                             this.sendRemoveLine(player, i);
                         }
-                        this.sendUpdateLine(player, i, score);
+                        this.sendUpdateLine(player, this.getLineForPlayer(this.lines[i], i, player), score);
                     }
                 }
             }
@@ -178,14 +178,14 @@ public final class SidebarWidget implements GameWidget {
             for (int i = 0; i < length; i++) {
                 int score = length - i;
                 this.sendRemoveLine(player, i);
-                this.sendUpdateLine(player, i, score);
+                this.sendUpdateLine(player, this.getLineForPlayer(this.lastLines[i], i, player), score);
             }
         }
 
-        void sendUpdateLine(ServerPlayerEntity player, int index, int score) {
+        void sendUpdateLine(ServerPlayerEntity  player, String line, int score) {
             player.networkHandler.sendPacket(new ScoreboardPlayerUpdateS2CPacket(
                     ServerScoreboard.UpdateMode.CHANGE, OBJECTIVE_NAME,
-                    this.getLineForPlayer(this.lines[index], index, player), score
+                    line, score
             ));
         }
 

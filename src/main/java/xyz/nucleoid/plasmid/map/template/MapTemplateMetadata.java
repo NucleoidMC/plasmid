@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -93,6 +94,10 @@ public final class MapTemplateMetadata {
     @Nullable
     public BlockBounds getFirstRegionBounds(String marker) {
         return this.getRegionBounds(marker).findFirst().orElse(null);
+    }
+
+    public Collection<TemplateRegion> getRegions() {
+        return this.regions;
     }
 
     /**

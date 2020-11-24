@@ -34,6 +34,7 @@ import xyz.nucleoid.plasmid.command.argument.MapWorkspaceArgument;
 import xyz.nucleoid.plasmid.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.map.template.MapTemplatePlacer;
 import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
+import xyz.nucleoid.plasmid.map.template.TemplateRegion;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 import xyz.nucleoid.plasmid.map.workspace.ReturnPosition;
@@ -330,10 +331,24 @@ public final class MapManageCommand {
         future.thenAcceptAsync(template -> {
             if (template != null) {
                 workspaceManager.open(toWorkspaceId).thenAcceptAsync(workspace -> {
-                    MapTemplatePlacer placer = new MapTemplatePlacer(template);
-                    placer.placeAt(workspace.getWorld(), origin);
+                    source.sendFeedback(new LiteralText("Importing workspace..."), false);
 
-                    source.sendFeedback(new LiteralText("Imported workspace into '" + toWorkspaceId + "'!"), false);
+                    workspace.setBounds(template.getBounds().offset(origin));
+                    workspace.setOrigin(origin);
+
+                    for (TemplateRegion region : template.getMetadata().getRegions()) {
+                        workspace.addRegion(region.getMarker(), region.getBounds().offset(origin), region.getData());
+                    }
+
+                    workspace.setData(template.getMetadata().getData());
+
+                    try {
+                        MapTemplatePlacer placer = new MapTemplatePlacer(template);
+                        placer.placeAt(workspace.getWorld(), origin);
+                        source.sendFeedback(new LiteralText("Imported workspace into '" + toWorkspaceId + "'!"), false);
+                    } catch (Exception e) {
+                        Plasmid.LOGGER.error("Failed to place template into world!", e);
+                    }
                 }, source.getMinecraftServer());
             } else {
                 source.sendError(new LiteralText("No template found at '" + location + "'!"));

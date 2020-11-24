@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 public final class MapWorkspaceManager extends PersistentState {
     public static final String KEY = Plasmid.ID + ":map_workspaces";
@@ -47,12 +48,16 @@ public final class MapWorkspaceManager extends PersistentState {
     }
 
     public CompletableFuture<MapWorkspace> open(Identifier identifier) {
+        return this.open(identifier, this::createVoidOptions);
+    }
+
+    public CompletableFuture<MapWorkspace> open(Identifier identifier, Supplier<DimensionOptions> options) {
         MapWorkspace existingWorkspace = this.workspacesById.get(identifier);
         if (existingWorkspace != null) {
             return CompletableFuture.completedFuture(existingWorkspace);
         }
 
-        CompletableFuture<PersistentWorldHandle> dimension = this.getOrCreateDimension(identifier);
+        CompletableFuture<PersistentWorldHandle> dimension = this.getOrCreateDimension(identifier, options);
         return dimension.thenApplyAsync(worldHandle -> {
             MapWorkspace workspace = new MapWorkspace(worldHandle, identifier, DEFAULT_BOUNDS);
             this.workspacesById.put(identifier, workspace);
@@ -112,7 +117,7 @@ public final class MapWorkspaceManager extends PersistentState {
             Identifier identifier = new Identifier(key);
             CompoundTag root = tag.getCompound(key);
 
-            this.getOrCreateDimension(identifier).thenAcceptAsync(worldHandle -> {
+            this.getOrCreateDimension(identifier, this::createVoidOptions).thenAcceptAsync(worldHandle -> {
                 MapWorkspace workspace = MapWorkspace.deserialize(worldHandle, root);
                 this.workspacesById.put(identifier, workspace);
                 this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
@@ -134,12 +139,12 @@ public final class MapWorkspaceManager extends PersistentState {
         return true;
     }
 
-    private CompletableFuture<PersistentWorldHandle> getOrCreateDimension(Identifier identifier) {
+    private CompletableFuture<PersistentWorldHandle> getOrCreateDimension(Identifier identifier, Supplier<DimensionOptions> options) {
         Identifier dimensionId = new Identifier(identifier.getNamespace(), "workspace_" + identifier.getPath());
-        return Fantasy.get(this.server).getOrOpenPersistentWorld(dimensionId, this::createDimensionOptions);
+        return Fantasy.get(this.server).getOrOpenPersistentWorld(dimensionId, options);
     }
 
-    private DimensionOptions createDimensionOptions() {
+    private DimensionOptions createVoidOptions() {
         DynamicRegistryManager registries = this.server.getRegistryManager();
         DimensionType overworld = registries.getDimensionTypes().get(DimensionType.OVERWORLD_REGISTRY_KEY);
         VoidChunkGenerator generator = new VoidChunkGenerator(registries.get(Registry.BIOME_KEY));

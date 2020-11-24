@@ -6,8 +6,14 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
+import net.minecraft.command.argument.NbtCompoundTagArgumentType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -17,7 +23,12 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.dimension.DimensionOptions;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.command.argument.ChunkGeneratorArgument;
+import xyz.nucleoid.plasmid.command.argument.DimensionOptionsArgument;
 import xyz.nucleoid.plasmid.command.argument.MapWorkspaceArgument;
 import xyz.nucleoid.plasmid.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.map.template.MapTemplatePlacer;
@@ -28,7 +39,10 @@ import xyz.nucleoid.plasmid.map.workspace.ReturnPosition;
 import xyz.nucleoid.plasmid.map.workspace.WorkspaceTraveler;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
+import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -46,13 +60,26 @@ public final class MapManageCommand {
             new LiteralText("The given workspaces do not match! Are you sure you want to delete that?")
     );
 
+    public static final DynamicCommandExceptionType INVALID_GENERATOR_CONFIG = new DynamicCommandExceptionType(arg ->
+            new TranslatableText("Invalid generator config! %s", arg)
+    );
+
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
             literal("map").requires(source -> source.hasPermissionLevel(4))
                 .then(literal("open")
                     .then(argument("workspace", IdentifierArgumentType.identifier())
-                    .executes(MapManageCommand::openWorkspace)
+                    .executes(context -> MapManageCommand.openWorkspace(context, null))
+                        .then(literal("like")
+                            .then(DimensionOptionsArgument.argument("dimension")
+                            .executes(MapManageCommand::openWorkspaceLikeDimension)
+                        ))
+                        .then(literal("with")
+                            .then(ChunkGeneratorArgument.argument("generator")
+                            .then(argument("config", NbtCompoundTagArgumentType.nbtCompound())
+                            .executes(MapManageCommand::openWorkspaceByGenerator)
+                        )))
                 ))
                 .then(literal("origin")
                     .then(MapWorkspaceArgument.argument("workspace")
@@ -97,7 +124,7 @@ public final class MapManageCommand {
     }
     // @formatter:on
 
-    private static int openWorkspace(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int openWorkspace(CommandContext<ServerCommandSource> context, @Nullable Supplier<DimensionOptions> options) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
 
         Identifier identifier = IdentifierArgumentType.getIdentifier(context, "workspace");
@@ -107,16 +134,53 @@ public final class MapManageCommand {
             throw MAP_ALREADY_EXISTS.create(identifier);
         }
 
-        workspaceManager.open(identifier);
+        CompletableFuture<MapWorkspace> future;
+        if (options != null) {
+            future = workspaceManager.open(identifier, options);
+        } else {
+            future = workspaceManager.open(identifier);
+        }
 
-        source.sendFeedback(
-                new LiteralText("Opened workspace '" + identifier + "'! Use ")
-                        .append(new LiteralText("/map join " + identifier).formatted(Formatting.GRAY))
-                        .append(" to join this map"),
-                false
-        );
+        future.handleAsync((workspace, throwable) -> {
+            if (throwable == null) {
+                source.sendFeedback(
+                        new LiteralText("Opened workspace '" + identifier + "'! Use ")
+                                .append(new LiteralText("/map join " + identifier).formatted(Formatting.GRAY))
+                                .append(" to join this map"),
+                        false
+                );
+            } else {
+                source.sendError(new LiteralText("An unexpected error occurred while trying to open workspace!"));
+                Plasmid.LOGGER.error("Failed to open workspace", throwable);
+            }
+            return null;
+        }, source.getMinecraftServer());
 
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int openWorkspaceLikeDimension(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        DimensionOptions dimension = DimensionOptionsArgument.get(context, "dimension");
+        return MapManageCommand.openWorkspace(context, () -> new DimensionOptions(dimension.getDimensionTypeSupplier(), dimension.getChunkGenerator()));
+    }
+
+    private static int openWorkspaceByGenerator(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Codec<? extends ChunkGenerator> generatorCodec = ChunkGeneratorArgument.get(context, "generator");
+        CompoundTag config = NbtCompoundTagArgumentType.getCompoundTag(context, "config");
+
+        DataResult<? extends ChunkGenerator> result = generatorCodec.parse(NbtOps.INSTANCE, config);
+
+        Optional<?> error = result.error();
+        if (error.isPresent()) {
+            throw INVALID_GENERATOR_CONFIG.create(error.get());
+        }
+
+        ChunkGenerator chunkGenerator = result.result().get();
+        return MapManageCommand.openWorkspace(context, () -> {
+            MinecraftServer server = context.getSource().getMinecraftServer();
+            DimensionType dimension = server.getOverworld().getDimension();
+            return new DimensionOptions(() -> dimension, chunkGenerator);
+        });
     }
 
     private static int setWorkspaceOrigin(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -265,7 +329,7 @@ public final class MapManageCommand {
             if (template != null) {
                 workspaceManager.open(toWorkspaceId).thenAcceptAsync(workspace -> {
                     MapTemplatePlacer placer = new MapTemplatePlacer(template);
-                    placer.placeAt(workspace.getWorld(), BlockPos.ORIGIN);
+                    placer.placeAt(workspace.getWorld(), origin);
 
                     source.sendFeedback(new LiteralText("Imported workspace into '" + toWorkspaceId + "'!"), false);
                 }, source.getMinecraftServer());

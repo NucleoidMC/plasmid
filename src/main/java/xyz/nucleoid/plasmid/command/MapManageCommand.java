@@ -19,7 +19,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.command.argument.MapWorkspaceArgument;
-import xyz.nucleoid.plasmid.game.map.template.*;
+import xyz.nucleoid.plasmid.map.template.*;
+import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
+import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.workspace.ReturnPosition;
+import xyz.nucleoid.plasmid.map.workspace.WorkspaceTraveler;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.concurrent.CompletableFuture;

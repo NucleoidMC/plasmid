@@ -10,8 +10,8 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.game.map.template.MapWorkspace;
-import xyz.nucleoid.plasmid.game.map.template.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
+import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 
 public final class MapWorkspaceArgument {
     public static final DynamicCommandExceptionType WORKSPACE_NOT_FOUND = new DynamicCommandExceptionType(arg ->

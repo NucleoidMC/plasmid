@@ -28,11 +28,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.game.map.template.MapWorkspace;
-import xyz.nucleoid.plasmid.game.map.template.MapWorkspaceManager;
-import xyz.nucleoid.plasmid.game.map.template.TemplateRegion;
-import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
+import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
+import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.template.TemplateRegion;
+import xyz.nucleoid.plasmid.map.workspace.trace.PartialRegion;
+import xyz.nucleoid.plasmid.map.workspace.trace.RegionTracer;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.Collection;

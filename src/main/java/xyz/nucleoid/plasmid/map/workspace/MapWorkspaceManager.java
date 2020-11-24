@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.game.map.template;
+package xyz.nucleoid.plasmid.map.workspace;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;

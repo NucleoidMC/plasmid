@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.game.map.template.trace;
+package xyz.nucleoid.plasmid.map.workspace.trace;
 
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;

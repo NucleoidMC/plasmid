@@ -22,12 +22,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.map.template.MapWorkspaceManager;
-import xyz.nucleoid.plasmid.game.map.template.ReturnPosition;
-import xyz.nucleoid.plasmid.game.map.template.WorkspaceTraveler;
-import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTraceMode;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
+import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.workspace.ReturnPosition;
+import xyz.nucleoid.plasmid.map.workspace.WorkspaceTraveler;
+import xyz.nucleoid.plasmid.map.workspace.trace.PartialRegion;
+import xyz.nucleoid.plasmid.map.workspace.trace.RegionTraceMode;
+import xyz.nucleoid.plasmid.map.workspace.trace.RegionTracer;
 
 import javax.annotation.Nullable;
 import java.util.Map;

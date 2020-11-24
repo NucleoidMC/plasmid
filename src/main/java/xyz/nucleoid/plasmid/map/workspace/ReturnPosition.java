@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.game.map.template;
+package xyz.nucleoid.plasmid.map.workspace;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;

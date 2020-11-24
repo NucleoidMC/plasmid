@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.game.map.template;
+package xyz.nucleoid.plasmid.map.workspace;
 
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
@@ -8,9 +8,10 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTraceMode;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
+import xyz.nucleoid.plasmid.map.template.TemplateRegion;
+import xyz.nucleoid.plasmid.map.workspace.trace.PartialRegion;
+import xyz.nucleoid.plasmid.map.workspace.trace.RegionTraceMode;
+import xyz.nucleoid.plasmid.map.workspace.trace.RegionTracer;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 public final class WorkspaceBoundRenderer {

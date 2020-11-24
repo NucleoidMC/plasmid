@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.game.map;
+package xyz.nucleoid.plasmid.map;
 
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;

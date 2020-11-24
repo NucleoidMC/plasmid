@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.game.map.template;
+package xyz.nucleoid.plasmid.map.template;
 
 import net.minecraft.nbt.CompoundTag;
 import xyz.nucleoid.plasmid.util.BlockBounds;

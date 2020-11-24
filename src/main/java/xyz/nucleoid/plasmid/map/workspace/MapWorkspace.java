@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.game.map.template;
+package xyz.nucleoid.plasmid.map.workspace;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.fabricmc.fabric.api.util.NbtType;
@@ -16,6 +16,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import xyz.nucleoid.fantasy.PersistentWorldHandle;
+import xyz.nucleoid.plasmid.map.template.MapTemplate;
+import xyz.nucleoid.plasmid.map.template.MapTemplateMetadata;
+import xyz.nucleoid.plasmid.map.template.TemplateRegion;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.*;
@@ -205,16 +208,9 @@ public final class MapWorkspace {
      */
     public MapTemplate compile(boolean includeEntities) {
         MapTemplate map = MapTemplate.createEmpty();
-        map.bounds = this.globalToLocal(this.bounds);
-        map.setData(this.getData());
+        map.setBounds(this.globalToLocal(this.bounds));
 
-        for (TemplateRegion region : this.regions) {
-            map.addRegion(
-                    region.getMarker(),
-                    this.globalToLocal(region.getBounds()),
-                    region.getData()
-            );
-        }
+        this.writeMetadataToTemplate(map);
 
         ServerWorld world = this.worldHandle.asWorld();
 
@@ -227,8 +223,22 @@ public final class MapWorkspace {
         return map;
     }
 
+    private void writeMetadataToTemplate(MapTemplate map) {
+        MapTemplateMetadata metadata = map.getMetadata();
+
+        metadata.setData(this.getData().copy());
+
+        for (TemplateRegion region : this.regions) {
+            metadata.addRegion(
+                    region.getMarker(),
+                    this.globalToLocal(region.getBounds()),
+                    region.getData()
+            );
+        }
+    }
+
     private void writeBlocksToTemplate(MapTemplate map, ServerWorld world) {
-        for (BlockPos pos : this.bounds.iterate()) {
+        for (BlockPos pos : this.bounds) {
             BlockPos localPos = this.globalToLocal(pos);
 
             BlockState state = world.getBlockState(pos);

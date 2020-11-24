@@ -135,8 +135,17 @@ public final class SimpleGameChannel implements GameChannel {
     @Override
     public GameChannelDisplay display() {
         int playerCount = this.openGame != null ? this.openGame.getPlayerCount() : 0;
+
+        String gameName;
+        ConfiguredGame<?> configuredGame = GameConfigs.get(this.gameId);
+        if (configuredGame != null) {
+            gameName = configuredGame.getName();
+        } else {
+            gameName = this.gameId.toString();
+        }
+
         return new GameChannelDisplay(new Text[] {
-                new LiteralText(this.gameId.toString()).formatted(Formatting.BLUE),
+                new LiteralText(gameName).formatted(Formatting.BLUE),
                 new LiteralText(playerCount + " players")
         });
     }

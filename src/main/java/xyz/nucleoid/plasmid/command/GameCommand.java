@@ -121,7 +121,7 @@ public final class GameCommand {
             try {
                 game.getRight().open(server).handle((v, throwable) -> {
                     if (throwable == null) {
-                        onOpenSuccess(source, game.getLeft(), playerManager);
+                        onOpenSuccess(source, game.getLeft(), game.getRight(), playerManager);
                     } else {
                         onOpenError(playerManager, throwable);
                     }
@@ -135,7 +135,7 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(ServerCommandSource source, Identifier gameId, PlayerManager playerManager) {
+    private static void onOpenSuccess(ServerCommandSource source, Identifier gameId, ConfiguredGame<?> game, PlayerManager playerManager) {
         String command = "/game join " + gameId;
 
         ClickEvent joinClick = new ClickEvent(ClickEvent.Action.RUN_COMMAND, command);
@@ -146,7 +146,7 @@ public final class GameCommand {
                 .withClickEvent(joinClick)
                 .withHoverEvent(joinHover);
 
-        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), new LiteralText(gameId.toString()).formatted(Formatting.GRAY))
+        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), new LiteralText(game.getName()).formatted(Formatting.GRAY))
                 .append(new TranslatableText("text.plasmid.game.open.join").setStyle(joinStyle));
         playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
     }

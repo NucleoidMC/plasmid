@@ -1,20 +1,24 @@
 package xyz.nucleoid.plasmid.game;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public final class ConfiguredGame<C> {
-    public static final Codec<ConfiguredGame<?>> CODEC = GameType.REGISTRY.dispatchStable(c -> c.type, ConfiguredGame::codecFor);
+    public static final Codec<ConfiguredGame<?>> CODEC = new ConfigCodec().codec();
 
     private final GameType<C> type;
+    private final String name;
     private final C config;
 
-    private ConfiguredGame(GameType<C> type, C config) {
+    private ConfiguredGame(GameType<C> type, String name, C config) {
         this.type = type;
+        this.name = name;
         this.config = config;
     }
 
@@ -32,31 +36,66 @@ public final class ConfiguredGame<C> {
         return this.type;
     }
 
+    public String getName() {
+        return this.name;
+    }
+
     public C getConfig() {
         return this.config;
     }
 
-    private static <C> Codec<? extends ConfiguredGame<C>> codecFor(GameType<C> type) {
-        Codec<C> configCodec = type.getConfigCodec();
-        if (configCodec instanceof MapCodec.MapCodecCodec) {
-            MapCodec<C> codec = ((MapCodec.MapCodecCodec<C>) configCodec).codec();
-            return xmapMapCodec(type, codec).codec();
-        } else {
-            return xmapCodec(type, configCodec);
+    static final class ConfigCodec extends MapCodec<ConfiguredGame<?>> {
+        @Override
+        public <T> Stream<T> keys(DynamicOps<T> ops) {
+            return Stream.of(ops.createString("type"), ops.createString("name"), ops.createString("config"));
         }
-    }
 
-    private static <C> MapCodec<? extends ConfiguredGame<C>> xmapMapCodec(GameType<C> type, MapCodec<C> codec) {
-        return codec.xmap(
-                config -> new ConfiguredGame<>(type, config),
-                configured -> configured.config
-        );
-    }
+        @Override
+        public <T> DataResult<ConfiguredGame<?>> decode(DynamicOps<T> ops, MapLike<T> input) {
+            DataResult<GameType<?>> typeResult = GameType.REGISTRY.decode(ops, input.get("type")).map(Pair::getFirst);
 
-    private static <C> Codec<? extends ConfiguredGame<C>> xmapCodec(GameType<C> type, Codec<C> codec) {
-        return codec.xmap(
-                config -> new ConfiguredGame<>(type, config),
-                configured -> configured.config
-        );
+            return typeResult.flatMap(type -> {
+                String name = Codec.STRING.decode(ops, input.get("name"))
+                        .result().map(Pair::getFirst)
+                        .orElseGet(() -> type.getIdentifier().toString());
+
+                Codec<?> configCodec = type.getConfigCodec();
+                return this.decodeConfig(ops, input, configCodec).map(config -> {
+                    return createConfigUnchecked(type, name, config);
+                });
+            });
+        }
+
+        private <T> DataResult<?> decodeConfig(DynamicOps<T> ops, MapLike<T> input, Codec<?> configCodec) {
+            if (configCodec instanceof MapCodec.MapCodecCodec<?>) {
+                return ((MapCodecCodec<?>) configCodec).codec().decode(ops, input).map(Function.identity());
+            } else {
+                return configCodec.decode(ops, input.get("config")).map(Pair::getFirst);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private static <C> ConfiguredGame<C> createConfigUnchecked(GameType<C> type, String name, Object config) {
+            return new ConfiguredGame<>(type, name, (C) config);
+        }
+
+        @Override
+        public <T> RecordBuilder<T> encode(ConfiguredGame<?> game, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+            return this.encodeUnchecked(game, ops, prefix);
+        }
+
+        private <T, C> RecordBuilder<T> encodeUnchecked(ConfiguredGame<C> game, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+            Codec<C> codec = game.type.getConfigCodec();
+            if (codec instanceof MapCodecCodec<?>) {
+                prefix = ((MapCodecCodec<C>) codec).codec().encode(game.config, ops, prefix);
+            } else {
+                prefix.add("config", codec.encodeStart(ops, game.config));
+            }
+
+            prefix.add("type", GameType.REGISTRY.encodeStart(ops, game.type));
+            prefix.add("name", Codec.STRING.encodeStart(ops, game.name));
+
+            return prefix;
+        }
     }
 }

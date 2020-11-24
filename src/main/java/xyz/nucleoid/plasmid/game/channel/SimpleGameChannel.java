@@ -145,7 +145,7 @@ public final class SimpleGameChannel implements GameChannel {
         }
 
         return new GameChannelDisplay(new Text[] {
-                new LiteralText(gameName).formatted(Formatting.BLUE),
+                new LiteralText(gameName).formatted(Formatting.AQUA),
                 new LiteralText(playerCount + " players")
         });
     }

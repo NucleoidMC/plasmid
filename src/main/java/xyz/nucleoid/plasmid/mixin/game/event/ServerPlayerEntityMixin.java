@@ -47,8 +47,8 @@ public class ServerPlayerEntityMixin {
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(player.world);
         if (gameSpace != null && gameSpace.containsPlayer(player)) {
             try {
-                boolean cancel = gameSpace.invoker(PlayerDamageListener.EVENT).onDamage(player, source, amount);
-                if (cancel) {
+                ActionResult result = gameSpace.invoker(PlayerDamageListener.EVENT).onDamage(player, source, amount);
+                if (result == ActionResult.FAIL) {
                     ci.cancel();
                 }
             } catch (Exception e) {

@@ -190,7 +190,7 @@ public final class Plasmid implements ModInitializer {
                     game.invoker(GameTickListener.EVENT).onTick();
                 } catch (Exception e) {
                     LOGGER.error("An unexpected exception occurred while ticking the game", e);
-                    game.close();
+                    game.closeWithError("An unexpected error occurred while ticking the game");
                 }
             }
         });

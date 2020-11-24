@@ -1,21 +1,26 @@
 package xyz.nucleoid.plasmid.test;
 
 import net.minecraft.block.Blocks;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
+import org.apache.commons.lang3.mutable.MutableInt;
 import xyz.nucleoid.fantasy.BubbleWorldConfig;
 import xyz.nucleoid.fantasy.BubbleWorldSpawner;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
+import xyz.nucleoid.plasmid.game.event.GameTickListener;
 import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
-import xyz.nucleoid.plasmid.map.template.MapTemplate;
-import xyz.nucleoid.plasmid.map.template.TemplateChunkGenerator;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
+import xyz.nucleoid.plasmid.map.template.MapTemplate;
+import xyz.nucleoid.plasmid.map.template.TemplateChunkGenerator;
+import xyz.nucleoid.plasmid.widget.GlobalWidgets;
+import xyz.nucleoid.plasmid.widget.SidebarWidget;
 
 public final class TestGame {
     public static GameOpenProcedure open(GameOpenContext<Unit> context) {
@@ -40,6 +45,22 @@ public final class TestGame {
             game.on(PlayerDeathListener.EVENT, (player, source) -> {
                 player.teleport(0.0, 65.0, 0.0);
                 return ActionResult.FAIL;
+            });
+
+            GlobalWidgets widgets = new GlobalWidgets(game);
+            SidebarWidget sidebar = widgets.addSidebar(new LiteralText("Test"));
+
+            MutableInt timer = new MutableInt();
+
+            game.on(GameTickListener.EVENT, () -> {
+                int time = timer.incrementAndGet();
+                if (time % 20 == 0) {
+                    sidebar.set(content -> {
+                        content.writeLine("Hello World! " + (time / 20) + "s");
+                        content.writeLine("");
+                        content.writeTranslated("text.plasmid.game.started.player", "test");
+                    });
+                }
             });
         });
     }

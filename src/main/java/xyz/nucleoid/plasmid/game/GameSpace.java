@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 /**
  * Represents the space within which a game occurs through attached {@link GameLogic}
  */
-public interface GameSpace {
+public interface GameSpace extends AutoCloseable {
     /**
      * Swaps out the active {@link GameLogic} within this {@link GameSpace}.
      *
@@ -21,6 +21,9 @@ public interface GameSpace {
     void openGame(Consumer<GameLogic> builder);
 
     CompletableFuture<StartResult> requestStart();
+
+    @Override
+    void close();
 
     /**
      * Adds a resource to this {@link GameSpace} object that will be automatically closed when this {@link GameSpace}

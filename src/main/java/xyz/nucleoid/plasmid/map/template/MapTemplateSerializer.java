@@ -56,30 +56,20 @@ public final class MapTemplateSerializer {
         });
     }
 
-    public CompletableFuture<MapTemplate> loadFromResource(Identifier identifier) {
-        return CompletableFuture.supplyAsync(() -> {
-            Identifier path = getResourcePathFor(identifier);
+    public MapTemplate loadFromResource(Identifier identifier) throws IOException {
+        Identifier path = getResourcePathFor(identifier);
 
-            try (Resource resource = this.resourceManager.getResource(path)) {
-                return this.loadFrom(resource.getInputStream());
-            } catch (IOException e) {
-                throw new CompletionException(e);
-            }
-        }, Util.getIoWorkerExecutor());
+        try (Resource resource = this.resourceManager.getResource(path)) {
+            return this.loadFrom(resource.getInputStream());
+        }
     }
 
-    public CompletableFuture<MapTemplate> loadFromExport(Identifier location) {
-        return CompletableFuture.supplyAsync(() -> {
-            Path path = getExportPathFor(location);
-            try {
-                Files.createDirectories(path.getParent());
-                try (InputStream input = Files.newInputStream(path)) {
-                    return this.loadFrom(input);
-                }
-            } catch (IOException e) {
-                throw new CompletionException(e);
-            }
-        }, Util.getIoWorkerExecutor());
+    public MapTemplate loadFromExport(Identifier location) throws IOException {
+        Path path = getExportPathFor(location);
+        Files.createDirectories(path.getParent());
+        try (InputStream input = Files.newInputStream(path)) {
+            return this.loadFrom(input);
+        }
     }
 
     public CompletableFuture<Void> saveToExport(MapTemplate template, Identifier identifier) {

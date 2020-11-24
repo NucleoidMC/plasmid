@@ -22,6 +22,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.dimension.DimensionType;
@@ -40,6 +41,7 @@ import xyz.nucleoid.plasmid.map.workspace.WorkspaceTraveler;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -342,13 +344,17 @@ public final class MapManageCommand {
     }
 
     private static CompletableFuture<MapTemplate> tryLoadTemplateForImport(Identifier location) {
-        return MapTemplateSerializer.INSTANCE.loadFromExport(location).handle((ok, err) -> ok)
-                .thenCompose(template -> {
-                    if (template != null) {
-                        return CompletableFuture.completedFuture(template);
-                    }
-
-                    return MapTemplateSerializer.INSTANCE.loadFromResource(location).handle((ok, err) -> ok);
-                });
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return MapTemplateSerializer.INSTANCE.loadFromExport(location);
+            } catch (IOException ignored) {
+                try {
+                    return MapTemplateSerializer.INSTANCE.loadFromResource(location);
+                } catch (IOException e) {
+                    Plasmid.LOGGER.error("Failed to import workspace at {}", location, e);
+                    return null;
+                }
+            }
+        }, Util.getIoWorkerExecutor());
     }
 }

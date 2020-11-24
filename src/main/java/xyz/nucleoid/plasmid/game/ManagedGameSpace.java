@@ -42,7 +42,7 @@ import java.util.function.Consumer;
  * It is important to note that not all chunks will be loaded on start, and the game logic must take care to handle this.
  * Players can only be added to this game space through {@link ManagedGameSpace#addPlayer} or {@link ManagedGameSpace#offerPlayer}.
  */
-public final class ManagedGameSpace implements GameSpace, AutoCloseable {
+public final class ManagedGameSpace implements GameSpace {
     private static final Logger LOGGER = LogManager.getLogger(ManagedGameSpace.class);
 
     private static final Map<RegistryKey<World>, ManagedGameSpace> DIMENSION_TO_WORLD = new Reference2ObjectOpenHashMap<>();

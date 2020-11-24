@@ -16,8 +16,8 @@ public final class GlobalWidgets {
     private final GameSpace gameSpace;
     private final List<GameWidget> widgets = new ArrayList<>();
 
-    public GlobalWidgets(GameSpace gameSpace, GameLogic logic) {
-        this.gameSpace = gameSpace;
+    public GlobalWidgets(GameLogic logic) {
+        this.gameSpace = logic.getSpace();
 
         logic.on(PlayerAddListener.EVENT, this::onPlayerAdd);
         logic.on(PlayerRemoveListener.EVENT, this::onPlayerRemove);

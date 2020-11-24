@@ -118,6 +118,30 @@ Direction: `C<-S`
 | world     | Identifier | The world in which the workspace is present.                           |
 | data      | NBT Tag    | Arbitrary data assigned to the map template.                           |
 
+#### `plasmid:workspace/new`
+
+Sent by the client to request the server to create a new workspace. 
+
+Direction: `C->S`
+
+| Fields    | Type           | Description                                                            |
+|:---------:|:--------------:|:-----------------------------------------------------------------------|
+| workspace | Identifier     | The identifier of the new workspace.                                   |
+| bounds    | [Bounds]       | The bounds of the map, may be `[[0, 0, 0], [0, 0, 0]]` if not present. |
+| generator | string (32767) | The generator string for the map, may be empty if unspecified.         |
+| has_data  | bool           | `true` if contains a data NBT tag, else `false`.                       |
+| data      | (NBT Tag)?     | Arbitrary data assigned to the map template.                           |
+
+#### `plasmid:workspace/leave`
+
+Leaves the specified workspace.
+
+Direction: `C<->S`
+
+| Fields    | Type       | Description                           |
+|:---------:|:----------:|:--------------------------------------|
+| workspace | Identifier | The identifier of the left workspace. |
+
 #### `plasmid:workspace/bounds`
 
 Sets the bounds of the workspace map. The client should render those bounds if non-null.

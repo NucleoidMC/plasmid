@@ -13,10 +13,10 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xyz.nucleoid.plasmid.command.*;
@@ -32,11 +32,12 @@ import xyz.nucleoid.plasmid.game.event.AttackEntityListener;
 import xyz.nucleoid.plasmid.game.event.GameTickListener;
 import xyz.nucleoid.plasmid.game.event.UseBlockListener;
 import xyz.nucleoid.plasmid.game.event.UseItemListener;
-import xyz.nucleoid.plasmid.game.map.template.MapTemplateSerializer;
-import xyz.nucleoid.plasmid.game.map.template.StagingBoundRenderer;
-import xyz.nucleoid.plasmid.game.map.template.StagingMapManager;
+import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
+import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.workspace.WorkspaceBoundRenderer;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
+import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
 import xyz.nucleoid.plasmid.item.IncludeEntityItem;
 import xyz.nucleoid.plasmid.item.PlasmidItems;
 import xyz.nucleoid.plasmid.test.TestGame;
@@ -48,6 +49,8 @@ public final class Plasmid implements ModInitializer {
     @Override
     public void onInitialize() {
         Reflection.initialize(PlasmidItems.class);
+
+        Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "void"), VoidChunkGenerator.CODEC);
 
         GameConfigs.register();
         MapTemplateSerializer.INSTANCE.register();
@@ -63,7 +66,8 @@ public final class Plasmid implements ModInitializer {
 
     private void registerCallbacks() {
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            MapCommand.register(dispatcher);
+            MapManageCommand.register(dispatcher);
+            MapMetadataCommand.register(dispatcher);
             GameCommand.register(dispatcher);
             PartyCommand.register(dispatcher);
             ChatCommand.register(dispatcher);
@@ -141,10 +145,10 @@ public final class Plasmid implements ModInitializer {
                 if (stack.getItem() instanceof IncludeEntityItem) {
                     BlockPos pos = player.getBlockPos();
 
-                    StagingMapManager stagingMapManager = StagingMapManager.get((ServerWorld) world);
+                    MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(world.getServer());
 
-                    return stagingMapManager.getStagingMaps().stream()
-                            .filter(stagingMap -> stagingMap.getBounds().contains(pos))
+                    return workspaceManager.getWorkspaces().stream()
+                            .filter(workspace -> workspace.getBounds().contains(pos))
                             .findFirst()
                             .map(map -> {
                                 if (!map.getBounds().contains(entity.getBlockPos())) {
@@ -191,7 +195,7 @@ public final class Plasmid implements ModInitializer {
             }
         });
 
-        ServerTickEvents.START_SERVER_TICK.register(StagingBoundRenderer::onTick);
+        ServerTickEvents.START_SERVER_TICK.register(WorkspaceBoundRenderer::onTick);
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             for (ManagedGameSpace gameSpace : ManagedGameSpace.getOpen()) {

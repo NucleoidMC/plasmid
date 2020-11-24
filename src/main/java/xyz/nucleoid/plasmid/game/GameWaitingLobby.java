@@ -37,7 +37,7 @@ public final class GameWaitingLobby {
     }
 
     public static void applyTo(GameLogic logic, PlayerConfig playerConfig) {
-        GlobalWidgets widgets = new GlobalWidgets(logic.getSpace(), logic);
+        GlobalWidgets widgets = new GlobalWidgets(logic);
         BossBarWidget bar = widgets.addBossBar(WAITING_TITLE);
 
         GameWaitingLobby lobby = new GameWaitingLobby(logic.getSpace(), playerConfig, bar);

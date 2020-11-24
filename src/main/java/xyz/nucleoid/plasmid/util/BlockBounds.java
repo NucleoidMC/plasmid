@@ -1,14 +1,14 @@
 package xyz.nucleoid.plasmid.util;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 
-public final class BlockBounds {
+public final class BlockBounds implements Iterable<BlockPos> {
     public static final BlockBounds EMPTY = BlockBounds.of(BlockPos.ORIGIN);
 
     private final BlockPos min;
@@ -17,6 +17,10 @@ public final class BlockBounds {
     public BlockBounds(BlockPos min, BlockPos max) {
         this.min = min(min, max);
         this.max = max(min, max);
+    }
+
+    public BlockBounds(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        this(new BlockPos(minX, minY, minZ), new BlockPos(maxX, maxY, maxZ));
     }
 
     public static BlockBounds of(BlockPos pos) {
@@ -93,8 +97,47 @@ public final class BlockBounds {
         );
     }
 
-    public Iterable<BlockPos> iterate() {
-        return BlockPos.iterate(this.min, this.max);
+    @Override
+    public Iterator<BlockPos> iterator() {
+        return BlockPos.iterate(this.min, this.max).iterator();
+    }
+
+    public LongSet asChunks() {
+        int minChunkX = this.min.getX() >> 4;
+        int minChunkZ = this.min.getZ() >> 4;
+        int maxChunkX = this.max.getX() >> 4;
+        int maxChunkZ = this.max.getZ() >> 4;
+
+        LongOpenHashSet chunks = new LongOpenHashSet((maxChunkX - minChunkX + 1) * (maxChunkZ - minChunkZ + 1));
+
+        for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+            for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+                chunks.add(ChunkPos.toLong(chunkX, chunkZ));
+            }
+        }
+
+        return chunks;
+    }
+
+    public LongSet asChunkSections() {
+        int minChunkX = this.min.getX() >> 4;
+        int minChunkY = this.min.getY() >> 4;
+        int minChunkZ = this.min.getZ() >> 4;
+        int maxChunkX = this.max.getX() >> 4;
+        int maxChunkY = this.max.getY() >> 4;
+        int maxChunkZ = this.max.getZ() >> 4;
+
+        LongOpenHashSet chunks = new LongOpenHashSet((maxChunkX - minChunkX + 1) * (maxChunkY - minChunkY + 1) * (maxChunkZ - minChunkZ + 1));
+
+        for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+            for (int chunkY = minChunkY; chunkY <= maxChunkY; chunkY++) {
+                for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+                    chunks.add(ChunkSectionPos.asLong(chunkX, chunkY, chunkZ));
+                }
+            }
+        }
+
+        return chunks;
     }
 
     public CompoundTag serialize(CompoundTag root) {

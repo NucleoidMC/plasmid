@@ -13,14 +13,17 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import xyz.nucleoid.fantasy.BubbleWorldConfig;
+import xyz.nucleoid.fantasy.BubbleWorldHandle;
+import xyz.nucleoid.fantasy.Fantasy;
+import xyz.nucleoid.fantasy.WorldPlayerListener;
 import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
+import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.util.Scheduler;
-import xyz.nucleoid.plasmid.world.bubble.BubbleWorld;
-import xyz.nucleoid.plasmid.world.bubble.BubbleWorldConfig;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,13 +42,15 @@ import java.util.function.Consumer;
  * It is important to note that not all chunks will be loaded on start, and the game logic must take care to handle this.
  * Players can only be added to this game space through {@link ManagedGameSpace#addPlayer} or {@link ManagedGameSpace#offerPlayer}.
  */
-public final class ManagedGameSpace implements GameSpace, AutoCloseable {
+public final class ManagedGameSpace implements GameSpace {
     private static final Logger LOGGER = LogManager.getLogger(ManagedGameSpace.class);
 
     private static final Map<RegistryKey<World>, ManagedGameSpace> DIMENSION_TO_WORLD = new Reference2ObjectOpenHashMap<>();
 
-    private final BubbleWorld bubble;
+    private final BubbleWorldHandle bubble;
     private final ConfiguredGame<?> configuredGame;
+
+    private final MutablePlayerSet players;
 
     private final GameLogic emptyLogic = new GameLogic(this);
     private final AtomicReference<GameLogic> logic = new AtomicReference<>(this.emptyLogic);
@@ -56,11 +61,13 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
 
     private final GameLifecycle lifecycle = new GameLifecycle();
 
-    private ManagedGameSpace(BubbleWorld bubble, ConfiguredGame<?> configuredGame) {
+    private ManagedGameSpace(MinecraftServer server, BubbleWorldHandle bubble, ConfiguredGame<?> configuredGame) {
         this.bubble = bubble;
         this.configuredGame = configuredGame;
 
-        bubble.addPlayerListener(new BubbleWorld.PlayerListener() {
+        this.players = new MutablePlayerSet(server);
+
+        bubble.addPlayerListener(new WorldPlayerListener() {
             @Override
             public void onRemovePlayer(ServerPlayerEntity player) {
                 ManagedGameSpace.this.onRemovePlayer(player);
@@ -71,18 +78,18 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
     /**
      * Attempts to open a new {@link GameSpace} using the given {@link BubbleWorldConfig}.
      *
-     * <p>If a {@link BubbleWorld} could not be opened, a {@link GameOpenException} is thrown.
+     * <p>If a {@link GameSpace} could not be opened, a {@link GameOpenException} is thrown.
      *
      * @param server {@link MinecraftServer} to open a {@link GameSpace} in
      * @param game initial game to open this {@link GameSpace} with
      * @param config {@link BubbleWorldConfig} to use to construct a {@link GameSpace}
      * @return a future to a {@link GameSpace} if one was opened
-     * @throws GameOpenException if a {@link BubbleWorld} could not be opened
+     * @throws GameOpenException if a {@link GameSpace} could not be opened
      */
     public static CompletableFuture<ManagedGameSpace> open(MinecraftServer server, ConfiguredGame<?> game, BubbleWorldConfig config) {
-        return BubbleWorld.open(server, config).thenApply(bubble -> {
-            ManagedGameSpace gameSpace = new ManagedGameSpace(bubble, game);
-            DIMENSION_TO_WORLD.put(bubble.getDimensionKey(), gameSpace);
+        return Fantasy.get(server).openBubble(config).thenApply(bubble -> {
+            ManagedGameSpace gameSpace = new ManagedGameSpace(server, bubble, game);
+            DIMENSION_TO_WORLD.put(bubble.asWorld().getRegistryKey(), gameSpace);
 
             return gameSpace;
         });
@@ -130,7 +137,7 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
                 LOGGER.error("An unexpected exception occurred while closing the game", e);
             }
 
-            List<ServerPlayerEntity> playersToJoin = Lists.newArrayList(this.bubble.getPlayers());
+            List<ServerPlayerEntity> playersToJoin = Lists.newArrayList(this.players);
             for (ServerPlayerEntity player : playersToJoin) {
                 try {
                     this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
@@ -170,6 +177,7 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
         }
 
         if (this.bubble.addPlayer(player)) {
+            this.players.add(player);
             try {
                 this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
             } catch (Exception e) {
@@ -192,8 +200,6 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
      * Attempts to removes the given {@link ServerPlayerEntity} from this {@link ManagedGameSpace}.
      * When a player is removed, they will be teleported back to their former location prior to joining
      *
-     * <p>Implementation is left to this {@link ManagedGameSpace}'s {@link BubbleWorld} in {@link BubbleWorld#removePlayer(ServerPlayerEntity)}.
-     *
      * @param player {@link ServerPlayerEntity} to remove from this {@link ManagedGameSpace}
      * @return whether the {@link ServerPlayerEntity} was successfully removed
      */
@@ -211,6 +217,7 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
             LOGGER.error("An unexpected exception occurred while removing {} from game", player.getDisplayName(), e);
         }
 
+        this.players.remove(player);
         this.lifecycle.removePlayer(this, player);
 
         if (this.getPlayerCount() <= 0) {
@@ -286,7 +293,10 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
 
         Scheduler.INSTANCE.submit(server -> {
             try {
-                List<ServerPlayerEntity> players = this.bubble.kickPlayers();
+                List<ServerPlayerEntity> players = Lists.newArrayList(this.players);
+                for (ServerPlayerEntity player : players) {
+                    this.bubble.removePlayer(player);
+                }
 
                 this.resources.close();
 
@@ -298,9 +308,9 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
 
                 this.lifecycle.close(this, players);
 
-                this.bubble.close();
+                this.bubble.delete();
             } finally {
-                DIMENSION_TO_WORLD.remove(this.bubble.getWorld().getRegistryKey(), this);
+                DIMENSION_TO_WORLD.remove(this.bubble.asWorld().getRegistryKey(), this);
             }
         });
     }
@@ -312,7 +322,7 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
 
     @Override
     public PlayerSet getPlayers() {
-        return this.bubble.getPlayers();
+        return this.players;
     }
 
     @Nonnull
@@ -336,7 +346,7 @@ public final class ManagedGameSpace implements GameSpace, AutoCloseable {
 
     @Override
     public ServerWorld getWorld() {
-        return this.bubble.getWorld();
+        return this.bubble.asWorld();
     }
 
     @Override

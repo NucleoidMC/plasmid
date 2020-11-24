@@ -10,8 +10,8 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import xyz.nucleoid.plasmid.fake.FakeItem;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTraceMode;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
+import xyz.nucleoid.plasmid.map.workspace.trace.RegionTraceMode;
+import xyz.nucleoid.plasmid.map.workspace.trace.RegionTracer;
 
 public final class AddRegionItem extends Item implements FakeItem {
     public AddRegionItem(Item.Settings settings) {

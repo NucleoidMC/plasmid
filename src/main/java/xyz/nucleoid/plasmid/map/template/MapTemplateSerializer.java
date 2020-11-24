@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.game.map.template;
+package xyz.nucleoid.plasmid.map.template;
 
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -22,6 +22,7 @@ import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,34 +56,46 @@ public final class MapTemplateSerializer {
         });
     }
 
-    public CompletableFuture<MapTemplate> load(Identifier identifier) {
-        return CompletableFuture.supplyAsync(() -> {
-            Identifier path = getResourcePathFor(identifier);
+    public MapTemplate loadFromResource(Identifier identifier) throws IOException {
+        Identifier path = getResourcePathFor(identifier);
 
-            try (Resource resource = this.resourceManager.getResource(path)) {
-                MapTemplate template = MapTemplate.createEmpty();
-                this.load(template, NbtIo.readCompressed(resource.getInputStream()));
-                return template;
-            } catch (IOException e) {
-                throw new CompletionException(e);
-            }
-        }, Util.getIoWorkerExecutor());
+        try (Resource resource = this.resourceManager.getResource(path)) {
+            return this.loadFrom(resource.getInputStream());
+        }
     }
 
-    public CompletableFuture<Void> save(MapTemplate template, Identifier identifier) {
+    public MapTemplate loadFromExport(Identifier location) throws IOException {
+        Path path = getExportPathFor(location);
+        Files.createDirectories(path.getParent());
+        try (InputStream input = Files.newInputStream(path)) {
+            return this.loadFrom(input);
+        }
+    }
+
+    public CompletableFuture<Void> saveToExport(MapTemplate template, Identifier identifier) {
         return CompletableFuture.supplyAsync(() -> {
             Path path = getExportPathFor(identifier);
             try {
                 Files.createDirectories(path.getParent());
                 try (OutputStream output = Files.newOutputStream(path)) {
-                    CompoundTag root = this.save(template);
-                    NbtIo.writeCompressed(root, output);
+                    this.saveTo(template, output);
                     return null;
                 }
             } catch (IOException e) {
                 throw new CompletionException(e);
             }
         }, Util.getIoWorkerExecutor());
+    }
+
+    public MapTemplate loadFrom(InputStream input) throws IOException {
+        MapTemplate template = MapTemplate.createEmpty();
+        this.load(template, NbtIo.readCompressed(input));
+        return template;
+    }
+
+    public void saveTo(MapTemplate template, OutputStream output) throws IOException {
+        CompoundTag root = this.save(template);
+        NbtIo.writeCompressed(root, output);
     }
 
     private void load(MapTemplate template, CompoundTag root) {
@@ -96,16 +109,18 @@ public final class MapTemplateSerializer {
                 continue;
             }
 
-            long pos = ChunkSectionPos.asLong(posArray[0], posArray[1], posArray[2]);
-            MapTemplate.Chunk chunk = MapTemplate.Chunk.deserialize(chunkRoot);
+            long pos = MapTemplate.chunkPos(posArray[0], posArray[1], posArray[2]);
+            MapChunk chunk = MapChunk.deserialize(ChunkSectionPos.from(pos), chunkRoot);
 
             template.chunks.put(pos, chunk);
         }
 
+        MapTemplateMetadata metadata = template.metadata;
+
         ListTag regionList = root.getList("regions", NbtType.COMPOUND);
         for (int i = 0; i < regionList.size(); i++) {
             CompoundTag regionRoot = regionList.getCompound(i);
-            template.regions.add(TemplateRegion.deserialize(regionRoot));
+            metadata.regions.add(TemplateRegion.deserialize(regionRoot));
         }
 
         ListTag blockEntityList = root.getList("block_entities", NbtType.COMPOUND);
@@ -120,7 +135,7 @@ public final class MapTemplateSerializer {
         }
 
         template.bounds = BlockBounds.deserialize(root.getCompound("bounds"));
-        template.setData(root.getCompound("data"));
+        metadata.data = root.getCompound("data");
 
         String biomeId = root.getString("biome");
         if (!Strings.isNullOrEmpty(biomeId)) {
@@ -133,9 +148,9 @@ public final class MapTemplateSerializer {
 
         ListTag chunkList = new ListTag();
 
-        for (Long2ObjectMap.Entry<MapTemplate.Chunk> entry : Long2ObjectMaps.fastIterable(template.chunks)) {
+        for (Long2ObjectMap.Entry<MapChunk> entry : Long2ObjectMaps.fastIterable(template.chunks)) {
             ChunkSectionPos pos = ChunkSectionPos.from(entry.getLongKey());
-            MapTemplate.Chunk chunk = entry.getValue();
+            MapChunk chunk = entry.getValue();
 
             CompoundTag chunkRoot = new CompoundTag();
 
@@ -147,22 +162,25 @@ public final class MapTemplateSerializer {
 
         root.put("chunks", chunkList);
 
-        ListTag regionList = new ListTag();
-        for (TemplateRegion region : template.regions) {
-            regionList.add(region.serialize(new CompoundTag()));
-        }
-        root.put("regions", regionList);
-
         ListTag blockEntityList = new ListTag();
         blockEntityList.addAll(template.blockEntities.values());
         root.put("block_entities", blockEntityList);
 
         root.put("bounds", template.bounds.serialize(new CompoundTag()));
-        root.put("data", template.getData());
 
         if (template.biome != null) {
             root.putString("biome", template.biome.getValue().toString());
         }
+
+        MapTemplateMetadata metadata = template.metadata;
+
+        ListTag regionList = new ListTag();
+        for (TemplateRegion region : metadata.regions) {
+            regionList.add(region.serialize(new CompoundTag()));
+        }
+        root.put("regions", regionList);
+
+        root.put("data", metadata.data);
 
         return root;
     }

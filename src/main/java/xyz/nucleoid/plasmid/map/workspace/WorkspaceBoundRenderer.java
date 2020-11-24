@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.game.map.template;
+package xyz.nucleoid.plasmid.map.workspace;
 
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
@@ -8,34 +8,34 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import xyz.nucleoid.plasmid.game.map.template.trace.PartialRegion;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTraceMode;
-import xyz.nucleoid.plasmid.game.map.template.trace.RegionTracer;
+import xyz.nucleoid.plasmid.map.template.TemplateRegion;
+import xyz.nucleoid.plasmid.map.workspace.trace.PartialRegion;
+import xyz.nucleoid.plasmid.map.workspace.trace.RegionTraceMode;
+import xyz.nucleoid.plasmid.map.workspace.trace.RegionTracer;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
-public final class StagingBoundRenderer {
+public final class WorkspaceBoundRenderer {
     public static void onTick(MinecraftServer server) {
         if (server.getTicks() % 10 != 0) {
             return;
         }
 
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            if (player instanceof MapTemplateViewer) {
-                MapTemplateViewer viewer = (MapTemplateViewer) player;
-                StagingMapTemplate viewing = viewer.getViewing();
-                if (viewing != null) {
-                    StagingBoundRenderer.renderMap(player, viewing);
-                }
-            }
+            MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(server);
+            MapWorkspace workspace = workspaceManager.byDimension(player.world.getRegistryKey());
 
-            if (player instanceof RegionTracer) {
-                RegionTracer regionTracer = (RegionTracer) player;
-                StagingBoundRenderer.renderTracer(player, regionTracer);
+            if (workspace != null) {
+                WorkspaceBoundRenderer.renderMap(player, workspace);
+
+                if (player instanceof RegionTracer) {
+                    RegionTracer regionTracer = (RegionTracer) player;
+                    WorkspaceBoundRenderer.renderTracer(player, regionTracer);
+                }
             }
         }
     }
 
-    private static void renderMap(ServerPlayerEntity player, StagingMapTemplate viewing) {
+    private static void renderMap(ServerPlayerEntity player, MapWorkspace viewing) {
         BlockBounds bounds = viewing.getBounds();
         renderOutline(player, bounds.getMin(), bounds.getMax(), 1.0F, 0.0F, 0.0F);
 

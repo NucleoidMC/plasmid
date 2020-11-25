@@ -3,8 +3,7 @@ package xyz.nucleoid.plasmid.game.player;
 import com.google.common.base.Preconditions;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public final class JoinResult {
     private static final JoinResult OK = new JoinResult(null);

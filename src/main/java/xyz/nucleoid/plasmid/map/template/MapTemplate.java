@@ -17,10 +17,10 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
-import javax.annotation.Nonnull;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -180,7 +180,7 @@ public final class MapTemplate {
         return this.getBlockState(pos) != AIR;
     }
 
-    @Nonnull
+    @NotNull
     private MapChunk getOrCreateChunk(long pos) {
         MapChunk chunk = this.chunks.get(pos);
         if (chunk == null) {

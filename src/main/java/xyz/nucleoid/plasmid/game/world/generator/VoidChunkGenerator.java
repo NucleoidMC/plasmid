@@ -20,9 +20,9 @@ import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.feature.StructureFeature;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Supplier;

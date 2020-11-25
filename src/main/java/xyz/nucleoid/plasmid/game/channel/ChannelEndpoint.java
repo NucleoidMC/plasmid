@@ -4,9 +4,8 @@ import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
-
-import javax.annotation.Nullable;
 
 public interface ChannelEndpoint {
     String NBT_KEY = Plasmid.ID + ":channel";

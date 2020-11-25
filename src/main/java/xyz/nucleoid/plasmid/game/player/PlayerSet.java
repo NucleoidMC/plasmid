@@ -7,9 +7,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;

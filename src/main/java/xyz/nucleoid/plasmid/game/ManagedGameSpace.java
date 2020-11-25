@@ -13,6 +13,8 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.fantasy.BubbleWorldConfig;
 import xyz.nucleoid.fantasy.BubbleWorldHandle;
 import xyz.nucleoid.fantasy.Fantasy;
@@ -25,8 +27,6 @@ import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -325,7 +325,7 @@ public final class ManagedGameSpace implements GameSpace {
         return this.players;
     }
 
-    @Nonnull
+    @NotNull
     public <T> T invoker(EventType<T> event) {
         GameLogic logic = this.logic.get();
         return logic.getListeners().invoker(event);

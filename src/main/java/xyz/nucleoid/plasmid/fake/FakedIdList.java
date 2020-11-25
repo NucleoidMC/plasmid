@@ -1,8 +1,8 @@
 package xyz.nucleoid.plasmid.fake;
 
 import net.minecraft.util.collection.IdList;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Iterator;
 
 public final class FakedIdList<T> extends IdList<T> {

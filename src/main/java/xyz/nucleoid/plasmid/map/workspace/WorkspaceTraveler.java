@@ -3,8 +3,7 @@ package xyz.nucleoid.plasmid.map.workspace;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public interface WorkspaceTraveler {
     @Nullable

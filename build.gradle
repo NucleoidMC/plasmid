@@ -43,8 +43,8 @@ dependencies {
   modImplementation 'fr.catcore:server-translations-api:1.3.7'
   include 'fr.catcore:server-translations-api:1.3.7'
 
-  modImplementation 'xyz.nucleoid:fantasy:0.1.2'
-  include 'xyz.nucleoid:fantasy:0.1.2'
+  modImplementation 'xyz.nucleoid:fantasy:0.1.3'
+  include 'xyz.nucleoid:fantasy:0.1.3'
 }
 
 processResources {

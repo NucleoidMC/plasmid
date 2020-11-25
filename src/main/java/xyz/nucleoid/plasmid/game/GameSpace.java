@@ -22,6 +22,15 @@ public interface GameSpace extends AutoCloseable {
 
     CompletableFuture<StartResult> requestStart();
 
+    /**
+     * Attempts to remove the given {@link ServerPlayerEntity} from this {@link GameSpace}.
+     * When a player is removed, they will be teleported back to their former location prior to joining
+     *
+     * @param player {@link ServerPlayerEntity} to remove from this {@link GameSpace}
+     * @return whether the {@link ServerPlayerEntity} was successfully removed
+     */
+    boolean removePlayer(ServerPlayerEntity player);
+
     @Override
     void close();
 

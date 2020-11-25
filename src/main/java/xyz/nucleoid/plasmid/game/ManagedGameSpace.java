@@ -196,13 +196,7 @@ public final class ManagedGameSpace implements GameSpace {
         return false;
     }
 
-    /**
-     * Attempts to removes the given {@link ServerPlayerEntity} from this {@link ManagedGameSpace}.
-     * When a player is removed, they will be teleported back to their former location prior to joining
-     *
-     * @param player {@link ServerPlayerEntity} to remove from this {@link ManagedGameSpace}
-     * @return whether the {@link ServerPlayerEntity} was successfully removed
-     */
+    @Override
     public boolean removePlayer(ServerPlayerEntity player) {
         if (this.closed.get()) {
             return false;

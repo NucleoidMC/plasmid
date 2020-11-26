@@ -2,39 +2,38 @@ package xyz.nucleoid.plasmid.game.composite;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ConfiguredGame;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class CompositeGameConfig {
     public static final Codec<CompositeGameConfig> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
-                Identifier.CODEC.listOf().fieldOf("games").forGetter(config -> config.games)
+                GameListConfig.CODEC.fieldOf("games").forGetter(config -> config.games),
+                Codec.BOOL.optionalFieldOf("cyclic", false).forGetter(config -> config.cyclic),
+                Codec.BOOL.optionalFieldOf("shuffled", true).forGetter(config -> config.shuffled)
         ).apply(instance, CompositeGameConfig::new);
     });
 
-    private final List<Identifier> games;
+    private final GameListConfig games;
+    private final boolean cyclic;
+    private final boolean shuffled;
 
-    public CompositeGameConfig(List<Identifier> games) {
+    public CompositeGameConfig(GameListConfig games, boolean cyclic, boolean shuffled) {
         this.games = games;
+        this.cyclic = cyclic;
+        this.shuffled = shuffled;
     }
 
     public List<ConfiguredGame<?>> collectGames() {
-        List<ConfiguredGame<?>> games = new ArrayList<>(this.games.size());
-        for (Identifier gameId : this.games) {
-            ConfiguredGame<?> game = GameConfigs.get(gameId);
-            if (game == null) {
-                Plasmid.LOGGER.warn("Missing game config by id '{}'!", gameId);
-                continue;
-            }
+        return this.games.collectGames();
+    }
 
-            games.add(game);
-        }
+    public boolean isCyclic() {
+        return this.cyclic;
+    }
 
-        return games;
+    public boolean isShuffled() {
+        return this.shuffled;
     }
 }

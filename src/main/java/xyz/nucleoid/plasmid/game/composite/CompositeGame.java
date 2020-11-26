@@ -8,26 +8,25 @@ import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public final class OrderedGame implements GameLifecycle.Listeners {
-    private final List<ConfiguredGame<?>> games;
+public final class CompositeGame implements GameLifecycle.Listeners {
+    private final CompositeGameConfig config;
+
+    private List<ConfiguredGame<?>> currentCycle;
     private int nextGameIndex;
 
-    OrderedGame(List<ConfiguredGame<?>> games) {
-        this.games = games;
+    CompositeGame(CompositeGameConfig config) {
+        this.config = config;
+        this.currentCycle = this.buildCycle();
     }
 
     public static GameOpenProcedure open(GameOpenContext<CompositeGameConfig> context) {
         CompositeGameConfig config = context.getConfig();
-        List<ConfiguredGame<?>> games = config.collectGames();
 
-        if (games.isEmpty()) {
-            throw new GameOpenException(new LiteralText("Composite game config is empty"));
-        }
-
-        OrderedGame ordered = new OrderedGame(games);
+        CompositeGame ordered = new CompositeGame(config);
         ConfiguredGame<?> game = Objects.requireNonNull(ordered.nextGame());
 
         return game.openProcedure(context.getServer())
@@ -58,10 +57,29 @@ public final class OrderedGame implements GameLifecycle.Listeners {
     @Nullable
     private ConfiguredGame<?> nextGame() {
         int index = this.nextGameIndex++;
-        if (index >= this.games.size()) {
-            return null;
+        if (index >= this.currentCycle.size()) {
+            if (this.config.isCyclic()) {
+                this.currentCycle = this.buildCycle();
+                this.nextGameIndex = 0;
+                return this.currentCycle.get(this.nextGameIndex++);
+            } else {
+                return null;
+            }
         }
 
-        return this.games.get(index);
+        return this.currentCycle.get(index);
+    }
+
+    private List<ConfiguredGame<?>> buildCycle() {
+        List<ConfiguredGame<?>> games = this.config.collectGames();
+        if (this.config.isShuffled()) {
+            Collections.shuffle(games);
+        }
+
+        if (!games.isEmpty()) {
+            return games;
+        } else {
+            throw new GameOpenException(new LiteralText("Composite game config is empty"));
+        }
     }
 }

@@ -24,9 +24,10 @@ import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
 import xyz.nucleoid.plasmid.game.channel.SimpleGameChannel;
+import xyz.nucleoid.plasmid.game.composite.CompositeGame;
 import xyz.nucleoid.plasmid.game.composite.CompositeGameConfig;
-import xyz.nucleoid.plasmid.game.composite.OrderedGame;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
+import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.event.AttackEntityListener;
 import xyz.nucleoid.plasmid.game.event.GameTickListener;
@@ -56,8 +57,11 @@ public final class Plasmid implements ModInitializer {
         GameChannel.register(new Identifier(ID, "simple"), SimpleGameChannel.CODEC);
 
         GameType.register(new Identifier(Plasmid.ID, "test"), TestGame::open, Codec.unit(Unit.INSTANCE));
-        GameType.register(new Identifier(Plasmid.ID, "order"), OrderedGame::open, CompositeGameConfig.CODEC);
-        GameType.register(new Identifier(Plasmid.ID, "random"), RandomGame::open, CompositeGameConfig.CODEC);
+        GameType.register(new Identifier(Plasmid.ID, "composite"), CompositeGame::open, CompositeGameConfig.CODEC);
+        GameType.register(new Identifier(Plasmid.ID, "random"), RandomGame::open, RandomGameConfig.CODEC);
+
+        // TODO: deprecate ordered id in favour of composite
+        GameType.register(new Identifier(Plasmid.ID, "order"), CompositeGame::open, CompositeGameConfig.CODEC);
 
         this.registerCallbacks();
     }

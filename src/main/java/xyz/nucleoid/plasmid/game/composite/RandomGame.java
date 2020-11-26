@@ -6,20 +6,16 @@ import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 
-import java.util.List;
 import java.util.Random;
 
 public final class RandomGame {
-    public static GameOpenProcedure open(GameOpenContext<CompositeGameConfig> context) {
-        CompositeGameConfig config = context.getConfig();
-        List<ConfiguredGame<?>> games = config.collectGames();
+    public static GameOpenProcedure open(GameOpenContext<RandomGameConfig> context) {
+        RandomGameConfig config = context.getConfig();
 
-        if (games.isEmpty()) {
+        ConfiguredGame<?> game = config.selectGame(new Random());
+        if (game == null) {
             throw new GameOpenException(new LiteralText("Composite game config is empty"));
         }
-
-        Random random = new Random();
-        ConfiguredGame<?> game = games.get(random.nextInt(games.size()));
 
         return game.openProcedure(context.getServer());
     }

@@ -10,7 +10,7 @@ public final class GameRule {
     public static final GameRule PVP = new GameRule(ProtectionRule.PVP);
     public static final GameRule HUNGER = new GameRule(ProtectionRule.HUNGER);
     public static final GameRule FALL_DAMAGE = new GameRule(ProtectionRule.FALL_DAMAGE);
-    public static final GameRule INTERACTION = new GameRule(ProtectionRule.INTERACT);
+    public static final GameRule INTERACTION = new GameRule(ProtectionRule.INTERACT_BLOCKS);
     public static final GameRule BLOCK_DROPS = new GameRule(ProtectionRule.BLOCK_DROPS);
     public static final GameRule THROW_ITEMS = new GameRule(ProtectionRule.THROW_ITEMS);
     public static final GameRule UNSTABLE_TNT = new GameRule(ProtectionRule.UNSTABLE_TNT);

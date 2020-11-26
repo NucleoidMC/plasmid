@@ -1,7 +1,10 @@
 package xyz.nucleoid.plasmid.game.player;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,9 +15,20 @@ public final class TeamAllocator<T, V> {
     private final List<T> teams;
     private final List<V> players = new ArrayList<>();
     private final Map<V, T> teamPreferences = new Object2ObjectOpenHashMap<>();
+    private final Object2IntMap<T> teamSizes = new Object2IntOpenHashMap<>();
 
     public TeamAllocator(Collection<T> teams) {
+        Preconditions.checkArgument(!teams.isEmpty(), "cannot allocate with no teams");
+
         this.teams = new ArrayList<>(teams);
+        this.teamSizes.defaultReturnValue(-1);
+    }
+
+    public void setSizeForTeam(T team, int maxSize) {
+        Preconditions.checkArgument(this.teams.contains(team), "invalid team: " + team);
+        Preconditions.checkArgument(maxSize > 0, "max team size must be >0");
+
+        this.teamSizes.put(team, maxSize);
     }
 
     public void add(V player, @Nullable T preference) {
@@ -33,23 +47,50 @@ public final class TeamAllocator<T, V> {
         Multimap<T, V> teamToPlayers = HashMultimap.create();
         Map<V, T> playerToTeam = new Object2ObjectOpenHashMap<>();
 
-        // shuffle the player and teams list for random initial allocation
-        Collections.shuffle(this.teams);
-        Collections.shuffle(this.players);
-
-        // 1. place everyone in all the teams in an even distribution
-        int teamIndex = 0;
-        for (V player : this.players) {
-            T team = this.teams.get(teamIndex++ % this.teams.size());
-            teamToPlayers.put(team, player);
-            playerToTeam.put(player, team);
-        }
-
-        // we want to do swapping in a different order to how we initially allocated
-        Collections.shuffle(this.players);
+        // 1. place players evenly and randomly into all the teams
+        this.placePlayersRandomly(teamToPlayers, playerToTeam);
 
         // 2. go through and try to swap players whose preferences mismatch with their assigned team
-        for (V player : this.players) {
+        this.optimizeTeamsByPreference(teamToPlayers, playerToTeam);
+
+        return teamToPlayers;
+    }
+
+    private void placePlayersRandomly(Multimap<T, V> teamToPlayers, Map<V, T> playerToTeam) {
+        List<T> availableTeams = new ArrayList<>(this.teams);
+        List<V> players = new ArrayList<>(this.players);
+
+        // shuffle the player and teams list for random initial allocation
+        Collections.shuffle(availableTeams);
+        Collections.shuffle(players);
+
+        int teamIndex = 0;
+        for (V player : players) {
+            T team = availableTeams.get(teamIndex);
+            teamToPlayers.put(team, player);
+            playerToTeam.put(player, team);
+
+            // check for the maximum team size being exceeded
+            int maxTeamSize = this.teamSizes.getInt(team);
+            if (maxTeamSize != -1 && teamToPlayers.get(team).size() >= maxTeamSize) {
+                // we've reached the maximum size for this team; exclude it
+                availableTeams.remove(teamIndex);
+
+                // all teams are full! we cannot allocate any more players
+                if (availableTeams.isEmpty()) {
+                    throw new IllegalStateException("team overflow! all teams have exceeded maximum capacity");
+                }
+            }
+
+            teamIndex = (teamIndex + 1) % availableTeams.size();
+        }
+    }
+
+    private void optimizeTeamsByPreference(Multimap<T, V> teamToPlayers, Map<V, T> playerToTeam) {
+        List<V> players = new ArrayList<>(this.players);
+        Collections.shuffle(players);
+
+        for (V player : players) {
             T preference = this.teamPreferences.get(player);
             T current = playerToTeam.get(player);
 
@@ -95,7 +136,5 @@ public final class TeamAllocator<T, V> {
                 }
             }
         }
-
-        return teamToPlayers;
     }
 }

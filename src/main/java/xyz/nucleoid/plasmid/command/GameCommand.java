@@ -114,13 +114,19 @@ public final class GameCommand {
         ServerCommandSource source = context.getSource();
         MinecraftServer server = source.getMinecraftServer();
 
+        Entity entity = source.getEntity();
+        ServerPlayerEntity player = entity instanceof ServerPlayerEntity ? (ServerPlayerEntity) entity : null;
+
         Pair<Identifier, ConfiguredGame<?>> game = GameConfigArgument.get(context, "game_type");
 
         PlayerManager playerManager = server.getPlayerManager();
         server.submit(() -> {
             try {
-                game.getRight().open(server).handle((v, throwable) -> {
+                game.getRight().open(server).handle((gameSpace, throwable) -> {
                     if (throwable == null) {
+                        if (player != null) {
+                            gameSpace.addPlayer(player);
+                        }
                         onOpenSuccess(source, game.getLeft(), game.getRight(), playerManager);
                     } else {
                         onOpenError(playerManager, throwable);

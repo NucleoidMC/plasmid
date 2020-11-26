@@ -16,8 +16,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.DropItemListener;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
-import xyz.nucleoid.plasmid.game.rule.RuleResult;
 
 import java.util.List;
 
@@ -66,11 +64,6 @@ public class ScreenHandlerMixin {
     private boolean shouldBlockThrowingItems(PlayerEntity player, int slot, ItemStack stack) {
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(player.world);
         if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
-            // Gamerule is checked first, then the event is checked
-            if (gameSpace.testRule(GameRule.THROW_ITEMS) == RuleResult.DENY) {
-                return true;
-            }
-
             ActionResult dropResult = gameSpace.invoker(DropItemListener.EVENT).onDrop(player, slot, stack);
             return dropResult == ActionResult.FAIL;
         }

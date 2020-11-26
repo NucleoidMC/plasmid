@@ -32,8 +32,6 @@ import xyz.nucleoid.plasmid.game.event.AttackEntityListener;
 import xyz.nucleoid.plasmid.game.event.GameTickListener;
 import xyz.nucleoid.plasmid.game.event.UseBlockListener;
 import xyz.nucleoid.plasmid.game.event.UseItemListener;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
-import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
 import xyz.nucleoid.plasmid.item.IncludeEntityItem;
 import xyz.nucleoid.plasmid.item.PlasmidItems;
@@ -78,10 +76,6 @@ public final class Plasmid implements ModInitializer {
             if (!world.isClient) {
                 ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
                 if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
-                    if (gameSpace.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
-                        return TypedActionResult.fail(ItemStack.EMPTY);
-                    }
-
                     try {
                         UseItemListener invoker = gameSpace.invoker(UseItemListener.EVENT);
                         return invoker.onUseItem((ServerPlayerEntity) player, hand);
@@ -98,10 +92,6 @@ public final class Plasmid implements ModInitializer {
             if (!world.isClient) {
                 ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
                 if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
-                    if (gameSpace.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
-                        return ActionResult.FAIL;
-                    }
-
                     try {
                         UseBlockListener invoker = gameSpace.invoker(UseBlockListener.EVENT);
                         return invoker.onUseBlock((ServerPlayerEntity) player, hand, hitResult);
@@ -134,13 +124,6 @@ public final class Plasmid implements ModInitializer {
 
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (!world.isClient) {
-                ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
-                if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
-                    if (gameSpace.testRule(GameRule.INTERACTION) == RuleResult.DENY) {
-                        return ActionResult.FAIL;
-                    }
-                }
-
                 ItemStack stack = player.getStackInHand(hand);
                 if (stack.getItem() instanceof IncludeEntityItem) {
                     BlockPos pos = player.getBlockPos();

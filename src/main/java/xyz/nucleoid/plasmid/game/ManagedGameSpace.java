@@ -19,6 +19,9 @@ import xyz.nucleoid.fantasy.BubbleWorldConfig;
 import xyz.nucleoid.fantasy.BubbleWorldHandle;
 import xyz.nucleoid.fantasy.Fantasy;
 import xyz.nucleoid.fantasy.WorldPlayerListener;
+import xyz.nucleoid.leukocyte.Leukocyte;
+import xyz.nucleoid.leukocyte.authority.Authority;
+import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
@@ -61,11 +64,21 @@ public final class ManagedGameSpace implements GameSpace {
 
     private final GameLifecycle lifecycle = new GameLifecycle();
 
+    private final Authority ruleAuthority;
+
     private ManagedGameSpace(MinecraftServer server, BubbleWorldHandle bubble, ConfiguredGame<?> configuredGame) {
         this.bubble = bubble;
         this.configuredGame = configuredGame;
 
         this.players = new MutablePlayerSet(server);
+
+        Leukocyte leukocyte = Leukocyte.get(server);
+
+        ProtectionShape ruleScope = ProtectionShape.dimension(bubble.asWorld().getRegistryKey());
+        this.ruleAuthority = Authority.createTransient().addShape("game", ruleScope);
+        this.ruleAuthority.exclusions.includeOperators();
+
+        leukocyte.addAuthority(this.ruleAuthority);
 
         bubble.addPlayerListener(new WorldPlayerListener() {
             @Override
@@ -127,6 +140,8 @@ public final class ManagedGameSpace implements GameSpace {
         builder.accept(logic);
 
         Scheduler.INSTANCE.submit(server -> {
+            logic.setAuthority(this.ruleAuthority);
+
             GameLogic closedGameLogic = this.logic.getAndSet(logic);
 
             closedGameLogic.getResources().close();
@@ -301,6 +316,9 @@ public final class ManagedGameSpace implements GameSpace {
                 }
 
                 this.lifecycle.close(this, players);
+
+                Leukocyte leukocyte = Leukocyte.get(this.getServer());
+                leukocyte.removeAuthority(this.ruleAuthority);
 
                 this.bubble.delete();
             } finally {

@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game;
 
+import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.plasmid.game.event.EventListeners;
 import xyz.nucleoid.plasmid.game.event.EventType;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
@@ -21,6 +22,11 @@ public final class GameLogic {
 
     GameLogic(GameSpace space) {
         this.space = space;
+    }
+
+    @Deprecated
+    void setAuthority(Authority authority) {
+        this.rules.setAuthority(authority);
     }
 
     /**

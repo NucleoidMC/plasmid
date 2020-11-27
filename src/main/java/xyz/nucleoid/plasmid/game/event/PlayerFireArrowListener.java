@@ -23,7 +23,6 @@ public interface PlayerFireArrowListener {
             ActionResult result = listener.onFireArrow(user, tool, arrows, remaining, projectile);
 
             if (result != ActionResult.PASS) {
-                System.out.println("Returning fail");
                 return result;
             }
         }

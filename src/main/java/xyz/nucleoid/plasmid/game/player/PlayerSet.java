@@ -34,6 +34,7 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
         return this.size() <= 0;
     }
 
+    // TODO: 0.5- return mutable
     PlayerSet copy();
 
     default Stream<ServerPlayerEntity> stream() {

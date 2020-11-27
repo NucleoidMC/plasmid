@@ -123,6 +123,10 @@ public final class SidebarWidget implements GameWidget {
         private Content writeRawLine(Object line) {
             int writeIndex = this.writeIndex++;
 
+            if (writeIndex >= this.lines.length) {
+                throw new IllegalArgumentException("sidebar can only render 16 lines!");
+            }
+
             this.lines[writeIndex] = line;
             if (!line.equals(this.lastLines[writeIndex])) {
                 this.changed = true;

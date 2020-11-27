@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.composite;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.util.Scheduler;
@@ -26,11 +27,25 @@ public final class CompositeGame implements GameLifecycle.Listeners {
     public static GameOpenProcedure open(GameOpenContext<CompositeGameConfig> context) {
         CompositeGameConfig config = context.getConfig();
 
-        CompositeGame ordered = new CompositeGame(config);
-        ConfiguredGame<?> game = Objects.requireNonNull(ordered.nextGame());
+        CompositeGame composite = new CompositeGame(config);
+        ConfiguredGame<?> game = Objects.requireNonNull(composite.nextGame());
 
         return game.openProcedure(context.getServer())
-                .then(logic -> logic.getSpace().getLifecycle().addListeners(ordered));
+                .then(logic -> composite.onOpenGame(logic.getSpace()));
+    }
+
+    private void onOpenGame(GameSpace gameSpace) {
+        gameSpace.getLifecycle().addListeners(this);
+    }
+
+    @Override
+    public void onAddPlayer(GameSpace gameSpace, ServerPlayerEntity player) {
+        player.sendMessage(
+                new LiteralText("You have joined ")
+                        .append(new LiteralText(gameSpace.getGameConfig().getName()).formatted(Formatting.AQUA))
+                        .formatted(Formatting.GOLD),
+                false
+        );
     }
 
     @Override
@@ -44,7 +59,7 @@ public final class CompositeGame implements GameLifecycle.Listeners {
 
         MinecraftServer server = gameSpace.getServer();
         game.open(server).thenAcceptAsync(newGameSpace -> {
-            newGameSpace.getLifecycle().addListeners(this);
+            this.onOpenGame(newGameSpace);
 
             Scheduler.INSTANCE.submit(s -> {
                 for (ServerPlayerEntity player : playersToTransfer) {

@@ -171,7 +171,7 @@ public final class SimpleGameChannel implements GameChannel {
         }
 
         @Override
-        public void onClose(GameSpace gameSpace, List<ServerPlayerEntity> players) {
+        public void onClose(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
             SimpleGameChannel.this.closeGame();
         }
     }

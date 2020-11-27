@@ -31,8 +31,21 @@ public interface GameSpace extends AutoCloseable {
      */
     boolean removePlayer(ServerPlayerEntity player);
 
+    /**
+     * Closes this game with a reason
+     *
+     * @param reason the reason for this game closing
+     */
+    void close(GameCloseReason reason);
+
+    /**
+     * @deprecated use {@link GameSpace#close(GameCloseReason)} with reason
+     */
     @Override
-    void close();
+    @Deprecated
+    default void close() {
+        this.close(GameCloseReason.FINISHED);
+    }
 
     /**
      * Adds a resource to this {@link GameSpace} object that will be automatically closed when this {@link GameSpace}

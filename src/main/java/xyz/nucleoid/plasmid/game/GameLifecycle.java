@@ -24,9 +24,9 @@ public final class GameLifecycle {
         }
     }
 
-    void close(GameSpace gameSpace, List<ServerPlayerEntity> players) {
+    void close(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
         for (Listeners listener : this.listeners) {
-            listener.onClose(gameSpace, players);
+            listener.onClose(gameSpace, players, reason);
         }
     }
 
@@ -37,7 +37,7 @@ public final class GameLifecycle {
         default void onRemovePlayer(GameSpace gameSpace, ServerPlayerEntity player) {
         }
 
-        default void onClose(GameSpace gameSpace, List<ServerPlayerEntity> players) {
+        default void onClose(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
         }
     }
 }

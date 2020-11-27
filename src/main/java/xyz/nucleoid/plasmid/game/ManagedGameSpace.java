@@ -230,7 +230,7 @@ public final class ManagedGameSpace implements GameSpace {
         this.lifecycle.removePlayer(this, player);
 
         if (this.getPlayerCount() <= 0) {
-            this.close();
+            this.close(GameCloseReason.CANCELED);
         }
     }
 
@@ -293,7 +293,7 @@ public final class ManagedGameSpace implements GameSpace {
      * <p>Upon close, all players in this {@link GameSpace} are removed and restored to their state prior to entering this game space.
      */
     @Override
-    public void close() {
+    public void close(GameCloseReason reason) {
         if (!this.closed.compareAndSet(false, true)) {
             return;
         }
@@ -315,7 +315,7 @@ public final class ManagedGameSpace implements GameSpace {
                     LOGGER.error("An unexpected exception occurred while closing the game", e);
                 }
 
-                this.lifecycle.close(this, players);
+                this.lifecycle.close(this, players, reason);
 
                 Leukocyte leukocyte = Leukocyte.get(this.getServer());
                 leukocyte.removeAuthority(this.ruleAuthority);
@@ -329,7 +329,7 @@ public final class ManagedGameSpace implements GameSpace {
 
     public void closeWithError(String message) {
         this.getPlayers().sendMessage(new LiteralText(message).formatted(Formatting.RED));
-        this.close();
+        this.close(GameCloseReason.CANCELED);
     }
 
     @Override

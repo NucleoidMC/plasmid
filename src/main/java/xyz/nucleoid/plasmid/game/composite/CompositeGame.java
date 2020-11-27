@@ -49,7 +49,11 @@ public final class CompositeGame implements GameLifecycle.Listeners {
     }
 
     @Override
-    public void onClose(GameSpace gameSpace, List<ServerPlayerEntity> players) {
+    public void onClose(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
+        if (reason != GameCloseReason.FINISHED) {
+            return;
+        }
+
         List<ServerPlayerEntity> playersToTransfer = new ArrayList<>(players);
 
         ConfiguredGame<?> game = this.nextGame();

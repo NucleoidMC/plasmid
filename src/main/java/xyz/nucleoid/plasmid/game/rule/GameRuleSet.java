@@ -20,6 +20,10 @@ public final class GameRuleSet {
     public void setAuthority(Authority authority) {
         this.authority = authority;
 
+        for (ProtectionRule rule : ProtectionRule.REGISTRY) {
+            authority.rules.put(rule, xyz.nucleoid.leukocyte.rule.RuleResult.PASS);
+        }
+
         for (Map.Entry<GameRule, RuleResult> entry : this.rules.entrySet()) {
             ProtectionRule authorityRule = entry.getKey().getRule();
             if (authorityRule != null) {

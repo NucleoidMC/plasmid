@@ -54,7 +54,7 @@ public class BowItemMixin {
                 }
 
             } catch (Exception e) {
-                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching explosion event", e);
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player fire arrow event", e);
             }
         }
     }

@@ -23,6 +23,7 @@
     "game.event.ServerPlayerEntityMixin",
     "game.event.ServerPlayerInteractionManagerMixin",
     "game.event.ServerPlayNetworkHandlerMixin",
+    "game.event.BowItemMixin",
     "game.map.ServerPlayerEntityMixin",
     "storage.ServerWorldMixin"
   ],

@@ -1,5 +1,8 @@
 package xyz.nucleoid.plasmid.command.argument;
 
+import java.util.Locale;
+import java.util.function.Function;
+
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -8,6 +11,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -22,10 +26,13 @@ public final class GameConfigArgument {
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((ctx, builder) -> {
-                    return CommandSource.suggestIdentifiers(
-                            GameConfigs.getKeys().stream(),
-                            builder
-                    );
+                    Iterable<Identifier> candidates = GameConfigs.getKeys().stream()::iterator;
+                    String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+
+                    CommandSource.forEachMatching(candidates, remaining, Function.identity(), id -> {
+                        builder.suggest(id.toString(), new LiteralText(GameConfigs.get(id).getName()));
+                    });
+                    return builder.buildFuture();
                 });
     }
 

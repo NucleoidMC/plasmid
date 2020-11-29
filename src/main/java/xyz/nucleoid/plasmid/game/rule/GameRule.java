@@ -5,6 +5,8 @@ import xyz.nucleoid.leukocyte.rule.ProtectionRule;
 
 // TODO: 0.5- games should directly work with leukocyte instead
 public final class GameRule {
+    public static final GameRule BREAK_BLOCKS = new GameRule(ProtectionRule.BREAK);
+    public static final GameRule PLACE_BLOCKS = new GameRule(ProtectionRule.PLACE);
     public static final GameRule PORTALS = new GameRule(ProtectionRule.PORTALS);
     public static final GameRule CRAFTING = new GameRule(ProtectionRule.CRAFTING);
     public static final GameRule PVP = new GameRule(ProtectionRule.PVP);

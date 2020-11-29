@@ -48,6 +48,8 @@ public final class GameWaitingLobby {
         logic.setRule(GameRule.HUNGER, RuleResult.DENY);
         logic.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
         logic.setRule(GameRule.INTERACTION, RuleResult.DENY);
+        logic.setRule(GameRule.PLACE_BLOCKS, RuleResult.DENY);
+        logic.setRule(GameRule.BREAK_BLOCKS, RuleResult.DENY);
 
         logic.on(GameTickListener.EVENT, lobby::onTick);
         logic.on(RequestStartListener.EVENT, lobby::requestStart);

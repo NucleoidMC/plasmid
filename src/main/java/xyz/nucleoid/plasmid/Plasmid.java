@@ -7,10 +7,7 @@ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
-import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import net.fabricmc.fabric.api.event.player.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -29,10 +26,7 @@ import xyz.nucleoid.plasmid.game.composite.CompositeGameConfig;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
-import xyz.nucleoid.plasmid.game.event.AttackEntityListener;
-import xyz.nucleoid.plasmid.game.event.GameTickListener;
-import xyz.nucleoid.plasmid.game.event.UseBlockListener;
-import xyz.nucleoid.plasmid.game.event.UseItemListener;
+import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
 import xyz.nucleoid.plasmid.item.IncludeEntityItem;
 import xyz.nucleoid.plasmid.item.PlasmidItems;
@@ -77,7 +71,7 @@ public final class Plasmid implements ModInitializer {
         });
 
         UseItemCallback.EVENT.register((player, world, hand) -> {
-            if (!world.isClient) {
+            if (!world.isClient && player instanceof ServerPlayerEntity) {
                 ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
                 if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
                     try {
@@ -93,7 +87,7 @@ public final class Plasmid implements ModInitializer {
         });
 
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (!world.isClient) {
+            if (!world.isClient && player instanceof ServerPlayerEntity) {
                 ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
                 if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
                     try {
@@ -108,8 +102,23 @@ public final class Plasmid implements ModInitializer {
             return ActionResult.PASS;
         });
 
+        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) -> {
+            if (!world.isClient && player instanceof ServerPlayerEntity) {
+                ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
+                if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
+                    try {
+                        BreakBlockListener invoker = gameSpace.invoker(BreakBlockListener.EVENT);
+                        return invoker.onBreak((ServerPlayerEntity) player, pos) != ActionResult.FAIL;
+                    } catch (Exception e) {
+                        LOGGER.error("An unexpected exception occurred while dispatching block break event", e);
+                    }
+                }
+            }
+            return true;
+        });
+
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (!world.isClient) {
+            if (!world.isClient && player instanceof ServerPlayerEntity) {
                 ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
 
                 ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);

@@ -46,7 +46,7 @@ dependencies {
   modImplementation 'xyz.nucleoid:fantasy:0.1.6'
   include 'xyz.nucleoid:fantasy:0.1.6'
 
-  modImplementation 'xyz.nucleoid:leukocyte:0.1.0'
+  modImplementation 'xyz.nucleoid:leukocyte:0.1.1'
 }
 
 processResources {

@@ -18,6 +18,7 @@
     "game.event.BlockItemMixin",
     "game.event.BowItemMixin",
     "game.event.ExplosionMixin",
+    "game.event.FarmlandBlockMixin",
     "game.event.LivingEntityMixin",
     "game.event.PlayerEntityMixin",
     "game.event.ProjectileEntityMixin",

@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.DropItemListener;
 
@@ -34,11 +35,16 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             int slot = player.inventory.selectedSlot;
             ItemStack stack = player.inventory.getStack(slot);
 
-            ActionResult dropResult = gameSpace.invoker(DropItemListener.EVENT).onDrop((PlayerEntity) (Object) this, slot, stack);
-            if (dropResult == ActionResult.FAIL) {
-                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, slot, stack));
+            try {
+                ActionResult dropResult = gameSpace.invoker(DropItemListener.EVENT).onDrop((PlayerEntity) (Object) this, slot, stack);
+                if (dropResult == ActionResult.FAIL) {
+                    player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, slot, stack));
 
-                ci.setReturnValue(false);
+                    ci.setReturnValue(false);
+                }
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching drop item event", e);
+                gameSpace.reportError(e, "Dropping item");
             }
         }
     }

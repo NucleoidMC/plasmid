@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.PlaceBlockListener;
 
@@ -24,10 +25,15 @@ public class BlockItemMixin {
 
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(player.world);
         if (gameSpace != null) {
-            PlaceBlockListener invoker = gameSpace.invoker(PlaceBlockListener.EVENT);
-            ActionResult result = invoker.onPlace(((ServerPlayerEntity) player), context.getBlockPos(), state, context);
-            if (result == ActionResult.FAIL) {
-                ci.setReturnValue(false);
+            try {
+                PlaceBlockListener invoker = gameSpace.invoker(PlaceBlockListener.EVENT);
+                ActionResult result = invoker.onPlace(((ServerPlayerEntity) player), context.getBlockPos(), state, context);
+                if (result == ActionResult.FAIL) {
+                    ci.setReturnValue(false);
+                }
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching block place event", e);
+                gameSpace.reportError(e, "Placing block");
             }
         }
     }

@@ -22,6 +22,7 @@ import xyz.nucleoid.fantasy.WorldPlayerListener;
 import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
+import xyz.nucleoid.plasmid.error.ErrorReporter;
 import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
@@ -66,6 +67,8 @@ public final class ManagedGameSpace implements GameSpace {
 
     private final Authority ruleAuthority;
 
+    private final ErrorReporter errorReporter;
+
     private ManagedGameSpace(MinecraftServer server, BubbleWorldHandle bubble, ConfiguredGame<?> configuredGame) {
         this.bubble = bubble;
         this.configuredGame = configuredGame;
@@ -86,6 +89,8 @@ public final class ManagedGameSpace implements GameSpace {
                 ManagedGameSpace.this.onRemovePlayer(player);
             }
         });
+
+        this.errorReporter = ErrorReporter.open(configuredGame.getName() + " (" + configuredGame.getType().getIdentifier() + ")");
     }
 
     /**
@@ -160,6 +165,8 @@ public final class ManagedGameSpace implements GameSpace {
                     LOGGER.error("An unexpected exception occurred while adding {} to game", player.getDisplayName(), e);
                     player.sendMessage(new LiteralText("An unexpected error occurred while adding you to the game!").formatted(Formatting.RED), false);
 
+                    this.reportError(e, "Adding player");
+
                     this.removePlayer(player);
                 }
             }
@@ -168,6 +175,8 @@ public final class ManagedGameSpace implements GameSpace {
                 this.invoker(GameOpenListener.EVENT).onOpen();
             } catch (Exception e) {
                 LOGGER.error("An unexpected exception occurred while opening the game", e);
+                this.reportError(e, "Opening game");
+
                 this.closeWithError("An unexpected error occurred while opening the game");
             }
         });
@@ -198,6 +207,9 @@ public final class ManagedGameSpace implements GameSpace {
             } catch (Exception e) {
                 LOGGER.error("An unexpected exception occurred while adding {} to game", player.getDisplayName(), e);
                 player.sendMessage(new LiteralText("An unexpected error occurred while adding you to the game!").formatted(Formatting.RED), false);
+
+                this.reportError(e, "Adding player");
+
                 this.removePlayer(player);
 
                 return false;
@@ -224,6 +236,8 @@ public final class ManagedGameSpace implements GameSpace {
             this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
         } catch (Exception e) {
             LOGGER.error("An unexpected exception occurred while removing {} from game", player.getDisplayName(), e);
+
+            this.reportError(e, "Removing player");
         }
 
         this.players.remove(player);
@@ -241,6 +255,8 @@ public final class ManagedGameSpace implements GameSpace {
                 return this.invoker(RequestStartListener.EVENT).requestStart();
             } catch (Exception e) {
                 LOGGER.error("An unexpected exception occurred while requesting start", e);
+                this.reportError(e, "Requesting start");
+
                 return StartResult.error(new LiteralText("An unexpected error occurred"));
             }
         });
@@ -267,6 +283,8 @@ public final class ManagedGameSpace implements GameSpace {
                 result = this.invoker(OfferPlayerListener.EVENT).offerPlayer(player);
             } catch (Exception e) {
                 LOGGER.error("An unexpected exception occurred while offering {} to game", player.getDisplayName(), e);
+                this.reportError(e, "Offering player");
+
                 result = JoinResult.err(new LiteralText("An unexpected error occurred"));
             }
 
@@ -313,6 +331,7 @@ public final class ManagedGameSpace implements GameSpace {
                     logic.getListeners().invoker(GameCloseListener.EVENT).onClose();
                 } catch (Exception e) {
                     LOGGER.error("An unexpected exception occurred while closing the game", e);
+                    this.reportError(e, "Closing game");
                 }
 
                 this.lifecycle.close(this, players, reason);
@@ -321,10 +340,16 @@ public final class ManagedGameSpace implements GameSpace {
                 leukocyte.removeAuthority(this.ruleAuthority);
 
                 this.bubble.delete();
+
+                this.errorReporter.close();
             } finally {
                 DIMENSION_TO_WORLD.remove(this.bubble.asWorld().getRegistryKey(), this);
             }
         });
+    }
+
+    public void reportError(Throwable throwable, String context) {
+        this.errorReporter.report(throwable, context);
     }
 
     public void closeWithError(String message) {

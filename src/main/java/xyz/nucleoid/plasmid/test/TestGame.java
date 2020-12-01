@@ -14,6 +14,7 @@ import xyz.nucleoid.fantasy.BubbleWorldSpawner;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.game.event.GameTickListener;
+import xyz.nucleoid.plasmid.game.event.PlayerChatListener;
 import xyz.nucleoid.plasmid.game.event.PlayerDeathListener;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
@@ -45,6 +46,10 @@ public final class TestGame {
             game.on(PlayerDeathListener.EVENT, (player, source) -> {
                 player.teleport(0.0, 65.0, 0.0);
                 return ActionResult.FAIL;
+            });
+
+            game.on(PlayerChatListener.EVENT, (message, sender) -> {
+                throw new RuntimeException("big sad");
             });
 
             GlobalWidgets widgets = new GlobalWidgets(game);

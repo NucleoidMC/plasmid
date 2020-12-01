@@ -87,6 +87,13 @@ public final class GameCommand {
                             .executes(GameCommand::joinQualifiedGame)
                         )
                 )
+                .then(literal("joinall")
+                        .requires(source -> source.hasPermissionLevel(2))
+                        .executes(GameCommand::joinAllGame)
+                        .then(GameConfigArgument.argument("game_type")
+                            .executes(GameCommand::joinAllQualifiedGame)
+                        )
+                )
                 .then(literal("leave").executes(GameCommand::leaveGame))
                 .then(literal("list").executes(GameCommand::listGames))
                 .then(literal("channel")
@@ -210,6 +217,44 @@ public final class GameCommand {
                 source.sendError(error.shallowCopy().formatted(Formatting.RED));
             }
         });
+    }
+
+    private static int joinAllGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
+        ManagedGameSpace gameSpace = games.stream().max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount)).orElse(null);
+        if (gameSpace == null) {
+            throw NO_GAME_OPEN.create();
+        }
+
+        for (ServerPlayerEntity player : context.getSource().getMinecraftServer().getPlayerManager().getPlayerList()) {
+            if (ManagedGameSpace.forWorld(context.getSource().getWorld()) == null) {
+                gameSpace.offerPlayer(player);
+            }
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int joinAllQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ConfiguredGame<?> game = GameConfigArgument.get(context, "game_type").getRight();
+
+        Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
+        ManagedGameSpace gameSpace = games.stream()
+                .filter(gw -> gw.getGameConfig() == game)
+                .max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount))
+                .orElse(null);
+
+        if (gameSpace == null) {
+            throw NO_GAME_OPEN.create();
+        }
+
+        for (ServerPlayerEntity player : context.getSource().getMinecraftServer().getPlayerManager().getPlayerList()) {
+            if (ManagedGameSpace.forWorld(context.getSource().getWorld()) == null) {
+                gameSpace.offerPlayer(player);
+            }
+        }
+
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int leaveGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {

@@ -33,6 +33,7 @@ public class ExplosionMixin {
                 gameSpace.invoker(ExplosionListener.EVENT).onExplosion(this.affectedBlocks);
             } catch (Exception e) {
                 Plasmid.LOGGER.error("An unexpected exception occurred while dispatching explosion event", e);
+                gameSpace.reportError(e, "Explosion");
             }
         }
     }

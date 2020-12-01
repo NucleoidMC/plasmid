@@ -17,6 +17,7 @@ import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xyz.nucleoid.plasmid.command.*;
+import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
@@ -79,6 +80,7 @@ public final class Plasmid implements ModInitializer {
                         return invoker.onUseItem((ServerPlayerEntity) player, hand);
                     } catch (Exception e) {
                         LOGGER.error("An unexpected exception occurred while dispatching use item event", e);
+                        gameSpace.reportError(e, "Use item");
                     }
                 }
             }
@@ -95,6 +97,7 @@ public final class Plasmid implements ModInitializer {
                         return invoker.onUseBlock((ServerPlayerEntity) player, hand, hitResult);
                     } catch (Exception e) {
                         LOGGER.error("An unexpected exception occurred while dispatching use block event", e);
+                        gameSpace.reportError(e, "Use block");
                     }
                 }
             }
@@ -111,6 +114,7 @@ public final class Plasmid implements ModInitializer {
                         return invoker.onBreak((ServerPlayerEntity) player, pos) != ActionResult.FAIL;
                     } catch (Exception e) {
                         LOGGER.error("An unexpected exception occurred while dispatching block break event", e);
+                        gameSpace.reportError(e, "Break block");
                     }
                 }
             }
@@ -128,6 +132,7 @@ public final class Plasmid implements ModInitializer {
                         return invoker.onAttackEntity(serverPlayer, hand, entity, hitResult);
                     } catch (Exception e) {
                         LOGGER.error("An unexpected exception occurred while dispatching attack entity event", e);
+                        gameSpace.reportError(e, "Attack entity");
                     }
                 }
             }
@@ -186,6 +191,8 @@ public final class Plasmid implements ModInitializer {
                     game.invoker(GameTickListener.EVENT).onTick();
                 } catch (Exception e) {
                     LOGGER.error("An unexpected exception occurred while ticking the game", e);
+                    game.reportError(e, "Ticking game");
+
                     game.closeWithError("An unexpected error occurred while ticking the game");
                 }
             }
@@ -195,14 +202,14 @@ public final class Plasmid implements ModInitializer {
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             for (ManagedGameSpace gameSpace : ManagedGameSpace.getOpen()) {
-                gameSpace.close();
+                gameSpace.close(GameCloseReason.CANCELED);
             }
         });
 
         ServerWorldEvents.UNLOAD.register((server, world) -> {
             ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
             if (gameSpace != null) {
-                gameSpace.close();
+                gameSpace.close(GameCloseReason.CANCELED);
             }
         });
     }

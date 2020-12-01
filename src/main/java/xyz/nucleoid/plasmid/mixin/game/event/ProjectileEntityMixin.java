@@ -36,6 +36,7 @@ public abstract class ProjectileEntityMixin extends Entity {
                     }
                 } catch (Exception e) {
                     Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity hit event", e);
+                    gameSpace.reportError(e, "Entity hit by projectile");
                 }
             } else if (hitResult.getType() == HitResult.Type.BLOCK) {
                 try {
@@ -45,6 +46,7 @@ public abstract class ProjectileEntityMixin extends Entity {
                     }
                 } catch (Exception e) {
                     Plasmid.LOGGER.error("An unexpected exception occurred while dispatching block hit event", e);
+                    gameSpace.reportError(e, "Block hit by projectile");
                 }
             }
         }

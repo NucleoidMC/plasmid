@@ -50,6 +50,7 @@ public abstract class LivingEntityMixin extends Entity {
                 }
             } catch (Exception e) {
                 Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity death event", e);
+                gameSpace.reportError(e, "Entity death");
             }
         }
     }
@@ -76,6 +77,7 @@ public abstract class LivingEntityMixin extends Entity {
                 }
             } catch (Exception e) {
                 Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity drop loot event", e);
+                gameSpace.reportError(e, "Entity loot");
             }
 
             return;

@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.DropItemListener;
 
@@ -64,8 +65,13 @@ public class ScreenHandlerMixin {
     private boolean shouldBlockThrowingItems(PlayerEntity player, int slot, ItemStack stack) {
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(player.world);
         if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
-            ActionResult dropResult = gameSpace.invoker(DropItemListener.EVENT).onDrop(player, slot, stack);
-            return dropResult == ActionResult.FAIL;
+            try {
+                ActionResult dropResult = gameSpace.invoker(DropItemListener.EVENT).onDrop(player, slot, stack);
+                return dropResult == ActionResult.FAIL;
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching drop item event", e);
+                gameSpace.reportError(e, "Dropping item");
+            }
         }
 
         return false;

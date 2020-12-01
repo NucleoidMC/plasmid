@@ -28,6 +28,7 @@ public class FarmlandBlockMixin {
                     }
                 } catch (Exception e) {
                     Plasmid.LOGGER.error("An unexpected exception occurred while dispatching block break event", e);
+                    gameSpace.reportError(e, "Trample farmland");
                 }
             }
         }

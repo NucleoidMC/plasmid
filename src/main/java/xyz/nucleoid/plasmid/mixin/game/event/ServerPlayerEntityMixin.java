@@ -33,6 +33,7 @@ public class ServerPlayerEntityMixin {
                 }
             } catch (Exception e) {
                 Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player death event", e);
+                gameSpace.reportError(e, "Player death");
             }
         }
     }
@@ -53,6 +54,7 @@ public class ServerPlayerEntityMixin {
                 }
             } catch (Exception e) {
                 Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player damage event", e);
+                gameSpace.reportError(e, "Player damage");
             }
         }
     }

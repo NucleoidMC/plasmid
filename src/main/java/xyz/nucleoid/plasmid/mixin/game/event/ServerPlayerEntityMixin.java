@@ -31,9 +31,9 @@ public class ServerPlayerEntityMixin {
                     player.setHealth(20.0F);
                     ci.cancel();
                 }
-            } catch (Exception e) {
-                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player death event", e);
-                gameSpace.reportError(e, "Player death");
+            } catch (Throwable t) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player death event", t);
+                gameSpace.reportError(t, "Player death");
             }
         }
     }
@@ -52,9 +52,9 @@ public class ServerPlayerEntityMixin {
                 if (result == ActionResult.FAIL) {
                     ci.cancel();
                 }
-            } catch (Exception e) {
-                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player damage event", e);
-                gameSpace.reportError(e, "Player damage");
+            } catch (Throwable t) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player damage event", t);
+                gameSpace.reportError(t, "Player damage");
             }
         }
     }

@@ -26,9 +26,9 @@ public class ServerPlayNetworkHandlerMixin {
         if (gameSpace != null && gameSpace.containsPlayer(this.player)) {
             try {
                 gameSpace.invoker(HandSwingListener.EVENT).onSwingHand(this.player, hand);
-            } catch (Exception e) {
-                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player hand swing event", e);
-                gameSpace.reportError(e, "Player swing hand");
+            } catch (Throwable t) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player hand swing event", t);
+                gameSpace.reportError(t, "Player swing hand");
             }
         }
     }

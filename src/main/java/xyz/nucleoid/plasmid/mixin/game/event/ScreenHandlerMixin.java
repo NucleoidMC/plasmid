@@ -68,9 +68,9 @@ public class ScreenHandlerMixin {
             try {
                 ActionResult dropResult = gameSpace.invoker(DropItemListener.EVENT).onDrop(player, slot, stack);
                 return dropResult == ActionResult.FAIL;
-            } catch (Exception e) {
-                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching drop item event", e);
-                gameSpace.reportError(e, "Dropping item");
+            } catch (Throwable t) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching drop item event", t);
+                gameSpace.reportError(t, "Dropping item");
             }
         }
 

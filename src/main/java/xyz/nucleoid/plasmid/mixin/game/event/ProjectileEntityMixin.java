@@ -34,9 +34,9 @@ public abstract class ProjectileEntityMixin extends Entity {
                     if (result == ActionResult.FAIL) {
                         ci.cancel();
                     }
-                } catch (Exception e) {
-                    Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity hit event", e);
-                    gameSpace.reportError(e, "Entity hit by projectile");
+                } catch (Throwable t) {
+                    Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity hit event", t);
+                    gameSpace.reportError(t, "Entity hit by projectile");
                 }
             } else if (hitResult.getType() == HitResult.Type.BLOCK) {
                 try {
@@ -44,9 +44,9 @@ public abstract class ProjectileEntityMixin extends Entity {
                     if (result == ActionResult.FAIL) {
                         ci.cancel();
                     }
-                } catch (Exception e) {
-                    Plasmid.LOGGER.error("An unexpected exception occurred while dispatching block hit event", e);
-                    gameSpace.reportError(e, "Block hit by projectile");
+                } catch (Throwable t) {
+                    Plasmid.LOGGER.error("An unexpected exception occurred while dispatching block hit event", t);
+                    gameSpace.reportError(t, "Block hit by projectile");
                 }
             }
         }

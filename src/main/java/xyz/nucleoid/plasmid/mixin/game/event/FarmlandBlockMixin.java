@@ -26,9 +26,9 @@ public class FarmlandBlockMixin {
                     if (invoker.onBreak((ServerPlayerEntity) entity, pos) == ActionResult.FAIL) {
                         ci.cancel();
                     }
-                } catch (Exception e) {
-                    Plasmid.LOGGER.error("An unexpected exception occurred while dispatching block break event", e);
-                    gameSpace.reportError(e, "Trample farmland");
+                } catch (Throwable t) {
+                    Plasmid.LOGGER.error("An unexpected exception occurred while dispatching block break event", t);
+                    gameSpace.reportError(t, "Trample farmland");
                 }
             }
         }

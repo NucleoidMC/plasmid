@@ -53,9 +53,9 @@ public abstract class PlayerManagerMixin {
                     ci.cancel();
                     return;
                 }
-            } catch (Exception e) {
-                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player chat event", e);
-                gameSpace.reportError(e, "Sending chat message");
+            } catch (Throwable t) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player chat event", t);
+                gameSpace.reportError(t, "Sending chat message");
             }
         }
 

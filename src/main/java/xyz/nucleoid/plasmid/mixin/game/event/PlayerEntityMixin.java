@@ -42,9 +42,9 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
                     ci.setReturnValue(false);
                 }
-            } catch (Exception e) {
-                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching drop item event", e);
-                gameSpace.reportError(e, "Dropping item");
+            } catch (Throwable t) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching drop item event", t);
+                gameSpace.reportError(t, "Dropping item");
             }
         }
     }

@@ -161,11 +161,11 @@ public final class ManagedGameSpace implements GameSpace {
             for (ServerPlayerEntity player : playersToJoin) {
                 try {
                     this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
-                } catch (Exception e) {
-                    LOGGER.error("An unexpected exception occurred while adding {} to game", player.getDisplayName(), e);
+                } catch (Throwable t) {
+                    LOGGER.error("An unexpected exception occurred while adding {} to game", player.getDisplayName(), t);
                     player.sendMessage(new LiteralText("An unexpected error occurred while adding you to the game!").formatted(Formatting.RED), false);
 
-                    this.reportError(e, "Adding player");
+                    this.reportError(t, "Adding player");
 
                     this.removePlayer(player);
                 }
@@ -173,9 +173,9 @@ public final class ManagedGameSpace implements GameSpace {
 
             try {
                 this.invoker(GameOpenListener.EVENT).onOpen();
-            } catch (Exception e) {
-                LOGGER.error("An unexpected exception occurred while opening the game", e);
-                this.reportError(e, "Opening game");
+            } catch (Throwable t) {
+                LOGGER.error("An unexpected exception occurred while opening the game", t);
+                this.reportError(t, "Opening game");
 
                 this.closeWithError("An unexpected error occurred while opening the game");
             }
@@ -204,11 +204,11 @@ public final class ManagedGameSpace implements GameSpace {
             this.players.add(player);
             try {
                 this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
-            } catch (Exception e) {
-                LOGGER.error("An unexpected exception occurred while adding {} to game", player.getDisplayName(), e);
+            } catch (Throwable t) {
+                LOGGER.error("An unexpected exception occurred while adding {} to game", player.getDisplayName(), t);
                 player.sendMessage(new LiteralText("An unexpected error occurred while adding you to the game!").formatted(Formatting.RED), false);
 
-                this.reportError(e, "Adding player");
+                this.reportError(t, "Adding player");
 
                 this.removePlayer(player);
 
@@ -234,10 +234,10 @@ public final class ManagedGameSpace implements GameSpace {
     private void onRemovePlayer(ServerPlayerEntity player) {
         try {
             this.invoker(PlayerRemoveListener.EVENT).onRemovePlayer(player);
-        } catch (Exception e) {
-            LOGGER.error("An unexpected exception occurred while removing {} from game", player.getDisplayName(), e);
+        } catch (Throwable t) {
+            LOGGER.error("An unexpected exception occurred while removing {} from game", player.getDisplayName(), t);
 
-            this.reportError(e, "Removing player");
+            this.reportError(t, "Removing player");
         }
 
         this.players.remove(player);
@@ -253,9 +253,9 @@ public final class ManagedGameSpace implements GameSpace {
         return Scheduler.INSTANCE.submit(server -> {
             try {
                 return this.invoker(RequestStartListener.EVENT).requestStart();
-            } catch (Exception e) {
-                LOGGER.error("An unexpected exception occurred while requesting start", e);
-                this.reportError(e, "Requesting start");
+            } catch (Throwable t) {
+                LOGGER.error("An unexpected exception occurred while requesting start", t);
+                this.reportError(t, "Requesting start");
 
                 return StartResult.error(new LiteralText("An unexpected error occurred"));
             }
@@ -281,9 +281,9 @@ public final class ManagedGameSpace implements GameSpace {
 
             try {
                 result = this.invoker(OfferPlayerListener.EVENT).offerPlayer(player);
-            } catch (Exception e) {
-                LOGGER.error("An unexpected exception occurred while offering {} to game", player.getDisplayName(), e);
-                this.reportError(e, "Offering player");
+            } catch (Throwable t) {
+                LOGGER.error("An unexpected exception occurred while offering {} to game", player.getDisplayName(), t);
+                this.reportError(t, "Offering player");
 
                 result = JoinResult.err(new LiteralText("An unexpected error occurred"));
             }
@@ -329,9 +329,9 @@ public final class ManagedGameSpace implements GameSpace {
 
                 try {
                     logic.getListeners().invoker(GameCloseListener.EVENT).onClose();
-                } catch (Exception e) {
-                    LOGGER.error("An unexpected exception occurred while closing the game", e);
-                    this.reportError(e, "Closing game");
+                } catch (Throwable t) {
+                    LOGGER.error("An unexpected exception occurred while closing the game", t);
+                    this.reportError(t, "Closing game");
                 }
 
                 this.lifecycle.close(this, players, reason);

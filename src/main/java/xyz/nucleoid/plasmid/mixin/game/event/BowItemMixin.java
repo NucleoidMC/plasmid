@@ -53,9 +53,9 @@ public class BowItemMixin {
                     ci.cancel();
                 }
 
-            } catch (Exception e) {
-                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player fire arrow event", e);
-                gameSpace.reportError(e, "Firing arrow");
+            } catch (Throwable t) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player fire arrow event", t);
+                gameSpace.reportError(t, "Firing arrow");
             }
         }
     }

@@ -31,9 +31,9 @@ public class BlockItemMixin {
                 if (result == ActionResult.FAIL) {
                     ci.setReturnValue(false);
                 }
-            } catch (Exception e) {
-                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching block place event", e);
-                gameSpace.reportError(e, "Placing block");
+            } catch (Throwable t) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching block place event", t);
+                gameSpace.reportError(t, "Placing block");
             }
         }
     }

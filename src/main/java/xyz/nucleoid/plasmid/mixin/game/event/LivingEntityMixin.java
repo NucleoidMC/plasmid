@@ -48,9 +48,9 @@ public abstract class LivingEntityMixin extends Entity {
                 if (result == ActionResult.FAIL) {
                     ci.cancel();
                 }
-            } catch (Exception e) {
-                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity death event", e);
-                gameSpace.reportError(e, "Entity death");
+            } catch (Throwable t) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity death event", t);
+                gameSpace.reportError(t, "Entity death");
             }
         }
     }
@@ -75,9 +75,9 @@ public abstract class LivingEntityMixin extends Entity {
                 if (result.getResult() != ActionResult.FAIL) {
                     result.getValue().forEach(this::dropStack);
                 }
-            } catch (Exception e) {
-                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity drop loot event", e);
-                gameSpace.reportError(e, "Entity loot");
+            } catch (Throwable t) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching entity drop loot event", t);
+                gameSpace.reportError(t, "Entity loot");
             }
 
             return;

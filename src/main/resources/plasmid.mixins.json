@@ -28,9 +28,6 @@
     "game.map.ServerPlayerEntityMixin",
     "storage.ServerWorldMixin"
   ],
-  "client": [
-    "fake.ClientConnectionMixin"
-  ],
   "injectors": {
     "defaultRequire": 1
   }

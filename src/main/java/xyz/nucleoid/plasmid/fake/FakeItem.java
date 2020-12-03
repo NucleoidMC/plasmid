@@ -16,6 +16,7 @@ public interface FakeItem {
      * @param stack The original stack
      * @return The stack to send to the client
      */
+    @Deprecated
     default ItemStack asProxy(ItemStack stack) {
         ItemStack proxy = new ItemStack(this.asProxy(), stack.getCount());
 
@@ -24,11 +25,17 @@ public interface FakeItem {
             proxy.setTag(tag.copy());
         }
 
-        proxy.setCustomName(((Item) this).getName(stack));
-
         return proxy;
     }
 
+    static Item getProxy(Item item) {
+        if (item instanceof FakeItem) {
+            return ((FakeItem) item).asProxy();
+        }
+        return item;
+    }
+
+    @Deprecated
     static ItemStack getProxy(ItemStack stack) {
         Item item = stack.getItem();
         if (item instanceof FakeItem) {

@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.widget;
 
-import fr.catcore.server.translations.api.LocalizableText;
 import fr.catcore.server.translations.api.LocalizationTarget;
+import fr.catcore.server.translations.api.text.LocalizableText;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.fastutil.chars.CharOpenHashSet;

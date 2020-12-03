@@ -43,8 +43,8 @@ dependencies {
   modImplementation 'fr.catcore:server-translations-api:1.4.0'
   include 'fr.catcore:server-translations-api:1.4.0'
 
-  modImplementation 'xyz.nucleoid:packet-tweaker:0.1.0'
-  include 'xyz.nucleoid:packet-tweaker:0.1.0'
+  modImplementation 'xyz.nucleoid:packet-tweaker:0.1.1'
+  include 'xyz.nucleoid:packet-tweaker:0.1.1'
 
   modImplementation 'xyz.nucleoid:fantasy:0.1.6'
   include 'xyz.nucleoid:fantasy:0.1.6'

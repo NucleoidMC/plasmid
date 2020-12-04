@@ -12,7 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +31,7 @@ import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
 import xyz.nucleoid.plasmid.item.IncludeEntityItem;
 import xyz.nucleoid.plasmid.item.PlasmidItems;
 import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
+import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 import xyz.nucleoid.plasmid.map.workspace.WorkspaceBoundRenderer;
 import xyz.nucleoid.plasmid.test.TestGame;
@@ -144,40 +144,35 @@ public final class Plasmid implements ModInitializer {
             if (!world.isClient) {
                 ItemStack stack = player.getStackInHand(hand);
                 if (stack.getItem() instanceof IncludeEntityItem) {
-                    BlockPos pos = player.getBlockPos();
-
                     MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(world.getServer());
 
-                    return workspaceManager.getWorkspaces().stream()
-                            .filter(workspace -> workspace.getBounds().contains(pos))
-                            .findFirst()
-                            .map(map -> {
-                                if (!map.getBounds().contains(entity.getBlockPos())) {
-                                    player.sendMessage(
-                                            new LiteralText("The targeted entity is not in the map \"" + map.getIdentifier() + "\".")
-                                                    .formatted(Formatting.RED),
-                                            false);
-                                    return ActionResult.FAIL;
-                                }
+                    MapWorkspace workspace = workspaceManager.byDimension(world.getRegistryKey());
+                    if (workspace != null) {
+                        if (!workspace.getBounds().contains(entity.getBlockPos())) {
+                            player.sendMessage(
+                                    new LiteralText("The targeted entity is not in the map \"" + workspace.getIdentifier() + "\".")
+                                            .formatted(Formatting.RED),
+                                    false);
+                            return ActionResult.FAIL;
+                        }
 
-                                if (map.containsEntity(entity.getUuid())) {
-                                    map.removeEntity(entity.getUuid());
-                                    player.sendMessage(
-                                            new LiteralText("The targeted entity has been removed from the map\"" + map.getIdentifier() + "\"."),
-                                            true);
-                                } else {
-                                    map.addEntity(entity.getUuid());
-                                    player.sendMessage(
-                                            new LiteralText("The targeted entity has been added in the map\"" + map.getIdentifier() + "\"."),
-                                            true);
-                                }
-                                return ActionResult.SUCCESS;
-                            })
-                            .orElseGet(() -> {
-                                player.sendMessage(new LiteralText("You are not in any map.").formatted(Formatting.RED),
-                                        false);
-                                return ActionResult.FAIL;
-                            });
+                        if (workspace.containsEntity(entity.getUuid())) {
+                            workspace.removeEntity(entity.getUuid());
+                            player.sendMessage(
+                                    new LiteralText("The targeted entity has been removed from the map\"" + workspace.getIdentifier() + "\"."),
+                                    true);
+                        } else {
+                            workspace.addEntity(entity.getUuid());
+                            player.sendMessage(
+                                    new LiteralText("The targeted entity has been added in the map\"" + workspace.getIdentifier() + "\"."),
+                                    true);
+                        }
+                        return ActionResult.SUCCESS;
+                    } else {
+                        player.sendMessage(new LiteralText("You are not in any map.").formatted(Formatting.RED),
+                                false);
+                        return ActionResult.FAIL;
+                    }
                 }
             }
 

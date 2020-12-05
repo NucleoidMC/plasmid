@@ -24,6 +24,7 @@
     "game.event.ProjectileEntityMixin",
     "game.event.ScreenHandlerMixin",
     "game.event.ServerPlayerEntityMixin",
+    "game.event.ServerPlayerInteractionManagerMixin",
     "game.event.ServerPlayNetworkHandlerMixin",
     "game.map.ServerPlayerEntityMixin",
     "storage.ServerWorldMixin"

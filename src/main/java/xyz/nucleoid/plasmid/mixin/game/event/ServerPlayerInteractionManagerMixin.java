@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.mixin.game.event;
 
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
+import net.minecraft.network.packet.s2c.play.PlayerActionResponseS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
@@ -39,9 +40,9 @@ public class ServerPlayerInteractionManagerMixin {
                 ActionResult result = gameSpace.invoker(PlayerPunchBlockListener.EVENT).onPunchBlock(this.player, direction, pos);
 
                 if (result == ActionResult.FAIL) {
+                    this.player.networkHandler.sendPacket(new PlayerActionResponseS2CPacket(pos, this.world.getBlockState(pos), action, false, ""));
                     ci.cancel();
                 }
-
             } catch (Throwable t) {
                 Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player punch block event", t);
                 gameSpace.reportError(t, "Punching block");

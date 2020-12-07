@@ -7,7 +7,10 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.config.PlayerConfig;
-import xyz.nucleoid.plasmid.game.event.*;
+import xyz.nucleoid.plasmid.game.event.GameTickListener;
+import xyz.nucleoid.plasmid.game.event.OfferPlayerListener;
+import xyz.nucleoid.plasmid.game.event.PlayerRemoveListener;
+import xyz.nucleoid.plasmid.game.event.RequestStartListener;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
@@ -141,6 +144,7 @@ public final class GameWaitingLobby {
     }
 
     private boolean isFull() {
-        return this.gameSpace.getPlayerCount() >= this.playerConfig.getMaxPlayers();
+        return this.gameSpace.getPlayerCount() >= this.playerConfig.getMaxPlayers()
+                || this.gameSpace.getPlayerCount() >= this.gameSpace.getServer().getCurrentPlayerCount();
     }
 }

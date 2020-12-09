@@ -76,7 +76,7 @@ public final class GameWaitingLobby {
         }
 
         if (time % 20 == 0) {
-            this.updateStartTime();
+            this.updateCountdown();
             this.tickCountdownBar();
         }
     }
@@ -94,21 +94,36 @@ public final class GameWaitingLobby {
             return JoinResult.gameFull();
         }
 
-        this.updateStartTime();
+        this.updateCountdown();
         return JoinResult.ok();
     }
 
     private void onRemovePlayer(ServerPlayerEntity player) {
-        this.updateStartTime();
+        this.updateCountdown();
     }
 
-    private void updateStartTime() {
-        long targetCountdown = this.getTargetCountdownDuration();
-        if (targetCountdown != -1) {
-            if (this.countdownStart == -1) {
-                this.countdownStart = this.gameSpace.getWorld().getTime();
+    private void updateCountdown() {
+        long targetDuration = this.getTargetCountdownDuration();
+        if (targetDuration != this.countdownDuration) {
+            this.updateCountdown(targetDuration);
+        }
+    }
+
+    private void updateCountdown(long targetDuration) {
+        if (targetDuration != -1) {
+            long time = this.gameSpace.getWorld().getTime();
+            long startTime = time;
+
+            if (this.countdownStart != -1) {
+                long countdownEnd = this.countdownStart + this.countdownDuration;
+                long timeRemaining = countdownEnd - time;
+
+                long remainingDuration = Math.min(timeRemaining, targetDuration);
+                startTime = startTime + targetDuration - remainingDuration;
             }
-            this.countdownDuration = targetCountdown;
+
+            this.countdownStart = startTime;
+            this.countdownDuration = targetDuration;
         } else {
             this.countdownStart = -1;
             this.countdownDuration = -1;

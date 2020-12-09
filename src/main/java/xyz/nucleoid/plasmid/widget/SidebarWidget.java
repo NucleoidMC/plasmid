@@ -104,8 +104,12 @@ public final class SidebarWidget implements GameWidget {
         }
     }
 
-    private static String prefixLine(int i, String line) {
-        return "\u00a7" + AVAILABLE_FORMATTING_CODES[i] + line;
+    private static String modifyLine(int i, String line) {
+        line = "\u00a7" + AVAILABLE_FORMATTING_CODES[i] + line;
+        if (line.length() > 32) {
+            line = line.substring(0, 31);
+        }
+        return line;
     }
 
     public class Content {
@@ -213,7 +217,7 @@ public final class SidebarWidget implements GameWidget {
             } else {
                 text = line.toString();
             }
-            return prefixLine(index, text);
+            return modifyLine(index, text);
         }
     }
 }

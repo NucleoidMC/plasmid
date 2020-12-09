@@ -203,7 +203,7 @@ public final class GameCommand {
 
         Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
         ManagedGameSpace gameSpace = games.stream()
-                .filter(gw -> gw.getGameConfig() == game)
+                .filter(gw -> gw.getSourceGameConfig() == game || gw.getGameConfig() == game)
                 .max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount))
                 .orElse(null);
 

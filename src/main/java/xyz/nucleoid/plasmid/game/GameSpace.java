@@ -110,9 +110,14 @@ public interface GameSpace extends AutoCloseable {
     }
 
     /**
-     * @return the game config that created this {@link GameSpace}
+     * @return the game config that is running within this {@link GameSpace}
      */
     ConfiguredGame<?> getGameConfig();
+
+    /**
+     * @return the game config that created this {@link GameSpace}
+     */
+    ConfiguredGame<?> getSourceGameConfig();
 
     /**
      * @return the lifecycle manager for this {@link GameSpace}

@@ -52,7 +52,8 @@ public final class ManagedGameSpace implements GameSpace {
     private static final Map<RegistryKey<World>, ManagedGameSpace> DIMENSION_TO_WORLD = new Reference2ObjectOpenHashMap<>();
 
     private final BubbleWorldHandle bubble;
-    private final ConfiguredGame<?> configuredGame;
+    private final ConfiguredGame<?> gameConfig;
+    private final ConfiguredGame<?> sourceGameConfig;
 
     private final MutablePlayerSet players;
 
@@ -69,9 +70,10 @@ public final class ManagedGameSpace implements GameSpace {
 
     private final ErrorReporter errorReporter;
 
-    private ManagedGameSpace(MinecraftServer server, BubbleWorldHandle bubble, ConfiguredGame<?> configuredGame) {
+    private ManagedGameSpace(MinecraftServer server, BubbleWorldHandle bubble, ConfiguredGame<?> gameConfig, ConfiguredGame<?> sourceGameConfig) {
         this.bubble = bubble;
-        this.configuredGame = configuredGame;
+        this.gameConfig = gameConfig;
+        this.sourceGameConfig = sourceGameConfig;
 
         this.players = new MutablePlayerSet(server);
 
@@ -90,7 +92,7 @@ public final class ManagedGameSpace implements GameSpace {
             }
         });
 
-        this.errorReporter = ErrorReporter.open(configuredGame.getName() + " (" + configuredGame.getType().getIdentifier() + ")");
+        this.errorReporter = ErrorReporter.open(gameConfig.getName() + " (" + gameConfig.getType().getIdentifier() + ")");
     }
 
     /**
@@ -105,8 +107,24 @@ public final class ManagedGameSpace implements GameSpace {
      * @throws GameOpenException if a {@link GameSpace} could not be opened
      */
     public static CompletableFuture<ManagedGameSpace> open(MinecraftServer server, ConfiguredGame<?> game, BubbleWorldConfig config) {
+        return open(server, game, game, config);
+    }
+
+    /**
+     * Attempts to open a new {@link GameSpace} using the given {@link BubbleWorldConfig}.
+     *
+     * <p>If a {@link GameSpace} could not be opened, a {@link GameOpenException} is thrown.
+     *
+     * @param server {@link MinecraftServer} to open a {@link GameSpace} in
+     * @param game game to open this {@link GameSpace} with
+     * @param sourceGame the game that opened this {@link GameSpace}
+     * @param config {@link BubbleWorldConfig} to use to construct a {@link GameSpace}
+     * @return a future to a {@link GameSpace} if one was opened
+     * @throws GameOpenException if a {@link GameSpace} could not be opened
+     */
+    public static CompletableFuture<ManagedGameSpace> open(MinecraftServer server, ConfiguredGame<?> game, ConfiguredGame<?> sourceGame, BubbleWorldConfig config) {
         return Fantasy.get(server).openBubble(config).thenApply(bubble -> {
-            ManagedGameSpace gameSpace = new ManagedGameSpace(server, bubble, game);
+            ManagedGameSpace gameSpace = new ManagedGameSpace(server, bubble, game, sourceGame);
             DIMENSION_TO_WORLD.put(bubble.asWorld().getRegistryKey(), gameSpace);
 
             return gameSpace;
@@ -388,7 +406,12 @@ public final class ManagedGameSpace implements GameSpace {
 
     @Override
     public ConfiguredGame<?> getGameConfig() {
-        return this.configuredGame;
+        return this.gameConfig;
+    }
+
+    @Override
+    public ConfiguredGame<?> getSourceGameConfig() {
+        return this.sourceGameConfig;
     }
 
     @Override

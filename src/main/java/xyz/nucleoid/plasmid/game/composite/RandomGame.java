@@ -17,6 +17,6 @@ public final class RandomGame {
             throw new GameOpenException(new LiteralText("Composite game config is empty"));
         }
 
-        return game.openProcedure(context.getServer());
+        return game.openProcedure(context.getServer()).withSource(context.getGame());
     }
 }

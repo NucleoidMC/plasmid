@@ -31,6 +31,7 @@ public final class CompositeGame implements GameLifecycle.Listeners {
         ConfiguredGame<?> game = Objects.requireNonNull(composite.nextGame());
 
         return game.openProcedure(context.getServer())
+                .withSource(context.getGame())
                 .then(logic -> composite.onOpenGame(logic.getSpace()));
     }
 

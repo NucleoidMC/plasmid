@@ -15,7 +15,7 @@ public final class GameOpenContext<C> {
     }
 
     public GameOpenProcedure createOpenProcedure(BubbleWorldConfig worldConfig, Consumer<GameLogic> configureGame) {
-        return new GameOpenProcedure(this.server, this.game, worldConfig, configureGame);
+        return new GameOpenProcedure(this.server, this.game, this.game, worldConfig, configureGame);
     }
 
     public MinecraftServer getServer() {
@@ -24,5 +24,9 @@ public final class GameOpenContext<C> {
 
     public C getConfig() {
         return this.game.getConfig();
+    }
+
+    public ConfiguredGame<C> getGame() {
+        return this.game;
     }
 }

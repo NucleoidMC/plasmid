@@ -33,6 +33,8 @@ public final class SidebarWidget implements GameWidget {
 
     private static final char[] AVAILABLE_FORMATTING_CODES;
 
+    private static final int MAX_WIDTH = 40;
+
     static {
         CharSet vanillaFormattingCodes = new CharOpenHashSet();
         for (Formatting formatting : Formatting.values()) {
@@ -106,8 +108,8 @@ public final class SidebarWidget implements GameWidget {
 
     private static String modifyLine(int i, String line) {
         line = "\u00a7" + AVAILABLE_FORMATTING_CODES[i] + line;
-        if (line.length() > 32) {
-            line = line.substring(0, 31);
+        if (line.length() > MAX_WIDTH) {
+            line = line.substring(0, MAX_WIDTH - 1);
         }
         return line;
     }

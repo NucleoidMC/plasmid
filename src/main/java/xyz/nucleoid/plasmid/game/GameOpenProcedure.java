@@ -37,7 +37,7 @@ public final class GameOpenProcedure {
     }
 
     public CompletableFuture<ManagedGameSpace> open() {
-        return ManagedGameSpace.open(this.server, this.game, this.worldConfig)
+        return ManagedGameSpace.open(this.server, this.game, this.sourceGame, this.worldConfig)
                 .thenApplyAsync(gameSpace -> {
                     gameSpace.openGame(this.configureGame);
                     return gameSpace;

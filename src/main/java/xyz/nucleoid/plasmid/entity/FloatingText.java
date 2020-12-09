@@ -12,7 +12,7 @@ public final class FloatingText {
     private static final double VERTICAL_SPACE = 0.3;
 
     private final ServerWorld world;
-    private final Vec3d position;
+    private Vec3d position;
     private final VerticalAlign verticalAlign;
 
     private ArmorStandEntity[] entities;
@@ -59,21 +59,7 @@ public final class FloatingText {
         ArmorStandEntity[] entities = new ArmorStandEntity[count];
 
         for (int i = 0; i < count; i++) {
-            double y;
-            switch (this.verticalAlign) {
-                case TOP:
-                    y = this.position.y - i * VERTICAL_SPACE;
-                    break;
-                case BOTTOM:
-                    y = this.position.y + (count - 1 - i) * VERTICAL_SPACE;
-                    break;
-                default:
-                case CENTER:
-                    y = this.position.y + (i - count / 2.0) * VERTICAL_SPACE;
-                    break;
-            }
-
-            Vec3d position = new Vec3d(this.position.x, y, this.position.z);
+            Vec3d position = this.getPositionForLine(i, count);
 
             ArmorStandEntity entity = EntityType.ARMOR_STAND.create(this.world, null, null, null, new BlockPos(position), SpawnReason.COMMAND, false, false);
             if (entity == null) {
@@ -98,6 +84,41 @@ public final class FloatingText {
         }
 
         return entities;
+    }
+
+    public void setPos(Vec3d pos) {
+        if (pos.equals(this.position)) {
+            return;
+        }
+
+        this.position = pos;
+
+        ArmorStandEntity[] entities = this.entities;
+        if (entities != null) {
+            for (int i = 0; i < entities.length; i++) {
+                ArmorStandEntity entity = entities[i];
+                Vec3d linePos = this.getPositionForLine(i, entities.length);
+                entity.setPos(linePos.x, linePos.y, linePos.z);
+            }
+        }
+    }
+
+    private Vec3d getPositionForLine(int line, int count) {
+        double y;
+        switch (this.verticalAlign) {
+            case TOP:
+                y = this.position.y - line * VERTICAL_SPACE;
+                break;
+            case BOTTOM:
+                y = this.position.y + (count - 1 - line) * VERTICAL_SPACE;
+                break;
+            default:
+            case CENTER:
+                y = this.position.y + (line - count / 2.0) * VERTICAL_SPACE;
+                break;
+        }
+
+        return new Vec3d(this.position.x, y, this.position.z);
     }
 
     public void remove() {

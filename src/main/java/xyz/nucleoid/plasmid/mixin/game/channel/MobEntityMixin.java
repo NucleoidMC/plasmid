@@ -46,6 +46,17 @@ public abstract class MobEntityMixin extends LivingEntity implements ChannelEndp
     }
 
     @Override
+    public void setPos(double x, double y, double z) {
+        Vec3d pos = this.getPos();
+        if (pos.x == x && pos.y == y && pos.z == z) {
+            return;
+        }
+
+        super.setPos(x, y, z);
+        this.display.setPos(this.getDisplayAnchor());
+    }
+
+    @Override
     public void updateDisplay(GameChannelDisplay display) {
         Text[] lines = display.getLines();
 
@@ -59,10 +70,14 @@ public abstract class MobEntityMixin extends LivingEntity implements ChannelEndp
 
     private FloatingText createDisplay() {
         if (this.display == null) {
-            Vec3d anchor = this.getPos().add(0.0, this.getHeight(), 0.0);
+            Vec3d anchor = this.getDisplayAnchor();
             this.display = FloatingText.create((ServerWorld) this.world, anchor, FloatingText.VerticalAlign.BOTTOM);
         }
         return this.display;
+    }
+
+    private Vec3d getDisplayAnchor() {
+        return this.getPos().add(0.0, this.getHeight(), 0.0);
     }
 
     private void removeDisplay() {

@@ -119,7 +119,7 @@ public final class GameWaitingLobby {
                 long timeRemaining = countdownEnd - time;
 
                 long remainingDuration = Math.min(timeRemaining, targetDuration);
-                startTime = startTime + targetDuration - remainingDuration;
+                startTime = Math.max(startTime, startTime + targetDuration - remainingDuration);
             }
 
             this.countdownStart = startTime;

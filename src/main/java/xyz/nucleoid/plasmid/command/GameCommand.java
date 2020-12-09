@@ -4,35 +4,24 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.command.argument.GameChannelArgument;
 import xyz.nucleoid.plasmid.command.argument.GameConfigArgument;
 import xyz.nucleoid.plasmid.game.ConfiguredGame;
+import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
-import xyz.nucleoid.plasmid.game.channel.ChannelEndpoint;
-import xyz.nucleoid.plasmid.game.channel.GameChannel;
-import xyz.nucleoid.plasmid.game.channel.GameChannelManager;
-import xyz.nucleoid.plasmid.game.channel.SimpleGameChannel;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.util.Scheduler;
@@ -40,7 +29,6 @@ import xyz.nucleoid.plasmid.util.Scheduler;
 import java.util.Collection;
 import java.util.Comparator;
 
-import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public final class GameCommand {
@@ -50,18 +38,6 @@ public final class GameCommand {
 
     public static final SimpleCommandExceptionType NO_GAME_IN_WORLD = new SimpleCommandExceptionType(
             new LiteralText("No game is open in this world!")
-    );
-
-    public static final DynamicCommandExceptionType CHANNEL_ALREADY_EXISTS = new DynamicCommandExceptionType(id -> {
-        return new TranslatableText("Channel with id '%s' already exists!", id);
-    });
-
-    public static final SimpleCommandExceptionType TARGET_IS_NOT_ENDPOINT = new SimpleCommandExceptionType(
-            new LiteralText("The selected target is not a valid game channel endpoint!")
-    );
-
-    public static final SimpleCommandExceptionType ENDPOINT_ALREADY_CONNECTED = new SimpleCommandExceptionType(
-            new LiteralText("The selected endpoint is already connected to this channel!")
     );
 
     // @formatter:off
@@ -82,37 +58,20 @@ public final class GameCommand {
                     .executes(GameCommand::stopGame)
                 )
                 .then(literal("join")
-                        .executes(GameCommand::joinGame)
-                        .then(GameConfigArgument.argument("game_type")
-                            .executes(GameCommand::joinQualifiedGame)
-                        )
+                    .executes(GameCommand::joinGame)
+                    .then(GameConfigArgument.argument("game_type")
+                        .executes(GameCommand::joinQualifiedGame)
+                    )
                 )
                 .then(literal("joinall")
-                        .requires(source -> source.hasPermissionLevel(2))
-                        .executes(GameCommand::joinAllGame)
-                        .then(GameConfigArgument.argument("game_type")
-                            .executes(GameCommand::joinAllQualifiedGame)
-                        )
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .executes(GameCommand::joinAllGame)
+                    .then(GameConfigArgument.argument("game_type")
+                        .executes(GameCommand::joinAllQualifiedGame)
+                    )
                 )
                 .then(literal("leave").executes(GameCommand::leaveGame))
                 .then(literal("list").executes(GameCommand::listGames))
-                .then(literal("channel")
-                    .requires(source -> source.hasPermissionLevel(3))
-                    .then(literal("open")
-                        .then(argument("channel_id", IdentifierArgumentType.identifier())
-                        .then(GameConfigArgument.argument("game_type")
-                        .executes(GameCommand::openChannel)
-                    )))
-                    .then(literal("remove")
-                        .then(GameChannelArgument.argument("channel_id")
-                        .executes(GameCommand::removeChannel)
-                    ))
-                    .then(literal("connect")
-                        .then(GameChannelArgument.argument("channel_id")
-                        .then(argument("entity", EntityArgumentType.entity()).executes(GameCommand::connectEntityToChannel))
-                        .then(argument("pos", BlockPosArgumentType.blockPos()).executes(GameCommand::connectBlockToChannel))
-                    ))
-                )
         );
     }
     // @formatter:on
@@ -178,31 +137,29 @@ public final class GameCommand {
     }
 
     private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
-        ManagedGameSpace gameSpace = games.stream().max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount)).orElse(null);
-        if (gameSpace == null) {
-            throw NO_GAME_OPEN.create();
-        }
-
+        ManagedGameSpace gameSpace = getJoinableGame();
         joinPlayerToGame(context, gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int joinQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ConfiguredGame<?> game = GameConfigArgument.get(context, "game_type").getRight();
-
-        Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
-        ManagedGameSpace gameSpace = games.stream()
-                .filter(gw -> gw.getGameConfig() == game)
-                .max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount))
-                .orElse(null);
-
-        if (gameSpace == null) {
-            throw NO_GAME_OPEN.create();
-        }
-
+        ManagedGameSpace gameSpace = getJoinableGameQualified(context);
         joinPlayerToGame(context, gameSpace);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int joinAllGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ManagedGameSpace gameSpace = getJoinableGame();
+        joinAllPlayersToGame(context, gameSpace);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int joinAllQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ManagedGameSpace gameSpace = getJoinableGameQualified(context);
+        joinAllPlayersToGame(context, gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -219,23 +176,29 @@ public final class GameCommand {
         });
     }
 
-    private static int joinAllGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
-        ManagedGameSpace gameSpace = games.stream().max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount)).orElse(null);
-        if (gameSpace == null) {
-            throw NO_GAME_OPEN.create();
-        }
-
-        for (ServerPlayerEntity player : context.getSource().getMinecraftServer().getPlayerManager().getPlayerList()) {
+    private static void joinAllPlayersToGame(CommandContext<ServerCommandSource> context, ManagedGameSpace gameSpace) {
+        PlayerManager playerManager = context.getSource().getMinecraftServer().getPlayerManager();
+        for (ServerPlayerEntity player : playerManager.getPlayerList()) {
             if (ManagedGameSpace.forWorld(context.getSource().getWorld()) == null) {
                 gameSpace.offerPlayer(player);
             }
         }
-
-        return Command.SINGLE_SUCCESS;
     }
 
-    private static int joinAllQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static ManagedGameSpace getJoinableGame() throws CommandSyntaxException {
+        Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
+        ManagedGameSpace gameSpace = games.stream()
+                .max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount))
+                .orElse(null);
+
+        if (gameSpace == null) {
+            throw NO_GAME_OPEN.create();
+        }
+
+        return gameSpace;
+    }
+
+    private static ManagedGameSpace getJoinableGameQualified(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ConfiguredGame<?> game = GameConfigArgument.get(context, "game_type").getRight();
 
         Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
@@ -248,13 +211,7 @@ public final class GameCommand {
             throw NO_GAME_OPEN.create();
         }
 
-        for (ServerPlayerEntity player : context.getSource().getMinecraftServer().getPlayerManager().getPlayerList()) {
-            if (ManagedGameSpace.forWorld(context.getSource().getWorld()) == null) {
-                gameSpace.offerPlayer(player);
-            }
-        }
-
-        return Command.SINGLE_SUCCESS;
+        return gameSpace;
     }
 
     private static int leaveGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -307,7 +264,7 @@ public final class GameCommand {
         PlayerSet playerSet = gameSpace.getPlayers().copy();
 
         try {
-            gameSpace.close();
+            gameSpace.close(GameCloseReason.CANCELED);
 
             MutableText message = new TranslatableText("text.plasmid.game.stopped.player", source.getDisplayName());
             playerSet.sendMessage(message.formatted(Formatting.GRAY));
@@ -341,78 +298,5 @@ public final class GameCommand {
         }
 
         return Command.SINGLE_SUCCESS;
-    }
-
-    private static int openChannel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        MinecraftServer server = source.getMinecraftServer();
-        GameChannelManager channelManager = GameChannelManager.get(server);
-        Identifier channelId = IdentifierArgumentType.getIdentifier(context, "channel_id");
-        Pair<Identifier, ConfiguredGame<?>> game = GameConfigArgument.get(context, "game_type");
-
-        SimpleGameChannel channel = new SimpleGameChannel(channelId, game.getLeft());
-        if (!channelManager.add(channel)) {
-            throw CHANNEL_ALREADY_EXISTS.create(channelId);
-        }
-
-        MutableText message = new TranslatableText("text.plasmid.game.channel.create", channelId);
-        source.sendFeedback(message.formatted(Formatting.GRAY), false);
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static int removeChannel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        MinecraftServer server = source.getMinecraftServer();
-        GameChannelManager channelManager = GameChannelManager.get(server);
-
-        Identifier channelId = GameChannelArgument.get(context, "channel_id").getLeft();
-        channelManager.remove(channelId);
-
-        MutableText message = new TranslatableText("text.plasmid.game.channel.remove", channelId);
-        source.sendFeedback(message.formatted(Formatting.GRAY), false);
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private static int connectEntityToChannel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Pair<Identifier, GameChannel> channel = GameChannelArgument.get(context, "channel_id");
-
-        Entity entity = EntityArgumentType.getEntity(context, "entity");
-
-        if (entity instanceof ChannelEndpoint) {
-            if (!channel.getRight().connectTo((ChannelEndpoint) entity)) {
-                throw ENDPOINT_ALREADY_CONNECTED.create();
-            }
-
-            MutableText message = new TranslatableText("text.plasmid.game.channel.connect.entity", channel.getLeft(), entity.getEntityName());
-            context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
-
-            return Command.SINGLE_SUCCESS;
-        } else {
-            throw TARGET_IS_NOT_ENDPOINT.create();
-        }
-    }
-
-    private static int connectBlockToChannel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerWorld world = source.getWorld();
-
-        Pair<Identifier, GameChannel> channel = GameChannelArgument.get(context, "channel_id");
-        BlockPos pos = BlockPosArgumentType.getLoadedBlockPos(context, "pos");
-
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof ChannelEndpoint) {
-            if (!channel.getRight().connectTo((ChannelEndpoint) blockEntity)) {
-                throw ENDPOINT_ALREADY_CONNECTED.create();
-            }
-
-            MutableText message = new TranslatableText("text.plasmid.game.channel.connect.block", channel.getLeft(), pos.getX(), pos.getY(), pos.getZ());
-            source.sendFeedback(message.formatted(Formatting.GRAY), false);
-
-            return Command.SINGLE_SUCCESS;
-        } else {
-            throw TARGET_IS_NOT_ENDPOINT.create();
-        }
     }
 }

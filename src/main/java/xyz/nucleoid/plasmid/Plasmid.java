@@ -66,6 +66,7 @@ public final class Plasmid implements ModInitializer {
             MapManageCommand.register(dispatcher);
             MapMetadataCommand.register(dispatcher);
             GameCommand.register(dispatcher);
+            GameChannelCommand.register(dispatcher);
             PartyCommand.register(dispatcher);
             ChatCommand.register(dispatcher);
             ShoutCommand.register(dispatcher);

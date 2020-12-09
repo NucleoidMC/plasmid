@@ -12,6 +12,7 @@ import net.minecraft.network.packet.s2c.play.ScoreboardPlayerUpdateS2CPacket;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ServerScoreboard;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -54,7 +55,11 @@ public final class SidebarWidget implements GameWidget {
     private final Content content = new Content();
 
     public SidebarWidget(GameSpace gameSpace, Text title) {
-        this.players = new MutablePlayerSet(gameSpace.getServer());
+        this(gameSpace.getServer(), title);
+    }
+
+    public SidebarWidget(MinecraftServer server, Text title) {
+        this.players = new MutablePlayerSet(server);
         this.title = title;
     }
 
@@ -185,7 +190,7 @@ public final class SidebarWidget implements GameWidget {
             }
         }
 
-        void sendUpdateLine(ServerPlayerEntity  player, String line, int score) {
+        void sendUpdateLine(ServerPlayerEntity player, String line, int score) {
             player.networkHandler.sendPacket(new ScoreboardPlayerUpdateS2CPacket(
                     ServerScoreboard.UpdateMode.CHANGE, OBJECTIVE_NAME,
                     line, score

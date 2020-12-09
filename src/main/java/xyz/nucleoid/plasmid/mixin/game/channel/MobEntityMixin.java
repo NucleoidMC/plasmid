@@ -53,7 +53,10 @@ public abstract class MobEntityMixin extends LivingEntity implements ChannelEndp
         }
 
         super.setPos(x, y, z);
-        this.display.setPos(this.getDisplayAnchor());
+
+        if (this.display != null) {
+            this.display.setPos(this.getDisplayAnchor());
+        }
     }
 
     @Override

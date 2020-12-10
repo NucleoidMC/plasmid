@@ -87,6 +87,13 @@ public final class GameCommand {
 
         PlayerManager playerManager = server.getPlayerManager();
         server.submit(() -> {
+            if (player != null) {
+                ManagedGameSpace currentGameSpace = ManagedGameSpace.forWorld(player.world);
+                if (currentGameSpace != null) {
+                    currentGameSpace.removePlayer(player);
+                }
+            }
+
             try {
                 game.getRight().open(server).handle((gameSpace, throwable) -> {
                     if (throwable == null) {

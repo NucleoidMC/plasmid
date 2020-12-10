@@ -1,6 +1,8 @@
 package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -12,6 +14,7 @@ import xyz.nucleoid.plasmid.game.event.OfferPlayerListener;
 import xyz.nucleoid.plasmid.game.event.PlayerRemoveListener;
 import xyz.nucleoid.plasmid.game.event.RequestStartListener;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
+import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.rule.GameRule;
 import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.widget.BossBarWidget;
@@ -78,6 +81,7 @@ public final class GameWaitingLobby {
         if (time % 20 == 0) {
             this.updateCountdown();
             this.tickCountdownBar();
+            this.tickCountdownSound();
         }
     }
 
@@ -143,7 +147,7 @@ public final class GameWaitingLobby {
     private void tickCountdownBar() {
         if (this.countdownStart != -1) {
             long time = this.gameSpace.getWorld().getTime();
-            long remainingTicks = Math.max(this.countdownStart + this.countdownDuration - time, 0);
+            long remainingTicks = this.getRemainingTicks(time);
             long remainingSeconds = remainingTicks / 20;
 
             this.bar.setTitle(new TranslatableText("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
@@ -152,6 +156,24 @@ public final class GameWaitingLobby {
             this.bar.setTitle(WAITING_TITLE);
             this.bar.setProgress(1.0F);
         }
+    }
+
+    private void tickCountdownSound() {
+        if (this.countdownStart != -1) {
+            long time = this.gameSpace.getWorld().getTime();
+            long remainingSeconds = this.getRemainingTicks(time) / 20;
+
+            if (remainingSeconds <= 3) {
+                PlayerSet players = this.gameSpace.getPlayers();
+
+                float pitch = remainingSeconds == 0 ? 1.5F : 1.0F;
+                players.sendSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, pitch);
+            }
+        }
+    }
+
+    private long getRemainingTicks(long time) {
+        return Math.max(this.countdownStart + this.countdownDuration - time, 0);
     }
 
     private boolean isReady() {

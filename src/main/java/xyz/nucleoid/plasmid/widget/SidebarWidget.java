@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.widget;
 
+import com.google.common.base.Preconditions;
 import fr.catcore.server.translations.api.LocalizationTarget;
 import fr.catcore.server.translations.api.text.LocalizableText;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
@@ -115,13 +116,8 @@ public final class SidebarWidget implements GameWidget {
     }
 
     public class Content {
-        private Object[] lines = new Object[16];
-        private Object[] lastLines = new Object[16];
-
-        private int writeIndex;
-        private boolean changed;
-
-        private int lastLength;
+        private Lines lines = new Lines();
+        private Lines lastLines = new Lines();
 
         public Content writeLine(String line) {
             return this.writeRawLine(line);
@@ -132,67 +128,54 @@ public final class SidebarWidget implements GameWidget {
         }
 
         private Content writeRawLine(Object line) {
-            int writeIndex = this.writeIndex++;
-            if (writeIndex >= this.lines.length) {
-                return this;
-            }
-
-            this.lines[writeIndex] = line;
-            if (!line.equals(this.lastLines[writeIndex])) {
-                this.changed = true;
-            }
-
+            this.lines.push(line);
             return this;
         }
 
         void flush() {
             MutablePlayerSet players = SidebarWidget.this.players;
 
-            int length = this.writeIndex;
+            int length = this.lines.length;
+            int lastLength = this.lastLines.length;
 
-            if (length < this.lastLength) {
-                // clear any lines that got removed
-                for (int i = length; i < this.lastLength; i++) {
-                    for (ServerPlayerEntity player : players) {
+            // clear any lines that got removed
+            for (int i = length; i < lastLength; i++) {
+                for (ServerPlayerEntity player : players) {
+                    this.sendRemoveLine(player, i);
+                }
+            }
+
+            // update any lines that have changed
+            for (int i = 0; i < length; i++) {
+                int score = length - i;
+                Object line = this.lines.byIndex(i);
+
+                // the scoreboard is indexed by score, so we need to compare lines by score
+                Object lastLine = this.lastLines.byScore(score);
+                if (line.equals(lastLine)) {
+                    continue;
+                }
+
+                for (ServerPlayerEntity player : players) {
+                    if (i < lastLength) {
                         this.sendRemoveLine(player, i);
                     }
+                    this.sendUpdateLine(player, this.getLineForPlayer(line, i, player), score);
                 }
             }
 
-            if (this.changed) {
-                // update any lines that have changed
-                for (int i = 0; i < length; i++) {
-                    if (this.lines[i].equals(this.lastLines[i])) {
-                        continue;
-                    }
-
-                    int score = length - i;
-                    for (ServerPlayerEntity player : players) {
-                        if (i < this.lastLength) {
-                            this.sendRemoveLine(player, i);
-                        }
-                        this.sendUpdateLine(player, this.getLineForPlayer(this.lines[i], i, player), score);
-                    }
-                }
-            }
-
-            Object[] swap = this.lastLines;
-            Arrays.fill(swap, null);
+            Lines swap = this.lastLines;
+            swap.clear();
 
             this.lastLines = this.lines;
             this.lines = swap;
-            this.lastLength = length;
-
-            this.writeIndex = 0;
-            this.changed = false;
         }
 
         void sendTo(ServerPlayerEntity player) {
-            int length = this.lastLength;
-            for (int i = 0; i < length; i++) {
-                int score = length - i;
-                this.sendRemoveLine(player, i);
-                this.sendUpdateLine(player, this.getLineForPlayer(this.lastLines[i], i, player), score);
+            Lines lines = this.lastLines;
+            for (int i = 0; i < lines.length; i++) {
+                String line = this.getLineForPlayer(lines.byIndex(i), i, player);
+                this.sendUpdateLine(player, line, lines.scoreFor(i));
             }
         }
 
@@ -204,9 +187,10 @@ public final class SidebarWidget implements GameWidget {
         }
 
         void sendRemoveLine(ServerPlayerEntity player, int index) {
+            String line = this.getLineForPlayer(this.lastLines.byIndex(index), index, player);
             player.networkHandler.sendPacket(new ScoreboardPlayerUpdateS2CPacket(
                     ServerScoreboard.UpdateMode.REMOVE, null,
-                    this.getLineForPlayer(this.lastLines[index], index, player), -1
+                    line, -1
             ));
         }
 
@@ -220,6 +204,38 @@ public final class SidebarWidget implements GameWidget {
                 text = line.toString();
             }
             return modifyLine(index, text);
+        }
+    }
+
+    private static class Lines {
+        final Object[] array = new Object[16];
+        int length;
+
+        void clear() {
+            this.length = 0;
+            Arrays.fill(this.array, null);
+        }
+
+        void push(Object line) {
+            Preconditions.checkNotNull(line, "cannot write null line");
+            if (this.length < 16) {
+                this.array[this.length++] = line;
+            }
+        }
+
+        int scoreFor(int index) {
+            return this.length - index;
+        }
+
+        Object byIndex(int index) {
+            if (index < 0 || index >= this.length) {
+                return null;
+            }
+            return this.array[index];
+        }
+
+        Object byScore(int score) {
+            return this.byIndex(this.length - score);
         }
     }
 }

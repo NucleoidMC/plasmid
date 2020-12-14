@@ -18,10 +18,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.Util;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.command.argument.GameConfigArgument;
-import xyz.nucleoid.plasmid.game.ConfiguredGame;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameOpenException;
-import xyz.nucleoid.plasmid.game.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.util.Scheduler;
@@ -145,14 +142,14 @@ public final class GameCommand {
 
     private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ManagedGameSpace gameSpace = getJoinableGame();
-        joinPlayerToGame(context, gameSpace);
+        GamePlayerAccess.joinToGame(context.getSource().getPlayer(), gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int joinQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ManagedGameSpace gameSpace = getJoinableGameQualified(context);
-        joinPlayerToGame(context, gameSpace);
+        GamePlayerAccess.joinToGame(context.getSource().getPlayer(), gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -169,18 +166,6 @@ public final class GameCommand {
         joinAllPlayersToGame(context, gameSpace);
 
         return Command.SINGLE_SUCCESS;
-    }
-
-    private static void joinPlayerToGame(CommandContext<ServerCommandSource> context, ManagedGameSpace gameSpace) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
-
-        gameSpace.offerPlayer(player).thenAccept(joinResult -> {
-            if (joinResult.isError()) {
-                Text error = joinResult.getError();
-                source.sendError(error.shallowCopy().formatted(Formatting.RED));
-            }
-        });
     }
 
     private static void joinAllPlayersToGame(CommandContext<ServerCommandSource> context, ManagedGameSpace gameSpace) {

@@ -1,28 +1,30 @@
 package xyz.nucleoid.plasmid.party;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public final class Party {
     private PlayerRef owner;
 
-    private final Set<PlayerRef> members = new HashSet<>();
-    private final Set<PlayerRef> pendingMembers = new HashSet<>();
+    private final Set<PlayerRef> members = new ObjectOpenHashSet<>();
+    private final Set<PlayerRef> pendingMembers = new ObjectOpenHashSet<>();
 
-    Party(PlayerRef owner) {
+    private final MutablePlayerSet memberPlayers;
+
+    Party(MinecraftServer server, PlayerRef owner) {
+        this.memberPlayers = new MutablePlayerSet(server);
         this.setOwner(owner);
     }
 
     void setOwner(PlayerRef owner) {
         this.owner = owner;
         this.members.add(owner);
+        this.memberPlayers.add(owner);
     }
 
     boolean invite(PlayerRef player) {
@@ -33,12 +35,19 @@ public final class Party {
     }
 
     boolean remove(PlayerRef player) {
-        return this.members.remove(player) || this.pendingMembers.remove(player);
+        if (this.members.remove(player)) {
+            this.memberPlayers.remove(player);
+            return true;
+        }
+        return this.pendingMembers.remove(player);
     }
 
     boolean acceptInvite(PlayerRef player) {
         if (this.pendingMembers.remove(player)) {
-            return this.members.add(player);
+            if (this.members.add(player)) {
+                this.memberPlayers.add(player);
+                return true;
+            }
         }
         return false;
     }
@@ -55,13 +64,7 @@ public final class Party {
         return this.members;
     }
 
-    public void broadcastMessage(MinecraftServer server, Text message) {
-        this.forOnline(server, player -> player.sendMessage(message, false));
-    }
-
-    public void forOnline(MinecraftServer server, Consumer<ServerPlayerEntity> consumer) {
-        for (PlayerRef member : this.members) {
-            member.ifOnline(server, consumer);
-        }
+    public MutablePlayerSet getMemberPlayers() {
+        return this.memberPlayers;
     }
 }

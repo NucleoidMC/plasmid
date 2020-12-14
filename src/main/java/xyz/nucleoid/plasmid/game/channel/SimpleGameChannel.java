@@ -13,7 +13,6 @@ import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
-import xyz.nucleoid.plasmid.game.player.JoinResult;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -48,32 +47,22 @@ public final class SimpleGameChannel implements GameChannel {
 
     @Override
     public void requestJoin(ServerPlayerEntity player) {
-        // TODO: needs better error handling: namely, CompletionException
-        this.offerPlayer(player).handle((joinResult, throwable) -> {
-            MutableText errorFeedback = null;
-
-            if (joinResult != null && joinResult.isError()) {
-                errorFeedback = joinResult.getError().shallowCopy();
-            } else if (throwable != null) {
+        this.getOpenGame(player.server).handle((gameSpace, throwable) -> {
+            if (throwable != null) {
+                Plasmid.LOGGER.warn("Failed to open game", throwable);
+                MutableText errorFeedback;
                 if (throwable instanceof GameOpenException) {
                     errorFeedback = ((GameOpenException) throwable).getReason().shallowCopy();
                 } else {
                     errorFeedback = new TranslatableText("text.plasmid.game.join.error");
-                    Plasmid.LOGGER.warn("Failed to join game", throwable);
                 }
-            }
-
-            if (errorFeedback != null) {
                 player.sendMessage(errorFeedback.formatted(Formatting.RED), true);
+                return null;
             }
 
+            GamePlayerAccess.joinToGame(player, gameSpace);
             return null;
         });
-    }
-
-    private CompletableFuture<JoinResult> offerPlayer(ServerPlayerEntity player) {
-        return this.getOpenGame(player.server)
-                .thenCompose(openGame -> openGame.offerPlayer(player));
     }
 
     private CompletableFuture<ManagedGameSpace> getOpenGame(MinecraftServer server) {

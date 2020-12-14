@@ -72,7 +72,8 @@ public final class PartyCommand {
 
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-        PartyResult result = PartyManager.INSTANCE.invitePlayer(PlayerRef.of(owner), PlayerRef.of(player));
+        PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+        PartyResult result = partyManager.invitePlayer(PlayerRef.of(owner), PlayerRef.of(player));
         if (result.isOk()) {
             MutableText message = new TranslatableText("text.plasmid.party.invited.sender", player.getDisplayName());
 
@@ -113,12 +114,13 @@ public final class PartyCommand {
         Collection<GameProfile> profiles = GameProfileArgumentType.getProfileArgument(ctx, "player");
 
         for (GameProfile profile : profiles) {
-            PartyResult result = PartyManager.INSTANCE.kickPlayer(PlayerRef.of(owner), PlayerRef.of(profile));
+            PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+            PartyResult result = partyManager.kickPlayer(PlayerRef.of(owner), PlayerRef.of(profile));
             if (result.isOk()) {
                 Party party = result.getParty();
 
                 MutableText message = new TranslatableText("text.plasmid.party.kicked.sender", owner.getDisplayName());
-                party.broadcastMessage(server, message.formatted(Formatting.GOLD));
+                party.getMemberPlayers().sendMessage(message.formatted(Formatting.GOLD));
 
                 PlayerRef.of(profile).ifOnline(server, player -> {
                     player.sendMessage(new TranslatableText("text.plasmid.party.kicked.receiver").formatted(Formatting.RED), false);
@@ -138,7 +140,8 @@ public final class PartyCommand {
 
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-        PartyResult result = PartyManager.INSTANCE.transferParty(PlayerRef.of(owner), PlayerRef.of(player));
+        PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+        PartyResult result = partyManager.transferParty(PlayerRef.of(owner), PlayerRef.of(player));
         if (result.isOk()) {
             source.sendFeedback(
                     new LiteralText("Your party has been transferred to ").append(player.getDisplayName())
@@ -165,12 +168,13 @@ public final class PartyCommand {
 
         ServerPlayerEntity owner = EntityArgumentType.getPlayer(ctx, "player");
 
-        PartyResult result = PartyManager.INSTANCE.acceptInvite(PlayerRef.of(player), PlayerRef.of(owner));
+        PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+        PartyResult result = partyManager.acceptInvite(PlayerRef.of(player), PlayerRef.of(owner));
         if (result.isOk()) {
             Party party = result.getParty();
 
             MutableText message = player.getDisplayName().shallowCopy().append(" has joined the party!");
-            party.broadcastMessage(source.getMinecraftServer(), message.formatted(Formatting.GOLD));
+            party.getMemberPlayers().sendMessage(message.formatted(Formatting.GOLD));
         } else {
             PartyError error = result.getError();
             source.sendError(displayError(error, player));
@@ -179,7 +183,22 @@ public final class PartyCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int leave(CommandContext<ServerCommandSource> ctx) {
+    private static int leave(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        ServerCommandSource source = ctx.getSource();
+        ServerPlayerEntity player = source.getPlayer();
+
+        PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+        PartyResult result = partyManager.leaveParty(PlayerRef.of(player));
+        if (result.isOk()) {
+            Party party = result.getParty();
+
+            MutableText message = player.getDisplayName().shallowCopy().append(" has left the party!");
+            party.getMemberPlayers().sendMessage(message.formatted(Formatting.GOLD));
+        } else {
+            PartyError error = result.getError();
+            source.sendError(displayError(error, player));
+        }
+
         return Command.SINGLE_SUCCESS;
     }
 
@@ -187,12 +206,13 @@ public final class PartyCommand {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity owner = source.getPlayer();
 
-        PartyResult result = PartyManager.INSTANCE.disbandParty(PlayerRef.of(owner));
+        PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+        PartyResult result = partyManager.disbandParty(PlayerRef.of(owner));
         if (result.isOk()) {
             Party party = result.getParty();
 
             LiteralText message = new LiteralText("Your party has been disbanded!");
-            party.broadcastMessage(source.getMinecraftServer(), message.formatted(Formatting.GOLD));
+            party.getMemberPlayers().sendMessage(message.formatted(Formatting.GOLD));
         } else {
             PartyError error = result.getError();
             source.sendError(displayError(error, owner));

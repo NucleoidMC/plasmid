@@ -1,16 +1,31 @@
 package xyz.nucleoid.plasmid.party;
 
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 
-public final class PartyManager {
-    public static final PartyManager INSTANCE = new PartyManager();
+import java.util.Collection;
+import java.util.Collections;
 
+public final class PartyManager {
+    private static PartyManager instance;
+
+    private final MinecraftServer server;
     private final Object2ObjectMap<PlayerRef, Party> playerToParty = new Object2ObjectOpenHashMap<>();
 
-    private PartyManager() {
+    private PartyManager(MinecraftServer server) {
+        this.server = server;
+    }
+
+    public static PartyManager get(MinecraftServer server) {
+        if (instance == null || instance.server != server) {
+            instance = new PartyManager(server);
+        }
+        return instance;
     }
 
     public PartyResult invitePlayer(PlayerRef owner, PlayerRef player) {
@@ -124,10 +139,19 @@ public final class PartyManager {
     }
 
     private Party getOrCreateOwnParty(PlayerRef owner) {
-        Party party = this.playerToParty.computeIfAbsent(owner, Party::new);
+        Party party = this.playerToParty.computeIfAbsent(owner, o -> new Party(this.server, o));
         if (party.isOwner(owner)) {
             return party;
         }
         return null;
+    }
+
+    public Collection<ServerPlayerEntity> getPartyMembers(ServerPlayerEntity player) {
+        Party party = this.getOwnParty(PlayerRef.of(player));
+        if (party != null) {
+            return Lists.newArrayList(party.getMemberPlayers());
+        } else {
+            return Collections.singleton(player);
+        }
     }
 }

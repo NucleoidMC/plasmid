@@ -6,6 +6,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.util.PlayerRef;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -28,8 +29,16 @@ public final class MutablePlayerSet implements PlayerSet {
         return this.players.add(player.getUuid());
     }
 
+    public boolean add(PlayerRef ref) {
+        return this.players.add(ref.getId());
+    }
+
     public boolean remove(ServerPlayerEntity player) {
         return this.players.remove(player.getUuid());
+    }
+
+    public boolean remove(PlayerRef ref) {
+        return this.players.remove(ref.getId());
     }
 
     @Nullable

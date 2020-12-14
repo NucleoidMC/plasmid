@@ -24,7 +24,6 @@ import xyz.nucleoid.plasmid.util.BlockBounds;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 public class TemplateChunkGenerator extends GameChunkGenerator {
     private final MapTemplate template;
@@ -91,18 +90,18 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
         for (int y = 0; y < 16; y++) {
             for (int z = 0; z < 16; z++) {
                 for (int x = 0; x < 16; x++) {
-                    templatePos.set(x + minWorldX, y + minWorldY, z + minWorldZ);
+                    int worldY = y + minWorldY;
+                    templatePos.set(x + minWorldX, worldY, z + minWorldZ);
 
                     BlockState state = this.template.getBlockState(templatePos);
                     if (!state.isAir()) {
                         section.setBlockState(x, y, z, state);
 
-                        int worldY = y + minWorldY;
                         oceanFloor.trackUpdate(x, worldY, z, state);
                         worldSurface.trackUpdate(x, worldY, z, state);
 
                         if (state.getLuminance() != 0) {
-                            chunk.addLightSource(new BlockPos(minWorldX + x, worldY, minWorldZ + z));
+                            chunk.addLightSource(templatePos);
                         }
 
                         CompoundTag blockEntityTag = this.template.getBlockEntityTag(templatePos);
@@ -148,22 +147,8 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     @Override
     public int getHeight(int x, int z, Heightmap.Type heightmapType) {
         if (this.worldBounds.contains(x, z)) {
-            Predicate<BlockState> predicate = heightmapType.getBlockPredicate();
-            BlockPos.Mutable mutablePos = new BlockPos.Mutable(x, 0, z);
-
-            int minY = this.worldBounds.getMin().getY();
-            int maxY = this.worldBounds.getMax().getY();
-
-            for (int y = maxY; y >= minY; y--) {
-                mutablePos.setY(y);
-
-                BlockState state = this.template.getBlockState(mutablePos);
-                if (predicate.test(state)) {
-                    return y;
-                }
-            }
+            return this.template.getTopY(x, z, heightmapType);
         }
-
         return 0;
     }
 

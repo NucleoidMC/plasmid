@@ -171,7 +171,7 @@ public final class GameCommand {
     private static void joinAllPlayersToGame(CommandContext<ServerCommandSource> context, ManagedGameSpace gameSpace) {
         PlayerManager playerManager = context.getSource().getMinecraftServer().getPlayerManager();
         for (ServerPlayerEntity player : playerManager.getPlayerList()) {
-            if (ManagedGameSpace.forWorld(context.getSource().getWorld()) == null) {
+            if (ManagedGameSpace.forWorld(player.world) == null) {
                 gameSpace.offerPlayer(player);
             }
         }

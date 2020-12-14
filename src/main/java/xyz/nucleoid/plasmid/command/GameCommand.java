@@ -11,6 +11,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -155,7 +156,12 @@ public final class GameCommand {
     }
 
     private static int joinAllGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ManagedGameSpace gameSpace = getJoinableGame();
+        ServerWorld world = context.getSource().getWorld();
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
+        if (gameSpace == null) {
+            gameSpace = getJoinableGame();
+        }
+
         joinAllPlayersToGame(context, gameSpace);
 
         return Command.SINGLE_SUCCESS;

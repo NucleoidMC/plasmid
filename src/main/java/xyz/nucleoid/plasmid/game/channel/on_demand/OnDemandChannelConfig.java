@@ -10,7 +10,7 @@ import xyz.nucleoid.plasmid.game.channel.GameChannelMembers;
 public final class OnDemandChannelConfig implements GameChannelConfig {
     public static final Codec<OnDemandChannelConfig> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
-                Identifier.CODEC.fieldOf("game_id").forGetter(channel -> channel.gameId),
+                Identifier.CODEC.fieldOf("game").forGetter(channel -> channel.gameId),
                 Codec.BOOL.optionalFieldOf("continuous", false).forGetter(channel -> channel.continuous)
         ).apply(instance, OnDemandChannelConfig::new);
     });

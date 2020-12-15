@@ -44,10 +44,9 @@ public final class GameChannelCommand {
                         .then(argument("pos", BlockPosArgumentType.blockPos()).executes(GameChannelCommand::connectBlockToChannel))
                     ))
                     .then(literal("disconnect")
-                        .then(GameChannelArgument.argument("channel")
                         .then(argument("entity", EntityArgumentType.entity()).executes(GameChannelCommand::disconnectEntityFromChannel))
                         .then(argument("pos", BlockPosArgumentType.blockPos()).executes(GameChannelCommand::disconnectBlockFromChannel))
-                    ))
+                    )
                 )
         );
     }

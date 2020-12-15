@@ -36,6 +36,10 @@ public abstract class MobEntityMixin extends LivingEntity implements GameChannel
     @Override
     public void setChannel(GameChannel channel) {
         this.channel = channel;
+        if (channel == null && this.display != null) {
+            this.display.remove();
+            this.display = null;
+        }
     }
 
     @Nullable

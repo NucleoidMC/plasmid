@@ -43,6 +43,11 @@ public final class GameChannelCommand {
                         .then(argument("entity", EntityArgumentType.entity()).executes(GameChannelCommand::connectEntityToChannel))
                         .then(argument("pos", BlockPosArgumentType.blockPos()).executes(GameChannelCommand::connectBlockToChannel))
                     ))
+                    .then(literal("disconnect")
+                        .then(GameChannelArgument.argument("channel")
+                        .then(argument("entity", EntityArgumentType.entity()).executes(GameChannelCommand::disconnectEntityFromChannel))
+                        .then(argument("pos", BlockPosArgumentType.blockPos()).executes(GameChannelCommand::disconnectBlockFromChannel))
+                    ))
                 )
         );
     }
@@ -81,6 +86,40 @@ public final class GameChannelCommand {
             }
 
             MutableText message = new TranslatableText("text.plasmid.game.channel.connect.block", channel.getId(), pos.getX(), pos.getY(), pos.getZ());
+            source.sendFeedback(message.formatted(Formatting.GRAY), false);
+
+            return Command.SINGLE_SUCCESS;
+        } else {
+            throw TARGET_IS_NOT_INTERFACE.create();
+        }
+    }
+
+    private static int disconnectEntityFromChannel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Entity entity = EntityArgumentType.getEntity(context, "entity");
+
+        if (entity instanceof GameChannelInterface) {
+            ((GameChannelInterface) entity).invalidateChannel();
+
+            MutableText message = new TranslatableText("text.plasmid.game.channel.disconnect.entity", entity.getEntityName());
+            context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
+
+            return Command.SINGLE_SUCCESS;
+        } else {
+            throw TARGET_IS_NOT_INTERFACE.create();
+        }
+    }
+
+    private static int disconnectBlockFromChannel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        ServerWorld world = source.getWorld();
+
+        BlockPos pos = BlockPosArgumentType.getLoadedBlockPos(context, "pos");
+
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+        if (blockEntity instanceof GameChannelInterface) {
+            ((GameChannelInterface) blockEntity).invalidateChannel();
+
+            MutableText message = new TranslatableText("text.plasmid.game.channel.disconnect.block", pos.getX(), pos.getY(), pos.getZ());
             source.sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;

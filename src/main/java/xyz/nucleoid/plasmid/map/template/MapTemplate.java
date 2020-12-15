@@ -196,6 +196,11 @@ public final class MapTemplate {
         return chunk;
     }
 
+    @Nullable
+    MapChunk getChunk(long pos) {
+        return this.chunks.get(pos);
+    }
+
     public void setBounds(BlockBounds bounds) {
         this.bounds = bounds;
     }

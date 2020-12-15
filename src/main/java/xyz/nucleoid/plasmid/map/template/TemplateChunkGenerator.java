@@ -7,6 +7,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.world.*;
 import net.minecraft.world.biome.source.BiomeAccess;
@@ -71,43 +72,52 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
         int maxSectionY = this.worldBounds.getMax().getY() >> 4;
 
         for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
+            long sectionPos = ChunkSectionPos.asLong(chunkPos.x, sectionY, chunkPos.z);
+
+            MapChunk templateChunk = this.template.getChunk(sectionPos);
+            if (templateChunk == null) {
+                continue;
+            }
+
             ChunkSection section = protoChunk.getSection(sectionY);
             section.lock();
 
             try {
                 int minWorldY = sectionY << 4;
-                this.addSection(minWorldX, minWorldY, minWorldZ, mutablePos, protoChunk, section);
+                this.addSection(minWorldX, minWorldY, minWorldZ, mutablePos, protoChunk, section, templateChunk);
             } finally {
                 section.unlock();
             }
         }
     }
 
-    private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable templatePos, ProtoChunk chunk, ChunkSection section) {
+    private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable templatePos, ProtoChunk chunk, ChunkSection section, MapChunk templateChunk) {
         Heightmap oceanFloor = chunk.getHeightmap(Heightmap.Type.OCEAN_FLOOR_WG);
         Heightmap worldSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
 
         for (int y = 0; y < 16; y++) {
             for (int z = 0; z < 16; z++) {
                 for (int x = 0; x < 16; x++) {
+                    BlockState state = templateChunk.get(x, y, z);
+                    if (state.isAir()) {
+                        continue;
+                    }
+
                     int worldY = y + minWorldY;
                     templatePos.set(x + minWorldX, worldY, z + minWorldZ);
 
-                    BlockState state = this.template.getBlockState(templatePos);
-                    if (!state.isAir()) {
-                        section.setBlockState(x, y, z, state);
+                    section.setBlockState(x, y, z, state);
 
-                        oceanFloor.trackUpdate(x, worldY, z, state);
-                        worldSurface.trackUpdate(x, worldY, z, state);
+                    oceanFloor.trackUpdate(x, worldY, z, state);
+                    worldSurface.trackUpdate(x, worldY, z, state);
 
-                        if (state.getLuminance() != 0) {
-                            chunk.addLightSource(templatePos);
-                        }
+                    if (state.getLuminance() != 0) {
+                        chunk.addLightSource(templatePos);
+                    }
 
-                        CompoundTag blockEntityTag = this.template.getBlockEntityTag(templatePos);
-                        if (blockEntityTag != null) {
-                            chunk.addPendingBlockEntityTag(blockEntityTag);
-                        }
+                    CompoundTag blockEntityTag = this.template.getBlockEntityTag(templatePos);
+                    if (blockEntityTag != null) {
+                        chunk.addPendingBlockEntityTag(blockEntityTag);
                     }
                 }
             }

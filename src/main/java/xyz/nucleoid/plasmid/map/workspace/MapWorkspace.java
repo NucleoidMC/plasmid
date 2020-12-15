@@ -242,6 +242,10 @@ public final class MapWorkspace {
             BlockPos localPos = this.globalToLocal(pos);
 
             BlockState state = world.getBlockState(pos);
+            if (state.isAir()) {
+                continue;
+            }
+
             map.setBlockState(localPos, state);
 
             BlockEntity entity = world.getBlockEntity(pos);

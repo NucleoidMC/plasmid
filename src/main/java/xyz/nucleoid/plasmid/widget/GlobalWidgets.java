@@ -29,11 +29,11 @@ public final class GlobalWidgets {
     }
 
     public BossBarWidget addBossBar(Text title) {
-        return this.addWidget(new BossBarWidget(this.gameSpace, title));
+        return this.addWidget(new BossBarWidget(title));
     }
 
     public BossBarWidget addBossBar(Text title, BossBar.Color color, BossBar.Style style) {
-        return this.addWidget(new BossBarWidget(this.gameSpace, title, color, style));
+        return this.addWidget(new BossBarWidget(title, color, style));
     }
 
     public <T extends GameWidget> T addWidget(T widget) {

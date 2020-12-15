@@ -37,7 +37,7 @@ public final class OneshotChannelSystem implements GameChannelSystem {
 
         gameSpace.getLifecycle().addListeners(new GameLifecycle.Listeners() {
             @Override
-            public void onClose(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
+            public void onClosed(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
                 OneshotChannelSystem.this.closeChannel(id);
             }
         });

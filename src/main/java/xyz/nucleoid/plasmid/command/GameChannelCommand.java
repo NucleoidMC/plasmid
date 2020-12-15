@@ -24,12 +24,12 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public final class GameChannelCommand {
-    public static final SimpleCommandExceptionType TARGET_IS_NOT_UI = new SimpleCommandExceptionType(
-            new LiteralText("The selected target is not a valid game channel user interface!")
+    public static final SimpleCommandExceptionType TARGET_IS_NOT_INTERFACE = new SimpleCommandExceptionType(
+            new LiteralText("The selected target is not a valid game channel interface!")
     );
 
-    public static final SimpleCommandExceptionType UI_ALREADY_CONNECTED = new SimpleCommandExceptionType(
-            new LiteralText("The selected user interface is already connected to this channel!")
+    public static final SimpleCommandExceptionType INTERFACE_ALREADY_CONNECTED = new SimpleCommandExceptionType(
+            new LiteralText("The selected interface is already connected to this channel!")
     );
 
     // @formatter:off
@@ -55,7 +55,7 @@ public final class GameChannelCommand {
 
         if (entity instanceof GameChannelInterface) {
             if (!channel.addInterface((GameChannelInterface) entity)) {
-                throw UI_ALREADY_CONNECTED.create();
+                throw INTERFACE_ALREADY_CONNECTED.create();
             }
 
             MutableText message = new TranslatableText("text.plasmid.game.channel.connect.entity", channel.getId(), entity.getEntityName());
@@ -63,7 +63,7 @@ public final class GameChannelCommand {
 
             return Command.SINGLE_SUCCESS;
         } else {
-            throw TARGET_IS_NOT_UI.create();
+            throw TARGET_IS_NOT_INTERFACE.create();
         }
     }
 
@@ -77,7 +77,7 @@ public final class GameChannelCommand {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof GameChannelInterface) {
             if (!channel.addInterface((GameChannelInterface) blockEntity)) {
-                throw UI_ALREADY_CONNECTED.create();
+                throw INTERFACE_ALREADY_CONNECTED.create();
             }
 
             MutableText message = new TranslatableText("text.plasmid.game.channel.connect.block", channel.getId(), pos.getX(), pos.getY(), pos.getZ());
@@ -85,7 +85,7 @@ public final class GameChannelCommand {
 
             return Command.SINGLE_SUCCESS;
         } else {
-            throw TARGET_IS_NOT_UI.create();
+            throw TARGET_IS_NOT_INTERFACE.create();
         }
     }
 }

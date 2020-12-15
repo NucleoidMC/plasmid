@@ -19,10 +19,9 @@ import xyz.nucleoid.plasmid.command.*;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
-import xyz.nucleoid.plasmid.game.channel.GameChannel;
-import xyz.nucleoid.plasmid.game.channel.SimpleGameChannel;
-import xyz.nucleoid.plasmid.game.composite.CompositeGame;
-import xyz.nucleoid.plasmid.game.composite.CompositeGameConfig;
+import xyz.nucleoid.plasmid.game.channel.ConfiguredChannelSystem;
+import xyz.nucleoid.plasmid.game.channel.GameChannelConfig;
+import xyz.nucleoid.plasmid.game.channel.simple.SimpleChannelConfig;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
@@ -47,16 +46,14 @@ public final class Plasmid implements ModInitializer {
         Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "void"), VoidChunkGenerator.CODEC);
 
         GameConfigs.register();
+        ConfiguredChannelSystem.register();
+
         MapTemplateSerializer.INSTANCE.register();
 
-        GameChannel.register(new Identifier(ID, "simple"), SimpleGameChannel.CODEC);
+        GameChannelConfig.register(new Identifier(ID, "simple"), SimpleChannelConfig.CODEC);
 
         GameType.register(new Identifier(Plasmid.ID, "test"), TestGame::open, Codec.unit(Unit.INSTANCE));
-        GameType.register(new Identifier(Plasmid.ID, "composite"), CompositeGame::open, CompositeGameConfig.CODEC);
         GameType.register(new Identifier(Plasmid.ID, "random"), RandomGame::open, RandomGameConfig.CODEC);
-
-        // TODO: deprecate ordered id in favour of composite
-        GameType.register(new Identifier(Plasmid.ID, "order"), CompositeGame::open, CompositeGameConfig.CODEC);
 
         this.registerCallbacks();
     }
@@ -195,6 +192,8 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerTickEvents.START_SERVER_TICK.register(WorkspaceBoundRenderer::onTick);
+
+        ServerLifecycleEvents.SERVER_STARTING.register(ConfiguredChannelSystem.INSTANCE::setup);
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             for (ManagedGameSpace gameSpace : ManagedGameSpace.getOpen()) {

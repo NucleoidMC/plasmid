@@ -3,29 +3,30 @@ package xyz.nucleoid.plasmid.game.channel;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 
-public interface ChannelEndpoint {
+public interface GameChannelInterface {
     String NBT_KEY = Plasmid.ID + ":channel";
 
-    void setConnection(GameChannel connection);
+    void setChannel(GameChannel channel);
 
     @Nullable
-    GameChannel getConnection();
+    GameChannel getChannel();
 
-    void updateDisplay(GameChannelDisplay display);
+    void setDisplay(Text[] display);
 
-    default void serializeConnection(CompoundTag root) {
-        GameChannel connection = this.getConnection();
+    default void serializeChannel(CompoundTag root) {
+        GameChannel connection = this.getChannel();
         if (connection != null) {
             root.putString(NBT_KEY, connection.getId().toString());
         }
     }
 
     @Nullable
-    default Identifier deserializeConnectionId(CompoundTag root) {
+    default Identifier deserializeChannelId(CompoundTag root) {
         if (root.contains(NBT_KEY, NbtType.STRING)) {
             return new Identifier(root.getString(NBT_KEY));
         }
@@ -34,20 +35,20 @@ public interface ChannelEndpoint {
 
     default void tryConnectTo(MinecraftServer server, Identifier channelId) {
         GameChannelManager channelManager = GameChannelManager.get(server);
-        GameChannel channel = channelManager.get(channelId);
+        GameChannel channel = channelManager.byId(channelId);
         if (channel == null) {
             Plasmid.LOGGER.warn("Loaded channel endpoint with invalid channel id: '{}'", channelId);
             return;
         }
 
-        channel.connectTo(this);
+        channel.addInterface(this);
     }
 
-    default void invalidateConnection() {
-        GameChannel connection = this.getConnection();
-        if (connection != null) {
-            connection.removeConnection(this);
-            this.setConnection(null);
+    default void invalidateChannel() {
+        GameChannel channel = this.getChannel();
+        if (channel != null) {
+            channel.removeInterface(this);
+            this.setChannel(null);
         }
     }
 }

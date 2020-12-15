@@ -20,16 +20,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.plasmid.game.channel.ChannelEndpoint;
+import xyz.nucleoid.plasmid.game.channel.GameChannelInterface;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
-import xyz.nucleoid.plasmid.game.channel.GameChannelDisplay;
 
 @Mixin(SignBlockEntity.class)
-public abstract class SignBlockEntityMixin extends BlockEntity implements ChannelEndpoint {
+public abstract class SignBlockEntityMixin extends BlockEntity implements GameChannelInterface {
     @Shadow
     public abstract void setTextOnRow(int row, Text text);
 
-    private GameChannel connection;
+    private GameChannel channel;
     private Identifier loadedChannel;
 
     private SignBlockEntityMixin(BlockEntityType<?> type) {
@@ -37,21 +36,20 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements Channe
     }
 
     @Override
-    public void setConnection(GameChannel connection) {
-        this.connection = connection;
+    public void setChannel(GameChannel channel) {
+        this.channel = channel;
     }
 
     @Nullable
     @Override
-    public GameChannel getConnection() {
-        return this.connection;
+    public GameChannel getChannel() {
+        return this.channel;
     }
 
     @Override
-    public void updateDisplay(GameChannelDisplay display) {
-        Text[] lines = display.getLines();
+    public void setDisplay(Text[] display) {
         for (int i = 0; i < 4; i++) {
-            Text line = i < lines.length ? lines[i] : LiteralText.EMPTY;
+            Text line = i < display.length ? display[i] : LiteralText.EMPTY;
             this.setTextOnRow(i, line);
         }
 
@@ -64,20 +62,20 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements Channe
 
     @Inject(method = "onActivate", at = @At("HEAD"), cancellable = true)
     private void onActivate(PlayerEntity player, CallbackInfoReturnable<Boolean> ci) {
-        if (this.connection != null && player instanceof ServerPlayerEntity) {
-            this.connection.requestJoin((ServerPlayerEntity) player);
+        if (this.channel != null && player instanceof ServerPlayerEntity) {
+            this.channel.requestJoin((ServerPlayerEntity) player);
             ci.setReturnValue(true);
         }
     }
 
     @Inject(method = "toTag", at = @At("RETURN"))
     private void toTag(CompoundTag root, CallbackInfoReturnable<CompoundTag> ci) {
-        this.serializeConnection(root);
+        this.serializeChannel(root);
     }
 
     @Inject(method = "fromTag", at = @At("RETURN"))
     private void fromTag(BlockState state, CompoundTag root, CallbackInfo ci) {
-        this.loadedChannel = this.deserializeConnectionId(root);
+        this.loadedChannel = this.deserializeChannelId(root);
     }
 
     @Override
@@ -94,6 +92,6 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements Channe
     @Override
     public void markInvalid() {
         super.markInvalid();
-        this.invalidateConnection();
+        this.invalidateChannel();
     }
 }

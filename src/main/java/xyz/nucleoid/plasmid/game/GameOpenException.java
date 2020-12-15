@@ -1,6 +1,9 @@
 package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.CompletionException;
 
 public class GameOpenException extends RuntimeException {
     private final Text reason;
@@ -17,5 +20,15 @@ public class GameOpenException extends RuntimeException {
 
     public Text getReason() {
         return this.reason;
+    }
+
+    @Nullable
+    public static GameOpenException unwrap(Throwable throwable) {
+        if (throwable instanceof CompletionException) {
+            return unwrap(throwable.getCause());
+        } else if (throwable instanceof GameOpenException) {
+            return (GameOpenException) throwable;
+        }
+        return null;
     }
 }

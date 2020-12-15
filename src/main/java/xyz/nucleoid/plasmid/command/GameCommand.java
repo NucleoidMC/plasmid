@@ -11,20 +11,24 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.Util;
 import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.command.argument.GameChannelArgument;
 import xyz.nucleoid.plasmid.command.argument.GameConfigArgument;
-import xyz.nucleoid.plasmid.game.*;
+import xyz.nucleoid.plasmid.game.ConfiguredGame;
+import xyz.nucleoid.plasmid.game.GameCloseReason;
+import xyz.nucleoid.plasmid.game.GameOpenException;
+import xyz.nucleoid.plasmid.game.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.channel.GameChannel;
+import xyz.nucleoid.plasmid.game.channel.GameChannelManager;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
-import java.util.Collection;
 import java.util.Comparator;
 
 import static net.minecraft.server.command.CommandManager.literal;
@@ -44,8 +48,13 @@ public final class GameCommand {
             literal("game")
                 .then(literal("open")
                     .requires(source -> source.hasPermissionLevel(2))
-                    .then(GameConfigArgument.argument("game_type")
+                    .then(GameConfigArgument.argument("game_config")
                     .executes(GameCommand::openGame)
+                ))
+                .then(literal("propose")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(GameChannelArgument.argument("game_channel")
+                    .executes(GameCommand::proposeGame)
                 ))
                 .then(literal("start")
                     .requires(source -> source.hasPermissionLevel(2))
@@ -57,14 +66,14 @@ public final class GameCommand {
                 )
                 .then(literal("join")
                     .executes(GameCommand::joinGame)
-                    .then(GameConfigArgument.argument("game_type")
+                    .then(GameChannelArgument.argument("game_channel")
                         .executes(GameCommand::joinQualifiedGame)
                     )
                 )
                 .then(literal("joinall")
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(GameCommand::joinAllGame)
-                    .then(GameConfigArgument.argument("game_type")
+                    .then(GameConfigArgument.argument("game_config")
                         .executes(GameCommand::joinAllQualifiedGame)
                     )
                 )
@@ -81,7 +90,7 @@ public final class GameCommand {
         Entity entity = source.getEntity();
         ServerPlayerEntity player = entity instanceof ServerPlayerEntity ? (ServerPlayerEntity) entity : null;
 
-        Pair<Identifier, ConfiguredGame<?>> game = GameConfigArgument.get(context, "game_type");
+        Pair<Identifier, ConfiguredGame<?>> game = GameConfigArgument.get(context, "game_config");
 
         PlayerManager playerManager = server.getPlayerManager();
         server.submit(() -> {
@@ -92,18 +101,20 @@ public final class GameCommand {
                 }
             }
 
+            GameChannelManager channelManager = GameChannelManager.get(server);
+
             try {
-                game.getRight().open(server).handle((gameSpace, throwable) -> {
+                channelManager.openOneshot(game.getLeft(), game.getRight()).handleAsync((channel, throwable) -> {
                     if (throwable == null) {
                         if (player != null) {
-                            gameSpace.addPlayer(player);
+                            channel.requestJoin(player);
                         }
-                        onOpenSuccess(source, game.getLeft(), game.getRight(), playerManager);
+                        onOpenSuccess(source, channel, game.getRight(), playerManager);
                     } else {
                         onOpenError(playerManager, throwable);
                     }
                     return null;
-                });
+                }, server);
             } catch (Throwable throwable) {
                 onOpenError(playerManager, throwable);
             }
@@ -112,19 +123,10 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(ServerCommandSource source, Identifier gameId, ConfiguredGame<?> game, PlayerManager playerManager) {
-        String command = "/game join " + gameId;
-
-        ClickEvent joinClick = new ClickEvent(ClickEvent.Action.RUN_COMMAND, command);
-        HoverEvent joinHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(command));
-        Style joinStyle = Style.EMPTY
-                .withFormatting(Formatting.UNDERLINE)
-                .withColor(Formatting.BLUE)
-                .withClickEvent(joinClick)
-                .withHoverEvent(joinHover);
-
+    private static void onOpenSuccess(ServerCommandSource source, GameChannel channel, ConfiguredGame<?> game, PlayerManager playerManager) {
         Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), new LiteralText(game.getName()).formatted(Formatting.GRAY))
-                .append(new TranslatableText("text.plasmid.game.open.join").setStyle(joinStyle));
+                .append(channel.createJoinLink());
+
         playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
     }
 
@@ -141,75 +143,76 @@ public final class GameCommand {
         playerManager.broadcastChatMessage(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);
     }
 
+    private static int proposeGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        GameChannel channel = GameChannelArgument.get(context, "game_channel");
+
+        ServerCommandSource source = context.getSource();
+        Text openMessage = new TranslatableText("text.plasmid.game.propose", source.getDisplayName(), channel.getName().shallowCopy().formatted(Formatting.GRAY))
+                .append(channel.createJoinLink());
+
+        PlayerManager playerManager = source.getMinecraftServer().getPlayerManager();
+        playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
     private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ManagedGameSpace gameSpace = getJoinableGame();
-        GamePlayerAccess.joinToGame(context.getSource().getPlayer(), gameSpace);
+        GameChannel channel = getJoinableChannel(context);
+        channel.requestJoin(context.getSource().getPlayer());
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int joinQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ManagedGameSpace gameSpace = getJoinableGameQualified(context);
-        GamePlayerAccess.joinToGame(context.getSource().getPlayer(), gameSpace);
+        GameChannel channel = GameChannelArgument.get(context, "game_channel");
+        channel.requestJoin(context.getSource().getPlayer());
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int joinAllGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerWorld world = context.getSource().getWorld();
-        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
-        if (gameSpace == null) {
-            gameSpace = getJoinableGame();
+        MinecraftServer server = context.getSource().getMinecraftServer();
+        GameChannelManager channelManager = GameChannelManager.get(server);
+
+        GameChannel channel = null;
+
+        Entity entity = context.getSource().getEntity();
+        if (entity instanceof ServerPlayerEntity) {
+            channel = channelManager.getChannelFor((ServerPlayerEntity) entity);
         }
 
-        joinAllPlayersToGame(context, gameSpace);
+        if (channel == null) {
+            channel = getJoinableChannel(context);
+        }
+
+        joinAllPlayersToChannel(context, channel);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int joinAllQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ManagedGameSpace gameSpace = getJoinableGameQualified(context);
-        joinAllPlayersToGame(context, gameSpace);
+        GameChannel channel = GameChannelArgument.get(context, "game_channel");
+        joinAllPlayersToChannel(context, channel);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void joinAllPlayersToGame(CommandContext<ServerCommandSource> context, ManagedGameSpace gameSpace) {
+    private static void joinAllPlayersToChannel(CommandContext<ServerCommandSource> context, GameChannel channel) {
         PlayerManager playerManager = context.getSource().getMinecraftServer().getPlayerManager();
         for (ServerPlayerEntity player : playerManager.getPlayerList()) {
             if (ManagedGameSpace.forWorld(player.world) == null) {
-                gameSpace.offerPlayer(player);
+                channel.requestJoin(player);
             }
         }
     }
 
-    private static ManagedGameSpace getJoinableGame() throws CommandSyntaxException {
-        Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
-        ManagedGameSpace gameSpace = games.stream()
-                .max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount))
-                .orElse(null);
+    private static GameChannel getJoinableChannel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        MinecraftServer server = context.getSource().getMinecraftServer();
+        GameChannelManager channelManager = GameChannelManager.get(server);
 
-        if (gameSpace == null) {
-            throw NO_GAME_OPEN.create();
-        }
-
-        return gameSpace;
-    }
-
-    private static ManagedGameSpace getJoinableGameQualified(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ConfiguredGame<?> game = GameConfigArgument.get(context, "game_type").getRight();
-
-        Collection<ManagedGameSpace> games = ManagedGameSpace.getOpen();
-        ManagedGameSpace gameSpace = games.stream()
-                .filter(gw -> gw.getSourceGameConfig() == game || gw.getGameConfig() == game)
-                .max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount))
-                .orElse(null);
-
-        if (gameSpace == null) {
-            throw NO_GAME_OPEN.create();
-        }
-
-        return gameSpace;
+        return channelManager.getChannels().stream()
+                .max(Comparator.comparingInt(GameChannel::getPlayerCount))
+                .orElseThrow(NO_GAME_OPEN::create);
     }
 
     private static int leaveGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {

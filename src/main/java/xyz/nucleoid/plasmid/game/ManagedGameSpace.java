@@ -338,6 +338,8 @@ public final class ManagedGameSpace implements GameSpace {
 
         Scheduler.INSTANCE.submit(server -> {
             try {
+                this.lifecycle.onClosing(this, reason);
+
                 List<ServerPlayerEntity> players = Lists.newArrayList(this.players);
                 for (ServerPlayerEntity player : players) {
                     this.bubble.removePlayer(player);
@@ -352,7 +354,7 @@ public final class ManagedGameSpace implements GameSpace {
                     this.reportError(t, "Closing game");
                 }
 
-                this.lifecycle.close(this, players, reason);
+                this.lifecycle.onClosed(this, players, reason);
 
                 Leukocyte leukocyte = Leukocyte.get(this.getServer());
                 leukocyte.removeAuthority(this.ruleAuthority);

@@ -10,6 +10,7 @@ import com.mojang.serialization.Lifecycle;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Set;
 
 public final class TinyRegistry<T> implements Codec<T> {
@@ -69,5 +70,9 @@ public final class TinyRegistry<T> implements Codec<T> {
 
     public Set<Identifier> keySet() {
         return this.map.keySet();
+    }
+
+    public Collection<T> values() {
+        return this.map.values();
     }
 }

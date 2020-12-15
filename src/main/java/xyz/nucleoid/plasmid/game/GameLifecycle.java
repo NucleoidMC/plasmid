@@ -24,9 +24,15 @@ public final class GameLifecycle {
         }
     }
 
-    void close(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
+    void onClosing(GameSpace gameSpace, GameCloseReason reason) {
         for (Listeners listener : this.listeners) {
-            listener.onClose(gameSpace, players, reason);
+            listener.onClosing(gameSpace, reason);
+        }
+    }
+
+    void onClosed(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
+        for (Listeners listener : this.listeners) {
+            listener.onClosed(gameSpace, players, reason);
         }
     }
 
@@ -37,7 +43,10 @@ public final class GameLifecycle {
         default void onRemovePlayer(GameSpace gameSpace, ServerPlayerEntity player) {
         }
 
-        default void onClose(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
+        default void onClosing(GameSpace gameSpace, GameCloseReason reason) {
+        }
+
+        default void onClosed(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
         }
     }
 }

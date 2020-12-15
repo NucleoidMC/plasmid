@@ -20,14 +20,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.entity.FloatingText;
-import xyz.nucleoid.plasmid.game.channel.ChannelEndpoint;
+import xyz.nucleoid.plasmid.game.channel.GameChannelInterface;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
-import xyz.nucleoid.plasmid.game.channel.GameChannelDisplay;
 
 @Mixin(MobEntity.class)
-public abstract class MobEntityMixin extends LivingEntity implements ChannelEndpoint {
+public abstract class MobEntityMixin extends LivingEntity implements GameChannelInterface {
     private FloatingText display;
-    private GameChannel connection;
+    private GameChannel channel;
     private Identifier loadedChannel;
 
     private MobEntityMixin(EntityType<? extends LivingEntity> type, World world) {
@@ -35,14 +34,14 @@ public abstract class MobEntityMixin extends LivingEntity implements ChannelEndp
     }
 
     @Override
-    public void setConnection(GameChannel connection) {
-        this.connection = connection;
+    public void setChannel(GameChannel channel) {
+        this.channel = channel;
     }
 
     @Nullable
     @Override
-    public GameChannel getConnection() {
-        return this.connection;
+    public GameChannel getChannel() {
+        return this.channel;
     }
 
     @Override
@@ -60,12 +59,10 @@ public abstract class MobEntityMixin extends LivingEntity implements ChannelEndp
     }
 
     @Override
-    public void updateDisplay(GameChannelDisplay display) {
-        Text[] lines = display.getLines();
-
-        if (lines.length > 0) {
+    public void setDisplay(Text[] display) {
+        if (display.length > 0) {
             FloatingText floatingText = this.createDisplay();
-            floatingText.setText(display.getLines());
+            floatingText.setText(display);
         } else {
             this.removeDisplay();
         }
@@ -100,25 +97,25 @@ public abstract class MobEntityMixin extends LivingEntity implements ChannelEndp
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     private void onInteract(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> ci) {
-        if (this.connection != null && player instanceof ServerPlayerEntity) {
-            this.connection.requestJoin((ServerPlayerEntity) player);
+        if (this.channel != null && player instanceof ServerPlayerEntity && hand == Hand.MAIN_HAND) {
+            this.channel.requestJoin((ServerPlayerEntity) player);
             ci.setReturnValue(ActionResult.SUCCESS);
         }
     }
 
     @Inject(method = "writeCustomDataToTag", at = @At("RETURN"))
     private void toTag(CompoundTag root, CallbackInfo ci) {
-        this.serializeConnection(root);
+        this.serializeChannel(root);
     }
 
     @Inject(method = "readCustomDataFromTag", at = @At("RETURN"))
     private void fromTag(CompoundTag root, CallbackInfo ci) {
-        this.loadedChannel = this.deserializeConnectionId(root);
+        this.loadedChannel = this.deserializeChannelId(root);
     }
 
     @Override
     public void remove() {
-        this.invalidateConnection();
+        this.invalidateChannel();
         this.removeDisplay();
 
         super.remove();

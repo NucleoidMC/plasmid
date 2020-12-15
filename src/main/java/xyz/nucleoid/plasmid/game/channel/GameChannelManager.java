@@ -1,32 +1,33 @@
 package xyz.nucleoid.plasmid.game.channel;
 
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
-import net.fabricmc.fabric.api.util.NbtType;
+import com.google.common.collect.Sets;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.PersistentState;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.game.ConfiguredGame;
+import xyz.nucleoid.plasmid.game.channel.oneshot.OneshotChannelSystem;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public final class GameChannelManager extends PersistentState {
     public static final String KEY = Plasmid.ID + ":game_channels";
 
-    private final MinecraftServer server;
-    private final Map<Identifier, GameChannel> channels = new HashMap<>();
+    private final ConfiguredChannelSystem configuredChannels;
+    private final OneshotChannelSystem oneshotChannels;
+
+    private final GameChannelSystem[] systems;
 
     GameChannelManager(MinecraftServer server) {
         super(KEY);
-        this.server = server;
+        this.configuredChannels = ConfiguredChannelSystem.INSTANCE;
+        this.oneshotChannels = new OneshotChannelSystem(server);
+        this.systems = new GameChannelSystem[] { this.configuredChannels, this.oneshotChannels };
     }
 
     public static GameChannelManager get(MinecraftServer server) {
@@ -34,74 +35,54 @@ public final class GameChannelManager extends PersistentState {
         return overworld.getPersistentStateManager().getOrCreate(() -> new GameChannelManager(server), KEY);
     }
 
-    public boolean add(GameChannel channel) {
-        Identifier id = channel.getId();
-        if (!this.channels.containsKey(id)) {
-            this.channels.put(id, channel);
-            this.markDirty();
-            return true;
-        }
-
-        return false;
+    public CompletableFuture<GameChannel> openOneshot(Identifier gameId, ConfiguredGame<?> game) {
+        return this.oneshotChannels.open(gameId, game);
     }
 
-    public boolean remove(Identifier identifier) {
-        GameChannel channel = this.channels.remove(identifier);
-        if (channel != null) {
-            channel.invalidate();
-            this.markDirty();
-            return true;
+    // TODO: In the future, we need to associate each player with a channel to force exclusivity
+    @Nullable
+    public GameChannel getChannelFor(ServerPlayerEntity player) {
+        for (GameChannel channel : this.getChannels()) {
+            if (channel.containsPlayer(player)) {
+                return channel;
+            }
         }
-        return false;
+        return null;
     }
 
     @Nullable
-    public GameChannel get(Identifier identifier) {
-        return this.channels.get(identifier);
+    public GameChannel byId(Identifier id) {
+        for (GameChannelSystem system : this.systems) {
+            GameChannel channel = system.byId(id);
+            if (channel != null) {
+                return channel;
+            }
+        }
+        return null;
     }
 
-    public Set<Identifier> getKeys() {
-        return this.channels.keySet();
+    public Set<Identifier> keySet() {
+        Set<Identifier> keys = Collections.emptySet();
+        for (GameChannelSystem system : this.systems) {
+            keys = Sets.union(keys, system.keySet());
+        }
+        return keys;
+    }
+
+    public Collection<GameChannel> getChannels() {
+        List<GameChannel> channels = new ArrayList<>();
+        for (GameChannelSystem system : this.systems) {
+            channels.addAll(system.getChannels());
+        }
+        return channels;
     }
 
     @Override
     public CompoundTag toTag(CompoundTag root) {
-        ListTag channelList = new ListTag();
-
-        for (Map.Entry<Identifier, GameChannel> entry : this.channels.entrySet()) {
-            Identifier channelId = entry.getKey();
-            GameChannel channel = entry.getValue();
-
-            DataResult<Tag> result = GameChannel.CODEC.encodeStart(NbtOps.INSTANCE, channel);
-            result.result().ifPresent(channelList::add);
-
-            result.error().ifPresent(error -> {
-                Plasmid.LOGGER.warn("Failed to encode channel with id '{}': {}", channelId, error);
-            });
-        }
-
-        root.put("channels", channelList);
-
         return root;
     }
 
     @Override
     public void fromTag(CompoundTag root) {
-        this.channels.clear();
-
-        ListTag channelList = root.getList("channels", NbtType.COMPOUND);
-
-        for (int i = 0; i < channelList.size(); i++) {
-            CompoundTag channelTag = channelList.getCompound(i);
-
-            DataResult<GameChannel> result = GameChannel.CODEC.decode(NbtOps.INSTANCE, channelTag).map(Pair::getFirst);
-            result.result().ifPresent(channel -> {
-                this.channels.put(channel.getId(), channel);
-            });
-
-            result.error().ifPresent(error -> {
-                Plasmid.LOGGER.warn("Failed to decode channel: {}", error);
-            });
-        }
     }
 }

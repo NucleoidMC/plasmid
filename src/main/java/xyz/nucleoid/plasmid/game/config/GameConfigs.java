@@ -49,15 +49,14 @@ public final class GameConfigs {
 
                             Identifier identifier = identifierFromPath(path);
 
-                            DataResult<Pair<ConfiguredGame<?>, JsonElement>> decode = ConfiguredGame.CODEC.decode(JsonOps.INSTANCE, json);
+                            DataResult<ConfiguredGame<?>> result = ConfiguredGame.CODEC.decode(JsonOps.INSTANCE, json).map(Pair::getFirst);
 
-                            decode.result().ifPresent(result -> {
-                                ConfiguredGame<?> game = result.getFirst();
+                            result.result().ifPresent(game -> {
                                 CONFIGURED_GAMES.register(identifier, game);
                             });
 
-                            decode.error().ifPresent(error -> {
-                                Plasmid.LOGGER.error("Failed to decode {}: {}", path, error.toString());
+                            result.error().ifPresent(error -> {
+                                Plasmid.LOGGER.error("Failed to decode game at {}: {}", path, error.toString());
                             });
                         }
                     } catch (IOException e) {

@@ -10,7 +10,6 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
 import xyz.nucleoid.plasmid.game.channel.GameChannelManager;
 
@@ -26,23 +25,23 @@ public final class GameChannelArgument {
                     GameChannelManager channelManager = GameChannelManager.get(source.getMinecraftServer());
 
                     return CommandSource.suggestIdentifiers(
-                            channelManager.getKeys().stream(),
+                            channelManager.keySet().stream(),
                             builder
                     );
                 });
     }
 
-    public static Pair<Identifier, GameChannel> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static GameChannel get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
         Identifier identifier = IdentifierArgumentType.getIdentifier(context, name);
 
         ServerCommandSource source = context.getSource();
         GameChannelManager channelManager = GameChannelManager.get(source.getMinecraftServer());
 
-        GameChannel channel = channelManager.get(identifier);
+        GameChannel channel = channelManager.byId(identifier);
         if (channel == null) {
             throw CHANNEL_NOT_FOUND.create(identifier);
         }
 
-        return new Pair<>(identifier, channel);
+        return channel;
     }
 }

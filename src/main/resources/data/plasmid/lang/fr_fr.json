@@ -6,8 +6,6 @@
   "text.plasmid.game.stopped.player": "%s a arrêté le jeu !",
   "text.plasmid.game.stopped.error": "Une erreur inattendue est survenue lors de l'arrêt du jeu !",
   "text.plasmid.game.list": "Jeux enregistrés :",
-  "text.plasmid.game.channel.create": "Canal '%s' créé",
-  "text.plasmid.game.channel.remove": "Canal '%s' supprimé",
   "text.plasmid.game.channel.connect.entity": "'%1$s' connecté à '%2$s''",
   "text.plasmid.game.channel.connect.block": "'%1$s' connecté au bloc avec pour position (%2$s; %3$s; %4$s)",
   "text.plasmid.game.join": "%s a rejoint le lobby !",

@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -22,6 +23,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.InvalidIdentifierException;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.dimension.DimensionOptions;
@@ -43,6 +45,7 @@ import xyz.nucleoid.plasmid.map.workspace.WorkspaceTraveler;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -67,12 +70,16 @@ public final class MapManageCommand {
             new TranslatableText("Invalid generator config! %s", arg)
     );
 
+    public static final SimpleCommandExceptionType ILLEGAL_WORKSPACE_ID = new SimpleCommandExceptionType(
+            new LiteralText("Illegal workspace id")
+    );
+
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
             literal("map").requires(source -> source.hasPermissionLevel(4))
                 .then(literal("open")
-                    .then(argument("workspace", IdentifierArgumentType.identifier())
+                    .then(argument("workspace", StringArgumentType.string())
                     .executes(context -> MapManageCommand.openWorkspace(context, null))
                         .then(literal("like")
                             .then(DimensionOptionsArgument.argument("dimension")
@@ -130,7 +137,21 @@ public final class MapManageCommand {
     private static int openWorkspace(CommandContext<ServerCommandSource> context, @Nullable Supplier<DimensionOptions> options) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
 
-        Identifier identifier = IdentifierArgumentType.getIdentifier(context, "workspace");
+        String identifierString = StringArgumentType.getString(context, "workspace");
+        Identifier identifier;
+
+        try {
+            if (identifierString.indexOf(':') != -1) {
+                identifier = new Identifier(identifierString);
+            } else {
+                String sourceName = context.getSource().getName()
+                        .toLowerCase(Locale.ROOT)
+                        .replaceAll("\\s", "_");
+                identifier = new Identifier(sourceName, identifierString);
+            }
+        } catch (InvalidIdentifierException e) {
+            throw ILLEGAL_WORKSPACE_ID.create();
+        }
 
         MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
         if (workspaceManager.byId(identifier) != null) {

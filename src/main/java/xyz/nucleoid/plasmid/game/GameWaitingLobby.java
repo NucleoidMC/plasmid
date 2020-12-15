@@ -74,6 +74,7 @@ public final class GameWaitingLobby {
                     MutableText message = new TranslatableText("text.plasmid.game.waiting_lobby.bar.cancel").append(startResult.getError());
                     this.gameSpace.getPlayers().sendMessage(message.formatted(Formatting.RED));
                     this.started = false;
+                    this.countdownStart = -1;
                 }
             });
         }

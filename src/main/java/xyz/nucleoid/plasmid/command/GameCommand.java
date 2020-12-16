@@ -4,8 +4,14 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DataResult;
+import net.minecraft.command.argument.NbtCompoundTagArgumentType;
 import net.minecraft.entity.Entity;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
@@ -14,7 +20,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 import net.minecraft.util.Util;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.command.argument.GameChannelArgument;
@@ -31,6 +36,7 @@ import xyz.nucleoid.plasmid.util.Scheduler;
 
 import java.util.Comparator;
 
+import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public final class GameCommand {
@@ -42,6 +48,10 @@ public final class GameCommand {
             new LiteralText("No game is open in this world!")
     );
 
+    public static final DynamicCommandExceptionType MALFORMED_CONFIG = new DynamicCommandExceptionType(error -> {
+        return new TranslatableText("Malformed config: %s", error);
+    });
+
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
@@ -49,8 +59,12 @@ public final class GameCommand {
                 .then(literal("open")
                     .requires(source -> source.hasPermissionLevel(2))
                     .then(GameConfigArgument.argument("game_config")
-                    .executes(GameCommand::openGame)
-                ))
+                        .executes(GameCommand::openGame)
+                    )
+                    .then(argument("game_config_nbt", NbtCompoundTagArgumentType.nbtCompound())
+                        .executes(GameCommand::openAnonymousGame)
+                    )
+                )
                 .then(literal("propose")
                     .requires(source -> source.hasPermissionLevel(2))
                     .then(GameChannelArgument.argument("game_channel")
@@ -84,15 +98,29 @@ public final class GameCommand {
     // @formatter:on
 
     private static int openGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        Pair<Identifier, ConfiguredGame<?>> game = GameConfigArgument.get(context, "game_config");
+        return openGame(context, game.getFirst(), game.getSecond());
+    }
+
+    private static int openAnonymousGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        CompoundTag configNbt = NbtCompoundTagArgumentType.getCompoundTag(context, "game_config_nbt");
+        DataResult<ConfiguredGame<?>> result = ConfiguredGame.CODEC.decode(NbtOps.INSTANCE, configNbt).map(Pair::getFirst);
+        if (result.error().isPresent()) {
+            throw MALFORMED_CONFIG.create(result.error().get());
+        }
+
+        ConfiguredGame<?> game = result.result().get();
+        return openGame(context, new Identifier(Plasmid.ID, "anonymous"), game);
+    }
+
+    private static int openGame(CommandContext<ServerCommandSource> context, Identifier gameId, ConfiguredGame<?> game) {
         ServerCommandSource source = context.getSource();
         MinecraftServer server = source.getMinecraftServer();
+        PlayerManager playerManager = server.getPlayerManager();
 
         Entity entity = source.getEntity();
         ServerPlayerEntity player = entity instanceof ServerPlayerEntity ? (ServerPlayerEntity) entity : null;
 
-        Pair<Identifier, ConfiguredGame<?>> game = GameConfigArgument.get(context, "game_config");
-
-        PlayerManager playerManager = server.getPlayerManager();
         server.submit(() -> {
             if (player != null) {
                 ManagedGameSpace currentGameSpace = ManagedGameSpace.forWorld(player.world);
@@ -104,12 +132,12 @@ public final class GameCommand {
             GameChannelManager channelManager = GameChannelManager.get(server);
 
             try {
-                channelManager.openOneshot(game.getLeft(), game.getRight()).handleAsync((channel, throwable) -> {
+                channelManager.openOneshot(gameId, game).handleAsync((channel, throwable) -> {
                     if (throwable == null) {
                         if (player != null && ManagedGameSpace.forWorld(player.world) == null) {
                             channel.requestJoin(player);
                         }
-                        onOpenSuccess(source, channel, game.getRight(), playerManager);
+                        onOpenSuccess(source, channel, game, playerManager);
                     } else {
                         onOpenError(playerManager, throwable);
                     }

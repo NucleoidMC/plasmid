@@ -83,6 +83,8 @@ public final class MapTemplate {
         MapChunk chunk = this.getOrCreateChunk(chunkPos(pos));
         chunk.set(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15, state);
 
+        this.bounds = null;
+
         if (state.getBlock().hasBlockEntity()) {
             CompoundTag tag = new CompoundTag();
             tag.putString("id", "DUMMY");
@@ -161,9 +163,12 @@ public final class MapTemplate {
     public int getTopY(int x, int z, Heightmap.Type heightmap) {
         Predicate<BlockState> predicate = heightmap.getBlockPredicate();
 
-        BlockBounds bounds = this.getBounds();
-        int maxY = bounds.getMax().getY();
-        int minY = bounds.getMin().getY();
+        int maxY = 255;
+        int minY = 0;
+        if (this.bounds != null) {
+            maxY = this.bounds.getMax().getY();
+            minY = this.bounds.getMin().getY();
+        }
 
         BlockPos.Mutable mutablePos = new BlockPos.Mutable(x, 0, z);
         for (int y = maxY; y >= minY; y--) {

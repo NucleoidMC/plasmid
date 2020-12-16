@@ -3,20 +3,18 @@ package xyz.nucleoid.plasmid.command.argument;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
 import xyz.nucleoid.plasmid.game.channel.GameChannelManager;
 
 public final class GameChannelArgument {
-    private static final DynamicCommandExceptionType CHANNEL_NOT_FOUND = new DynamicCommandExceptionType(id -> {
-        return new TranslatableText("Channel config with id '%s' was not found!", id);
-    });
+    private static final SimpleCommandExceptionType CHANNEL_NOT_FOUND = new SimpleCommandExceptionType(new LiteralText("This channel was not found!"));
 
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
@@ -39,7 +37,7 @@ public final class GameChannelArgument {
 
         GameChannel channel = channelManager.byId(identifier);
         if (channel == null) {
-            throw CHANNEL_NOT_FOUND.create(identifier);
+            throw CHANNEL_NOT_FOUND.create();
         }
 
         return channel;

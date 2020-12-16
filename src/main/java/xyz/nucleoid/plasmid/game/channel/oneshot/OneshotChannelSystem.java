@@ -28,7 +28,9 @@ public final class OneshotChannelSystem implements GameChannelSystem {
 
     public CompletableFuture<GameChannel> open(Identifier gameId, ConfiguredGame<?> game) {
         return game.open(this.server).thenApplyAsync(gameSpace -> {
-            return this.createChannel(gameId, gameSpace);
+            GameChannel channel = this.createChannel(gameId, gameSpace);
+            this.channels.put(channel.getId(), channel);
+            return channel;
         }, this.server);
     }
 

@@ -127,10 +127,8 @@ public final class GameChannel {
     }
 
     public Text createJoinLink() {
-        String command = "/game join " + this.id;
-
-        ClickEvent click = new ClickEvent(ClickEvent.Action.RUN_COMMAND, command);
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(command));
+        ClickEvent click = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game join " + this.id);
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Join ").append(this.getName()));
         Style style = Style.EMPTY
                 .withFormatting(Formatting.UNDERLINE)
                 .withColor(Formatting.BLUE)

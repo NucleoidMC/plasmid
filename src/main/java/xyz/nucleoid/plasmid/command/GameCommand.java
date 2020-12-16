@@ -106,7 +106,7 @@ public final class GameCommand {
             try {
                 channelManager.openOneshot(game.getLeft(), game.getRight()).handleAsync((channel, throwable) -> {
                     if (throwable == null) {
-                        if (player != null) {
+                        if (player != null && ManagedGameSpace.forWorld(player.world) == null) {
                             channel.requestJoin(player);
                         }
                         onOpenSuccess(source, channel, game.getRight(), playerManager);

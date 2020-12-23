@@ -43,6 +43,7 @@ public final class FloatingText {
         this.setText(new Text[] { line });
     }
 
+    // TODO: 0.5- api needs to better inform caller whether spawning failed
     public void setText(Text[] lines) {
         if (this.entities == null || this.entities.length != lines.length) {
             this.remove();

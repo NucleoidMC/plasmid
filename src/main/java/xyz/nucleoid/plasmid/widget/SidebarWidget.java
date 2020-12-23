@@ -23,6 +23,7 @@ import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public final class SidebarWidget implements GameWidget {
@@ -138,29 +139,25 @@ public final class SidebarWidget implements GameWidget {
             int length = this.lines.length;
             int lastLength = this.lastLines.length;
 
-            // clear any lines that got removed
-            for (int i = length; i < lastLength; i++) {
-                for (ServerPlayerEntity player : players) {
-                    this.sendRemoveLine(player, i);
-                }
-            }
+            // update all lines that have changed, indexed by score
+            int maxScore = Math.max(length, lastLength);
+            for (int score = 0; score < maxScore; score++) {
+                int idx = length - score;
+                int lastIdx = lastLength - score;
 
-            // update any lines that have changed
-            for (int i = 0; i < length; i++) {
-                int score = length - i;
-                Object line = this.lines.byIndex(i);
-
-                // the scoreboard is indexed by score, so we need to compare lines by score
-                Object lastLine = this.lastLines.byScore(score);
-                if (line.equals(lastLine)) {
+                Object line = this.lines.byIndex(idx);
+                Object lastLine = this.lastLines.byIndex(lastIdx);
+                if (Objects.equals(line, lastLine)) {
                     continue;
                 }
 
                 for (ServerPlayerEntity player : players) {
-                    if (i < lastLength) {
-                        this.sendRemoveLine(player, i);
+                    if (lastLine != null) {
+                        this.sendRemoveLine(player, lastIdx);
                     }
-                    this.sendUpdateLine(player, this.getLineForPlayer(line, i, player), score);
+                    if (line != null) {
+                        this.sendUpdateLine(player, this.getLineForPlayer(line, idx, player), score);
+                    }
                 }
             }
 

@@ -41,6 +41,7 @@ public final class MapTemplate {
     RegistryKey<Biome> biome = BiomeKeys.THE_VOID;
 
     BlockBounds bounds = null;
+    BlockBounds generatedBounds = null;
 
     MapTemplateMetadata metadata = new MapTemplateMetadata();
 
@@ -83,7 +84,7 @@ public final class MapTemplate {
         MapChunk chunk = this.getOrCreateChunk(chunkPos(pos));
         chunk.set(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15, state);
 
-        this.bounds = null;
+        this.generatedBounds = null;
 
         if (state.getBlock().hasBlockEntity()) {
             CompoundTag tag = new CompoundTag();
@@ -165,9 +166,11 @@ public final class MapTemplate {
 
         int maxY = 255;
         int minY = 0;
-        if (this.bounds != null) {
-            maxY = this.bounds.getMax().getY();
-            minY = this.bounds.getMin().getY();
+
+        BlockBounds bounds = this.getBoundsOrNull();
+        if (bounds != null) {
+            maxY = bounds.getMax().getY();
+            minY = bounds.getMin().getY();
         }
 
         BlockPos.Mutable mutablePos = new BlockPos.Mutable(x, 0, z);
@@ -208,13 +211,27 @@ public final class MapTemplate {
 
     public void setBounds(BlockBounds bounds) {
         this.bounds = bounds;
+        this.generatedBounds = null;
     }
 
     public BlockBounds getBounds() {
-        if (this.bounds == null) {
-            this.bounds = this.computeBounds();
+        BlockBounds bounds = this.bounds;
+        if (bounds != null) {
+            return bounds;
         }
-        return this.bounds;
+
+        BlockBounds generatedBounds = this.generatedBounds;
+        if (generatedBounds == null) {
+            this.generatedBounds = generatedBounds = this.computeBounds();
+        }
+
+        return generatedBounds;
+    }
+
+    @Nullable
+    private BlockBounds getBoundsOrNull() {
+        BlockBounds bounds = this.bounds;
+        return bounds != null ? bounds :  this.generatedBounds;
     }
 
     private BlockBounds computeBounds() {

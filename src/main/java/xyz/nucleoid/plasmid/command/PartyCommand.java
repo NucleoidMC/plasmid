@@ -93,7 +93,7 @@ public final class PartyCommand {
                             ))
                     );
 
-            MutableText notification = new TranslatableText("text.plasmid.party.invited.receiver", player.getDisplayName())
+            MutableText notification = new TranslatableText("text.plasmid.party.invited.receiver", owner.getDisplayName())
                     .formatted(Formatting.GOLD)
                     .append(notificationLink);
 

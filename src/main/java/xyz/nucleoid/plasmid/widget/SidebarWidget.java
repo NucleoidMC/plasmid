@@ -141,7 +141,7 @@ public final class SidebarWidget implements GameWidget {
 
             // update all lines that have changed, indexed by score
             int maxScore = Math.max(length, lastLength);
-            for (int score = 0; score < maxScore; score++) {
+            for (int score = 1; score <= maxScore; score++) {
                 int idx = length - score;
                 int lastIdx = lastLength - score;
 

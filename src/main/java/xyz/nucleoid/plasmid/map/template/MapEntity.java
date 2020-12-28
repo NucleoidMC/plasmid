@@ -68,7 +68,7 @@ public final class MapEntity {
         int minChunkY = MathHelper.floor(position.getY()) & ~15;
         int minChunkZ = MathHelper.floor(position.getZ()) & ~15;
 
-        tag.put("Pos", posToList(position));
+        tag.put("Pos", posToList(position.subtract(minChunkX, minChunkY, minChunkZ)));
 
         // AbstractDecorationEntity has special position handling with an attachment position.
         if (entity instanceof AbstractDecorationEntity) {

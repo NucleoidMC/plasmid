@@ -138,16 +138,11 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
 
         ProtoChunk protoChunk = (ProtoChunk) region.getChunk(chunkX, chunkZ);
 
-        int minWorldX = chunkPos.getStartX();
-        int minWorldZ = chunkPos.getStartZ();
-
         int minSectionY = this.worldBounds.getMin().getY() >> 4;
         int maxSectionY = this.worldBounds.getMax().getY() >> 4;
 
         for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
-            int minWorldY = sectionY << 4;
-
-            this.template.getEntitiesInChunk(minWorldX >> 4, minWorldY >> 4, minWorldZ >> 4).forEach(entity -> {
+            this.template.getEntitiesInChunk(chunkPos.x, sectionY, chunkPos.z).forEach(entity -> {
                 CompoundTag entityTag = entity.createEntityTag(BlockPos.ORIGIN);
                 protoChunk.addEntity(entityTag);
             });

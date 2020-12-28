@@ -52,4 +52,8 @@ public final class TemplateRegion {
         CompoundTag data = tag.getCompound("data");
         return new TemplateRegion(marker, BlockBounds.deserialize(tag), data);
     }
+
+    public TemplateRegion copy() {
+        return new TemplateRegion(this.marker, this.bounds, this.data != null ? this.data.copy() : null);
+    }
 }

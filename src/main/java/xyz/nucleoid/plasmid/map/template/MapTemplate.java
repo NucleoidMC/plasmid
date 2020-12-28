@@ -357,4 +357,56 @@ public final class MapTemplate {
 
         return result;
     }
+
+    /**
+     * Copies and merges the contents of the given two map templates, where the first given template takes priority
+     * in case of a conflict.
+     *
+     * @param primary the primary map template to merge (overrides the secondary template)
+     * @param secondary the secondary map template to merge
+     *
+     * @return the merged template
+     */
+    public static MapTemplate merged(MapTemplate primary, MapTemplate secondary) {
+        MapTemplate result = MapTemplate.createEmpty();
+        secondary.mergeInto(result);
+        primary.mergeInto(result);
+        return result;
+    }
+
+    public void mergeFrom(MapTemplate other) {
+        other.mergeInto(this);
+    }
+
+    public void mergeInto(MapTemplate other) {
+        for (Long2ObjectMap.Entry<MapChunk> entry : Long2ObjectMaps.fastIterable(this.chunks)) {
+            long chunkPos = entry.getLongKey();
+            MapChunk chunk = entry.getValue();
+            MapChunk otherChunk = other.getOrCreateChunk(chunkPos);
+
+            for (int chunkZ = 0; chunkZ < 16; chunkZ++) {
+                for (int chunkY = 0; chunkY < 16; chunkY++) {
+                    for (int chunkX = 0; chunkX < 16; chunkX++) {
+                        BlockState state = chunk.get(chunkX, chunkY, chunkZ);
+                        if (!state.isAir()) {
+                            otherChunk.set(chunkX, chunkY, chunkZ, state);
+                        }
+                    }
+                }
+            }
+
+            for (MapEntity entity : chunk.getEntities()) {
+                otherChunk.addEntity(entity);
+            }
+        }
+
+        other.metadata.data.copyFrom(this.metadata.data);
+
+        for (TemplateRegion region : this.metadata.regions) {
+            other.metadata.addRegion(region.copy());
+        }
+
+        other.bounds = this.getBounds().union(other.getBounds());
+        other.biome = this.biome;
+    }
 }

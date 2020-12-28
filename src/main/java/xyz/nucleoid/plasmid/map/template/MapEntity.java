@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.map.template;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
@@ -64,20 +63,18 @@ public final class MapEntity {
         // Avoid conflicts.
         tag.remove("UUID");
 
-        int minChunkX = MathHelper.floor(position.getX()) & ~15;
-        int minChunkY = MathHelper.floor(position.getY()) & ~15;
-        int minChunkZ = MathHelper.floor(position.getZ()) & ~15;
-
-        tag.put("Pos", posToList(position.subtract(minChunkX, minChunkY, minChunkZ)));
+        BlockPos minChunkPos = getMinChunkPosFor(position);
+        tag.put("Pos", posToList(position.subtract(minChunkPos.getX(), minChunkPos.getY(), minChunkPos.getZ())));
 
         // AbstractDecorationEntity has special position handling with an attachment position.
-        if (entity instanceof AbstractDecorationEntity) {
-            BlockPos blockPos = ((AbstractDecorationEntity) entity).getDecorationBlockPos()
+        if (tag.contains("TileX", NbtType.INT)) {
+            BlockPos localPos = new BlockPos(tag.getInt("TileX"), tag.getInt("TileY"), tag.getInt("TileZ"))
                     .subtract(entity.getBlockPos())
-                    .add(position.getX(), position.getY(), position.getZ());
-            tag.putInt("TileX", blockPos.getX() - minChunkX);
-            tag.putInt("TileY", blockPos.getY() - minChunkY);
-            tag.putInt("TileZ", blockPos.getZ() - minChunkZ);
+                    .add(position.getX(), position.getY(), position.getZ())
+                    .subtract(minChunkPos);
+            tag.putInt("TileX", localPos.getX());
+            tag.putInt("TileY", localPos.getY());
+            tag.putInt("TileZ", localPos.getZ());
         }
 
         return new MapEntity(position, tag);
@@ -88,6 +85,41 @@ public final class MapEntity {
         Vec3d globalPos = localPos.add(sectionPos.getMinX(), sectionPos.getMinY(), sectionPos.getMinZ());
 
         return new MapEntity(globalPos, tag);
+    }
+
+    MapEntity transformed(MapTransform transform) {
+        Vec3d resultPosition = transform.transformedPoint(this.position);
+        CompoundTag resultTag = this.tag.copy();
+
+        BlockPos minChunkPos = getMinChunkPosFor(this.position);
+        BlockPos minResultChunkPos = getMinChunkPosFor(resultPosition);
+
+        resultTag.put("Pos", posToList(resultPosition.subtract(minResultChunkPos.getX(), minResultChunkPos.getY(), minResultChunkPos.getZ())));
+
+        // AbstractDecorationEntity has special position handling with an attachment position.
+        if (resultTag.contains("TileX", NbtType.INT)) {
+            BlockPos attachedPos = new BlockPos(
+                    resultTag.getInt("TileX") + minChunkPos.getX(),
+                    resultTag.getInt("TileY") + minChunkPos.getY(),
+                    resultTag.getInt("TileZ") + minChunkPos.getZ()
+            );
+
+            BlockPos localAttachedPos = transform.transformedPoint(attachedPos)
+                    .subtract(minResultChunkPos);
+            resultTag.putInt("TileX", localAttachedPos.getX());
+            resultTag.putInt("TileY", localAttachedPos.getY());
+            resultTag.putInt("TileZ", localAttachedPos.getZ());
+        }
+
+        return new MapEntity(resultPosition, resultTag);
+    }
+
+    private static BlockPos getMinChunkPosFor(Vec3d position) {
+        return new BlockPos(
+                MathHelper.floor(position.getX()) & ~15,
+                MathHelper.floor(position.getY()) & ~15,
+                MathHelper.floor(position.getZ()) & ~15
+        );
     }
 
     private static ListTag posToList(Vec3d pos) {

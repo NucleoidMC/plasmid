@@ -57,6 +57,10 @@ final class MapChunk {
         }
     }
 
+    void addEntity(MapEntity entity) {
+        this.entities.add(entity);
+    }
+
     public ChunkSectionPos getPos() {
         return this.pos;
     }

@@ -41,6 +41,13 @@ public final class BlockBounds implements Iterable<BlockPos> {
         );
     }
 
+    public BlockBounds offset(int x, int y, int z) {
+        return new BlockBounds(
+                this.min.add(x, y, z),
+                this.max.add(x, y, z)
+        );
+    }
+
     public boolean contains(BlockPos pos) {
         return this.contains(pos.getX(), pos.getY(), pos.getZ());
     }

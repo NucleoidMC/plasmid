@@ -8,6 +8,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -98,7 +100,14 @@ public final class MapTemplate {
 
     public void setBlockEntity(BlockPos pos, @Nullable BlockEntity entity) {
         if (entity != null) {
-            CompoundTag entityTag = entity.toTag(new CompoundTag());
+            this.setBlockEntityTag(pos, entity.toTag(new CompoundTag()));
+        } else {
+            this.setBlockEntityTag(pos, null);
+        }
+    }
+
+    public void setBlockEntityTag(BlockPos pos, @Nullable CompoundTag entityTag) {
+        if (entityTag != null) {
             entityTag.putInt("x", pos.getX());
             entityTag.putInt("y", pos.getY());
             entityTag.putInt("z", pos.getZ());
@@ -145,6 +154,10 @@ public final class MapTemplate {
      */
     public void addEntity(Entity entity, Vec3d pos) {
         this.getOrCreateChunk(chunkPos(pos)).addEntity(entity, pos);
+    }
+
+    void addEntity(MapEntity entity) {
+        this.getOrCreateChunk(chunkPos(entity.getPosition())).addEntity(entity);
     }
 
     /**
@@ -196,7 +209,7 @@ public final class MapTemplate {
     }
 
     @NotNull
-    private MapChunk getOrCreateChunk(long pos) {
+    MapChunk getOrCreateChunk(long pos) {
         MapChunk chunk = this.chunks.get(pos);
         if (chunk == null) {
             this.chunks.put(pos, chunk = new MapChunk(ChunkSectionPos.from(pos)));
@@ -231,7 +244,7 @@ public final class MapTemplate {
     @Nullable
     private BlockBounds getBoundsOrNull() {
         BlockBounds bounds = this.bounds;
-        return bounds != null ? bounds :  this.generatedBounds;
+        return bounds != null ? bounds : this.generatedBounds;
     }
 
     private BlockBounds computeBounds() {
@@ -273,5 +286,75 @@ public final class MapTemplate {
 
     static long chunkPos(int x, int y, int z) {
         return ChunkSectionPos.asLong(x, y, z);
+    }
+
+    public MapTemplate translated(int x, int y, int z) {
+        return this.transformed(MapTransform.translation(x, y, z));
+    }
+
+    public MapTemplate rotateAround(BlockPos pivot, BlockRotation rotation, BlockMirror mirror) {
+        return this.transformed(MapTransform.rotationAround(pivot, rotation, mirror));
+    }
+
+    public MapTemplate rotate(BlockRotation rotation, BlockMirror mirror) {
+        return this.rotateAround(BlockPos.ORIGIN, rotation, mirror);
+    }
+
+    public MapTemplate rotate(BlockRotation rotation) {
+        return this.rotate(rotation, BlockMirror.NONE);
+    }
+
+    public MapTemplate mirror(BlockMirror mirror) {
+        return this.rotate(BlockRotation.NONE, mirror);
+    }
+
+    public MapTemplate transformed(MapTransform transform) {
+        MapTemplate result = MapTemplate.createEmpty();
+
+        BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+
+        for (MapChunk chunk : this.chunks.values()) {
+            BlockPos minChunkPos = chunk.getPos().getMinPos();
+
+            for (int chunkZ = 0; chunkZ < 16; chunkZ++) {
+                for (int chunkY = 0; chunkY < 16; chunkY++) {
+                    for (int chunkX = 0; chunkX < 16; chunkX++) {
+                        BlockState state = chunk.get(chunkX, chunkY, chunkZ);
+                        if (!state.isAir()) {
+                            state = transform.transformedBlock(state);
+
+                            mutablePos.set(minChunkPos, chunkX, chunkY, chunkZ);
+                            result.setBlockState(transform.transformPoint(mutablePos), state);
+                        }
+                    }
+                }
+            }
+
+            for (MapEntity entity : chunk.getEntities()) {
+                result.addEntity(entity.transformed(transform));
+            }
+        }
+
+        for (Long2ObjectMap.Entry<CompoundTag> blockEntity : Long2ObjectMaps.fastIterable(this.blockEntities)) {
+            mutablePos.set(blockEntity.getLongKey());
+            transform.transformPoint(mutablePos);
+
+            CompoundTag tag = blockEntity.getValue().copy();
+            result.setBlockEntityTag(mutablePos, tag);
+        }
+
+        result.biome = this.biome;
+
+        result.metadata.data = this.metadata.data.copy();
+
+        for (TemplateRegion sourceRegion : this.metadata.regions) {
+            result.metadata.regions.add(new TemplateRegion(
+                    sourceRegion.getMarker(),
+                    transform.transformedBounds(sourceRegion.getBounds()),
+                    sourceRegion.getData().copy()
+            ));
+        }
+
+        return result;
     }
 }

@@ -288,6 +288,18 @@ public final class MapManageCommand {
         MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
 
         MapTemplate template = workspace.compile(includeEntities);
+
+        BlockBounds bounds = template.getBounds();
+        if (bounds.getMin().getY() < 0 || bounds.getMax().getY() > 255) {
+            source.sendFeedback(
+                    new LiteralText("Warning: Map exceeds vertical world boundaries!\n")
+                            .append("You may want to change the map origin.\n")
+                            .append("(Note: map origin corresponds to the position that will become (0,0,0) on export)")
+                            .formatted(Formatting.YELLOW),
+                    false
+            );
+        }
+
         CompletableFuture<Void> future = MapTemplateSerializer.INSTANCE.saveToExport(template, workspace.getIdentifier());
 
         future.handle((v, throwable) -> {

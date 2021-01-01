@@ -1,6 +1,9 @@
 package xyz.nucleoid.plasmid.error;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import xyz.nucleoid.plasmid.Plasmid;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -55,6 +58,8 @@ final class DiscordWebhook {
     }
 
     static class Message {
+        private static final Gson GSON = new Gson();
+
         private final String content;
         private final List<File> files = new ArrayList<>();
 
@@ -69,9 +74,18 @@ final class DiscordWebhook {
 
         void writeTo(PrintWriter writer) {
             writer.println("--" + BOUNDARY);
-            writer.println("Content-Disposition: form-data; name=\"content\"");
+
+            JsonObject payload = new JsonObject();
+            payload.addProperty("content", this.content);
+
+            JsonObject allowedMentions = new JsonObject();
+            allowedMentions.add("parse", new JsonArray());
+            payload.add("allowed_mentions", allowedMentions);
+
+            writer.println("--" + BOUNDARY);
+            writer.println("Content-Disposition: form-data; name=\"payload_json\"");
             writer.println();
-            writer.println(this.content);
+            writer.println(GSON.toJson(payload));
 
             for (File file : this.files) {
                 writer.println("--" + BOUNDARY);

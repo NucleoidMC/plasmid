@@ -293,7 +293,7 @@ public final class GameCommand {
             throw NO_GAME_IN_WORLD.create();
         }
 
-        PlayerSet playerSet = gameSpace.getPlayers().copy();
+        PlayerSet playerSet = gameSpace.getPlayers();
 
         if (playerSet.size() > 1) {
             stopGameConfirmed(context);

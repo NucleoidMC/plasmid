@@ -2,6 +2,7 @@
   "item.plasmid.add_region": "Add Region",
   "item.plasmid.include_entity": "Include Entity",
 
+  "text.plasmid.game.stop.confirm": "Are you sure you want to stop the game? If you want to stop the game, run /game stop confirm",
   "text.plasmid.game.started.player": "%s has started the game!",
   "text.plasmid.game.stopped.player": "%s has stopped the game!",
   "text.plasmid.game.stopped.error": "An unexpected error was thrown while stopping the game!",

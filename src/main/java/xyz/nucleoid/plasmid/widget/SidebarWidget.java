@@ -33,6 +33,7 @@ public final class SidebarWidget implements GameWidget {
 
     private static final String OBJECTIVE_NAME = Plasmid.ID + ":sidebar";
 
+    private static final String FORMATTING_CHARS = "abcdefghijklmnopqrstuvwxyz.!?*+-(){}|";
     private static final char[] AVAILABLE_FORMATTING_CODES;
 
     private static final int MAX_WIDTH = 40;
@@ -44,7 +45,8 @@ public final class SidebarWidget implements GameWidget {
         }
 
         CharList availableFormattingCodes = new CharArrayList();
-        for (char code = 'a'; code <= 'z'; code++) {
+        for (int i = 0; i < FORMATTING_CHARS.length(); i++) {
+            char code = FORMATTING_CHARS.charAt(i);
             if (!vanillaFormattingCodes.contains(code)) {
                 availableFormattingCodes.add(code);
             }
@@ -153,10 +155,10 @@ public final class SidebarWidget implements GameWidget {
 
                 for (ServerPlayerEntity player : players) {
                     if (lastLine != null) {
-                        this.sendRemoveLine(player, lastIdx);
+                        this.sendRemoveLine(player, score);
                     }
                     if (line != null) {
-                        this.sendUpdateLine(player, this.getLineForPlayer(line, idx, player), score);
+                        this.sendUpdateLine(player, this.getLineForPlayer(line, score, player), score);
                     }
                 }
             }
@@ -171,7 +173,7 @@ public final class SidebarWidget implements GameWidget {
         void sendTo(ServerPlayerEntity player) {
             Lines lines = this.lastLines;
             for (int i = 0; i < lines.length; i++) {
-                String line = this.getLineForPlayer(lines.byIndex(i), i, player);
+                String line = this.getLineForPlayer(lines.byIndex(i), lines.scoreFor(i), player);
                 this.sendUpdateLine(player, line, lines.scoreFor(i));
             }
         }
@@ -183,15 +185,15 @@ public final class SidebarWidget implements GameWidget {
             ));
         }
 
-        void sendRemoveLine(ServerPlayerEntity player, int index) {
-            String line = this.getLineForPlayer(this.lastLines.byIndex(index), index, player);
+        void sendRemoveLine(ServerPlayerEntity player, int score) {
+            String line = this.getLineForPlayer(this.lastLines.byScore(score), score, player);
             player.networkHandler.sendPacket(new ScoreboardPlayerUpdateS2CPacket(
                     ServerScoreboard.UpdateMode.REMOVE, null,
                     line, -1
             ));
         }
 
-        String getLineForPlayer(Object line, int index, ServerPlayerEntity player) {
+        String getLineForPlayer(Object line, int score, ServerPlayerEntity player) {
             String text;
             if (line instanceof String) {
                 text = (String) line;
@@ -200,12 +202,12 @@ public final class SidebarWidget implements GameWidget {
             } else {
                 text = line.toString();
             }
-            return modifyLine(index, text);
+            return modifyLine(score, text);
         }
     }
 
     private static class Lines {
-        final Object[] array = new Object[16];
+        final Object[] array = new Object[15];
         int length;
 
         void clear() {
@@ -215,7 +217,7 @@ public final class SidebarWidget implements GameWidget {
 
         void push(Object line) {
             Preconditions.checkNotNull(line, "cannot write null line");
-            if (this.length < 16) {
+            if (this.length < 15) {
                 this.array[this.length++] = line;
             }
         }

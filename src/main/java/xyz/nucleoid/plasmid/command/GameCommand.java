@@ -77,6 +77,9 @@ public final class GameCommand {
                 .then(literal("stop")
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(GameCommand::stopGame)
+                        .then(literal("confirm")
+                        .requires(source -> source.hasPermissionLevel(2))
+                        .executes(GameCommand::stopGameConfirmed))
                 )
                 .then(literal("join")
                     .executes(GameCommand::joinGame)
@@ -284,6 +287,27 @@ public final class GameCommand {
     }
 
     private static int stopGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(source.getWorld());
+        if (gameSpace == null) {
+            throw NO_GAME_IN_WORLD.create();
+        }
+
+        PlayerSet playerSet = gameSpace.getPlayers().copy();
+
+        if (playerSet.size() > 1) {
+            stopGameConfirmed(context);
+        } else {
+            source.sendFeedback(
+                    new TranslatableText("text.plasmid.game.stop.confirm").formatted(Formatting.GOLD),
+                    false
+            );
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int stopGameConfirmed(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(source.getWorld());
         if (gameSpace == null) {

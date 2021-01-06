@@ -38,7 +38,7 @@ public final class GameChannelCommand {
         dispatcher.register(
             literal("game")
                 .then(literal("channel")
-                        .requires(Permissions.require("plasmid.command.game_channel"))
+                    .requires(Permissions.require("plasmid.command.game_channel", 3))
                     .then(literal("connect")
                         .then(GameChannelArgument.argument("channel")
                         .then(argument("entity", EntityArgumentType.entity()).executes(GameChannelCommand::connectEntityToChannel))

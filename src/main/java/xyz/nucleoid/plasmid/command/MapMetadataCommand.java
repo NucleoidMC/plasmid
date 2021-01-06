@@ -72,7 +72,7 @@ public final class MapMetadataCommand {
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-            literal("map").requires(Permissions.require("plasmid.command.map"))
+            literal("map").requires(Permissions.require("plasmid.command.map", 4))
                 .then(literal("region")
                     .then(literal("add")
                         .then(argument("marker", StringArgumentType.word())

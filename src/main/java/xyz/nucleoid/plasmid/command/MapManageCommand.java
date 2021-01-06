@@ -72,7 +72,7 @@ public final class MapManageCommand {
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-            literal("map").requires(Permissions.require("plasmid.command.map"))
+            literal("map").requires(Permissions.require("plasmid.command.map", 4))
                 .then(literal("open")
                     .then(argument("workspace", IdentifierArgumentType.identifier())
                     .executes(context -> MapManageCommand.openWorkspace(context, null))

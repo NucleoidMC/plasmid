@@ -15,6 +15,7 @@ import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
@@ -25,6 +26,7 @@ import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 
 public final class SidebarWidget implements GameWidget {
     private static final int SIDEBAR_SLOT = 1;
@@ -124,6 +126,14 @@ public final class SidebarWidget implements GameWidget {
 
         public Content writeLine(String line) {
             return this.writeRawLine(line);
+        }
+
+        public Content writeFormattedTranslated(Formatting formatting, String key, Object args) {
+            return this.writeRawLine(new TranslatableText(key, args).formatted(formatting));
+        }
+
+        public Content writeStyledTranslated(UnaryOperator<Style> style, String key, Object args) {
+            return this.writeRawLine(new TranslatableText(key, args).styled(style));
         }
 
         public Content writeTranslated(String key, Object... args) {

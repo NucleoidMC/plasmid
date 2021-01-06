@@ -15,6 +15,7 @@ import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -26,7 +27,10 @@ import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public final class SidebarWidget implements GameWidget {
     private static final int SIDEBAR_SLOT = 1;
@@ -129,11 +133,22 @@ public final class SidebarWidget implements GameWidget {
         }
 
         public Content writeFormattedTranslated(Formatting formatting, String key, Object... args) {
-            return this.writeRawLine(new TranslatableText(key, args).formatted(formatting));
+            // This is probably a really awful way of doing this, but simply calling .formatted() on a TranslatableText
+            // doesn't apply the formatting when using in the sidebar.
+            return this.writeRawLine(new LiteralText(formatting.toString()).append(new TranslatableText(key, args)));
         }
 
-        public Content writeStyledTranslated(UnaryOperator<Style> style, String key, Object... args) {
-            return this.writeRawLine(new TranslatableText(key, args).styled(style));
+        public Content writeFormattedTranslated(Formatting[] formatting, String key, Object... args) {
+            // Awful I know
+            return this.writeRawLine(new LiteralText(Arrays.stream(formatting).map(Formatting::toString).collect(Collectors.joining()))
+                    .append(new TranslatableText(key, args)));
+        }
+
+        public Content writeFormattedTranslated(Iterable<Formatting> formatting, String key, Object... args) {
+            // Again this is really awful.
+            return this.writeRawLine(new LiteralText(StreamSupport.stream(formatting.spliterator(), false)
+                    .map(Formatting::toString).collect(Collectors.joining()))
+                    .append(new TranslatableText(key, args)));
         }
 
         public Content writeTranslated(String key, Object... args) {

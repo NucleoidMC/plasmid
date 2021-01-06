@@ -8,8 +8,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.*;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -35,21 +33,17 @@ import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 import xyz.nucleoid.plasmid.map.workspace.WorkspaceBoundRenderer;
-import xyz.nucleoid.plasmid.network.Networking;
 import xyz.nucleoid.plasmid.test.TestGame;
 
 public final class Plasmid implements ModInitializer {
     public static final String ID = "plasmid";
     public static final Logger LOGGER = LogManager.getLogger(ID);
-    public static final ModMetadata METADATA = FabricLoader.getInstance().getModContainer("plasmid").get().getMetadata();
 
     @Override
     public void onInitialize() {
         Reflection.initialize(PlasmidItems.class);
 
         Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "void"), VoidChunkGenerator.CODEC);
-
-        Networking.register();
 
         GameConfigs.register();
         ConfiguredChannelSystem.register();

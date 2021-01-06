@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 
+@Deprecated
 public class FakeBlockItem extends BlockItem implements FakeItem {
 
     private final Block clientSideBlock;

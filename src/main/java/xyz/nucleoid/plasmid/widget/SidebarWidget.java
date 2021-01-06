@@ -15,6 +15,7 @@ import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
@@ -23,6 +24,7 @@ import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -126,6 +128,18 @@ public final class SidebarWidget implements GameWidget {
             return this.writeRawLine(line);
         }
 
+        public Content writeFormattedTranslated(Formatting formatting, String key, Object... args) {
+            return this.writeRawLine(new TranslatableText(key, args).formatted(formatting));
+        }
+
+        public Content writeFormattedTranslated(Formatting[] formatting, String key, Object... args) {
+            return this.writeRawLine(new TranslatableText(key, args).formatted(formatting));
+        }
+
+        public Content writeFormattedTranslated(List<Formatting> formatting, String key, Object... args) {
+            return this.writeRawLine(new TranslatableText(key, args).formatted(formatting.toArray(new Formatting[0])));
+        }
+
         public Content writeTranslated(String key, Object... args) {
             return this.writeRawLine(new TranslatableText(key, args));
         }
@@ -198,7 +212,34 @@ public final class SidebarWidget implements GameWidget {
             if (line instanceof String) {
                 text = (String) line;
             } else if (line instanceof Text) {
-                text = LocalizableText.asLocalizedFor((Text) line, (LocalizationTarget) player).getString();
+                Text txt = (Text) line;
+
+                StringBuilder message = new StringBuilder();
+                Style style = txt.getStyle();
+                if (style.getColor() != null && !style.getColor().getName().startsWith("#")) {
+                    message.append(Objects.requireNonNull(
+                            Formatting.byName(style.getColor().getName()),
+                            "formatting"
+                    ).toString());
+                }
+                if (style.isBold()) {
+                    message.append(Formatting.BOLD);
+                }
+                if (style.isItalic()) {
+                    message.append(Formatting.ITALIC);
+                }
+                if (style.isUnderlined()) {
+                    message.append(Formatting.UNDERLINE);
+                }
+                if (style.isStrikethrough()) {
+                    message.append(Formatting.STRIKETHROUGH);
+                }
+                if (style.isObfuscated()) {
+                    message.append(Formatting.OBFUSCATED);
+                }
+
+                message.append(LocalizableText.asLocalizedFor(txt, (LocalizationTarget) player).getString());
+                text = message.toString();
             } else {
                 text = line.toString();
             }

@@ -33,6 +33,5 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Pl
     @Override
     public void setUsingPlasmidApi(boolean usingPlasmidApi) {
         this.usingPlasmidApi = usingPlasmidApi;
-        System.out.println("crab The player: " + getGameProfile().getName() + " is using the plasmid api client side!");
     }
 }

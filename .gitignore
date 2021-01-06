@@ -11,6 +11,7 @@ classes/
 
 # idea
 
+.idea/
 .idea/*
 !.idea/codeStyles
 !.idea/inspectionProfiles

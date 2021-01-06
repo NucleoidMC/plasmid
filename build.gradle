@@ -26,6 +26,7 @@ minecraft {
 
 repositories {
   maven { url = "https://jitpack.io/" }
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
   maven { url = "https://maven.gegy.dev/" }
 }
 
@@ -50,6 +51,8 @@ dependencies {
   include 'xyz.nucleoid:fantasy:0.1.7'
 
   modImplementation 'xyz.nucleoid:leukocyte:0.1.1'
+
+  modImplementation 'me.lucko:fabric-permissions-api:0.1-SNAPSHOT'
 }
 
 processResources {

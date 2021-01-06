@@ -78,8 +78,9 @@ public final class GameCommand {
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(GameCommand::stopGame)
                         .then(literal("confirm")
-                        .requires(source -> source.hasPermissionLevel(2))
-                        .executes(GameCommand::stopGameConfirmed))
+                            .requires(source -> source.hasPermissionLevel(2))
+                            .executes(GameCommand::stopGameConfirmed)
+                        )
                 )
                 .then(literal("join")
                     .executes(GameCommand::joinGame)
@@ -295,7 +296,7 @@ public final class GameCommand {
 
         PlayerSet playerSet = gameSpace.getPlayers();
 
-        if (playerSet.size() > 1) {
+        if (playerSet.size() <= 1) {
             stopGameConfirmed(context);
         } else {
             source.sendFeedback(

@@ -115,7 +115,7 @@ public final class FloatingText {
                 break;
             default:
             case CENTER:
-                y = this.position.y + (line - count / 2.0) * VERTICAL_SPACE;
+                y = this.position.y + (count / 2.0 - line) * VERTICAL_SPACE;
                 break;
         }
 

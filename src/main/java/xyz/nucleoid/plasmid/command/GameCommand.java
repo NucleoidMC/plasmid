@@ -76,7 +76,7 @@ public final class GameCommand {
                     .executes(GameCommand::startGame)
                 )
                 .then(literal("stop")
-                        .requires(Permissions.require("plasmid.command.game.stop"))
+                        .requires(Permissions.require("plasmid.command.game.stop", 2))
                     .executes(GameCommand::stopGame)
                         .then(literal("confirm")
                             .requires(Permissions.require("plasmid.command.game.stop", 2))

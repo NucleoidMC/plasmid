@@ -128,11 +128,11 @@ public final class SidebarWidget implements GameWidget {
             return this.writeRawLine(line);
         }
 
-        public Content writeFormattedTranslated(Formatting formatting, String key, Object args) {
+        public Content writeFormattedTranslated(Formatting formatting, String key, Object... args) {
             return this.writeRawLine(new TranslatableText(key, args).formatted(formatting));
         }
 
-        public Content writeStyledTranslated(UnaryOperator<Style> style, String key, Object args) {
+        public Content writeStyledTranslated(UnaryOperator<Style> style, String key, Object... args) {
             return this.writeRawLine(new TranslatableText(key, args).styled(style));
         }
 

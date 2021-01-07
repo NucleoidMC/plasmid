@@ -7,11 +7,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import xyz.nucleoid.plasmid.fake.FakeBlock;
+import xyz.nucleoid.plasmid.fake.Fake;
 
 @Mixin(WorldEventS2CPacket.class)
 public class WorldEventS2CPacketMixin {
-    @Shadow private int eventId;
+    @Shadow
+    private int eventId;
 
     @ModifyArg(
             method = "write",
@@ -24,8 +25,7 @@ public class WorldEventS2CPacketMixin {
     private int modifyBlockData(int data) {
         if (this.eventId == 2001) {
             BlockState state = Block.getStateFromRawId(data);
-            state = FakeBlock.getProxy(state);
-            return Block.getRawIdFromState(state);
+            return Block.getRawIdFromState(Fake.getProxy(state));
         }
         return data;
     }

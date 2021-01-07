@@ -5,6 +5,10 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
 
 public final class Fake {
+    private Fake() {
+        // Utility class
+    }
+
     /**
      * Resolves the proxy instance to be used to send the client
      *

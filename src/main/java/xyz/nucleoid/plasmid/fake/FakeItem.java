@@ -16,26 +16,10 @@ public interface FakeItem {
      * @param stack The original stack
      * @return The stack to send to the client
      */
-    @Deprecated
     default ItemStack asProxy(ItemStack stack) {
-        ItemStack proxy = new ItemStack(this.asProxy(), stack.getCount());
-
-        CompoundTag tag = stack.getTag();
-        if (tag != null) {
-            proxy.setTag(tag.copy());
-        }
-
-        return proxy;
+        return stack;
     }
 
-    static Item getProxy(Item item) {
-        if (item instanceof FakeItem) {
-            return ((FakeItem) item).asProxy();
-        }
-        return item;
-    }
-
-    @Deprecated
     static ItemStack getProxy(ItemStack stack) {
         Item item = stack.getItem();
         if (item instanceof FakeItem) {

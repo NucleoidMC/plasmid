@@ -3,8 +3,11 @@ package xyz.nucleoid.plasmid.game;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -13,10 +16,11 @@ public final class ConfiguredGame<C> {
     public static final Codec<ConfiguredGame<?>> CODEC = new ConfigCodec().codec();
 
     private final GameType<C> type;
+    @Nullable
     private final String name;
     private final C config;
 
-    private ConfiguredGame(GameType<C> type, String name, C config) {
+    private ConfiguredGame(GameType<C> type, @Nullable String name, C config) {
         this.type = type;
         this.name = name;
         this.config = config;
@@ -36,8 +40,25 @@ public final class ConfiguredGame<C> {
         return this.type;
     }
 
+    // TODO: Remove in 0.5 - replaced with getOptionalName and getDisplayName below
+    @Deprecated
     public String getName() {
-        return this.name;
+        return this.name != null ? this.name : this.type.getIdentifier().toString();
+    }
+
+    /**
+     * @return An {@link Optional} containing the name of the game config, if specified.
+     */
+    public Optional<String> getOptionalName() {
+        return Optional.ofNullable(this.name);
+    }
+
+    /**
+     * @param id The game ID of the current {@link ConfiguredGame}
+     * @return The name of the game as specified in the config, or the provided {@link Identifier} if it was not.
+     */
+    public String getDisplayName(Identifier id) {
+        return this.getOptionalName().orElseGet(id::toString);
     }
 
     public C getConfig() {
@@ -57,7 +78,7 @@ public final class ConfiguredGame<C> {
             return typeResult.flatMap(type -> {
                 String name = Codec.STRING.decode(ops, input.get("name"))
                         .result().map(Pair::getFirst)
-                        .orElseGet(() -> type.getIdentifier().toString());
+                        .orElse(null);
 
                 Codec<?> configCodec = type.getConfigCodec();
                 return this.decodeConfig(ops, input, configCodec).map(config -> {

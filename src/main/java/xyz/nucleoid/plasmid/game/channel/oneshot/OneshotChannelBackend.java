@@ -4,6 +4,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.GameLifecycle;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
@@ -15,10 +16,12 @@ import java.util.concurrent.CompletableFuture;
 
 public final class OneshotChannelBackend implements GameChannelBackend {
     private final ManagedGameSpace gameSpace;
+    private final Identifier gameId;
     private final GameChannelMembers members;
 
-    public OneshotChannelBackend(ManagedGameSpace gameSpace, GameChannelMembers members) {
+    public OneshotChannelBackend(ManagedGameSpace gameSpace, Identifier gameId, GameChannelMembers members) {
         this.gameSpace = gameSpace;
+        this.gameId = gameId;
         this.members = members;
 
         this.gameSpace.getLifecycle().addListeners(new LifecycleListeners());
@@ -26,7 +29,7 @@ public final class OneshotChannelBackend implements GameChannelBackend {
 
     @Override
     public Text getName() {
-        return new LiteralText(this.gameSpace.getGameConfig().getName()).formatted(Formatting.AQUA);
+        return new LiteralText(this.gameSpace.getGameConfig().getDisplayName(this.gameId)).formatted(Formatting.AQUA);
     }
 
     @Override

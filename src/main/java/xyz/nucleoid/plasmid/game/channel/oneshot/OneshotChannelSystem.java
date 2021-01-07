@@ -44,7 +44,7 @@ public final class OneshotChannelSystem implements GameChannelSystem {
             }
         });
 
-        return new GameChannel(this.server, id, members -> new OneshotChannelBackend(gameSpace, members));
+        return new GameChannel(this.server, id, members -> new OneshotChannelBackend(gameSpace, gameId, members));
     }
 
     private Identifier createChannelIdFor(Identifier gameId) {

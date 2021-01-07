@@ -30,7 +30,7 @@ public final class GameConfigArgument {
                     String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
                     CommandSource.forEachMatching(candidates, remaining, Function.identity(), id -> {
-                        builder.suggest(id.toString(), new LiteralText(GameConfigs.get(id).getName()));
+                        builder.suggest(id.toString(), new LiteralText(GameConfigs.get(id).getDisplayName(id)));
                     });
                     return builder.buildFuture();
                 });

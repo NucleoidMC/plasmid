@@ -54,9 +54,7 @@ public final class ContinuousOnDemandChannelBackend implements GameChannelBacken
 
         @Override
         public void onClosing(GameSpace gameSpace, GameCloseReason reason) {
-            if (reason == GameCloseReason.FINISHED) {
-                this.transfer = true;
-            }
+            this.transfer = true;
         }
 
         @Override

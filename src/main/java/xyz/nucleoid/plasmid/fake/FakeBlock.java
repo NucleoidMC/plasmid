@@ -28,6 +28,13 @@ public interface FakeBlock {
         return this.asProxy(state.getBlockState()).getFluidState();
     }
 
+    /**
+     * Resolves the proxy {@link BlockState} instance to be sent to the client. If the associated {@link Block} of this
+     * {@link BlockState} is an instance of {@link FakeBlock}, the {@link #asProxy(BlockState)} method will be used
+     *
+     * @param state The server side {@link BlockState}
+     * @return The {@link BlockState} to send to the client
+     */
     static BlockState getProxy(BlockState state) {
         Block block = state.getBlock();
         if (block instanceof FakeBlock) {
@@ -37,6 +44,13 @@ public interface FakeBlock {
         return state;
     }
 
+    /**
+     * Resolves the proxy {@link FluidState} instance to be sent to the client. If the associated {@link Block} of this
+     * {@link FluidState} is an instance of {@link FakeBlock}, the {@link #asProxy(FluidState)} method will be used
+     *
+     * @param state The server side {@link FluidState}
+     * @return The {@link FluidState} to send to the client
+     */
     static FluidState getProxy(FluidState state) {
         Block block = state.getBlockState().getBlock();
         if (block instanceof FakeBlock) {

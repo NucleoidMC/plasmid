@@ -88,14 +88,16 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
     }
 
     @Override
-    default void sendTitle(Text message) {
-        this.sendTitle(message, 1, 5, 3);
-    }
-
-    @Override
     default void sendTitle(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks) {
         this.sendPacket(new TitleS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
         this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, message));
+    }
+
+    @Override
+    default void sendTitle(Text title, Text subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+        this.sendPacket(new TitleS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
+        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, title));
+        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.SUBTITLE, subtitle));
     }
 
     @Override

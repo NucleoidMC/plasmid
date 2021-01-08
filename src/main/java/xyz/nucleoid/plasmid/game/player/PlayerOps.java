@@ -11,9 +11,13 @@ public interface PlayerOps {
 
     void sendMessage(Text message);
 
-    void sendTitle(Text message);
+    default void sendTitle(Text message) {
+        this.sendTitle(message, 10, 40, 10);
+    }
 
     void sendTitle(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks);
+
+    void sendTitle(Text title, Text subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks);
 
     void sendSound(SoundEvent sound);
 

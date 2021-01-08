@@ -6,6 +6,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.error.ErrorReporter;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -32,8 +33,17 @@ public final class ConfiguredGame<C> {
     }
 
     public CompletableFuture<ManagedGameSpace> open(MinecraftServer server) {
-        return CompletableFuture.supplyAsync(() -> this.openProcedure(server), Util.getMainWorkerExecutor())
+        CompletableFuture<ManagedGameSpace> future = CompletableFuture.supplyAsync(() -> this.openProcedure(server), Util.getMainWorkerExecutor())
                 .thenCompose(GameOpenProcedure::open);
+
+        future.exceptionally(throwable -> {
+            try (ErrorReporter reporter = ErrorReporter.open(this)) {
+                reporter.report(throwable, "Opening game");
+            }
+            return null;
+        });
+
+        return future;
     }
 
     public GameType<C> getType() {

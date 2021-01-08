@@ -92,8 +92,7 @@ public final class ManagedGameSpace implements GameSpace {
             }
         });
 
-        // TODO: Find a way to get the config ID here.
-        this.errorReporter = ErrorReporter.open(gameConfig.getOptionalName().orElse("<unnamed>") + " (" + gameConfig.getType().getIdentifier() + ")");
+        this.errorReporter = ErrorReporter.open(this.gameConfig);
     }
 
     /**

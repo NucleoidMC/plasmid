@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.error;
 
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.config.PlasmidConfig;
+import xyz.nucleoid.plasmid.game.ConfiguredGame;
 
 public interface ErrorReporter extends AutoCloseable {
     ErrorReporter VOID = new ErrorReporter() {
@@ -23,6 +24,12 @@ public interface ErrorReporter extends AutoCloseable {
         }
 
         return new DiscordErrorReporter(source, DiscordWebhook.open(webhookUrl));
+    }
+
+    // TODO: Find a way to get the config ID here.
+    static ErrorReporter open(ConfiguredGame<?> game) {
+        String source = game.getOptionalName().orElse("<unnamed>") + " (" + game.getType().getIdentifier() + ")";
+        return ErrorReporter.open(source);
     }
 
     default void report(Throwable throwable) {

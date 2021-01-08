@@ -35,6 +35,7 @@ import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
 import java.util.Comparator;
+import java.util.Optional;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -141,7 +142,7 @@ public final class GameCommand {
                         if (player != null && ManagedGameSpace.forWorld(player.world) == null) {
                             channel.requestJoin(player);
                         }
-                        onOpenSuccess(source, channel, game, playerManager);
+                        onOpenSuccess(source, channel, gameId, game, playerManager);
                     } else {
                         onOpenError(playerManager, throwable);
                     }
@@ -155,8 +156,8 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(ServerCommandSource source, GameChannel channel, ConfiguredGame<?> game, PlayerManager playerManager) {
-        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), new LiteralText(game.getName()).formatted(Formatting.GRAY))
+    private static void onOpenSuccess(ServerCommandSource source, GameChannel channel, Identifier gameId, ConfiguredGame<?> game, PlayerManager playerManager) {
+        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), new LiteralText(game.getDisplayName(gameId)).formatted(Formatting.GRAY))
                 .append(channel.createJoinLink());
 
         playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);

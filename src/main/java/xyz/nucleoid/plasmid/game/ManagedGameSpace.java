@@ -218,7 +218,8 @@ public final class ManagedGameSpace implements GameSpace {
             return false;
         }
 
-        if (this.bubble.addPlayer(player)) {
+        player = this.bubble.addPlayer(player);
+        if (player != null) {
             this.players.add(player);
             try {
                 this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);

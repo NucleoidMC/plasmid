@@ -39,7 +39,7 @@ public final class TestGame {
         return context.createOpenProcedure(worldConfig, game -> {
             game.setRule(GameRule.FALL_DAMAGE, RuleResult.DENY);
             game.setRule(GameRule.HUNGER, RuleResult.DENY);
-            game.setRule(GameRule.PVP, RuleResult.DENY);
+            game.setRule(GameRule.PVP, RuleResult.ALLOW);
             game.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
 
             game.on(PlayerDeathListener.EVENT, (player, source) -> {

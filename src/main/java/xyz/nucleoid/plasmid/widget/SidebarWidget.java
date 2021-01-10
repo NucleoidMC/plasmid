@@ -158,11 +158,8 @@ public final class SidebarWidget implements GameWidget {
             // update all lines that have changed, indexed by score
             int maxScore = Math.max(length, lastLength);
             for (int score = 1; score <= maxScore; score++) {
-                int idx = length - score;
-                int lastIdx = lastLength - score;
-
-                Object line = this.lines.byIndex(idx);
-                Object lastLine = this.lastLines.byIndex(lastIdx);
+                Object line = this.lines.byScore(score);
+                Object lastLine = this.lastLines.byScore(score);
                 if (Objects.equals(line, lastLine)) {
                     continue;
                 }

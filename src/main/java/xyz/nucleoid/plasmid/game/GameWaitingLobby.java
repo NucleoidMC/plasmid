@@ -136,16 +136,16 @@ public final class GameWaitingLobby {
     }
 
     private long getTargetCountdownDuration() {
-        if (!this.isReady()) {
-            return -1;
+        if (this.gameSpace.getPlayerCount() >= this.playerConfig.getMinPlayers()) {
+            PlayerConfig.Countdown countdown = this.playerConfig.getCountdown();
+            if (this.isFull()) {
+                return countdown.getFullTicks();
+            } else if (this.isReady()) {
+                return countdown.getReadyTicks();
+            }
         }
 
-        PlayerConfig.Countdown countdown = this.playerConfig.getCountdown();
-        if (this.isFull()) {
-            return countdown.getFullTicks();
-        } else {
-            return countdown.getReadyTicks();
-        }
+        return -1;
     }
 
     private void tickCountdownBar() {

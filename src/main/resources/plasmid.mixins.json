@@ -29,6 +29,7 @@
     "game.map.ServerPlayerEntityMixin",
     "game.rule.ServerPlayerEntityMixin",
     "game.rule.ServerPlayNetworkHandlerMixin",
+    "game.rule.PlayerEntityMixin",
     "storage.ServerWorldMixin"
   ],
   "injectors": {

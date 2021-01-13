@@ -98,9 +98,17 @@ public final class BlockBounds implements Iterable<BlockPos> {
 
     public Vec3d getCenter() {
         return new Vec3d(
-                (this.min.getX() + this.max.getX()) / 2.0 + 0.5,
-                (this.min.getY() + this.max.getY()) / 2.0 + 0.5,
-                (this.min.getZ() + this.max.getZ()) / 2.0 + 0.5
+                (this.min.getX() + this.max.getX()) / 2.0,
+                (this.min.getY() + this.max.getY()) / 2.0,
+                (this.min.getZ() + this.max.getZ()) / 2.0
+        );
+    }
+
+    public Vec3d getCenterBottom() {
+        return new Vec3d(
+                (this.min.getX() + this.max.getX()) / 2.0,
+                this.min.getY(),
+                (this.min.getZ() + this.max.getZ()) / 2.0
         );
     }
 

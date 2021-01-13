@@ -35,7 +35,6 @@ import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
 import java.util.Comparator;
-import java.util.Optional;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -244,6 +243,7 @@ public final class GameCommand {
         GameChannelManager channelManager = GameChannelManager.get(server);
 
         return channelManager.getChannels().stream()
+                .filter(channel -> channel.getPlayerCount() > 0)
                 .max(Comparator.comparingInt(GameChannel::getPlayerCount))
                 .orElseThrow(NO_GAME_OPEN::create);
     }

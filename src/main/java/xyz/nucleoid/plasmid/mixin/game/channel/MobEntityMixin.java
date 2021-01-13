@@ -64,11 +64,10 @@ public abstract class MobEntityMixin extends LivingEntity implements GameChannel
 
     @Override
     public void setDisplay(Text[] display) {
+        this.removeDisplay();
         if (display.length > 0) {
             FloatingText floatingText = this.createDisplay();
             floatingText.setText(display);
-        } else {
-            this.removeDisplay();
         }
     }
 

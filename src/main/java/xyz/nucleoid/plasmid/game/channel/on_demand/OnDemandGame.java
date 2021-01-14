@@ -6,6 +6,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 
@@ -54,12 +55,19 @@ final class OnDemandGame {
             return future;
         }
 
+        // TODO: Hook here for game opening event
+        GameEvents.OPENING.invoker().onGameOpening(this.gameId, config, false);
+
         return config.open(server).thenApplyAsync(gameSpace -> {
             GameLifecycle lifecycle = gameSpace.getLifecycle();
             lifecycle.addListeners(new LifecycleListeners());
             if (this.lifecycleListeners != null) {
                 lifecycle.addListeners(this.lifecycleListeners);
             }
+
+            // TODO: Hook here for game opened event
+            GameEvents.OPEN.invoker().onGameOpen(this.gameId, config, false, gameSpace);
+
             return gameSpace;
         }, server);
     }

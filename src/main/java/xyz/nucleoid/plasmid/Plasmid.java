@@ -16,6 +16,7 @@ import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xyz.nucleoid.plasmid.command.*;
+import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
@@ -56,6 +57,12 @@ public final class Plasmid implements ModInitializer {
         GameType.register(new Identifier(Plasmid.ID, "random"), RandomGame::open, RandomGameConfig.CODEC);
 
         this.registerCallbacks();
+
+        // TODO: Remove. This is for testing.
+        GameEvents.OPENING.register(((gameId, game, oneShot) -> LOGGER.info("GAME EVENTS DEBUG | id: {}, game: {}, oneShot: {}", gameId, game, oneShot)));
+        GameEvents.OPEN.register(((gameId, game, oneShot, gameSpace) -> LOGGER.info("GAME EVENTS DEBUG | id: {}, game: {}, oneShot: {}, gameSpace: {}", gameId, game, oneShot, gameSpace)));
+        GameEvents.START_REQUEST.register((gameSpace, result) -> LOGGER.info("GAME EVENTS DEBUG | gameSpace: {}, result: {}", gameSpace, result));
+        GameEvents.CLOSING.register(((gameSpace, reason) -> LOGGER.info("GAME EVENTS DEBUG | gameSpace: {}, reason: {}", gameSpace, reason)));
     }
 
     private void registerCallbacks() {

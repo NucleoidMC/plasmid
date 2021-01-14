@@ -6,6 +6,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
 import xyz.nucleoid.plasmid.game.channel.GameChannelSystem;
@@ -27,9 +28,15 @@ public final class OneshotChannelSystem implements GameChannelSystem {
     }
 
     public CompletableFuture<GameChannel> open(Identifier gameId, ConfiguredGame<?> game) {
+        // TODO: Hook here for game opening
+        GameEvents.OPENING.invoker().onGameOpening(gameId, game, true);
+
         return game.open(this.server).thenApplyAsync(gameSpace -> {
             GameChannel channel = this.createChannel(gameId, gameSpace);
             this.channels.put(channel.getId(), channel);
+
+            // TODO: Hook here for game open.
+            GameEvents.OPEN.invoker().onGameOpen(gameId, game, true, gameSpace);
             return channel;
         }, this.server);
     }

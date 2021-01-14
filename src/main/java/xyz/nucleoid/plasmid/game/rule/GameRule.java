@@ -18,6 +18,7 @@ public final class GameRule {
     public static final GameRule UNSTABLE_TNT = new GameRule(ProtectionRule.UNSTABLE_TNT);
     public static final GameRule TEAM_CHAT = new GameRule();
     public static final GameRule DISMOUNT_VEHICLE = new GameRule();
+    public static final GameRule PLAYER_PROJECTILE_KNOCKBACK = new GameRule();
 
     private final ProtectionRule rule;
 

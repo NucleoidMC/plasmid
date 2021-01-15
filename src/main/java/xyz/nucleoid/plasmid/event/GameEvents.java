@@ -22,7 +22,7 @@ public final class GameEvents {
         }
     });
 
-    public static final Event<GameOpen> OPEN = EventFactory.createArrayBacked(GameOpen.class,
+    public static final Event<GameOpen> OPENED = EventFactory.createArrayBacked(GameOpen.class,
             listeners -> (gameId, game, oneShot, gameSpace) -> {
         for (GameOpen listener : listeners) {
             listener.onGameOpen(gameId, game, oneShot, gameSpace);

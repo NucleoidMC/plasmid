@@ -36,7 +36,7 @@ public final class OneshotChannelSystem implements GameChannelSystem {
             this.channels.put(channel.getId(), channel);
 
             // TODO: Hook here for game open.
-            GameEvents.OPEN.invoker().onGameOpen(gameId, game, true, gameSpace);
+            GameEvents.OPENED.invoker().onGameOpen(gameId, game, true, gameSpace);
             return channel;
         }, this.server);
     }

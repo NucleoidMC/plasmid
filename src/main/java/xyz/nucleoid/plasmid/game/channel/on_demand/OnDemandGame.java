@@ -66,7 +66,7 @@ final class OnDemandGame {
             }
 
             // TODO: Hook here for game opened event
-            GameEvents.OPEN.invoker().onGameOpen(this.gameId, config, false, gameSpace);
+            GameEvents.OPENED.invoker().onGameOpen(this.gameId, config, false, gameSpace);
 
             return gameSpace;
         }, server);

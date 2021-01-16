@@ -273,8 +273,7 @@ public final class ManagedGameSpace implements GameSpace {
         return Scheduler.INSTANCE.submit(server -> {
             try {
                 StartResult startResult = this.invoker(RequestStartListener.EVENT).requestStart();
-                GameEvents.START_REQUEST.invoker().onRequestStart(this, startResult);
-                return startResult;
+                return GameEvents.START_REQUEST.invoker().onRequestStart(this, startResult);
             } catch (Throwable t) {
                 LOGGER.error("An unexpected exception occurred while requesting start", t);
                 this.reportError(t, "Requesting start");

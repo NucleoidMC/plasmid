@@ -4,10 +4,7 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.game.ConfiguredGame;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.StartResult;
+import xyz.nucleoid.plasmid.game.*;
 
 /**
  * Events for games being opened and closed/finishing
@@ -34,6 +31,13 @@ public final class GameEvents {
             listeners -> (game, gameSpace) -> {
         for (GameOpen listener : listeners) {
             listener.onGameOpen(game, gameSpace);
+        }
+    });
+
+    public static final Event<GameLogicOpen> SET_LOGIC = EventFactory.createArrayBacked(GameLogicOpen.class,
+            listeners -> (gameLogic, gameSpace) -> {
+        for (GameLogicOpen listener : listeners) {
+            listener.onGameLogicOpen(gameLogic, gameSpace);
         }
     });
 
@@ -75,6 +79,17 @@ public final class GameEvents {
          * @param gameSpace The {@link GameSpace} the game is running in.
          */
         void onGameOpen(ConfiguredGame<?> game, GameSpace gameSpace);
+    }
+
+    public interface GameLogicOpen {
+        /**
+         * Called when the {@link GameLogic} of a {@link GameSpace} is being created/swapped (eg. when going from waiting lobby -> active game)
+         * Note: This event can be called multiple times on the game {@link GameSpace}
+         *
+         * @param gameLogic The {@link GameLogic} that is being added to the {@link GameSpace}
+         * @param gameSpace The {@link GameSpace} that is having its {@link GameLogic} changed.
+         */
+        void onGameLogicOpen(GameLogic gameLogic, GameSpace gameSpace);
     }
 
     public interface GameStartRequest {

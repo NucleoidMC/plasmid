@@ -162,7 +162,7 @@ public final class ManagedGameSpace implements GameSpace {
 
         GameLogic logic = new GameLogic(this);
         builder.accept(logic);
-        GameEvents.SET_LOGIC.invoker().onGameLogicOpen(logic, this);
+        GameEvents.SET_LOGIC.invoker().onSetGameLogic(logic, this);
 
         Scheduler.INSTANCE.submit(server -> {
             logic.setAuthority(this.ruleAuthority);

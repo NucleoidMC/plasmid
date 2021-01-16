@@ -7,7 +7,8 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.*;
 
 /**
- * Events for games being opened and closed/finishing
+ * Events for games being opened and closed/finishing.
+ * See Javadoc of the interfaces for details about the events.
  */
 public final class GameEvents {
 
@@ -20,24 +21,17 @@ public final class GameEvents {
         }
     });
 
-    public static final Event<GameOpening> OPENING = EventFactory.createArrayBacked(GameOpening.class,
-            listeners -> game -> {
-        for (GameOpening listener : listeners) {
-            listener.onGameOpening(game);
-        }
-    });
-
-    public static final Event<GameOpen> OPENED = EventFactory.createArrayBacked(GameOpen.class,
+    public static final Event<GameSpaceOpened> OPENED = EventFactory.createArrayBacked(GameSpaceOpened.class,
             listeners -> (game, gameSpace) -> {
-        for (GameOpen listener : listeners) {
-            listener.onGameOpen(game, gameSpace);
+        for (GameSpaceOpened listener : listeners) {
+            listener.onGameSpaceOpened(game, gameSpace);
         }
     });
 
-    public static final Event<GameLogicOpen> SET_LOGIC = EventFactory.createArrayBacked(GameLogicOpen.class,
+    public static final Event<SetGameLogic> SET_LOGIC = EventFactory.createArrayBacked(SetGameLogic.class,
             listeners -> (gameLogic, gameSpace) -> {
-        for (GameLogicOpen listener : listeners) {
-            listener.onGameLogicOpen(gameLogic, gameSpace);
+        for (SetGameLogic listener : listeners) {
+            listener.onSetGameLogic(gameLogic, gameSpace);
         }
     });
 
@@ -57,13 +51,6 @@ public final class GameEvents {
         }
     });
 
-    public interface GameOpening {
-        /**
-         * @param game The game and its configuration
-         */
-        void onGameOpening(ConfiguredGame<?> game);
-    }
-
     public interface OneShotGameOpening {
         /**
          * @param gameId The game ID of the game being opened
@@ -73,23 +60,23 @@ public final class GameEvents {
         void onOneShotGameOpening(Identifier gameId, ConfiguredGame<?> game, boolean anonymous);
     }
 
-    public interface GameOpen {
+    public interface GameSpaceOpened {
         /**
          * @param game The game and its configuration
          * @param gameSpace The {@link GameSpace} the game is running in.
          */
-        void onGameOpen(ConfiguredGame<?> game, GameSpace gameSpace);
+        void onGameSpaceOpened(ConfiguredGame<?> game, GameSpace gameSpace);
     }
 
-    public interface GameLogicOpen {
+    public interface SetGameLogic {
         /**
          * Called when the {@link GameLogic} of a {@link GameSpace} is being created/swapped (eg. when going from waiting lobby -> active game)
-         * Note: This event can be called multiple times on the game {@link GameSpace}
+         * Note: This event can be called multiple times on the same {@link GameSpace}
          *
          * @param gameLogic The {@link GameLogic} that is being added to the {@link GameSpace}
          * @param gameSpace The {@link GameSpace} that is having its {@link GameLogic} changed.
          */
-        void onGameLogicOpen(GameLogic gameLogic, GameSpace gameSpace);
+        void onSetGameLogic(GameLogic gameLogic, GameSpace gameSpace);
     }
 
     public interface GameStartRequest {

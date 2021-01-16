@@ -42,7 +42,7 @@ public final class GameOpenProcedure {
                 .thenApplyAsync(gameSpace -> {
                     gameSpace.openGame(this.configureGame);
 
-                    GameEvents.OPENED.invoker().onGameOpen(this.game, gameSpace);
+                    GameEvents.OPENED.invoker().onGameSpaceOpened(this.game, gameSpace);
                     return gameSpace;
                 }, this.server);
     }

@@ -34,7 +34,6 @@ public final class ConfiguredGame<C> {
     }
 
     public CompletableFuture<ManagedGameSpace> open(MinecraftServer server) {
-        GameEvents.OPENING.invoker().onGameOpening(this);
         CompletableFuture<ManagedGameSpace> future = CompletableFuture.supplyAsync(() -> this.openProcedure(server), Util.getMainWorkerExecutor())
                 .thenCompose(GameOpenProcedure::open);
 

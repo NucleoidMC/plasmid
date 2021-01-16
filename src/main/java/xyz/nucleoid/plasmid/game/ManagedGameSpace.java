@@ -124,6 +124,8 @@ public final class ManagedGameSpace implements GameSpace {
      */
     public static CompletableFuture<ManagedGameSpace> open(MinecraftServer server, ConfiguredGame<?> game, ConfiguredGame<?> sourceGame, BubbleWorldConfig config) {
         return Fantasy.get(server).openBubble(config).thenApply(bubble -> {
+            bubble.setTickWhenEmpty(false);
+
             ManagedGameSpace gameSpace = new ManagedGameSpace(server, bubble, game, sourceGame);
             DIMENSION_TO_WORLD.put(bubble.asWorld().getRegistryKey(), gameSpace);
 

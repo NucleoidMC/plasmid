@@ -59,6 +59,7 @@ public final class MapWorkspaceManager extends PersistentState {
 
         CompletableFuture<PersistentWorldHandle> dimension = this.getOrCreateDimension(identifier, options);
         return dimension.thenApplyAsync(worldHandle -> {
+            worldHandle.setTickWhenEmpty(false);
             MapWorkspace workspace = new MapWorkspace(worldHandle, identifier, DEFAULT_BOUNDS);
             this.workspacesById.put(identifier, workspace);
             this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);

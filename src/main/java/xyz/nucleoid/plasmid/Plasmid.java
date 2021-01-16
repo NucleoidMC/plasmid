@@ -59,10 +59,10 @@ public final class Plasmid implements ModInitializer {
         this.registerCallbacks();
 
         // TODO: Remove. This is for testing.
-        GameEvents.OPENING.register(((gameId, game, oneShot) -> LOGGER.info("GAME EVENTS DEBUG | id: {}, game: {}, oneShot: {}", gameId, game, oneShot)));
-        GameEvents.OPENED.register(((gameId, game, oneShot, gameSpace) -> LOGGER.info("GAME EVENTS DEBUG | id: {}, game: {}, oneShot: {}, gameSpace: {}", gameId, game, oneShot, gameSpace)));
-        GameEvents.START_REQUEST.register((gameSpace, result) -> LOGGER.info("GAME EVENTS DEBUG | gameSpace: {}, result: {}", gameSpace, result));
-        GameEvents.CLOSING.register(((gameSpace, reason) -> LOGGER.info("GAME EVENTS DEBUG | gameSpace: {}, reason: {}", gameSpace, reason)));
+//        GameEvents.OPENING.register(((gameId, game, oneShot) -> LOGGER.info("GAME EVENTS DEBUG | id: {}, game: {}, oneShot: {}", gameId, game, oneShot)));
+//        GameEvents.OPENED.register(((gameId, game, oneShot, gameSpace) -> LOGGER.info("GAME EVENTS DEBUG | id: {}, game: {}, oneShot: {}, gameSpace: {}", gameId, game, oneShot, gameSpace)));
+//        GameEvents.START_REQUEST.register((gameSpace, result) -> LOGGER.info("GAME EVENTS DEBUG | gameSpace: {}, result: {}", gameSpace, result));
+//        GameEvents.CLOSING.register(((gameSpace, reason) -> LOGGER.info("GAME EVENTS DEBUG | gameSpace: {}, reason: {}", gameSpace, reason)));
     }
 
     private void registerCallbacks() {

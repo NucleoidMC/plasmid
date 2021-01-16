@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.error.ErrorReporter;
+import xyz.nucleoid.plasmid.event.GameEvents;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -33,6 +34,7 @@ public final class ConfiguredGame<C> {
     }
 
     public CompletableFuture<ManagedGameSpace> open(MinecraftServer server) {
+        GameEvents.OPENING.invoker().onGameOpening(this);
         CompletableFuture<ManagedGameSpace> future = CompletableFuture.supplyAsync(() -> this.openProcedure(server), Util.getMainWorkerExecutor())
                 .thenCompose(GameOpenProcedure::open);
 

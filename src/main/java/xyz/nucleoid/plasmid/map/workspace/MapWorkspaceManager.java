@@ -119,6 +119,7 @@ public final class MapWorkspaceManager extends PersistentState {
             CompoundTag root = tag.getCompound(key);
 
             this.getOrCreateDimension(identifier, this::createVoidOptions).thenAcceptAsync(worldHandle -> {
+                worldHandle.setTickWhenEmpty(false);
                 MapWorkspace workspace = MapWorkspace.deserialize(worldHandle, root);
                 this.workspacesById.put(identifier, workspace);
                 this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);

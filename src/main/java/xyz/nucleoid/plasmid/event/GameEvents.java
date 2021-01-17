@@ -44,10 +44,10 @@ public final class GameEvents {
         return result;
     });
 
-    public static final Event<GameClosing> CLOSING = EventFactory.createArrayBacked(GameClosing.class,
+    public static final Event<GameSpaceClosing> CLOSING = EventFactory.createArrayBacked(GameSpaceClosing.class,
             listeners -> (gameSpace, reason) -> {
-        for (GameClosing listener : listeners) {
-            listener.onGameClosing(gameSpace, reason);
+        for (GameSpaceClosing listener : listeners) {
+            listener.onGameSpaceClosing(gameSpace, reason);
         }
     });
 
@@ -87,7 +87,7 @@ public final class GameEvents {
         @Nullable StartResult onRequestStart(GameSpace gameSpace, StartResult result);
     }
 
-    public interface GameClosing {
-        void onGameClosing(GameSpace gameSpace, GameCloseReason reason);
+    public interface GameSpaceClosing {
+        void onGameSpaceClosing(GameSpace gameSpace, GameCloseReason reason);
     }
 }

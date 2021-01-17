@@ -341,8 +341,7 @@ public final class ManagedGameSpace implements GameSpace {
 
         Scheduler.INSTANCE.submit(server -> {
             try {
-                // TODO: Hook game closing event here
-                GameEvents.CLOSING.invoker().onGameClosing(this, reason);
+                GameEvents.CLOSING.invoker().onGameSpaceClosing(this, reason);
 
                 this.lifecycle.onClosing(this, reason);
 

@@ -114,7 +114,7 @@ public final class GameCommand {
         }
 
         ConfiguredGame<?> game = result.result().get();
-        return openGame(context, new Identifier(Plasmid.ID, "anonymous"), game);
+        return openGame(context, game.getType().getIdentifier(), game);
     }
 
     private static int openGame(CommandContext<ServerCommandSource> context, Identifier gameId, ConfiguredGame<?> game) {

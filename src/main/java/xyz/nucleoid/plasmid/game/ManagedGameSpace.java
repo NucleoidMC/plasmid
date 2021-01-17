@@ -23,6 +23,7 @@ import xyz.nucleoid.leukocyte.Leukocyte;
 import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 import xyz.nucleoid.plasmid.error.ErrorReporter;
+import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
@@ -163,6 +164,7 @@ public final class ManagedGameSpace implements GameSpace {
 
         GameLogic logic = new GameLogic(this);
         builder.accept(logic);
+        GameEvents.SET_LOGIC.invoker().onSetGameLogic(logic, this);
 
         Scheduler.INSTANCE.submit(server -> {
             logic.setAuthority(this.ruleAuthority);
@@ -272,7 +274,8 @@ public final class ManagedGameSpace implements GameSpace {
     public CompletableFuture<StartResult> requestStart() {
         return Scheduler.INSTANCE.submit(server -> {
             try {
-                return this.invoker(RequestStartListener.EVENT).requestStart();
+                StartResult startResult = this.invoker(RequestStartListener.EVENT).requestStart();
+                return GameEvents.START_REQUEST.invoker().onRequestStart(this, startResult);
             } catch (Throwable t) {
                 LOGGER.error("An unexpected exception occurred while requesting start", t);
                 this.reportError(t, "Requesting start");
@@ -338,6 +341,8 @@ public final class ManagedGameSpace implements GameSpace {
 
         Scheduler.INSTANCE.submit(server -> {
             try {
+                GameEvents.CLOSING.invoker().onGameSpaceClosing(this, reason);
+
                 this.lifecycle.onClosing(this, reason);
 
                 List<ServerPlayerEntity> players = Lists.newArrayList(this.players);

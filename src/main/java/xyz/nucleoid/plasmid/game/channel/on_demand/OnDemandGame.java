@@ -6,6 +6,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 
@@ -60,6 +61,7 @@ final class OnDemandGame {
             if (this.lifecycleListeners != null) {
                 lifecycle.addListeners(this.lifecycleListeners);
             }
+
             return gameSpace;
         }, server);
     }

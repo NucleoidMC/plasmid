@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.server.MinecraftServer;
 import xyz.nucleoid.fantasy.BubbleWorldConfig;
+import xyz.nucleoid.plasmid.event.GameEvents;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -40,6 +41,8 @@ public final class GameOpenProcedure {
         return ManagedGameSpace.open(this.server, this.game, this.sourceGame, this.worldConfig)
                 .thenApplyAsync(gameSpace -> {
                     gameSpace.openGame(this.configureGame);
+
+                    GameEvents.OPENED.invoker().onGameSpaceOpened(this.game, gameSpace);
                     return gameSpace;
                 }, this.server);
     }

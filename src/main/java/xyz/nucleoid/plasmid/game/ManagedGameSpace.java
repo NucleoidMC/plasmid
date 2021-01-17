@@ -336,8 +336,6 @@ public final class ManagedGameSpace implements GameSpace {
             return;
         }
 
-        GameLogic logic = this.logic.getAndSet(this.emptyLogic);
-
         Scheduler.INSTANCE.submit(server -> {
             try {
                 this.lifecycle.onClosing(this, reason);
@@ -350,7 +348,7 @@ public final class ManagedGameSpace implements GameSpace {
                 this.resources.close();
 
                 try {
-                    logic.getListeners().invoker(GameCloseListener.EVENT).onClose();
+                    this.invoker(GameCloseListener.EVENT).onClose();
                 } catch (Throwable t) {
                     LOGGER.error("An unexpected exception occurred while closing the game", t);
                     this.reportError(t, "Closing game");
@@ -361,10 +359,11 @@ public final class ManagedGameSpace implements GameSpace {
                 Leukocyte leukocyte = Leukocyte.get(this.getServer());
                 leukocyte.removeAuthority(this.ruleAuthority);
 
-                this.bubble.delete();
-
                 this.errorReporter.close();
             } finally {
+                this.logic.set(this.emptyLogic);
+
+                this.bubble.delete();
                 DIMENSION_TO_WORLD.remove(this.bubble.asWorld().getRegistryKey(), this);
             }
         });

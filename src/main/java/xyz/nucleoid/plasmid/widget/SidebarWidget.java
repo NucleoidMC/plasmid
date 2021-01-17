@@ -78,20 +78,32 @@ public final class SidebarWidget implements GameWidget {
 
     @Override
     public void addPlayer(ServerPlayerEntity player) {
-        this.players.add(player);
+        if (this.players.add(player)) {
+            ScoreboardObjective objective = this.createDummyObjective(player);
 
-        ScoreboardObjective objective = this.createDummyObjective(player);
+            player.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(objective, ADD_OBJECTIVE));
+            player.networkHandler.sendPacket(new ScoreboardDisplayS2CPacket(SIDEBAR_SLOT, objective));
 
-        player.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(objective, ADD_OBJECTIVE));
-        player.networkHandler.sendPacket(new ScoreboardDisplayS2CPacket(SIDEBAR_SLOT, objective));
-
-        this.content.sendTo(player);
+            this.content.sendTo(player);
+        }
     }
 
     @Override
     public void removePlayer(ServerPlayerEntity player) {
-        this.players.remove(player);
+        if (this.players.remove(player)) {
+            this.sendRemoveForPlayer(player);
+        }
+    }
 
+    @Override
+    public void close() {
+        for (ServerPlayerEntity player : this.players) {
+            this.sendRemoveForPlayer(player);
+        }
+        this.players.clear();
+    }
+
+    private void sendRemoveForPlayer(ServerPlayerEntity player) {
         ScoreboardObjective objective = this.createDummyObjective(player);
         player.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(objective, REMOVE_OBJECTIVE));
     }
@@ -103,13 +115,6 @@ public final class SidebarWidget implements GameWidget {
                 LocalizableText.asLocalizedFor(this.title, (LocalizationTarget) player),
                 ScoreboardCriterion.RenderType.INTEGER
         );
-    }
-
-    @Override
-    public void close() {
-        for (ServerPlayerEntity player : this.players) {
-            this.removePlayer(player);
-        }
     }
 
     private static String modifyLine(int i, String line) {

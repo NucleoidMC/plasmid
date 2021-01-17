@@ -15,9 +15,9 @@ public final class GameEvents {
     private GameEvents() { }
 
     public static final Event<OneShotGameOpening> ONE_SHOT_OPENING = EventFactory.createArrayBacked(OneShotGameOpening.class,
-            listeners -> (gameId, game, anonymous) -> {
+            listeners -> (gameId, game) -> {
         for (OneShotGameOpening listener : listeners) {
-            listener.onOneShotGameOpening(gameId, game, anonymous);
+            listener.onOneShotGameOpening(gameId, game);
         }
     });
 
@@ -55,9 +55,8 @@ public final class GameEvents {
         /**
          * @param gameId The game ID of the game being opened
          * @param game The game and its configuration
-         * @param anonymous true if the gameId is plasmid:anonymous, false otherwise.
          */
-        void onOneShotGameOpening(Identifier gameId, ConfiguredGame<?> game, boolean anonymous);
+        void onOneShotGameOpening(Identifier gameId, ConfiguredGame<?> game);
     }
 
     public interface GameSpaceOpened {

@@ -16,7 +16,7 @@ def build_number = env.BUILDNUM_FOR_VERSION
 
 // check if we're in actions environment
 if (build_number) {
-  version = "$version+$build_number"
+  version = "$version.$build_number"
 } else {
   version = "$version+local"
 }

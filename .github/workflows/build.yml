@@ -35,7 +35,7 @@ jobs:
       - name: Generate build number
         uses: zyborg/gh-action-buildnum@v1
         with:
-          version_key: steps.read_version.outputs.value
+          version_key: ${{ steps.read_version.outputs.value }}
           gist_token: ${{ secrets.GIST_TOKEN }}
           set_env: true
 

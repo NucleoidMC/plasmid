@@ -19,6 +19,8 @@ public interface PlayerOps {
 
     void sendTitle(Text title, Text subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks);
 
+    void sendActionbar(Text text, int fadeInTicks, int stayTicks, int fadeOutTicks);
+
     void sendSound(SoundEvent sound);
 
     void sendSound(SoundEvent sound, SoundCategory category, float volume, float pitch);

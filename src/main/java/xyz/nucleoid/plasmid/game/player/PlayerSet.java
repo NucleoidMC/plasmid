@@ -99,7 +99,7 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
         this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, title));
         this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.SUBTITLE, subtitle));
     }
-
+    @Override
     default void sendActionbar(Text text, int fadeInTicks, int stayTicks, int fadeOutTicks) {
         this.sendPacket(new TitleS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
         this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, text));

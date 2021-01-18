@@ -13,7 +13,9 @@ jobs:
         with:
           path: |
             ~/.gradle/loom-cache
-          key: gradle-${{ hashFiles('**/*.gradle*') }}
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             gradle-
 
@@ -23,10 +25,24 @@ jobs:
         with:
           java-version: 11
 
+      - name: Read mod version from Gradle
+        id: read_version
+        uses: christian-draeger/read-properties@1.0.1
+        with:
+          path: './gradle.properties'
+          property: 'mod_version'
+
+      - name: Generate build number
+        uses: zyborg/gh-action-buildnum@v1
+        with:
+          version_key: steps.read_version.outputs.value
+          gist_token: ${{ secrets.GIST_TOKEN }}
+          set_env: true
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build and Publish with Gradle
+      - name: Build and publish with Gradle
         run: ./gradlew build publish
         env:
           MAVEN_URL: ${{ secrets.MAVEN_URL }}

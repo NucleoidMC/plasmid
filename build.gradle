@@ -12,9 +12,11 @@ group = project.maven_group
 
 def env = System.getenv()
 
+def build_number = env.BUILDNUM_FOR_VERSION
+
 // check if we're in actions environment
-if (env.GITHUB_SHA) {
-  version = "$version+${env.GITHUB_SHA}"
+if (build_number) {
+  version = "$version+$build_number"
 } else {
   version = "$version+local"
 }

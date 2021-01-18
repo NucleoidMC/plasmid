@@ -10,12 +10,11 @@ archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
-// check if we're in a ci environment
-if (System.getenv("BUILD_NUMBER")) {
-  def ci_version = read_ci_version()
-  if (ci_version) {
-    version = "$ci_version.major.$ci_version.minor.$ci_version.patch"
-  }
+def env = System.getenv()
+
+// check if we're in actions environment
+if (env.GITHUB_SHA) {
+  version = "$version+${env.GITHUB_SHA}"
 } else {
   version = "$version+local"
 }
@@ -91,63 +90,16 @@ publishing {
   }
 
   repositories {
-    if (project.hasProperty("mavenUrl")) {
+    if (env.MAVEN_URL) {
       maven {
         credentials {
-          username project.mavenUsername ?: ""
-          password project.mavenPassword ?: ""
+          username env.MAVEN_USERNAME
+          password env.MAVEN_PASSWORD
         }
-        url project.mavenUrl ?: ""
+        url env.MAVEN_URL
       }
     } else {
       mavenLocal()
     }
-  }
-}
-
-import groovy.json.*
-
-def get_base_version() {
-  def version = project.mod_version.split('\\.')
-  return [
-      major: version[0] ?: 0,
-      minor: version[1] ?: 0,
-      patch: 0
-  ]
-}
-
-static def read_ci_version() {
-  def file = new File("ci_version.json")
-
-  if (file.exists()) {
-    def json = new JsonSlurper().parseText(file.text)
-    return json
-  }
-
-  return null
-}
-
-static def write_ci_version(version) {
-  def file = new File("ci_version.json")
-  file.write JsonOutput.toJson(version)
-}
-
-task incrementCiVersion {
-  doLast {
-    def base_version = get_base_version()
-    def old_version = read_ci_version()
-    def new_version = old_version
-
-    if (!old_version || old_version.major != base_version.major || old_version.minor != base_version.minor) {
-      // the base version changed! reset our ci version to match
-      new_version = base_version
-    } else {
-      // the base version hasn't changed: increment patch version
-      new_version.patch += 1
-    }
-
-    println "incrementing version from $old_version to $new_version!"
-
-    write_ci_version(new_version)
   }
 }

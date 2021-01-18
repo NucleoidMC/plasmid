@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  push:
+    branches: [ 1.16 ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/loom-cache
+          key: gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            gradle-
+
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build publish
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Build
+          path: build/libs
+
+      env:
+        MAVEN_URL: ${{ secrets.MAVEN_URL }}
+        MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}

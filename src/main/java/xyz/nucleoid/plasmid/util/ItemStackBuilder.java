@@ -142,6 +142,11 @@ public final class ItemStackBuilder {
         return this;
     }
 
+    public ItemStackBuilder setDamage(int damage) {
+        this.stack.setDamage(damage);
+        return this;
+    }
+
     public ItemStack build() {
         return this.stack.copy();
     }

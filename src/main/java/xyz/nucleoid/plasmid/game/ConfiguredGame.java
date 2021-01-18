@@ -7,7 +7,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.error.ErrorReporter;
-import xyz.nucleoid.plasmid.event.GameEvents;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -38,8 +37,10 @@ public final class ConfiguredGame<C> {
                 .thenCompose(GameOpenProcedure::open);
 
         future.exceptionally(throwable -> {
-            try (ErrorReporter reporter = ErrorReporter.open(this)) {
-                reporter.report(throwable, "Opening game");
+            if (GameOpenException.unwrap(throwable) == null) {
+                try (ErrorReporter reporter = ErrorReporter.open(this)) {
+                    reporter.report(throwable, "Opening game");
+                }
             }
             return null;
         });

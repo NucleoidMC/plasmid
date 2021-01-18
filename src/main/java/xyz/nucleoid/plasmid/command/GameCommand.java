@@ -165,8 +165,10 @@ public final class GameCommand {
     private static void onOpenError(PlayerManager playerManager, Throwable throwable) {
         Plasmid.LOGGER.error("Failed to start game", throwable);
 
+        GameOpenException gameOpenException = GameOpenException.unwrap(throwable);
+
         MutableText message;
-        if (throwable instanceof GameOpenException) {
+        if (gameOpenException != null) {
             message = ((GameOpenException) throwable).getReason().shallowCopy();
         } else {
             message = new TranslatableText("text.plasmid.game.open.error");

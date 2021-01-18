@@ -55,15 +55,6 @@ GameProfile.Property represents a named property with an assigned value, it can 
 | signed    | bool              | `true` if signed, else `false`. |
 | signature | (string (32767))? | Only if `signed` is `true`.     |
 
-### Friend
-
-Represents a player's friend.
-
-| Fields    | Type          | Description                             |
-|:---------:|:-------------:|:----------------------------------------|
-| profile   | [GameProfile] | The profile of the friend.              |
-| online    | bool          | `true` if currently only, else `false`. |
-
 ### Array `A[]`
 
 An array holds a list of values of the specified type.
@@ -247,103 +238,9 @@ Direction: `C<-S`
 |:-------------:|:------------:|:-------------------------------------------------------------------------------|
 | ids           | [VarI32]\[\] | The IDs of the particle sources to remove.                                     |
 
-### Friend Packets
-
-#### `plasmid:friend`
-
-Sent by the server to update a friend information.
-
-Direction: `C<-S`
-
-| Fields | Type     | Description             |
-|:------:|:--------:|:------------------------|
-| friend | [Friend] | The friend information. |
-
-#### `plasmid:friend/add/by_name`
-
-Sent by the client to send a friend request.
-
-Direction: `C->S`
-
-| Fields | Type        | Description                                         |
-|:------:|:-----------:|:----------------------------------------------------|
-| name   | string (16) | The name of the player to send a friend request to. |
-
-#### `plasmid:friend/add/by_uuid`
-
-Sent by the client to send a friend request.
-
-Direction: `C->S`
-
-| Fields | Type | Description                                         |
-|:------:|:----:|:----------------------------------------------------|
-| uuid   | UUID | The UUID of the player to send a friend request to. |
-
-#### `plasmid:friend/request`
-
-Sent by the server to tells the player they received a friend request by another player.
-
-Direction: `C<-S`
-
-| Fields  | Type          | Description                                           |
-|:-------:|:-------------:|:------------------------------------------------------|
-| profile | [GameProfile] | The profile of the player who requested to be friend. |
-
-#### `plasmid:friend/request/answer`
-
-Sent by the client to answer a friend request.
-
-Direction: `C->S`
-
-| Fields | Type | Description                                      |
-|:------:|:----:|:-------------------------------------------------|
-| uuid   | UUID | The sender UUID of the request to answer.        |
-| accept | bool | `true` if the request is accepted, else `false`. |
-
-#### `plasmid:friend/remove`
-
-Sent by the server to inform the player that a player unfriended them.
-
-Direction: `C<-S`
-
-| Fields  | Type          | Description                                                       |
-|:-------:|:-------------:|:------------------------------------------------------------------|
-| profile | [GameProfile] | The profile of the player which was removed from the friend list. |
-
-#### `plasmid:friend/remove/by_name`
-
-Sent by the client to remove a friend.
-
-Direction: `C->S`
-
-| Fields | Type        | Description                                          |
-|:------:|:-----------:|:-----------------------------------------------------|
-| name   | string (16) | The name of the player to remove in the friend list. |
-
-#### `plasmid:friend/remove/by_uuid`
-
-Sent by the client to remove a friend.
-
-Direction: `C->S`
-
-| Fields | Type | Description                                          |
-|:------:|:----:|:-----------------------------------------------------|
-| uuid   | UUID | The UUID of the player to remove in the friend list. |
-
-#### `plasmid:friend/list`
-
-The friend list sent by the server.
-
-Direction: `C<-S`
-
-| Fields  | Type         | Description  |
-|:-------:|:------------:|:-------------|
-| friends | [Friend]\[\] | The friends. |
-
 [VarI32]: https://wiki.vg/Protocol#VarInt_and_VarLong "wiki.vg documentation"
 [BlockPos]: https://wiki.vg/Protocol#Position "wiki.vg documentation"
 [Bounds]: #bounds
 [Region]: #region
 [GameProfile]: #gameprofile
 [GameProfile.Property]: #gameprofileproperty
-[Friend]: #friend

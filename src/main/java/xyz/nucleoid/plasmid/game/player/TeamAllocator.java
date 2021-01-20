@@ -66,6 +66,11 @@ public final class TeamAllocator<T, V> {
 
         int teamIndex = 0;
         for (V player : players) {
+            // all teams are full! we cannot allocate any more players
+            if (availableTeams.isEmpty()) {
+                throw new IllegalStateException("team overflow! all teams have exceeded maximum capacity");
+            }
+
             T team = availableTeams.get(teamIndex);
             teamToPlayers.put(team, player);
             playerToTeam.put(player, team);
@@ -75,11 +80,6 @@ public final class TeamAllocator<T, V> {
             if (maxTeamSize != -1 && teamToPlayers.get(team).size() >= maxTeamSize) {
                 // we've reached the maximum size for this team; exclude it
                 availableTeams.remove(teamIndex);
-
-                // all teams are full! we cannot allocate any more players
-                if (availableTeams.isEmpty()) {
-                    throw new IllegalStateException("team overflow! all teams have exceeded maximum capacity");
-                }
             }
 
             teamIndex = (teamIndex + 1) % availableTeams.size();
@@ -102,9 +102,10 @@ public final class TeamAllocator<T, V> {
             Collection<V> currentTeamMembers = teamToPlayers.get(current);
             Collection<V> swapCandidates = teamToPlayers.get(preference);
 
-            // we can move without swapping if the other team is smaller than ours
+            // we can move without swapping if the other team is smaller than ours if it has not exceeded the max size
             // we only care about keeping the teams balanced, so this is safe
-            if (swapCandidates.size() < currentTeamMembers.size()) {
+            int maxSwapTeamSize = this.teamSizes.getInt(preference);
+            if (swapCandidates.size() < currentTeamMembers.size() && swapCandidates.size() < maxSwapTeamSize) {
                 teamToPlayers.remove(current, player);
                 teamToPlayers.put(preference, player);
                 playerToTeam.put(player, preference);

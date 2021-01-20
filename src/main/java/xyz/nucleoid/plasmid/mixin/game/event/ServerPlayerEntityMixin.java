@@ -28,7 +28,9 @@ public class ServerPlayerEntityMixin {
                 ActionResult result = gameSpace.invoker(PlayerDeathListener.EVENT).onDeath(player, source);
 
                 if (result == ActionResult.FAIL) {
-                    player.setHealth(20.0F);
+                    if (player.getHealth() <= 0.0F) {
+                        player.setHealth(20.0F);
+                    }
                     ci.cancel();
                 }
             } catch (Throwable t) {

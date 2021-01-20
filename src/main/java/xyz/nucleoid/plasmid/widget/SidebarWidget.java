@@ -32,6 +32,7 @@ public final class SidebarWidget implements GameWidget {
     private static final int SIDEBAR_SLOT = 1;
     private static final int ADD_OBJECTIVE = 0;
     private static final int REMOVE_OBJECTIVE = 1;
+    private static final int SET_OBJECTIVE_TITLE = 2;
 
     private static final String OBJECTIVE_NAME = Plasmid.ID + ":sidebar";
 
@@ -58,7 +59,7 @@ public final class SidebarWidget implements GameWidget {
     }
 
     private final MutablePlayerSet players;
-    private final Text title;
+    private Text title;
 
     private final Content content = new Content();
 
@@ -69,6 +70,15 @@ public final class SidebarWidget implements GameWidget {
     public SidebarWidget(MinecraftServer server, Text title) {
         this.players = new MutablePlayerSet(server);
         this.title = title;
+    }
+
+    public void setTitle(Text title) {
+        this.title = title;
+
+        for (ServerPlayerEntity player : this.players) {
+            ScoreboardObjective objective = this.createDummyObjective(player);
+            player.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(objective, SET_OBJECTIVE_TITLE));
+        }
     }
 
     public void set(Consumer<Content> writer) {

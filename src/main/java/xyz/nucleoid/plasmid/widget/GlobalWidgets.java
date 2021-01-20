@@ -37,8 +37,16 @@ public final class GlobalWidgets {
     }
 
     public <T extends GameWidget> T addWidget(T widget) {
+        for (ServerPlayerEntity player : this.gameSpace.getPlayers()) {
+            widget.addPlayer(player);
+        }
         this.widgets.add(widget);
         return widget;
+    }
+
+    public void closeWidget(GameWidget widget) {
+        this.widgets.remove(widget);
+        widget.close();
     }
 
     private void onPlayerAdd(ServerPlayerEntity player) {

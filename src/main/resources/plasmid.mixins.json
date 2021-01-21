@@ -13,6 +13,7 @@
     "fake.RegistrySyncManagerMixin",
     "fake.ServerPlayNetworkHandlerMixin",
     "fake.WorldEventS2CPacketMixin",
+    "fix.ServerPlayNetworkHandlerMixin",
     "game.channel.MobEntityMixin",
     "game.channel.SignBlockEntityMixin",
     "game.event.BlockItemMixin",

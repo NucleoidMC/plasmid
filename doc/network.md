@@ -120,8 +120,7 @@ Direction: `C->S`
 | workspace | Identifier     | The identifier of the new workspace.                                   |
 | bounds    | [Bounds]       | The bounds of the map, may be `[[0, 0, 0], [0, 0, 0]]` if not present. |
 | generator | string (32767) | The generator string for the map, may be empty if unspecified.         |
-| has_data  | bool           | `true` if contains a data NBT tag, else `false`.                       |
-| data      | (NBT Tag)?     | Arbitrary data assigned to the map template.                           |
+| data      | NBT Tag        | Arbitrary data assigned to the map template.                           |
 
 #### `plasmid:workspace/leave`
 
@@ -164,11 +163,10 @@ If sent from a client, this is considered as an update request which can be reje
 
 Direction: `C<->S`
 
-| Fields     | Type       | Description                                                          |
-|:----------:|:----------:|:---------------------------------------------------------------------|
-| workspace  | Identifier | The identifier of the workspace in which the region should be added. |
-| runtime_id | [VarI32]   | The region runtime identifier.                                       |
-| region     | [Region]   | The region to add or update.                                         |
+| Fields     | Type       | Description                    |
+|:----------:|:----------:|:-------------------------------|
+| runtime_id | [VarI32]   | The region runtime identifier. |
+| region     | [Region]   | The region to add or update.   |
 
 #### `plasmid:workspace/regions`
 
@@ -178,32 +176,29 @@ Direction: `C<-S`
 
 | Fields    | Type                              | Description                                                       |
 |:---------:|:---------------------------------:|:------------------------------------------------------------------|
-| workspace | Identifier                        | The identifier of the workspace containing the following regions. |
 | marker    | string                            | The marker of the regions to update.                              |
 | regions   | ([VarI32], [Bounds], NBT Tag)\[\] | The array of regions to update. The tuple is, in order, `(runtime id, bounds, data)`. |
 
 #### `plasmid:workspace/region/add`
 
-Requests the server to add a new region in the specified workspace.
+Requests the server to add a new region in the current workspace.
 The client should not assume the region exists until the server sends a `plasmid:workspace/region` packet.
 
 Direction: `C->S`
 
 | Fields    | Type       | Description                                                          |
 |:---------:|:----------:|:---------------------------------------------------------------------|
-| workspace | Identifier | The identifier of the workspace in which the region should be added. |
 | region    | [Region]   | The region to add.                                                   |
 
 #### `plasmid:workspace/region/remove`
 
-Remove a region from the specified workspace.
+Remove a region from the current workspace.
 When sent from a client, this packet should be treated as a request which can be rejected.
 
 Direction: `C<->S`
 
 | Fields     | Type       | Description                                                            |
 |:----------:|:----------:|:-----------------------------------------------------------------------|
-| workspace  | Identifier | The identifier of the workspace in which the region should be removed. |
 | runtime_id | [VarI32]   | The region runtime ID.                                                 |
 
 ### Environment Packets

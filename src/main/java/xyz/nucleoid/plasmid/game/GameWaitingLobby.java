@@ -96,7 +96,7 @@ public final class GameWaitingLobby {
             return StartResult.NOT_ENOUGH_PLAYERS;
         }
 
-        if (!this.startRequested) {
+        if (!this.started) {
             // consume the start request but initiate countdown
             this.startRequested = true;
             return StartResult.OK;
@@ -136,7 +136,7 @@ public final class GameWaitingLobby {
                 long timeRemaining = countdownEnd - time;
 
                 long remainingDuration = Math.min(timeRemaining, targetDuration);
-                startTime = Math.max(startTime, startTime + targetDuration - remainingDuration);
+                startTime = Math.min(time, time + remainingDuration - targetDuration);
             }
 
             this.countdownStart = startTime;

@@ -1,17 +1,19 @@
 package xyz.nucleoid.plasmid.game.event;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class EventListeners {
-    private final Multimap<EventType<?>, Object> listeners = HashMultimap.create();
+    private final Reference2ObjectMap<EventType<?>, List<Object>> listeners = new Reference2ObjectOpenHashMap<>();
     private final Reference2ObjectMap<EventType<?>, Object> invokers = new Reference2ObjectOpenHashMap<>();
 
     public <T> void add(EventType<T> event, T listener) {
-        this.listeners.put(event, listener);
+        List<Object> listeners = this.listeners.computeIfAbsent(event, e -> new ArrayList<>());
+        listeners.add(listener);
         this.rebuildInvoker(event);
     }
 

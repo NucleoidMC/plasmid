@@ -92,15 +92,17 @@ public final class GameWaitingLobby {
 
     @Nullable
     private StartResult requestStart() {
-        if (this.startRequested) {
-            return null;
+        if (this.gameSpace.getPlayerCount() < this.playerConfig.getMinPlayers()) {
+            return StartResult.NOT_ENOUGH_PLAYERS;
         }
 
-        if (this.gameSpace.getPlayerCount() >= this.playerConfig.getMinPlayers()) {
+        if (!this.startRequested) {
+            // consume the start request but initiate countdown
             this.startRequested = true;
             return StartResult.OK;
         } else {
-            return StartResult.NOT_ENOUGH_PLAYERS;
+            // we allow the actual start logic to pass through now
+            return null;
         }
     }
 

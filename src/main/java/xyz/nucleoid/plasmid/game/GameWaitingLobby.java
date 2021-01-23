@@ -23,6 +23,8 @@ import xyz.nucleoid.plasmid.widget.GlobalWidgets;
 public final class GameWaitingLobby {
     private static final Text WAITING_TITLE = new TranslatableText("text.plasmid.game.waiting_lobby.bar.waiting");
 
+    private static final int START_REQUESTED_COUNTDOWN = 20 * 3;
+
     private final GameSpace gameSpace;
     private final PlayerConfig playerConfig;
 
@@ -30,6 +32,7 @@ public final class GameWaitingLobby {
     private long countdownStart = -1;
     private long countdownDuration = -1;
 
+    private boolean startRequested;
     private boolean started;
 
     private GameWaitingLobby(GameSpace gameSpace, PlayerConfig playerConfig, BossBarWidget bar) {
@@ -74,6 +77,7 @@ public final class GameWaitingLobby {
                     MutableText message = new TranslatableText("text.plasmid.game.waiting_lobby.bar.cancel").append(startResult.getError());
                     this.gameSpace.getPlayers().sendMessage(message.formatted(Formatting.RED));
                     this.started = false;
+                    this.startRequested = false;
                     this.countdownStart = -1;
                 }
             });
@@ -88,10 +92,16 @@ public final class GameWaitingLobby {
 
     @Nullable
     private StartResult requestStart() {
-        if (this.gameSpace.getPlayerCount() < this.playerConfig.getMinPlayers()) {
+        if (this.startRequested) {
+            return null;
+        }
+
+        if (this.gameSpace.getPlayerCount() >= this.playerConfig.getMinPlayers()) {
+            this.startRequested = true;
+            return StartResult.OK;
+        } else {
             return StartResult.NOT_ENOUGH_PLAYERS;
         }
-        return null;
     }
 
     private JoinResult offerPlayer(ServerPlayerEntity player) {
@@ -136,8 +146,12 @@ public final class GameWaitingLobby {
     }
 
     private long getTargetCountdownDuration() {
+        PlayerConfig.Countdown countdown = this.playerConfig.getCountdown();
+        if (this.startRequested) {
+            return START_REQUESTED_COUNTDOWN;
+        }
+
         if (this.gameSpace.getPlayerCount() >= this.playerConfig.getMinPlayers()) {
-            PlayerConfig.Countdown countdown = this.playerConfig.getCountdown();
             if (this.isFull()) {
                 return countdown.getFullTicks();
             } else if (this.isReady()) {

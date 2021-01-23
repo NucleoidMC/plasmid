@@ -1,76 +1,15 @@
-package xyz.nucleoid.plasmid.map.workspace;
+package xyz.nucleoid.plasmid.map.workspace.editor;
 
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import xyz.nucleoid.plasmid.map.template.TemplateRegion;
-import xyz.nucleoid.plasmid.map.workspace.trace.PartialRegion;
-import xyz.nucleoid.plasmid.map.workspace.trace.RegionTraceMode;
-import xyz.nucleoid.plasmid.map.workspace.trace.RegionTracer;
-import xyz.nucleoid.plasmid.util.BlockBounds;
 
-public final class WorkspaceBoundRenderer {
-    public static void onTick(MinecraftServer server) {
-        if (server.getTicks() % 10 != 0) {
-            return;
-        }
-
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(server);
-            MapWorkspace workspace = workspaceManager.byDimension(player.world.getRegistryKey());
-
-            if (workspace != null) {
-                WorkspaceBoundRenderer.renderMap(player, workspace);
-
-                if (player instanceof RegionTracer) {
-                    RegionTracer regionTracer = (RegionTracer) player;
-                    WorkspaceBoundRenderer.renderTracer(player, regionTracer);
-                }
-            }
-        }
-    }
-
-    private static void renderMap(ServerPlayerEntity player, MapWorkspace viewing) {
-        BlockBounds bounds = viewing.getBounds();
-        renderOutline(player, bounds.getMin(), bounds.getMax(), 1.0F, 0.0F, 0.0F);
-
-        for (TemplateRegion region : viewing.getRegions()) {
-            BlockBounds regionBounds = region.getBounds();
-            BlockPos min = regionBounds.getMin();
-            BlockPos max = regionBounds.getMax();
-            double distance = player.squaredDistanceTo(
-                    (min.getX() + max.getX()) / 2.0,
-                    (min.getY() + max.getY()) / 2.0,
-                    (min.getZ() + max.getZ()) / 2.0
-            );
-            if (distance < 32 * 32) {
-                renderOutline(player, min, max, 0.0F, 0.0F, 1.0F);
-            }
-        }
-    }
-
-    private static void renderTracer(ServerPlayerEntity player, RegionTracer regionTracer) {
-        if (regionTracer.isTracing()) {
-            RegionTraceMode traceMode = regionTracer.getMode();
-
-            BlockPos pos = traceMode.tryTrace(player);
-            if (pos != null) {
-                regionTracer.trace(pos);
-            }
-        }
-
-        PartialRegion tracing = regionTracer.getTracing();
-        if (tracing != null) {
-            renderOutline(player, tracing.getMin(), tracing.getMax(), 0.0F, 1.0F, 0.0F);
-        }
-    }
-
-    private static void renderOutline(ServerPlayerEntity player, BlockPos min, BlockPos max, float red, float green, float blue) {
+public final class ParticleOutlineRenderer {
+    public static void render(ServerPlayerEntity player, BlockPos min, BlockPos max, float red, float green, float blue) {
         DustParticleEffect effect = new DustParticleEffect(red, green, blue, 2.0F);
 
         Edge[] edges = edges(min, max);

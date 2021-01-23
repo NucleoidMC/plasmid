@@ -28,11 +28,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.map.template.TemplateRegion;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
-import xyz.nucleoid.plasmid.map.workspace.trace.PartialRegion;
-import xyz.nucleoid.plasmid.map.workspace.trace.RegionTracer;
+import xyz.nucleoid.plasmid.map.workspace.WorkspaceRegion;
+import xyz.nucleoid.plasmid.map.workspace.editor.WorkspaceEditor;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.Collection;
@@ -85,14 +84,14 @@ public final class MapMetadataCommand {
                         .then(literal("all")
                             .then(argument("old", StringArgumentType.word()).suggests(regionSuggestions())
                             .then(argument("new", StringArgumentType.word())
-                            .executes(context -> renameRegions(context, (region, oldMarker, pos) -> region.getMarker().equals(oldMarker)))
+                            .executes(context -> renameRegions(context, (region, oldMarker, pos) -> region.marker.equals(oldMarker)))
                         )))
                         .then(literal("here")
                             .then(argument("old", StringArgumentType.word()).suggests(localRegionSuggestions())
                             .then(argument("new", StringArgumentType.word())
                             .executes(
-                                context -> renameRegions(context, (region, oldMarker, pos) -> region.getMarker().equals(oldMarker)
-                                        && region.getBounds().contains(pos))
+                                context -> renameRegions(context, (region, oldMarker, pos) -> region.marker.equals(oldMarker)
+                                        && region.bounds.contains(pos))
                             )
                         )))
                     )
@@ -215,13 +214,13 @@ public final class MapMetadataCommand {
 
         MapWorkspace map = getWorkspaceForSource(source);
 
-        List<TemplateRegion> regions = map.getRegions().stream()
+        List<WorkspaceRegion> regions = map.getRegions().stream()
                 .filter(region -> predicate.test(region, oldMarker, pos))
                 .collect(Collectors.toList());
 
-        for (TemplateRegion region : regions) {
+        for (WorkspaceRegion region : regions) {
             map.removeRegion(region);
-            map.addRegion(newMarker, region.getBounds(), region.getData());
+            map.addRegion(newMarker, region.bounds, region.data);
         }
 
         source.sendFeedback(withMapPrefix(map, new LiteralText("Renamed " + regions.size() + " regions.")), false);
@@ -229,28 +228,28 @@ public final class MapMetadataCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static boolean executeRegionDataGet(CommandContext<ServerCommandSource> context, MapWorkspace map, TemplateRegion region) {
+    private static boolean executeRegionDataGet(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region) {
         context.getSource().sendFeedback(withMapPrefix(map, new TranslatableText("Data of region \"%s\":\n%s",
-                        region.getMarker(), region.getData().toText("  ", 0))),
+                        region.marker, region.data.toText("  ", 0))),
                 false);
         return false;
     }
 
-    private static boolean executeRegionDataMerge(CommandContext<ServerCommandSource> context, MapWorkspace map, TemplateRegion region) {
+    private static boolean executeRegionDataMerge(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region) {
         CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
-        region.setData(region.getData().copy().copyFrom(data));
+        map.replaceRegion(region, region.withData(region.data.copy().copyFrom(data)));
         return true;
     }
 
-    private static boolean executeRegionDataSet(CommandContext<ServerCommandSource> context, MapWorkspace map, TemplateRegion region) {
+    private static boolean executeRegionDataSet(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region) {
         CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
-        region.setData(data);
+        map.replaceRegion(region, region.withData(data));
         return true;
     }
 
-    private static boolean executeRegionDataRemove(CommandContext<ServerCommandSource> context, MapWorkspace map, TemplateRegion region) {
+    private static boolean executeRegionDataRemove(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region) {
         NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
-        return path.remove(region.getData()) > 0;
+        return path.remove(region.data) > 0;
     }
 
     private static int removeRegionHere(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -265,11 +264,11 @@ public final class MapMetadataCommand {
         ServerCommandSource source = context.getSource();
         MapWorkspace map = getWorkspaceForSource(source);
 
-        List<TemplateRegion> regions = map.getRegions().stream()
-                .filter(region -> region.getBounds().contains(pos))
+        List<WorkspaceRegion> regions = map.getRegions().stream()
+                .filter(region -> region.bounds.contains(pos))
                 .collect(Collectors.toList());
 
-        for (TemplateRegion region : regions) {
+        for (WorkspaceRegion region : regions) {
             map.removeRegion(region);
         }
 
@@ -288,10 +287,10 @@ public final class MapMetadataCommand {
 
         String marker = StringArgumentType.getString(context, "marker");
 
-        if (player instanceof RegionTracer) {
-            RegionTracer regionTracer = (RegionTracer) player;
-
-            PartialRegion region = regionTracer.takeReady();
+        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
+        WorkspaceEditor editor = workspaceManager.getEditorFor(player);
+        if (editor != null) {
+            BlockBounds region = editor.takeTracedRegion();
             if (region == null) {
                 throw NO_REGION_READY.create();
             }
@@ -522,7 +521,7 @@ public final class MapMetadataCommand {
         return (context, builder) -> {
             MapWorkspace map = getWorkspaceForSource(context.getSource());
             return CommandSource.suggestMatching(
-                    map.getRegions().stream().map(TemplateRegion::getMarker),
+                    map.getRegions().stream().map(region -> region.marker),
                     builder
             );
         };
@@ -533,8 +532,8 @@ public final class MapMetadataCommand {
             MapWorkspace map = getWorkspaceForSource(context.getSource());
             BlockPos sourcePos = context.getSource().getPlayer().getBlockPos();
             return CommandSource.suggestMatching(
-                    map.getRegions().stream().filter(region -> region.getBounds().contains(sourcePos))
-                            .map(TemplateRegion::getMarker),
+                    map.getRegions().stream().filter(region -> region.bounds.contains(sourcePos))
+                            .map(region -> region.marker),
                     builder
             );
         };
@@ -558,12 +557,12 @@ public final class MapMetadataCommand {
             String marker = StringArgumentType.getString(context, "marker");
 
             MapWorkspace map = getWorkspaceForSource(context.getSource());
-            List<TemplateRegion> regions = map.getRegions().stream()
-                    .filter(region -> region.getBounds().contains(pos) && region.getMarker().equals(marker))
+            List<WorkspaceRegion> regions = map.getRegions().stream()
+                    .filter(region -> region.bounds.contains(pos) && region.marker.equals(marker))
                     .collect(Collectors.toList());
 
             int count = 0;
-            for (TemplateRegion region : regions) {
+            for (WorkspaceRegion region : regions) {
                 if (executor.execute(context, map, region)) { count++; }
             }
 
@@ -589,11 +588,11 @@ public final class MapMetadataCommand {
 
     @FunctionalInterface
     private interface RegionExecutor {
-        boolean execute(CommandContext<ServerCommandSource> context, MapWorkspace map, TemplateRegion region);
+        boolean execute(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region);
     }
 
     @FunctionalInterface
     private interface RegionPredicate {
-        boolean test(TemplateRegion region, String marker, BlockPos pos);
+        boolean test(WorkspaceRegion region, String marker, BlockPos pos);
     }
 }

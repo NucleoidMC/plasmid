@@ -1,5 +1,7 @@
 package xyz.nucleoid.plasmid.map.workspace;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.block.BlockState;
@@ -18,7 +20,6 @@ import net.minecraft.util.registry.Registry;
 import xyz.nucleoid.fantasy.PersistentWorldHandle;
 import xyz.nucleoid.plasmid.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.map.template.MapTemplateMetadata;
-import xyz.nucleoid.plasmid.map.template.TemplateRegion;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.*;
@@ -37,7 +38,7 @@ public final class MapWorkspace {
     private BlockBounds bounds;
 
     /* Regions */
-    private final List<TemplateRegion> regions = new ArrayList<>();
+    private final Int2ObjectMap<WorkspaceRegion> regions = new Int2ObjectOpenHashMap<>();
 
     /* Entities */
     private final Set<UUID> entitiesToInclude = new ObjectOpenHashSet<>();
@@ -46,18 +47,62 @@ public final class MapWorkspace {
     /* Data */
     private CompoundTag data = new CompoundTag();
 
+    private int nextRegionId;
+
+    private final List<WorkspaceListener> listeners = new ArrayList<>();
+
     public MapWorkspace(PersistentWorldHandle worldHandle, Identifier identifier, BlockBounds bounds) {
         this.worldHandle = worldHandle;
         this.identifier = identifier;
         this.bounds = bounds;
     }
 
-    public void addRegion(String marker, BlockBounds bounds, CompoundTag tag) {
-        this.regions.add(new TemplateRegion(marker, bounds, tag));
+    public void addListener(WorkspaceListener listener) {
+        this.listeners.add(listener);
     }
 
-    public void removeRegion(TemplateRegion region) {
-        this.regions.remove(region);
+    public void removeListener(WorkspaceListener listener) {
+        this.listeners.remove(listener);
+    }
+
+    private int nextRegionId() {
+        return this.nextRegionId++;
+    }
+
+    public void addRegion(String marker, BlockBounds bounds, CompoundTag tag) {
+        int runtimeId = this.nextRegionId();
+        WorkspaceRegion region = new WorkspaceRegion(runtimeId, marker, bounds, tag);
+        this.regions.put(runtimeId, region);
+
+        for (WorkspaceListener listener : this.listeners) {
+            listener.onAddRegion(region);
+        }
+    }
+
+    public boolean replaceRegion(WorkspaceRegion from, WorkspaceRegion to) {
+        if (from.runtimeId != to.runtimeId) {
+            throw new IllegalArgumentException("mismatched region runtime ids!");
+        }
+
+        if (this.regions.replace(from.runtimeId, from, to)) {
+            for (WorkspaceListener listener : this.listeners) {
+                listener.onUpdateRegion(from, to);
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean removeRegion(WorkspaceRegion region) {
+        if (this.regions.remove(region.runtimeId, region)) {
+            for (WorkspaceListener listener : this.listeners) {
+                listener.onRemoveRegion(region);
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public Identifier getIdentifier() {
@@ -66,10 +111,18 @@ public final class MapWorkspace {
 
     public void setBounds(BlockBounds bounds) {
         this.bounds = bounds;
+
+        for (WorkspaceListener listener : this.listeners) {
+            listener.onSetBounds(bounds);
+        }
     }
 
     public void setOrigin(BlockPos origin) {
         this.origin = origin;
+
+        for (WorkspaceListener listener : this.listeners) {
+            listener.onSetOrigin(origin);
+        }
     }
 
     public BlockBounds getBounds() {
@@ -80,8 +133,8 @@ public final class MapWorkspace {
         return this.origin;
     }
 
-    public Collection<TemplateRegion> getRegions() {
-        return this.regions;
+    public Collection<WorkspaceRegion> getRegions() {
+        return this.regions.values();
     }
 
     public boolean addEntity(UUID entity) {
@@ -134,7 +187,7 @@ public final class MapWorkspace {
 
         // Regions
         ListTag regionList = new ListTag();
-        for (TemplateRegion region : this.regions) {
+        for (WorkspaceRegion region : this.regions.values()) {
             regionList.add(region.serialize(new CompoundTag()));
         }
         root.put("regions", regionList);
@@ -177,7 +230,8 @@ public final class MapWorkspace {
         ListTag regionList = root.getList("regions", NbtType.COMPOUND);
         for (int i = 0; i < regionList.size(); i++) {
             CompoundTag regionRoot = regionList.getCompound(i);
-            map.regions.add(TemplateRegion.deserialize(regionRoot));
+            int runtimeId = map.nextRegionId();
+            map.regions.put(runtimeId, WorkspaceRegion.deserialize(runtimeId, regionRoot));
         }
 
         // Entities
@@ -228,11 +282,11 @@ public final class MapWorkspace {
 
         metadata.setData(this.getData().copy());
 
-        for (TemplateRegion region : this.regions) {
+        for (WorkspaceRegion region : this.regions.values()) {
             metadata.addRegion(
-                    region.getMarker(),
-                    this.globalToLocal(region.getBounds()),
-                    region.getData()
+                    region.marker,
+                    this.globalToLocal(region.bounds),
+                    region.data
             );
         }
     }

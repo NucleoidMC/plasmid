@@ -16,7 +16,6 @@ import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import xyz.nucleoid.plasmid.command.*;
-import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
@@ -33,7 +32,6 @@ import xyz.nucleoid.plasmid.item.PlasmidItems;
 import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
-import xyz.nucleoid.plasmid.map.workspace.WorkspaceBoundRenderer;
 import xyz.nucleoid.plasmid.test.TestGame;
 
 public final class Plasmid implements ModInitializer {
@@ -192,7 +190,9 @@ public final class Plasmid implements ModInitializer {
             }
         });
 
-        ServerTickEvents.START_SERVER_TICK.register(WorkspaceBoundRenderer::onTick);
+        ServerTickEvents.START_SERVER_TICK.register(server -> {
+            MapWorkspaceManager.get(server).tick();
+        });
 
         ServerLifecycleEvents.SERVER_STARTING.register(ConfiguredChannelSystem.INSTANCE::setup);
 

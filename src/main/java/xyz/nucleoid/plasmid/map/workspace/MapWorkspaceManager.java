@@ -19,6 +19,8 @@ import xyz.nucleoid.fantasy.Fantasy;
 import xyz.nucleoid.fantasy.PersistentWorldHandle;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
+import xyz.nucleoid.plasmid.map.workspace.editor.WorkspaceEditor;
+import xyz.nucleoid.plasmid.map.workspace.editor.WorkspaceEditorManager;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.ArrayList;
@@ -38,13 +40,34 @@ public final class MapWorkspaceManager extends PersistentState {
     private final Map<Identifier, MapWorkspace> workspacesById = new Object2ObjectOpenHashMap<>();
     private final Map<RegistryKey<World>, MapWorkspace> workspacesByDimension = new Reference2ObjectOpenHashMap<>();
 
+    private final WorkspaceEditorManager editorManager;
+
     private MapWorkspaceManager(MinecraftServer server) {
         super(KEY);
         this.server = server;
+
+        this.editorManager = new WorkspaceEditorManager();
     }
 
     public static MapWorkspaceManager get(MinecraftServer server) {
         return server.getOverworld().getPersistentStateManager().getOrCreate(() -> new MapWorkspaceManager(server), KEY);
+    }
+
+    public void tick() {
+        this.editorManager.tick();
+    }
+
+    @Nullable
+    public WorkspaceEditor getEditorFor(ServerPlayerEntity player) {
+        return this.editorManager.getEditorFor(player);
+    }
+
+    public void onPlayerAddToWorld(ServerPlayerEntity player, ServerWorld world) {
+        this.editorManager.onPlayerAddToWorld(player, world);
+    }
+
+    public void onPlayerRemoveFromWorld(ServerPlayerEntity player, ServerWorld world) {
+        this.editorManager.onPlayerRemoveFromWorld(player, world);
     }
 
     public CompletableFuture<MapWorkspace> open(Identifier identifier) {
@@ -63,6 +86,7 @@ public final class MapWorkspaceManager extends PersistentState {
             MapWorkspace workspace = new MapWorkspace(worldHandle, identifier, DEFAULT_BOUNDS);
             this.workspacesById.put(identifier, workspace);
             this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
+            this.editorManager.addWorkspace(workspace);
             return workspace;
         }, this.server);
     }
@@ -78,6 +102,8 @@ public final class MapWorkspaceManager extends PersistentState {
                     returnPosition.applyTo(player);
                 }
             }
+
+            this.editorManager.removeWorkspace(workspace);
 
             workspace.getWorldHandle().delete();
 
@@ -123,6 +149,7 @@ public final class MapWorkspaceManager extends PersistentState {
                 MapWorkspace workspace = MapWorkspace.deserialize(worldHandle, root);
                 this.workspacesById.put(identifier, workspace);
                 this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
+                this.editorManager.addWorkspace(workspace);
             }, this.server);
         }
     }

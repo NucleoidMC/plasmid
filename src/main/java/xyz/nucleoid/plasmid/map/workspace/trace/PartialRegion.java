@@ -28,4 +28,8 @@ public class PartialRegion {
         }
         return BlockBounds.max(this.origin, this.target);
     }
+
+    public BlockBounds asComplete() {
+        return new BlockBounds(this.origin, this.target);
+    }
 }

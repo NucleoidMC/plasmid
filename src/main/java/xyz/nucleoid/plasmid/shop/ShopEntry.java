@@ -39,13 +39,18 @@ public final class ShopEntry {
         Text name = icon.getName().shallowCopy().formatted(Formatting.BOLD);
         icon.setCustomName(count.append(name));
 
-        return new ShopEntry(stack).onBuy(player -> {
+        return new ShopEntry(icon).onBuy(player -> {
             player.inventory.offerOrDrop(player.world, stack);
         });
     }
 
     public ShopEntry withCost(Cost cost) {
         this.cost = cost;
+        return this;
+    }
+
+    public ShopEntry noCost() {
+        this.cost = null;
         return this;
     }
 
@@ -65,24 +70,26 @@ public final class ShopEntry {
     }
 
     ItemStack createIcon(ServerPlayerEntity player) {
-        ItemStack icon = this.icon.build().copy();
+        ItemStack icon = this.icon.build();
 
-        boolean canBuy = this.cost.tryTake(player, true);
+        if (this.cost != null) {
+            boolean canBuy = this.cost.tryTake(player, true);
 
-        Style style = Style.EMPTY.withItalic(false).withColor(canBuy ? Formatting.BLUE : Formatting.RED);
+            Style style = Style.EMPTY.withItalic(false).withColor(canBuy ? Formatting.BLUE : Formatting.RED);
 
-        Text costText = this.cost.getDisplay();
-        costText = new LiteralText(" (").append(costText).append(")").setStyle(costText.getStyle());
+            Text costText = this.cost.getDisplay();
+            costText = new LiteralText(" (").append(costText).append(")").setStyle(costText.getStyle());
 
-        Text name = icon.getName().shallowCopy().setStyle(style).append(costText);
-        icon.setCustomName(name);
+            Text name = icon.getName().shallowCopy().setStyle(style).append(costText);
+            icon.setCustomName(name);
+        }
 
         return icon;
     }
 
     void onClick(ServerPlayerEntity player) {
         SoundEvent sound;
-        if (this.cost.tryTake(player, false)) {
+        if (this.cost == null || this.cost.tryTake(player, false)) {
             if (this.buyAction != null) {
                 this.buyAction.accept(player);
             }

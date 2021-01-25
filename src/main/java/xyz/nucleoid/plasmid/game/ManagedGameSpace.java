@@ -350,14 +350,15 @@ public final class ManagedGameSpace implements GameSpace {
                     this.bubble.removePlayer(player);
                 }
 
-                this.resources.close();
-
                 try {
                     this.invoker(GameCloseListener.EVENT).onClose();
                 } catch (Throwable t) {
                     LOGGER.error("An unexpected exception occurred while closing the game", t);
                     this.reportError(t, "Closing game");
                 }
+
+                this.logic.get().getResources().close();
+                this.resources.close();
 
                 this.lifecycle.onClosed(this, players, reason);
 

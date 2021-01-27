@@ -3,6 +3,9 @@ package xyz.nucleoid.plasmid.game;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
@@ -14,17 +17,34 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public final class ConfiguredGame<C> {
-    public static final Codec<ConfiguredGame<?>> CODEC = new ConfigCodec().codec();
+    public static final Codec<ConfiguredGame<?>> CODEC = new ConfigCodec(null).codec();
+
+    @Nullable
+    private final Identifier source;
 
     private final GameType<C> type;
     @Nullable
     private final String name;
+    @Nullable
+    private final String translation;
     private final C config;
 
-    private ConfiguredGame(GameType<C> type, @Nullable String name, C config) {
+    private ConfiguredGame(
+            @Nullable Identifier source,
+            GameType<C> type,
+            @Nullable String name,
+            @Nullable String translation,
+            C config
+    ) {
+        this.source = source;
         this.type = type;
         this.name = name;
+        this.translation = translation;
         this.config = config;
+    }
+
+    public static Codec<ConfiguredGame<?>> codecFrom(Identifier source) {
+        return new ConfigCodec(source).codec();
     }
 
     public GameOpenProcedure openProcedure(MinecraftServer server) {
@@ -48,11 +68,19 @@ public final class ConfiguredGame<C> {
         return future;
     }
 
+    /**
+     * @return the source location that this config was loaded from, if loaded from a file.
+     */
+    @Nullable
+    public Identifier getSource() {
+        return this.source;
+    }
+
     public GameType<C> getType() {
         return this.type;
     }
 
-    // TODO: Remove in 0.5 - replaced with getOptionalName and getDisplayName below
+    // TODO: Remove in 0.5 - replaced with Text variants
     @Deprecated
     public String getName() {
         return this.name != null ? this.name : this.type.getIdentifier().toString();
@@ -60,7 +88,9 @@ public final class ConfiguredGame<C> {
 
     /**
      * @return An {@link Optional} containing the name of the game config, if specified.
+     * @deprecated use {@link Text}-returning version
      */
+    @Deprecated
     public Optional<String> getOptionalName() {
         return Optional.ofNullable(this.name);
     }
@@ -68,9 +98,24 @@ public final class ConfiguredGame<C> {
     /**
      * @param id The game ID of the current {@link ConfiguredGame}
      * @return The name of the game as specified in the config, or the provided {@link Identifier} if it was not.
+     * @deprecated use {@link Text}-returning version
      */
+    @Deprecated
     public String getDisplayName(Identifier id) {
         return this.getOptionalName().orElseGet(id::toString);
+    }
+
+    /**
+     * @return the name for this game config, defaulted to the game type name if none is specified
+     */
+    public Text getNameText() {
+        if (this.name != null) {
+            return new LiteralText(this.name);
+        } else if (this.translation != null) {
+            return new TranslatableText(this.translation);
+        } else {
+            return this.type.getName();
+        }
     }
 
     public C getConfig() {
@@ -78,9 +123,20 @@ public final class ConfiguredGame<C> {
     }
 
     static final class ConfigCodec extends MapCodec<ConfiguredGame<?>> {
+        private final Identifier source;
+
+        ConfigCodec(Identifier source) {
+            this.source = source;
+        }
+
         @Override
         public <T> Stream<T> keys(DynamicOps<T> ops) {
-            return Stream.of(ops.createString("type"), ops.createString("name"), ops.createString("config"));
+            return Stream.of(
+                    ops.createString("type"),
+                    ops.createString("name"),
+                    ops.createString("translation"),
+                    ops.createString("config")
+            );
         }
 
         @Override
@@ -92,9 +148,13 @@ public final class ConfiguredGame<C> {
                         .result().map(Pair::getFirst)
                         .orElse(null);
 
+                String translation = Codec.STRING.decode(ops, input.get("translation"))
+                        .result().map(Pair::getFirst)
+                        .orElse(null);
+
                 Codec<?> configCodec = type.getConfigCodec();
                 return this.decodeConfig(ops, input, configCodec).map(config -> {
-                    return createConfigUnchecked(type, name, config);
+                    return this.createConfigUnchecked(type, name, translation, config);
                 });
             });
         }
@@ -108,8 +168,8 @@ public final class ConfiguredGame<C> {
         }
 
         @SuppressWarnings("unchecked")
-        private static <C> ConfiguredGame<C> createConfigUnchecked(GameType<C> type, String name, Object config) {
-            return new ConfiguredGame<>(type, name, (C) config);
+        private <C> ConfiguredGame<C> createConfigUnchecked(GameType<C> type, String name, String translation, Object config) {
+            return new ConfiguredGame<>(this.source, type, name, translation, (C) config);
         }
 
         @Override
@@ -126,7 +186,14 @@ public final class ConfiguredGame<C> {
             }
 
             prefix.add("type", GameType.REGISTRY.encodeStart(ops, game.type));
-            prefix.add("name", Codec.STRING.encodeStart(ops, game.name));
+
+            if (game.name != null) {
+                prefix.add("name", Codec.STRING.encodeStart(ops, game.name));
+            }
+
+            if (game.translation != null) {
+                prefix.add("translation", Codec.STRING.encodeStart(ops, game.translation));
+            }
 
             return prefix;
         }

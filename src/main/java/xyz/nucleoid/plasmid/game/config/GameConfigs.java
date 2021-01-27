@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.config;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -49,7 +50,8 @@ public final class GameConfigs {
 
                             Identifier identifier = identifierFromPath(path);
 
-                            DataResult<ConfiguredGame<?>> result = ConfiguredGame.CODEC.decode(JsonOps.INSTANCE, json).map(Pair::getFirst);
+                            Codec<ConfiguredGame<?>> codec = ConfiguredGame.codecFrom(identifier);
+                            DataResult<ConfiguredGame<?>> result = codec.decode(JsonOps.INSTANCE, json).map(Pair::getFirst);
 
                             result.result().ifPresent(game -> {
                                 CONFIGURED_GAMES.register(identifier, game);

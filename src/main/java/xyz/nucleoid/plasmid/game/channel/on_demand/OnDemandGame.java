@@ -6,7 +6,6 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 
@@ -25,7 +24,7 @@ final class OnDemandGame {
     public Text getName() {
         ConfiguredGame<?> configuredGame = GameConfigs.get(this.gameId);
         if (configuredGame != null) {
-            return new LiteralText(configuredGame.getDisplayName(this.gameId)).formatted(Formatting.AQUA);
+            return configuredGame.getNameText().shallowCopy().formatted(Formatting.AQUA);
         } else {
             return new LiteralText(this.gameId.toString()).formatted(Formatting.RED);
         }

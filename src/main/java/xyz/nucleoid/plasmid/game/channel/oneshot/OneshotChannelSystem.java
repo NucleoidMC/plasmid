@@ -27,6 +27,7 @@ public final class OneshotChannelSystem implements GameChannelSystem {
         this.server = server;
     }
 
+    // TODO: 0.5 - remove game config id as parameter and instead use type
     public CompletableFuture<GameChannel> open(Identifier gameId, ConfiguredGame<?> game) {
         GameEvents.ONE_SHOT_OPENING.invoker().onOneShotGameOpening(gameId, game);
 
@@ -48,7 +49,7 @@ public final class OneshotChannelSystem implements GameChannelSystem {
             }
         });
 
-        return new GameChannel(this.server, id, members -> new OneshotChannelBackend(gameSpace, gameId, members));
+        return new GameChannel(this.server, id, members -> new OneshotChannelBackend(gameSpace, members));
     }
 
     private Identifier createChannelIdFor(Identifier gameId) {

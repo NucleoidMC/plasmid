@@ -141,7 +141,7 @@ public final class GameCommand {
                         if (player != null && ManagedGameSpace.forWorld(player.world) == null) {
                             channel.requestJoin(player);
                         }
-                        onOpenSuccess(source, channel, gameId, game, playerManager);
+                        onOpenSuccess(source, channel, game, playerManager);
                     } else {
                         onOpenError(playerManager, throwable);
                     }
@@ -155,8 +155,8 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(ServerCommandSource source, GameChannel channel, Identifier gameId, ConfiguredGame<?> game, PlayerManager playerManager) {
-        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), new LiteralText(game.getDisplayName(gameId)).formatted(Formatting.GRAY))
+    private static void onOpenSuccess(ServerCommandSource source, GameChannel channel, ConfiguredGame<?> game, PlayerManager playerManager) {
+        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), game.getNameText().shallowCopy().formatted(Formatting.GRAY))
                 .append(channel.createJoinLink());
 
         playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);

@@ -1,6 +1,8 @@
 package xyz.nucleoid.plasmid.game;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
@@ -34,6 +36,14 @@ public final class GameType<C> {
 
     public Codec<C> getConfigCodec() {
         return this.configCodec;
+    }
+
+    public Text getName() {
+        return new TranslatableText(this.getTranslationKey());
+    }
+
+    public String getTranslationKey() {
+        return "game." + this.identifier.getNamespace() + "." + this.identifier.getPath();
     }
 
     @Nullable

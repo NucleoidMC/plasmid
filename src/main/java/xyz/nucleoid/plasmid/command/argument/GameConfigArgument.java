@@ -9,7 +9,6 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.ConfiguredGame;
@@ -30,7 +29,7 @@ public final class GameConfigArgument {
                     String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
                     CommandSource.forEachMatching(candidates, remaining, Function.identity(), id -> {
-                        builder.suggest(id.toString(), new LiteralText(GameConfigs.get(id).getDisplayName(id)));
+                        builder.suggest(id.toString(), GameConfigs.get(id).getNameText());
                     });
                     return builder.buildFuture();
                 });

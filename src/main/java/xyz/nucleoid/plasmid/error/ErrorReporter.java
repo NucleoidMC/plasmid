@@ -26,9 +26,9 @@ public interface ErrorReporter extends AutoCloseable {
         return new DiscordErrorReporter(source, DiscordWebhook.open(webhookUrl));
     }
 
-    // TODO: Find a way to get the config ID here.
     static ErrorReporter open(ConfiguredGame<?> game) {
-        String source = game.getOptionalName().orElse("<unnamed>") + " (" + game.getType().getIdentifier() + ")";
+        String name = game.getNameText().getString();
+        String source = name + " (" + game.getSource() + ")";
         return ErrorReporter.open(source);
     }
 

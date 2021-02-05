@@ -41,11 +41,11 @@ dependencies {
     exclude module: "fabric-loader"
   }
 
-  modImplementation 'fr.catcore:server-translations-api:1.4.0'
-  include 'fr.catcore:server-translations-api:1.4.0'
+  modImplementation 'fr.catcore:server-translations-api:1.4.1'
+  include 'fr.catcore:server-translations-api:1.4.1'
 
-  modImplementation 'xyz.nucleoid:packet-tweaker:0.1.1'
-  include 'xyz.nucleoid:packet-tweaker:0.1.1'
+  modImplementation 'xyz.nucleoid:packet-tweaker:0.1.2'
+  include 'xyz.nucleoid:packet-tweaker:0.1.2'
 
   modImplementation 'xyz.nucleoid:fantasy:0.2.6'
   include 'xyz.nucleoid:fantasy:0.2.6'

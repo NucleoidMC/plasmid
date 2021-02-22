@@ -80,6 +80,11 @@ public final class GameConfigs {
         return CONFIGURED_GAMES.get(identifier);
     }
 
+    @Nullable
+    public static Identifier getIdentifier(ConfiguredGame<?> game) {
+        return CONFIGURED_GAMES.getIdentifier(game);
+    }
+
     public static Set<Identifier> getKeys() {
         return CONFIGURED_GAMES.keySet();
     }

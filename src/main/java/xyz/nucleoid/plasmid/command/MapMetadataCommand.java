@@ -95,6 +95,10 @@ public final class MapMetadataCommand {
                             )
                         )))
                     )
+                    .then(literal("bounds")
+                        .then(argument("marker", StringArgumentType.word()).suggests(regionSuggestions())
+                        .executes(MapMetadataCommand::getRegionBounds))
+                    )
                     .then(literal("data")
                         .then(argument("marker", StringArgumentType.word()).suggests(localRegionSuggestions())
                             .then(literal("get").executes(executeInRegions("", MapMetadataCommand::executeRegionDataGet)))
@@ -224,6 +228,28 @@ public final class MapMetadataCommand {
         }
 
         source.sendFeedback(withMapPrefix(map, new LiteralText("Renamed " + regions.size() + " regions.")), false);
+
+        return Command.SINGLE_SUCCESS;
+    }
+    
+    private static int getRegionBounds(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        MapWorkspace map = getWorkspaceForSource(source);
+
+        String marker = StringArgumentType.getString(context, "marker");
+
+        List<WorkspaceRegion> regions = map.getRegions().stream()
+                .filter(region -> region.marker.equals(marker))
+                .collect(Collectors.toList());
+
+        source.sendFeedback(new TranslatableText("Found %s regions:", regions.size()).formatted(Formatting.BOLD), false);
+
+        for (WorkspaceRegion region : regions) {
+            Text minText = MapManageCommand.getClickablePosText(region.bounds.getMin());
+            Text maxText = MapManageCommand.getClickablePosText(region.bounds.getMax());
+
+            source.sendFeedback(new TranslatableText(" - %s to %s", minText, maxText), false);
+        }
 
         return Command.SINGLE_SUCCESS;
     }

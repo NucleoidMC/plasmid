@@ -17,8 +17,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.Texts;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -92,10 +97,12 @@ public final class MapManageCommand {
                 )))
                 .then(literal("bounds")
                     .then(MapWorkspaceArgument.argument("workspace")
-                    .then(argument("min", BlockPosArgumentType.blockPos())
-                    .then(argument("max", BlockPosArgumentType.blockPos())
-                    .executes(MapManageCommand::setWorkspaceBounds)
-                ))))
+                        .executes(MapManageCommand::getWorkspaceBounds)
+                        .then(argument("min", BlockPosArgumentType.blockPos())
+                            .then(argument("max", BlockPosArgumentType.blockPos())
+                            .executes(MapManageCommand::setWorkspaceBounds)
+                        ))
+                ))
                 .then(literal("join")
                     .then(MapWorkspaceArgument.argument("workspace")
                     .executes(MapManageCommand::joinWorkspace)
@@ -206,6 +213,17 @@ public final class MapManageCommand {
         workspace.setOrigin(origin);
 
         source.sendFeedback(new LiteralText("Updated origin for workspace"), false);
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int getWorkspaceBounds(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+
+        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
+        BlockBounds bounds = workspace.getBounds();
+
+        source.sendFeedback(new TranslatableText("The bounds for the workspace are %s to %s", getClickablePosText(bounds.getMin()), getClickablePosText(bounds.getMax())), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -394,5 +412,15 @@ public final class MapManageCommand {
                 }
             }
         }, Util.getIoWorkerExecutor());
+    }
+
+    protected static Text getClickablePosText(BlockPos pos) {
+        String linkCommand = "/tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ();
+        Style linkStyle = Style.EMPTY
+                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, linkCommand))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("chat.coordinates.tooltip")))
+                .withFormatting(Formatting.GREEN);
+
+        return Texts.bracketed(new TranslatableText("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())).setStyle(linkStyle);
     }
 }

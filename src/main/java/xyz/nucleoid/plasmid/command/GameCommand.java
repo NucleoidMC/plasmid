@@ -378,7 +378,7 @@ public final class GameCommand {
                     .withClickEvent(linkClick)
                     .withHoverEvent(linkHover);
 
-            MutableText link = new LiteralText(id.toString()).setStyle(linkStyle);
+            MutableText link = GameConfigs.get(id).getNameText().shallowCopy().setStyle(linkStyle);
             source.sendFeedback(new LiteralText(" - ").append(link), false);
         }
 

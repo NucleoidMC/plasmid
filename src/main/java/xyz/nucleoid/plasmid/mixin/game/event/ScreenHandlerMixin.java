@@ -64,9 +64,10 @@ public class ScreenHandlerMixin {
 
     private boolean shouldBlockThrowingItems(PlayerEntity player, int slot, ItemStack stack) {
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(player.world);
-        if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
+		ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+        if (gameSpace != null && gameSpace.containsPlayer(serverPlayer)) {
             try {
-                ActionResult dropResult = gameSpace.invoker(DropItemListener.EVENT).onDrop(player, slot, stack);
+                ActionResult dropResult = gameSpace.invoker(DropItemListener.EVENT).onDrop(serverPlayer, slot, stack);
                 return dropResult == ActionResult.FAIL;
             } catch (Throwable t) {
                 Plasmid.LOGGER.error("An unexpected exception occurred while dispatching drop item event", t);

@@ -17,6 +17,7 @@
   "text.plasmid.game.open.opened": "%1$s has opened %2$s! ",
   "text.plasmid.game.open.join": "Click here to join",
   "text.plasmid.game.propose": "%1$s has proposed %2$s! ",
+  "text.plasmid.game.locate.located": "%s is currently in the %s game. ",
   "text.plasmid.game.waiting_lobby.bar.waiting": "Waiting for players...",
   "text.plasmid.game.waiting_lobby.bar.countdown": "Starting in %s seconds!",
   "text.plasmid.game.waiting_lobby.bar.cancel": "Game start cancelled! ",

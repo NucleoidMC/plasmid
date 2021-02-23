@@ -8,6 +8,8 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
+
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.NbtCompoundTagArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
@@ -52,6 +54,10 @@ public final class GameCommand {
         return new TranslatableText("Malformed config: %s", error);
     });
 
+    public static final DynamicCommandExceptionType PLAYER_NOT_IN_GAME = new DynamicCommandExceptionType(player -> {
+            return new LiteralText(player + " is not in a game!");
+    });
+
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
@@ -94,6 +100,10 @@ public final class GameCommand {
                     .then(GameConfigArgument.argument("game_config")
                         .executes(GameCommand::joinAllQualifiedGame)
                     )
+                )
+                .then(literal("locate")
+                        .then(argument("player", EntityArgumentType.player())
+                        .executes(GameCommand::locatePlayer))
                 )
                 .then(literal("leave").executes(GameCommand::leaveGame))
                 .then(literal("list").executes(GameCommand::listGames))
@@ -248,6 +258,24 @@ public final class GameCommand {
                 .filter(channel -> channel.getPlayerCount() > 0)
                 .max(Comparator.comparingInt(GameChannel::getPlayerCount))
                 .orElseThrow(NO_GAME_OPEN::create);
+    }
+
+
+    private static int locatePlayer(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerCommandSource source = context.getSource();
+        ServerPlayerEntity player = EntityArgumentType.getPlayer(context, "player");
+
+        GameChannelManager channelManager = GameChannelManager.get(source.getMinecraftServer());
+        GameChannel channel = channelManager.getChannelFor(player);
+        if (channel == null) {
+            throw PLAYER_NOT_IN_GAME.create(player.getEntityName());
+        }
+
+        Text locateMessage = new TranslatableText("text.plasmid.game.locate.located", player.getDisplayName(), channel.getName().shallowCopy().formatted(Formatting.GRAY))
+                .append(channel.createJoinLink());
+        context.getSource().sendFeedback(locateMessage, false);
+
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int leaveGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {

@@ -414,7 +414,7 @@ public final class MapManageCommand {
         }, Util.getIoWorkerExecutor());
     }
 
-    private static Text getClickablePosText(BlockPos pos) {
+    protected static Text getClickablePosText(BlockPos pos) {
         String linkCommand = "/tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ();
         Style linkStyle = Style.EMPTY
                 .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, linkCommand))

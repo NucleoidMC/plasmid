@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.widget;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameLogic;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.event.GameCloseListener;
@@ -61,7 +62,7 @@ public final class GlobalWidgets {
         }
     }
 
-    private void onClose() {
+    private void onClose(GameCloseReason reason) {
         for (GameWidget widget : this.widgets) {
             widget.close();
         }

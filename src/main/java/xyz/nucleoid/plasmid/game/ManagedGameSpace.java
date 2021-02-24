@@ -174,7 +174,7 @@ public final class ManagedGameSpace implements GameSpace {
             closedGameLogic.getResources().close();
 
             try {
-                closedGameLogic.getListeners().invoker(GameCloseListener.EVENT).onClose();
+                closedGameLogic.getListeners().invoker(GameCloseListener.EVENT).onClose(null);
             } catch (Exception e) {
                 LOGGER.error("An unexpected exception occurred while closing the game", e);
             }
@@ -351,7 +351,7 @@ public final class ManagedGameSpace implements GameSpace {
                 }
 
                 try {
-                    this.invoker(GameCloseListener.EVENT).onClose();
+                    this.invoker(GameCloseListener.EVENT).onClose(reason);
                 } catch (Throwable t) {
                     LOGGER.error("An unexpected exception occurred while closing the game", t);
                     this.reportError(t, "Closing game");

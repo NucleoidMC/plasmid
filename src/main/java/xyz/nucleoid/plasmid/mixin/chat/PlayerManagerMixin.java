@@ -4,8 +4,8 @@ import net.minecraft.network.MessageType;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
@@ -79,7 +79,7 @@ public abstract class PlayerManagerMixin {
         Team team = (Team) sender.getScoreboardTeam();
         UUID senderUuid = sender.getUuid();
 
-        Text teamMessage = new LiteralText("[Team] ").append(message);
+        Text teamMessage = new TranslatableText("text.plasmid.chat.team", message);
 
         for (ServerPlayerEntity player : this.getPlayerList()) {
             if (player == sender || player.getScoreboardTeam() == team) {

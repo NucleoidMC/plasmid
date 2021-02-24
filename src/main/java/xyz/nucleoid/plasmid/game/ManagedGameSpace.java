@@ -185,7 +185,7 @@ public final class ManagedGameSpace implements GameSpace {
                     this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
                 } catch (Throwable t) {
                     LOGGER.error("An unexpected exception occurred while adding {} to game", player.getDisplayName(), t);
-                    player.sendMessage(new LiteralText("An unexpected error occurred while adding you to the game!").formatted(Formatting.RED), false);
+                    player.sendMessage(new TranslatableText("text.plasmid.event.join.error").formatted(Formatting.RED), false);
 
                     this.reportError(t, "Adding player");
 
@@ -228,7 +228,7 @@ public final class ManagedGameSpace implements GameSpace {
                 this.invoker(PlayerAddListener.EVENT).onAddPlayer(player);
             } catch (Throwable t) {
                 LOGGER.error("An unexpected exception occurred while adding {} to game", player.getDisplayName(), t);
-                player.sendMessage(new LiteralText("An unexpected error occurred while adding you to the game!").formatted(Formatting.RED), false);
+                player.sendMessage(new TranslatableText("text.plasmid.event.add.error").formatted(Formatting.RED), false);
 
                 this.reportError(t, "Adding player");
 
@@ -280,7 +280,7 @@ public final class ManagedGameSpace implements GameSpace {
                 LOGGER.error("An unexpected exception occurred while requesting start", t);
                 this.reportError(t, "Requesting start");
 
-                return StartResult.error(new LiteralText("An unexpected error occurred"));
+                return StartResult.error(new TranslatableText("text.plasmid.game.start_result.error"));
             }
         });
     }
@@ -308,7 +308,7 @@ public final class ManagedGameSpace implements GameSpace {
                 LOGGER.error("An unexpected exception occurred while offering {} to game", player.getDisplayName(), t);
                 this.reportError(t, "Offering player");
 
-                result = JoinResult.err(new LiteralText("An unexpected error occurred"));
+                result = JoinResult.err(new TranslatableText("text.plasmid.join_result.error"));
             }
 
             if (result.isError()) {

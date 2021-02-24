@@ -10,6 +10,7 @@ import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
@@ -90,7 +91,7 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
                 tracing.setTarget(pos);
                 this.traced = tracing.asComplete();
                 this.tracing = null;
-                this.player.sendMessage(new LiteralText("Use /map region commit <name> to add this region"), true);
+                this.player.sendMessage(new TranslatableText("item.plasmid.add_region.trace_mode.commit"), true);
             } else {
                 this.tracing = new PartialRegion(pos);
             }
@@ -100,7 +101,7 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
     private void changeTraceMode() {
         RegionTraceMode nextMode = this.traceMode.next();
         this.traceMode = nextMode;
-        this.player.sendMessage(new LiteralText("Changed trace mode to: ").append(nextMode.getName()), true);
+        this.player.sendMessage(new TranslatableText("item.plasmid.add_region.trace_mode.changed", nextMode.getName()), true);
     }
 
     @Override

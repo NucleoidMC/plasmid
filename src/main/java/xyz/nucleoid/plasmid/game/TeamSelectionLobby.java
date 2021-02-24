@@ -8,8 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.ItemTags;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -61,7 +61,7 @@ public final class TeamSelectionLobby {
         int index = 0;
 
         for (GameTeam team : this.teams.values()) {
-            Text name = new LiteralText("Request " + team.getDisplay() + " Team")
+            Text name = new TranslatableText("text.plasmid.team_selection.request_team", team.getDisplay())
                     .formatted(Formatting.BOLD, team.getFormatting());
 
             ItemStack stack = new ItemStack(ColoredBlocks.wool(team.getDye()));
@@ -84,8 +84,8 @@ public final class TeamSelectionLobby {
             if (team != null) {
                 this.teamPreference.put(player.getUuid(), team);
 
-                Text message = new LiteralText("You have requested to join the ")
-                        .append(new LiteralText(team.getDisplay() + " Team").formatted(team.getFormatting()));
+                Text message = new TranslatableText("text.plasmid.team_selection.requested_team",
+                        new TranslatableText("text.plasmid.team_selection.suffixed_team").formatted(team.getFormatting()));
 
                 player.sendMessage(message, false);
 

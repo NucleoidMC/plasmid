@@ -10,7 +10,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.*;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
@@ -147,7 +147,7 @@ public final class Plasmid implements ModInitializer {
                     if (workspace != null) {
                         if (!workspace.getBounds().contains(entity.getBlockPos())) {
                             player.sendMessage(
-                                    new LiteralText("The targeted entity is not in the map \"" + workspace.getIdentifier() + "\".")
+                                    new TranslatableText(stack.getTranslationKey() + ".target_not_in_map", workspace.getIdentifier())
                                             .formatted(Formatting.RED),
                                     false);
                             return ActionResult.FAIL;
@@ -156,17 +156,17 @@ public final class Plasmid implements ModInitializer {
                         if (workspace.containsEntity(entity.getUuid())) {
                             workspace.removeEntity(entity.getUuid());
                             player.sendMessage(
-                                    new LiteralText("The targeted entity has been removed from the map\"" + workspace.getIdentifier() + "\"."),
+                                    new TranslatableText(stack.getTranslationKey() + ".removed", workspace.getIdentifier()),
                                     true);
                         } else {
                             workspace.addEntity(entity.getUuid());
                             player.sendMessage(
-                                    new LiteralText("The targeted entity has been added in the map\"" + workspace.getIdentifier() + "\"."),
+                                    new TranslatableText(stack.getTranslationKey() + ".added", workspace.getIdentifier()),
                                     true);
                         }
                         return ActionResult.SUCCESS;
                     } else {
-                        player.sendMessage(new LiteralText("You are not in any map.").formatted(Formatting.RED),
+                        player.sendMessage(new TranslatableText(stack.getTranslationKey() + ".player_not_in_map").formatted(Formatting.RED),
                                 false);
                         return ActionResult.FAIL;
                     }

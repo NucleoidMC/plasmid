@@ -11,7 +11,6 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
@@ -25,11 +24,11 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public final class GameChannelCommand {
     public static final SimpleCommandExceptionType TARGET_IS_NOT_INTERFACE = new SimpleCommandExceptionType(
-            new LiteralText("The selected target is not a valid game channel interface!")
+            new TranslatableText("text.plasmid.game.channel.connect.target_is_not_interface")
     );
 
     public static final SimpleCommandExceptionType INTERFACE_ALREADY_CONNECTED = new SimpleCommandExceptionType(
-            new LiteralText("The selected interface is already connected to this channel!")
+            new TranslatableText("text.plasmid.game.channel.connect.interface_already_connected")
     );
 
     // @formatter:off

@@ -19,7 +19,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -58,19 +57,19 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public final class MapManageCommand {
     public static final SimpleCommandExceptionType MAP_NOT_HERE = new SimpleCommandExceptionType(
-            new LiteralText("No map found here")
+            new TranslatableText("text.plasmid.map.map_not_here")
     );
 
     public static final DynamicCommandExceptionType MAP_ALREADY_EXISTS = new DynamicCommandExceptionType(arg ->
-            new TranslatableText("Map with id '%s' already exists!", arg)
+            new TranslatableText("text.plasmid.map.open.map_already_exists", arg)
     );
 
     public static final SimpleCommandExceptionType MAP_MISMATCH = new SimpleCommandExceptionType(
-            new LiteralText("The given workspaces do not match! Are you sure you want to delete that?")
+            new TranslatableText("text.plasmid.map.delete.map_mismatch")
     );
 
     public static final DynamicCommandExceptionType INVALID_GENERATOR_CONFIG = new DynamicCommandExceptionType(arg ->
-            new TranslatableText("Invalid generator config! %s", arg)
+            new TranslatableText("text.plasmid.map.open.invalid_generator_config", arg)
     );
 
     // @formatter:off
@@ -165,13 +164,13 @@ public final class MapManageCommand {
         future.handleAsync((workspace, throwable) -> {
             if (throwable == null) {
                 source.sendFeedback(
-                        new LiteralText("Opened workspace '" + identifier + "'! Use ")
-                                .append(new LiteralText("/map join " + identifier).formatted(Formatting.GRAY))
-                                .append(" to join this map"),
+                        new TranslatableText("text.plasmid.map.open.success",
+							identifier,
+							new TranslatableText("text.plasmid.map.open.join_command", identifier).formatted(Formatting.GRAY)),
                         false
                 );
             } else {
-                source.sendError(new LiteralText("An unexpected error occurred while trying to open workspace!"));
+                source.sendError(new TranslatableText("text.plasmid.map.open.error"));
                 Plasmid.LOGGER.error("Failed to open workspace", throwable);
             }
             return null;
@@ -212,7 +211,7 @@ public final class MapManageCommand {
 
         workspace.setOrigin(origin);
 
-        source.sendFeedback(new LiteralText("Updated origin for workspace"), false);
+        source.sendFeedback(new TranslatableText("text.plasmid.map.origin.set"), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -223,7 +222,7 @@ public final class MapManageCommand {
         MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
         BlockBounds bounds = workspace.getBounds();
 
-        source.sendFeedback(new TranslatableText("The bounds for the workspace are %s to %s", getClickablePosText(bounds.getMin()), getClickablePosText(bounds.getMax())), false);
+        source.sendFeedback(new TranslatableText("text.plasmid.map.bounds.get", getClickablePosText(bounds.getMin()), getClickablePosText(bounds.getMax())), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -237,7 +236,7 @@ public final class MapManageCommand {
 
         workspace.setBounds(new BlockBounds(min, max));
 
-        source.sendFeedback(new LiteralText("Updated bounds for workspace"), false);
+        source.sendFeedback(new TranslatableText("text.plasmid.map.bounds.set"), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -263,9 +262,9 @@ public final class MapManageCommand {
         }
 
         source.sendFeedback(
-                new LiteralText("You have joined '" + workspace.getIdentifier() + "'! Use ")
-                        .append(new LiteralText("/map leave").formatted(Formatting.GRAY))
-                        .append(" to return to your original position"),
+                new TranslatableText("text.plasmid.map.join.success",
+					workspace.getIdentifier(),
+					new TranslatableText("text.plasmid.map.join.leave_command").formatted(Formatting.GRAY)),
                 false
         );
 
@@ -293,7 +292,7 @@ public final class MapManageCommand {
         }
 
         source.sendFeedback(
-                new LiteralText("You have left '" + workspace.getIdentifier() + "'!"),
+                new TranslatableText("text.plasmid.map.leave.success", workspace.getIdentifier()),
                 false
         );
 
@@ -310,9 +309,9 @@ public final class MapManageCommand {
         BlockBounds bounds = template.getBounds();
         if (bounds.getMin().getY() < 0 || bounds.getMax().getY() > 255) {
             source.sendFeedback(
-                    new LiteralText("Warning: Map exceeds vertical world boundaries!\n")
-                            .append("You may want to change the map origin.\n")
-                            .append("(Note: map origin corresponds to the position that will become (0,0,0) on export)")
+                    new TranslatableText("text.plasmid.map.export.vertical_bounds_warning.line.1").append("\n")
+                    		.append(new TranslatableText("text.plasmid.map.export.vertical_bounds_warning.line.2")).append("\n")
+                       		.append(new TranslatableText("text.plasmid.map.export.vertical_bounds_warning.line.3"))
                             .formatted(Formatting.YELLOW),
                     false
             );
@@ -322,10 +321,10 @@ public final class MapManageCommand {
 
         future.handle((v, throwable) -> {
             if (throwable == null) {
-                source.sendFeedback(new LiteralText("Compiled and exported map '" + workspace.getIdentifier() + "'"), false);
+                source.sendFeedback(new TranslatableText("text.plasmid.map.export.success", workspace.getIdentifier()), false);
             } else {
                 Plasmid.LOGGER.error("Failed to export map to '{}'", workspace.getIdentifier(), throwable);
-                source.sendError(new LiteralText("Failed to export map! An unexpected exception was thrown"));
+                source.sendError(new TranslatableText("text.plasmid.map.export.error"));
             }
             return null;
         });
@@ -346,9 +345,9 @@ public final class MapManageCommand {
 
         MutableText message;
         if (workspaceManager.delete(workspace)) {
-            message = new LiteralText("Deleted workspace '" + workspace.getIdentifier() + "'!");
+            message = new TranslatableText("text.plasmid.map.delete.success", workspace.getIdentifier());
         } else {
-            message = new LiteralText("Failed to delete workspace '" + workspace.getIdentifier() + "'!");
+            message = new TranslatableText("text.plasmid.map.delete.error", workspace.getIdentifier());
         }
 
         source.sendFeedback(message.formatted(Formatting.RED), false);
@@ -372,7 +371,7 @@ public final class MapManageCommand {
         future.thenAcceptAsync(template -> {
             if (template != null) {
                 workspaceManager.open(toWorkspaceId).thenAcceptAsync(workspace -> {
-                    source.sendFeedback(new LiteralText("Importing workspace..."), false);
+                    source.sendFeedback(new TranslatableText("text.plasmid.map.import.importing"), false);
 
                     workspace.setBounds(template.getBounds().offset(origin));
                     workspace.setOrigin(origin);
@@ -386,13 +385,13 @@ public final class MapManageCommand {
                     try {
                         MapTemplatePlacer placer = new MapTemplatePlacer(template);
                         placer.placeAt(workspace.getWorld(), origin);
-                        source.sendFeedback(new LiteralText("Imported workspace into '" + toWorkspaceId + "'!"), false);
+                        source.sendFeedback(new TranslatableText("text.plasmid.map.import.success", toWorkspaceId), false);
                     } catch (Exception e) {
                         Plasmid.LOGGER.error("Failed to place template into world!", e);
                     }
                 }, source.getMinecraftServer());
             } else {
-                source.sendError(new LiteralText("No template found at '" + location + "'!"));
+                source.sendError(new TranslatableText("text.plasmid.map.import.no_template_found", location));
             }
         }, source.getMinecraftServer());
 

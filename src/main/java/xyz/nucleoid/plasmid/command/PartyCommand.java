@@ -144,13 +144,13 @@ public final class PartyCommand {
         PartyResult result = partyManager.transferParty(PlayerRef.of(owner), PlayerRef.of(player));
         if (result.isOk()) {
             source.sendFeedback(
-                    new LiteralText("Your party has been transferred to ").append(player.getDisplayName())
+                    new TranslatableText("text.plasmid.party.transferred.sender", player.getDisplayName())
                             .formatted(Formatting.GOLD),
                     false
             );
 
             player.sendMessage(
-                    owner.getDisplayName().shallowCopy().append("'s party has been transferred to you")
+					new TranslatableText("text.plasmid.party.transferred.receiver", owner.getDisplayName())
                             .formatted(Formatting.GOLD),
                     false
             );
@@ -173,7 +173,7 @@ public final class PartyCommand {
         if (result.isOk()) {
             Party party = result.getParty();
 
-            MutableText message = player.getDisplayName().shallowCopy().append(" has joined the party!");
+            MutableText message = new TranslatableText("text.plasmid.party.join.success", player.getDisplayName());
             party.getMemberPlayers().sendMessage(message.formatted(Formatting.GOLD));
         } else {
             PartyError error = result.getError();
@@ -192,7 +192,7 @@ public final class PartyCommand {
         if (result.isOk()) {
             Party party = result.getParty();
 
-            MutableText message = player.getDisplayName().shallowCopy().append(" has left the party!");
+            MutableText message = new TranslatableText("text.plasmid.party.leave.success", player.getDisplayName());
             party.getMemberPlayers().sendMessage(message.formatted(Formatting.GOLD));
         } else {
             PartyError error = result.getError();
@@ -211,7 +211,7 @@ public final class PartyCommand {
         if (result.isOk()) {
             Party party = result.getParty();
 
-            LiteralText message = new LiteralText("Your party has been disbanded!");
+            MutableText message = new TranslatableText("text.plasmid.party.disband.success");
             party.getMemberPlayers().sendMessage(message.formatted(Formatting.GOLD));
         } else {
             PartyError error = result.getError();

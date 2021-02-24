@@ -128,7 +128,7 @@ public final class GameChannel {
 
     public Text createJoinLink() {
         ClickEvent click = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/game join " + this.id);
-        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText("Join ").append(this.getName()));
+        HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("text.plasmid.channel.join_link_hover", this.getName()));
         Style style = Style.EMPTY
                 .withFormatting(Formatting.UNDERLINE)
                 .withColor(Formatting.BLUE)

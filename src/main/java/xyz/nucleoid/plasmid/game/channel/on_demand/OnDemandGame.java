@@ -49,7 +49,7 @@ final class OnDemandGame {
         ConfiguredGame<?> config = GameConfigs.get(this.gameId);
         if (config == null) {
             CompletableFuture<ManagedGameSpace> future = new CompletableFuture<>();
-            TranslatableText error = new TranslatableText("Game config with id '%s' does not exist!", this.gameId);
+            TranslatableText error = new TranslatableText("text.plasmid.game_config.game_config_does_not_exist", this.gameId);
             future.completeExceptionally(new GameOpenException(error));
             return future;
         }

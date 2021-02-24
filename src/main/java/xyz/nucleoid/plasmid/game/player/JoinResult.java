@@ -24,11 +24,11 @@ public final class JoinResult {
     }
 
     public static JoinResult gameFull() {
-        return err(new LiteralText("Game is already full!"));
+        return err(new TranslatableText("text.plasmid.join_result.game_full"));
     }
 
     public static JoinResult alreadyJoined() {
-        return err(new LiteralText("You are already in this game!"));
+        return err(new TranslatableText("text.plasmid.join_result.already_joined"));
     }
 
     public static JoinResult inOtherGame() {
@@ -38,10 +38,10 @@ public final class JoinResult {
                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(linkCommand)))
                 .withFormatting(Formatting.BLUE, Formatting.UNDERLINE);
 
-        Text link = new LiteralText("leave this game")
+        Text link = new TranslatableText("text.plasmid.join_result.in_other_game.leave_this_game")
                 .setStyle(linkStyle);
 
-        return err(new LiteralText("You must ").append(link).append(" before joining another game!"));
+        return err(new TranslatableText("text.plasmid.join_result.in_other_game", link));
     }
 
     public boolean isOk() {

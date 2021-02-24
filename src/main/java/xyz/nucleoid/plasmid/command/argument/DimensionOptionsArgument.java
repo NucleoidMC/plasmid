@@ -16,7 +16,7 @@ import net.minecraft.world.gen.GeneratorOptions;
 
 public final class DimensionOptionsArgument {
     public static final DynamicCommandExceptionType DIMENSION_NOT_FOUND = new DynamicCommandExceptionType(arg ->
-            new TranslatableText("Dimension with id '%s' was not found!", arg)
+            new TranslatableText("text.plasmid.dimension_options.dimension_not_found", arg)
     );
 
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {

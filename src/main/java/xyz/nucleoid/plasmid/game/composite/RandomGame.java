@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.game.composite;
 
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
 import xyz.nucleoid.plasmid.game.ConfiguredGame;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenException;
@@ -14,7 +14,7 @@ public final class RandomGame {
 
         ConfiguredGame<?> game = config.selectGame(new Random());
         if (game == null) {
-            throw new GameOpenException(new LiteralText("Composite game config is empty"));
+            throw new GameOpenException(new TranslatableText("text.plasmid.random.empty_composite_game_config"));
         }
 
         return game.openProcedure(context.getServer()).withSource(context.getGame());

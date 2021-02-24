@@ -1,17 +1,17 @@
 package xyz.nucleoid.plasmid.map.workspace.trace;
 
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
 public enum RegionTraceMode {
-    OFFSET(new LiteralText("offset mode")),
-    EXACT(new LiteralText("exact mode")),
-    AT_FEET(new LiteralText("at feet mode"));
+    OFFSET(new TranslatableText("item.plasmid.add_region.trace_mode.offset")),
+    EXACT(new TranslatableText("item.plasmid.add_region.trace_mode.exact")),
+    AT_FEET(new TranslatableText("item.plasmid.add_region.trace_mode.at_feet"));
 
     private final Text name;
 

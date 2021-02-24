@@ -15,7 +15,7 @@ import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 
 public final class MapWorkspaceArgument {
     public static final DynamicCommandExceptionType WORKSPACE_NOT_FOUND = new DynamicCommandExceptionType(arg ->
-            new TranslatableText("Map with id '%s' was not found!", arg)
+            new TranslatableText("text.plasmid.map_workspace.workspace_not_found", arg)
     );
 
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {

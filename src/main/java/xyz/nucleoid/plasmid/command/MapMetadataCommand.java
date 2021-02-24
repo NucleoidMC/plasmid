@@ -44,15 +44,13 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public final class MapMetadataCommand {
     public static final DynamicCommandExceptionType ENTITY_TYPE_NOT_FOUND = new DynamicCommandExceptionType(arg ->
-            new TranslatableText("Entity type with id '%s' was not found!", arg)
+            new TranslatableText("text.plasmid.map.region.entity.filter.entity_type_not_found", arg)
     );
 
-    public static final SimpleCommandExceptionType MAP_NOT_HERE = new SimpleCommandExceptionType(
-            new LiteralText("No map found here")
-    );
+    public static final SimpleCommandExceptionType MAP_NOT_HERE = MapManageCommand.MAP_NOT_HERE;
 
     public static final SimpleCommandExceptionType NO_REGION_READY = new SimpleCommandExceptionType(
-            new LiteralText("No region ready")
+            new TranslatableText("text.plasmid.map.region.commit.no_region_ready")
     );
 
     private static final SimpleCommandExceptionType MERGE_FAILED_EXCEPTION = new SimpleCommandExceptionType(
@@ -204,7 +202,7 @@ public final class MapMetadataCommand {
 
         MapWorkspace map = getWorkspaceForSource(source);
         map.addRegion(marker, new BlockBounds(min, max), data);
-        source.sendFeedback(withMapPrefix(map, new LiteralText("Added region '" + marker + "'.")), false);
+        source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.region.add.success", marker)), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -227,7 +225,7 @@ public final class MapMetadataCommand {
             map.addRegion(newMarker, region.bounds, region.data);
         }
 
-        source.sendFeedback(withMapPrefix(map, new LiteralText("Renamed " + regions.size() + " regions.")), false);
+        source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.region.rename.success", regions.size())), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -242,20 +240,20 @@ public final class MapMetadataCommand {
                 .filter(region -> region.marker.equals(marker))
                 .collect(Collectors.toList());
 
-        source.sendFeedback(new TranslatableText("Found %s regions:", regions.size()).formatted(Formatting.BOLD), false);
+        source.sendFeedback(new TranslatableText("text.plasmid.map.region.bounds.get.header", regions.size()).formatted(Formatting.BOLD), false);
 
         for (WorkspaceRegion region : regions) {
             Text minText = MapManageCommand.getClickablePosText(region.bounds.getMin());
             Text maxText = MapManageCommand.getClickablePosText(region.bounds.getMax());
 
-            source.sendFeedback(new TranslatableText(" - %s to %s", minText, maxText), false);
+            source.sendFeedback(new TranslatableText("text.plasmid.entry", new TranslatableText("text.plasmid.map.region.bounds.get", minText, maxText)), false);
         }
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static boolean executeRegionDataGet(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region) {
-        context.getSource().sendFeedback(withMapPrefix(map, new TranslatableText("Data of region \"%s\":\n%s",
+        context.getSource().sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.region.data.get",
                         region.marker, region.data.toText("  ", 0))),
                 false);
         return false;
@@ -298,7 +296,7 @@ public final class MapMetadataCommand {
             map.removeRegion(region);
         }
 
-        source.sendFeedback(withMapPrefix(map, new LiteralText("Removed " + regions.size() + " regions.")), false);
+        source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.region.remove.success", regions.size())), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -326,7 +324,7 @@ public final class MapMetadataCommand {
 
             MapWorkspace workspace = getWorkspaceForSource(source);
             workspace.addRegion(marker, new BlockBounds(min, max), data);
-            source.sendFeedback(new LiteralText("Added region '" + marker + "'!"), false);
+            source.sendFeedback(new TranslatableText("text.plasmid.map.region.add.success.excited", marker), false);
         }
 
         return Command.SINGLE_SUCCESS;
@@ -345,9 +343,9 @@ public final class MapMetadataCommand {
                 .count();
 
         if (result == 0) {
-            source.sendError(new LiteralText("Could not add entities in map \"" + map.getIdentifier() + "\"."));
+            source.sendError(new TranslatableText("text.plasmid.map.region.entity.add.error", map.getIdentifier()));
         } else {
-            source.sendFeedback(new LiteralText("Added " + result + " entities in map \"" + map.getIdentifier() + "\"."),
+            source.sendFeedback(new TranslatableText("text.plasmid.map.region.entity.add.success", result, map.getIdentifier()),
                     false);
         }
 
@@ -366,9 +364,9 @@ public final class MapMetadataCommand {
                 .count();
 
         if (result == 0) {
-            source.sendError(new LiteralText("Could not remove entities in map \"" + map.getIdentifier() + "\"."));
+            source.sendError(new TranslatableText("text.plasmid.map.region.entity.remove.error", map.getIdentifier()));
         } else {
-            source.sendFeedback(new LiteralText("Removed " + result + " entities in map \"" + map.getIdentifier() + "\"."),
+            source.sendFeedback(new TranslatableText("text.plasmid.map.region.entity.remove.success", result, map.getIdentifier()),
                     false);
         }
 
@@ -382,9 +380,9 @@ public final class MapMetadataCommand {
         Pair<Identifier, EntityType<?>> type = getEntityType(context);
 
         if (!map.addEntityType(type.getRight())) {
-            source.sendError(new LiteralText("Entity type \"" + type.getLeft() + "\" is already present in map \"" + map.getIdentifier() + "\"."));
+            source.sendError(new TranslatableText("text.plasmid.map.region.entity.filter.type.add.already_present", type.getLeft(), map.getIdentifier()));
         } else {
-            source.sendFeedback(new LiteralText("Added entity type \"" + type.getLeft() + "\" in map \"" + map.getIdentifier() + "\"."), false);
+            source.sendFeedback(new TranslatableText("text.plasmid.map.region.entity.filter.type.add.success", type.getLeft(), map.getIdentifier()), false);
         }
         return Command.SINGLE_SUCCESS;
     }
@@ -396,9 +394,9 @@ public final class MapMetadataCommand {
         Pair<Identifier, EntityType<?>> type = getEntityType(context);
 
         if (!map.removeEntityType(type.getRight())) {
-            source.sendError(new LiteralText("Entity type \"" + type.getLeft() + "\" is not present in map \"" + map.getIdentifier() + "\"."));
+            source.sendError(new TranslatableText("text.plasmid.map.region.entity.filter.type.remove.not_present", type.getLeft(), map.getIdentifier()));
         } else {
-            source.sendFeedback(new LiteralText("Removed entity type \"" + type.getLeft() + "\" in map \"" + map.getIdentifier() + "\"."), false);
+            source.sendFeedback(new TranslatableText("text.plasmid.map.region.entity.filter.type.remove.success", type.getLeft(), map.getIdentifier()), false);
         }
         return Command.SINGLE_SUCCESS;
     }
@@ -409,7 +407,7 @@ public final class MapMetadataCommand {
         CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
         CompoundTag originalData = map.getData();
         map.setData(originalData.copy().copyFrom(data));
-        source.sendFeedback(withMapPrefix(map, new LiteralText("Merged map data.")), false);
+        source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.data.merge.success")), false);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -451,7 +449,7 @@ public final class MapMetadataCommand {
         }
 
         map.setData(map.getData());
-        source.sendFeedback(withMapPrefix(map, new LiteralText("Merged map data.")), false);
+        source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.data.merge.success")), false);
 
         return mergeCount;
     }
@@ -459,7 +457,7 @@ public final class MapMetadataCommand {
     private static int executeDataGet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         MapWorkspace map = getWorkspaceForSource(context.getSource());
-        source.sendFeedback(new TranslatableText("Map data of %s:\n%s",
+        source.sendFeedback(new TranslatableText("text.plasmid.map.data.get",
                         getMapPrefix(map), map.getData().toText("  ", 0)),
                 false);
         return Command.SINGLE_SUCCESS;
@@ -469,7 +467,7 @@ public final class MapMetadataCommand {
         ServerCommandSource source = context.getSource();
         MapWorkspace map = getWorkspaceForSource(context.getSource());
         NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
-        source.sendFeedback(new TranslatableText("Map data of \"%s\" at \"%s\":\n%s",
+        source.sendFeedback(new TranslatableText("text.plasmid.map.data.get.at",
                         map.getIdentifier().toString(), path.toString(),
                         getTagAt(map.getData(), path).toText("  ", 0)),
                 false);
@@ -481,15 +479,15 @@ public final class MapMetadataCommand {
         MapWorkspace map = getWorkspaceForSource(context.getSource());
         if (path == null) {
             map.setData(new CompoundTag());
-            source.sendFeedback(withMapPrefix(map, new LiteralText("The map data root tag has been reset.")),
+            source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.data.remove.success")),
                     false);
         } else {
             int count = path.remove(map.getData());
             if (count == 0) {
                 throw MERGE_FAILED_EXCEPTION.create();
             } else {
-                source.sendFeedback(new TranslatableText("%s Removed tag from map data at \"%s\".",
-                                getMapPrefix(map), path.toString()),
+                source.sendFeedback(withMapPrefix(map,
+                        new TranslatableText("text.plasmid.map.data.remove.at.success", path.toString())),
                         false);
             }
         }
@@ -501,7 +499,7 @@ public final class MapMetadataCommand {
         MapWorkspace map = getWorkspaceForSource(context.getSource());
         CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
         map.setData(data);
-        source.sendFeedback(withMapPrefix(map, new LiteralText("Set map data.")), false);
+        source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.data.set.success")), false);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -515,7 +513,7 @@ public final class MapMetadataCommand {
             throw MERGE_FAILED_EXCEPTION.create();
         } else {
             map.setData(data);
-            source.sendFeedback(withMapPrefix(map, new TranslatableText("Set map data at \"%s\".",
+            source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.data.set.at.success",
                             path.toString())),
                     false);
         }

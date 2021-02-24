@@ -43,19 +43,19 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public final class GameCommand {
     public static final SimpleCommandExceptionType NO_GAME_OPEN = new SimpleCommandExceptionType(
-            new LiteralText("No games are open!")
+            new TranslatableText("text.plasmid.game.join.no_game_open")
     );
 
     public static final SimpleCommandExceptionType NO_GAME_IN_WORLD = new SimpleCommandExceptionType(
-            new LiteralText("No game is open in this world!")
+            new TranslatableText("text.plasmid.game.no_game_in_world")
     );
 
     public static final DynamicCommandExceptionType MALFORMED_CONFIG = new DynamicCommandExceptionType(error -> {
-        return new TranslatableText("Malformed config: %s", error);
+        return new TranslatableText("text.plasmid.game.open.malformed_config", error);
     });
 
     public static final DynamicCommandExceptionType PLAYER_NOT_IN_GAME = new DynamicCommandExceptionType(player -> {
-            return new LiteralText(player + " is not in a game!");
+            return new TranslatableText("text.plasmid.game.locate.player_not_in_game", player);
     });
 
     // @formatter:off
@@ -379,7 +379,7 @@ public final class GameCommand {
                     .withHoverEvent(linkHover);
 
             MutableText link = GameConfigs.get(id).getNameText().shallowCopy().setStyle(linkStyle);
-            source.sendFeedback(new LiteralText(" - ").append(link), false);
+            source.sendFeedback(new TranslatableText("text.plasmid.entry", link), false);
         }
 
         return Command.SINGLE_SUCCESS;

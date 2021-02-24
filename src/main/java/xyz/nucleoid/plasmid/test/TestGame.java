@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.test;
 
 import net.minecraft.block.Blocks;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
@@ -48,7 +48,7 @@ public final class TestGame {
             });
 
             GlobalWidgets widgets = new GlobalWidgets(game);
-            SidebarWidget sidebar = widgets.addSidebar(new LiteralText("Test"));
+            SidebarWidget sidebar = widgets.addSidebar(new TranslatableText("text.plasmid.test"));
 
             MutableInt timer = new MutableInt();
 

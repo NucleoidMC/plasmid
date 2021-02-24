@@ -19,7 +19,7 @@ import java.util.function.Function;
 
 public final class GameConfigArgument {
     private static final DynamicCommandExceptionType GAME_NOT_FOUND = new DynamicCommandExceptionType(id -> {
-        return new TranslatableText("Game config with id '%s' was not found!", id);
+        return new TranslatableText("text.plasmid.game_config.game_not_found", id);
     });
 
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {

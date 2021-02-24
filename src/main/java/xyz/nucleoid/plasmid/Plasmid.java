@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.*;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
@@ -27,10 +26,8 @@ import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
-import xyz.nucleoid.plasmid.item.IncludeEntityItem;
 import xyz.nucleoid.plasmid.item.PlasmidItems;
 import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 import xyz.nucleoid.plasmid.test.TestGame;
 
@@ -130,45 +127,6 @@ public final class Plasmid implements ModInitializer {
                     } catch (Throwable t) {
                         LOGGER.error("An unexpected exception occurred while dispatching attack entity event", t);
                         gameSpace.reportError(t, "Attack entity");
-                    }
-                }
-            }
-
-            return ActionResult.PASS;
-        });
-
-        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (!world.isClient) {
-                ItemStack stack = player.getStackInHand(hand);
-                if (stack.getItem() instanceof IncludeEntityItem) {
-                    MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(world.getServer());
-
-                    MapWorkspace workspace = workspaceManager.byDimension(world.getRegistryKey());
-                    if (workspace != null) {
-                        if (!workspace.getBounds().contains(entity.getBlockPos())) {
-                            player.sendMessage(
-                                    new TranslatableText(stack.getTranslationKey() + ".target_not_in_map", workspace.getIdentifier())
-                                            .formatted(Formatting.RED),
-                                    false);
-                            return ActionResult.FAIL;
-                        }
-
-                        if (workspace.containsEntity(entity.getUuid())) {
-                            workspace.removeEntity(entity.getUuid());
-                            player.sendMessage(
-                                    new TranslatableText(stack.getTranslationKey() + ".removed", workspace.getIdentifier()),
-                                    true);
-                        } else {
-                            workspace.addEntity(entity.getUuid());
-                            player.sendMessage(
-                                    new TranslatableText(stack.getTranslationKey() + ".added", workspace.getIdentifier()),
-                                    true);
-                        }
-                        return ActionResult.SUCCESS;
-                    } else {
-                        player.sendMessage(new TranslatableText(stack.getTranslationKey() + ".player_not_in_map").formatted(Formatting.RED),
-                                false);
-                        return ActionResult.FAIL;
                     }
                 }
             }

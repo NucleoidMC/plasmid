@@ -64,7 +64,7 @@ public class ScreenHandlerMixin {
 
     private boolean shouldBlockThrowingItems(PlayerEntity player, int slot, ItemStack stack) {
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(player.world);
-	    ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+        ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
         if (gameSpace != null && gameSpace.containsPlayer(serverPlayer)) {
             try {
                 ActionResult dropResult = gameSpace.invoker(DropItemListener.EVENT).onDrop(serverPlayer, slot, stack);

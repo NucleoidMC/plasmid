@@ -205,7 +205,7 @@ public final class Plasmid implements ModInitializer {
         ServerWorldEvents.UNLOAD.register((server, world) -> {
             ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
             if (gameSpace != null) {
-                gameSpace.close(GameCloseReason.CANCELED);
+                gameSpace.close(GameCloseReason.GARBAGE_COLLECTED);
             }
         });
     }

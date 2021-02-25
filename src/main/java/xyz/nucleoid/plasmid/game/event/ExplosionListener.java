@@ -1,19 +1,17 @@
 package xyz.nucleoid.plasmid.game.event;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.explosion.Explosion;
 import xyz.nucleoid.plasmid.game.GameSpace;
-
-import java.util.List;
 
 /**
  * Called after an explosion is triggered in a {@link GameSpace}.
  */
 public interface ExplosionListener {
-    EventType<ExplosionListener> EVENT = EventType.create(ExplosionListener.class, listeners -> (affectedBlocks) -> {
+    EventType<ExplosionListener> EVENT = EventType.create(ExplosionListener.class, listeners -> explosion -> {
         for (ExplosionListener listener : listeners) {
-            listener.onExplosion(affectedBlocks);
+            listener.onExplosion(explosion);
         }
     });
 
-    void onExplosion(List<BlockPos> affectedBlocks);
+    void onExplosion(Explosion explosion);
 }

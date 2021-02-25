@@ -24,6 +24,7 @@ import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 import xyz.nucleoid.plasmid.error.ErrorReporter;
 import xyz.nucleoid.plasmid.event.GameEvents;
+import xyz.nucleoid.plasmid.event.GamePackets;
 import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
@@ -238,6 +239,7 @@ public final class ManagedGameSpace implements GameSpace {
             }
 
             this.lifecycle.addPlayer(this, player);
+            GamePackets.playerAdd(this, player);
 
             return true;
         }

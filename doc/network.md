@@ -93,7 +93,8 @@ Size: 0 if non-present, else size of `X`.
 
 #### `plasmid:game/player_add`
 
-Packet sent when a player is joined to a game space.
+Packet sent to all players of a game space when a player is joined to a game space.
+The player that was joined to the game space also receives this packet.
 
 Direction: `C<-S`
 
@@ -108,7 +109,8 @@ Direction: `C<-S`
 
 #### `plasmid:game/player_removed`
 
-Packet sent when a player is remove from a game space.
+Packet sent to all players of a game space when a player is removed from a game space.
+The player that was removed from the game space also receives this packet.
 
 Direction: `C<-S`
 
@@ -123,7 +125,7 @@ Direction: `C<-S`
 
 #### `plasmid:game/game_close`
 
-Packet sent when a game space closes.
+Packet sent to all players in a game space when it closes.
 
 Direction: `C<-S`
 

@@ -9,6 +9,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ConfiguredGame;
+import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameType;
 
@@ -24,6 +25,13 @@ public final class GamePackets {
 
     public static CustomPayloadS2CPacket playerRemove(GameSpace gameSpace, ServerPlayerEntity player) {
         return createPacket("player_remove", buf -> writeGameAndPlayerInfo(buf, gameSpace, player));
+    }
+
+    public static CustomPayloadS2CPacket gameClose(GameSpace gameSpace, GameCloseReason reason) {
+        return createPacket("game_close", buf -> {
+            writeGameInfo(buf, gameSpace);
+            buf.writeString(reason == GameCloseReason.FINISHED ? "finished" : "canceled");
+        });
     }
 
     private static void writeGameAndPlayerInfo(PacketByteBuf buf, GameSpace gameSpace, ServerPlayerEntity player) {

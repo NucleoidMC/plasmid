@@ -364,6 +364,7 @@ public final class ManagedGameSpace implements GameSpace {
                 this.resources.close();
 
                 this.lifecycle.onClosed(this, players, reason);
+                GamePackets.gameClose(this, reason);
 
                 Leukocyte leukocyte = Leukocyte.get(this.getServer());
                 leukocyte.removeAuthority(this.ruleAuthority);

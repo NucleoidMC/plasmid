@@ -121,6 +121,20 @@ Direction: `C<-S`
 | player_count   | int        | The new player count of the game space after the player is removed. |
 | player_uuid    | UUID       | The UUID of the player that was removed from the game space.        |
 
+#### `plasmid:game/game_close`
+
+Packet sent when a game space closes.
+
+Direction: `C<-S`
+
+| Fields         | Type            | Description                        |
+|:--------------:|:---------------:|:-----------------------------------|
+| game_type_id   | Identifier      | The identifier of the game type.   |
+| game_type_name | Text            | The name of the game type.         |
+| game_id        | Identifier      | The identifier of the game.        |
+| game_name      | Text            | The name of the game.              |
+| reason         | GameCloseReason | The reason for the game's closure. |
+
 ### Workspace-related Packets
 
 The server controls most of the requests sent by a client for workspace-related packets as it requires some permissions.

@@ -22,6 +22,10 @@ public final class GamePackets {
         return createPacket("player_add", buf -> writeGameAndPlayerInfo(buf, gameSpace, player));
     }
 
+    public static CustomPayloadS2CPacket playerRemove(GameSpace gameSpace, ServerPlayerEntity player) {
+        return createPacket("player_remove", buf -> writeGameAndPlayerInfo(buf, gameSpace, player));
+    }
+
     private static void writeGameAndPlayerInfo(PacketByteBuf buf, GameSpace gameSpace, ServerPlayerEntity player) {
         writeGameInfo(buf, gameSpace);
         writePlayerInfo(buf, gameSpace, player);

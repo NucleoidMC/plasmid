@@ -85,7 +85,7 @@ public final class TeamSelectionLobby {
                 this.teamPreference.put(player.getUuid(), team);
 
                 Text message = new TranslatableText("text.plasmid.team_selection.requested_team",
-                        new TranslatableText("text.plasmid.team_selection.suffixed_team").formatted(team.getFormatting()));
+                        new TranslatableText("text.plasmid.team_selection.suffixed_team", team.getDisplay()).formatted(team.getFormatting()));
 
                 player.sendMessage(message, false);
 

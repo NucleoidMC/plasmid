@@ -25,7 +25,7 @@ public enum RegionTraceMode {
             return player.getBlockPos();
         }
 
-        HitResult traceResult = player.raycast(64.0, 1.0F, true);
+        HitResult traceResult = player.rayTrace(64.0, 1.0F, true);
         if (traceResult.getType() == HitResult.Type.BLOCK) {
             BlockHitResult blockResult = (BlockHitResult) traceResult;
             BlockPos pos = blockResult.getBlockPos();

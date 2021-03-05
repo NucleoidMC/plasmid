@@ -23,11 +23,18 @@ if (build_number) {
 
 minecraft {
   accessWidener = file("src/main/resources/plasmid.accesswidener")
+
+  customManifest = "https://gist.githubusercontent.com/Gegy/a0059444af12f43c25f7bd5b7b3c08b4/raw/14d1c6ea3761686ebdd05d79eca986330637f40f/1.16_combat-8c.json"
+
+  intermediaryUrl = {
+    return "https://maven.gegy.dev/net/fabricmc/intermediary/$it/intermediary-$it-v2.jar"
+  }
 }
 
 repositories {
   maven { url = "https://jitpack.io/" }
   maven { url = "https://maven.nucleoid.xyz/" }
+  maven { url = "https://maven.gegy.dev/" }
 }
 
 dependencies {

@@ -17,8 +17,8 @@ public final class OldCombat {
     private static final EntityAttribute DAMAGE_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_DAMAGE;
     private static final EntityAttribute SPEED_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_SPEED;
 
-    private static final UUID DAMAGE_ID = Item.ATTACK_DAMAGE_MODIFIER_ID;
-    private static final UUID SPEED_ID = Item.ATTACK_SPEED_MODIFIER_ID;
+    private static final UUID DAMAGE_ID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
+    private static final UUID SPEED_ID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
 
     private static final int HOE_BASE_DAMAGE = 0;
     private static final int SHOVEL_BASE_DAMAGE = 0;

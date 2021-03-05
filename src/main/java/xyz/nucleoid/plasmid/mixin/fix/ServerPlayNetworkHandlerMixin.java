@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.mixin.fix;
 
-import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
+import net.minecraft.network.packet.c2s.play.ClickWindowC2SPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,14 +31,14 @@ public class ServerPlayNetworkHandlerMixin {
      * @author Gegy
      */
     @Inject(
-            method = "onClickSlot",
+            method = "onClickWindow",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/screen/ScreenHandler;onSlotClick(IILnet/minecraft/screen/slot/SlotActionType;Lnet/minecraft/entity/player/PlayerEntity;)Lnet/minecraft/item/ItemStack;",
                     shift = At.Shift.BEFORE
             )
     )
-    private void onClickSlot(ClickSlotC2SPacket packet, CallbackInfo ci) {
+    private void onClickSlot(ClickWindowC2SPacket packet, CallbackInfo ci) {
         this.player.currentScreenHandler.sendContentUpdates();
     }
 }

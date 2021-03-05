@@ -37,7 +37,8 @@ public class BowItemMixin {
             boolean bl,
             ItemStack itemStack,
             int i,
-            float f,
+            float f1,
+            float f2,
             boolean bl2,
             ArrowItem arrowItem,
             PersistentProjectileEntity projectile

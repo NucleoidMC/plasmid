@@ -7,9 +7,9 @@ import xyz.nucleoid.plasmid.game.GameSpace;
  * Called after an explosion is triggered in a {@link GameSpace}.
  */
 public interface ExplosionListener {
-    EventType<ExplosionListener> EVENT = EventType.create(ExplosionListener.class, listeners -> explosion -> {
+    EventType<ExplosionListener> EVENT = EventType.create(ExplosionListener.class, listeners -> (explosion, particles) -> {
         for (ExplosionListener listener : listeners) {
-            listener.onExplosion(explosion);
+            listener.onExplosion(explosion, particles);
         }
     });
 

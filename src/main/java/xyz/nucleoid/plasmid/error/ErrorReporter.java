@@ -27,7 +27,7 @@ public interface ErrorReporter extends AutoCloseable {
     }
 
     static ErrorReporter open(ConfiguredGame<?> game) {
-        String name = game.getNameText().getString();
+        String name = game.getName().getString();
         String source = name + " (" + game.getSource() + ")";
         return ErrorReporter.open(source);
     }

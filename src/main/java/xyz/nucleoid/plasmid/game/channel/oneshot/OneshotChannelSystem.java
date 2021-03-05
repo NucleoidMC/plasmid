@@ -27,20 +27,19 @@ public final class OneshotChannelSystem implements GameChannelSystem {
         this.server = server;
     }
 
-    // TODO: 0.5 - remove game config id as parameter and instead use type
-    public CompletableFuture<GameChannel> open(Identifier gameId, ConfiguredGame<?> game) {
-        GameEvents.ONE_SHOT_OPENING.invoker().onOneShotGameOpening(gameId, game);
+    public CompletableFuture<GameChannel> open(ConfiguredGame<?> game) {
+        GameEvents.ONE_SHOT_OPENING.invoker().onOneShotGameOpening(game);
 
         return game.open(this.server).thenApplyAsync(gameSpace -> {
-            GameChannel channel = this.createChannel(gameId, gameSpace);
+            GameChannel channel = this.createChannel(gameSpace);
             this.channels.put(channel.getId(), channel);
 
             return channel;
         }, this.server);
     }
 
-    private GameChannel createChannel(Identifier gameId, ManagedGameSpace gameSpace) {
-        Identifier channelId = this.createChannelIdFor(gameId);
+    private GameChannel createChannel(ManagedGameSpace gameSpace) {
+        Identifier channelId = this.createChannelIdFor(gameSpace.getGameConfig().getType().getIdentifier());
 
         gameSpace.getLifecycle().addListeners(new GameLifecycle.Listeners() {
             @Override

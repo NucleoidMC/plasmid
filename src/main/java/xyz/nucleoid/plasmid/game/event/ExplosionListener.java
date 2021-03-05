@@ -13,5 +13,5 @@ public interface ExplosionListener {
         }
     });
 
-    void onExplosion(Explosion explosion);
+    void onExplosion(Explosion explosion, boolean particles);
 }

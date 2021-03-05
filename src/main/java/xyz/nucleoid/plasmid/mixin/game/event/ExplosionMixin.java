@@ -30,7 +30,7 @@ public class ExplosionMixin {
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(this.world);
         if (gameSpace != null) {
             try {
-                gameSpace.invoker(ExplosionListener.EVENT).onExplosion(this, particles);
+                gameSpace.invoker(ExplosionListener.EVENT).onExplosion((Explosion) (Object) this, particles);
             } catch (Throwable t) {
                 Plasmid.LOGGER.error("An unexpected exception occurred while dispatching explosion event", t);
                 gameSpace.reportError(t, "Explosion");

@@ -174,7 +174,7 @@ public final class ManagedGameSpace implements GameSpace {
             closedGameLogic.getResources().close();
 
             try {
-                closedGameLogic.getListeners().invoker(GameCloseListener.EVENT).onClose(null);
+                closedGameLogic.getListeners().invoker(GameCloseListener.EVENT).onClose(GameCloseReason.REPLACED);
             } catch (Exception e) {
                 LOGGER.error("An unexpected exception occurred while closing the game", e);
             }

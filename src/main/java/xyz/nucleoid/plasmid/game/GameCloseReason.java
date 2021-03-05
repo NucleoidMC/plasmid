@@ -16,6 +16,10 @@ public enum GameCloseReason {
      */
     CANCELED,
     /**
+     * Used when a game is directly replaced by a new game.
+     */
+    REPLACED,
+    /**
      * Used when the game space is unloaded or the game's last player leaves, making the game no longer useful.
      */
     GARBAGE_COLLECTED,

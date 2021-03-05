@@ -2,7 +2,6 @@ package xyz.nucleoid.plasmid.event;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.*;
 
@@ -15,9 +14,9 @@ public final class GameEvents {
     private GameEvents() { }
 
     public static final Event<OneShotGameOpening> ONE_SHOT_OPENING = EventFactory.createArrayBacked(OneShotGameOpening.class,
-            listeners -> (gameId, game) -> {
+            listeners -> (game) -> {
         for (OneShotGameOpening listener : listeners) {
-            listener.onOneShotGameOpening(gameId, game);
+            listener.onOneShotGameOpening(game);
         }
     });
 
@@ -53,10 +52,9 @@ public final class GameEvents {
 
     public interface OneShotGameOpening {
         /**
-         * @param gameId The game ID of the game being opened
          * @param game The game and its configuration
          */
-        void onOneShotGameOpening(Identifier gameId, ConfiguredGame<?> game);
+        void onOneShotGameOpening(ConfiguredGame<?> game);
     }
 
     public interface GameSpaceOpened {

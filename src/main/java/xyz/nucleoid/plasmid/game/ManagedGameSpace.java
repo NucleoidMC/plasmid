@@ -174,7 +174,7 @@ public final class ManagedGameSpace implements GameSpace {
             closedGameLogic.getResources().close();
 
             try {
-                closedGameLogic.getListeners().invoker(GameCloseListener.EVENT).onClose();
+                closedGameLogic.getListeners().invoker(GameCloseListener.EVENT).onClose(GameCloseReason.REPLACED);
             } catch (Exception e) {
                 LOGGER.error("An unexpected exception occurred while closing the game", e);
             }
@@ -266,7 +266,7 @@ public final class ManagedGameSpace implements GameSpace {
         this.lifecycle.removePlayer(this, player);
 
         if (this.getPlayerCount() <= 0) {
-            this.close(GameCloseReason.CANCELED);
+            this.close(GameCloseReason.GARBAGE_COLLECTED);
         }
     }
 
@@ -351,7 +351,7 @@ public final class ManagedGameSpace implements GameSpace {
                 }
 
                 try {
-                    this.invoker(GameCloseListener.EVENT).onClose();
+                    this.invoker(GameCloseListener.EVENT).onClose(reason);
                 } catch (Throwable t) {
                     LOGGER.error("An unexpected exception occurred while closing the game", t);
                     this.reportError(t, "Closing game");
@@ -381,7 +381,7 @@ public final class ManagedGameSpace implements GameSpace {
 
     public void closeWithError(String message) {
         this.getPlayers().sendMessage(new LiteralText(message).formatted(Formatting.RED));
-        this.close(GameCloseReason.CANCELED);
+        this.close(GameCloseReason.ERRORED);
     }
 
     @Override

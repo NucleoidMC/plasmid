@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.game.event;
 
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 
 /**
@@ -28,5 +28,5 @@ public interface DropItemListener {
         return ActionResult.PASS;
     });
 
-    ActionResult onDrop(PlayerEntity player, int slot, ItemStack stack);
+    ActionResult onDrop(ServerPlayerEntity player, int slot, ItemStack stack);
 }

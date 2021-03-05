@@ -81,8 +81,8 @@ public final class MutablePlayerSet implements PlayerSet {
     }
 
     @Override
-    public MutablePlayerSet copy() {
-        MutablePlayerSet copy = new MutablePlayerSet(this.server);
+    public MutablePlayerSet copy(MinecraftServer server) {
+        MutablePlayerSet copy = new MutablePlayerSet(server);
         copy.players.addAll(this.players);
         return copy;
     }

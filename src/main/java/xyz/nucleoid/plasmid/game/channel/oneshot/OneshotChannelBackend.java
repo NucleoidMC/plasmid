@@ -25,7 +25,7 @@ public final class OneshotChannelBackend implements GameChannelBackend {
 
     @Override
     public Text getName() {
-        return this.gameSpace.getGameConfig().getNameText().shallowCopy().formatted(Formatting.AQUA);
+        return this.gameSpace.getGameConfig().getName().shallowCopy().formatted(Formatting.AQUA);
     }
 
     @Override

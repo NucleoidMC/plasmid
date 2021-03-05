@@ -266,7 +266,7 @@ public final class ManagedGameSpace implements GameSpace {
         this.lifecycle.removePlayer(this, player);
 
         if (this.getPlayerCount() <= 0) {
-            this.close(GameCloseReason.CANCELED);
+            this.close(GameCloseReason.GARBAGE_COLLECTED);
         }
     }
 
@@ -381,7 +381,7 @@ public final class ManagedGameSpace implements GameSpace {
 
     public void closeWithError(String message) {
         this.getPlayers().sendMessage(new LiteralText(message).formatted(Formatting.RED));
-        this.close(GameCloseReason.CANCELED);
+        this.close(GameCloseReason.ERRORED);
     }
 
     @Override

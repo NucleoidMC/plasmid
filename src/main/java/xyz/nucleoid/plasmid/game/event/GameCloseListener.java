@@ -1,13 +1,15 @@
 package xyz.nucleoid.plasmid.game.event;
 
+import xyz.nucleoid.plasmid.game.GameCloseReason;
+
 public interface GameCloseListener {
     EventType<GameCloseListener> EVENT = EventType.create(GameCloseListener.class, listeners -> {
-        return () -> {
+        return reason -> {
             for (GameCloseListener listener : listeners) {
-                listener.onClose();
+                listener.onClose(reason);
             }
         };
     });
 
-    void onClose();
+    void onClose(GameCloseReason reason);
 }

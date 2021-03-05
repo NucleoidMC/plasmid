@@ -35,8 +35,8 @@ public final class GameChannelManager extends PersistentState {
         return overworld.getPersistentStateManager().getOrCreate(() -> new GameChannelManager(server), KEY);
     }
 
-    public CompletableFuture<GameChannel> openOneshot(Identifier gameId, ConfiguredGame<?> game) {
-        return this.oneshotChannels.open(gameId, game);
+    public CompletableFuture<GameChannel> openOneshot(ConfiguredGame<?> game) {
+        return this.oneshotChannels.open(game);
     }
 
     // TODO: In the future, we need to associate each player with a channel to force exclusivity

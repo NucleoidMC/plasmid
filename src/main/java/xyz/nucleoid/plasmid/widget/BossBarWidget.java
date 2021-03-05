@@ -2,10 +2,8 @@ package xyz.nucleoid.plasmid.widget;
 
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.entity.boss.ServerBossBar;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import xyz.nucleoid.plasmid.game.GameSpace;
 
 public final class BossBarWidget implements GameWidget {
     private final ServerBossBar bar;
@@ -19,26 +17,6 @@ public final class BossBarWidget implements GameWidget {
 
     public BossBarWidget(Text title) {
         this(title, BossBar.Color.PURPLE, BossBar.Style.PROGRESS);
-    }
-
-    @Deprecated
-    public BossBarWidget(GameSpace gameSpace, Text title, BossBar.Color color, BossBar.Style style) {
-        this(gameSpace.getServer(), title, color, style);
-    }
-
-    @Deprecated
-    public BossBarWidget(GameSpace gameSpace, Text title) {
-        this(gameSpace.getServer(), title);
-    }
-
-    @Deprecated
-    public BossBarWidget(MinecraftServer server, Text title, BossBar.Color color, BossBar.Style style) {
-        this(title, color, style);
-    }
-
-    @Deprecated
-    public BossBarWidget(MinecraftServer server, Text title) {
-        this(title);
     }
 
     public void setTitle(Text title) {

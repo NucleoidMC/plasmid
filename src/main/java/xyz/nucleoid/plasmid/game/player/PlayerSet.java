@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.player;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -36,8 +37,8 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
         }
 
         @Override
-        public PlayerSet copy() {
-            return EMPTY;
+        public MutablePlayerSet copy(MinecraftServer server) {
+            return new MutablePlayerSet(server);
         }
 
         @NotNull
@@ -66,8 +67,7 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
         return this.size() <= 0;
     }
 
-    // TODO: 0.5- return mutable
-    PlayerSet copy();
+    MutablePlayerSet copy(MinecraftServer server);
 
     default Stream<ServerPlayerEntity> stream() {
         return StreamSupport.stream(this.spliterator(), false);

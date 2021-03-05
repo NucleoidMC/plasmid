@@ -23,21 +23,16 @@ public final class MapTickets implements AutoCloseable {
         ChunkPos maxChunk = new ChunkPos(bounds.getMax());
 
         MapTickets tickets = new MapTickets(world, minChunk, maxChunk);
-        tickets.acquire(world);
+        tickets.acquire();
 
         return tickets;
     }
 
-    private void acquire(ServerWorld world) {
-        ServerChunkManager chunkManager = world.getChunkManager();
+    private void acquire() {
+        ServerChunkManager chunkManager = this.world.getChunkManager();
         this.stream().forEach(ticketPos -> {
             chunkManager.setChunkForced(ticketPos, true);
         });
-    }
-
-    @Deprecated
-    public void release(ServerWorld world) {
-       this.close();
     }
 
     @Override

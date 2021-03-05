@@ -39,15 +39,6 @@ public interface GameSpace extends AutoCloseable {
     void close(GameCloseReason reason);
 
     /**
-     * @deprecated use {@link GameSpace#close(GameCloseReason)} with reason
-     */
-    @Override
-    @Deprecated
-    default void close() {
-        this.close(GameCloseReason.FINISHED);
-    }
-
-    /**
      * Adds a resource to this {@link GameSpace} object that will be automatically closed when this {@link GameSpace}
      * is closed.
      *

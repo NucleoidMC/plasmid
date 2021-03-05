@@ -114,7 +114,7 @@ public final class GameCommand {
 
     private static int openGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Pair<Identifier, ConfiguredGame<?>> game = GameConfigArgument.get(context, "game_config");
-        return openGame(context, game.getFirst(), game.getSecond());
+        return openGame(context, game.getSecond());
     }
 
     private static int openAnonymousGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -125,10 +125,10 @@ public final class GameCommand {
         }
 
         ConfiguredGame<?> game = result.result().get();
-        return openGame(context, game.getType().getIdentifier(), game);
+        return openGame(context, game);
     }
 
-    private static int openGame(CommandContext<ServerCommandSource> context, Identifier gameId, ConfiguredGame<?> game) {
+    private static int openGame(CommandContext<ServerCommandSource> context, ConfiguredGame<?> game) {
         ServerCommandSource source = context.getSource();
         MinecraftServer server = source.getMinecraftServer();
         PlayerManager playerManager = server.getPlayerManager();
@@ -147,7 +147,7 @@ public final class GameCommand {
             GameChannelManager channelManager = GameChannelManager.get(server);
 
             try {
-                channelManager.openOneshot(gameId, game).handleAsync((channel, throwable) -> {
+                channelManager.openOneshot(game).handleAsync((channel, throwable) -> {
                     if (throwable == null) {
                         if (player != null && ManagedGameSpace.forWorld(player.world) == null) {
                             channel.requestJoin(player);
@@ -167,7 +167,7 @@ public final class GameCommand {
     }
 
     private static void onOpenSuccess(ServerCommandSource source, GameChannel channel, ConfiguredGame<?> game, PlayerManager playerManager) {
-        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), game.getNameText().shallowCopy().formatted(Formatting.GRAY))
+        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), game.getName().shallowCopy().formatted(Formatting.GRAY))
                 .append(channel.createJoinLink());
 
         playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
@@ -360,7 +360,7 @@ public final class GameCommand {
             throw NO_GAME_IN_WORLD.create();
         }
 
-        PlayerSet playerSet = gameSpace.getPlayers().copy();
+        PlayerSet playerSet = gameSpace.getPlayers().copy(source.getMinecraftServer());
 
         try {
             gameSpace.close(GameCloseReason.CANCELED);
@@ -392,7 +392,7 @@ public final class GameCommand {
                     .withClickEvent(linkClick)
                     .withHoverEvent(linkHover);
 
-            MutableText link = GameConfigs.get(id).getNameText().shallowCopy().setStyle(linkStyle);
+            MutableText link = GameConfigs.get(id).getName().shallowCopy().setStyle(linkStyle);
             source.sendFeedback(new TranslatableText("text.plasmid.entry", link), false);
         }
 

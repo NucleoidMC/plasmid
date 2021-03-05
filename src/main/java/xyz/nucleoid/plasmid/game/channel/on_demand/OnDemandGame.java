@@ -24,7 +24,7 @@ public final class OnDemandGame {
     public Text getName() {
         ConfiguredGame<?> configuredGame = GameConfigs.get(this.gameId);
         if (configuredGame != null) {
-            return configuredGame.getNameText().shallowCopy().formatted(Formatting.AQUA);
+            return configuredGame.getName().shallowCopy().formatted(Formatting.AQUA);
         } else {
             return new LiteralText(this.gameId.toString()).formatted(Formatting.RED);
         }

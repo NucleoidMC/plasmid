@@ -36,7 +36,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             ItemStack stack = player.inventory.getStack(slot);
 
             try {
-                ActionResult dropResult = gameSpace.invoker(DropItemListener.EVENT).onDrop((PlayerEntity) (Object) this, slot, stack);
+                ActionResult dropResult = gameSpace.invoker(DropItemListener.EVENT).onDrop(player, slot, stack);
                 if (dropResult == ActionResult.FAIL) {
                     player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, slot, stack));
 

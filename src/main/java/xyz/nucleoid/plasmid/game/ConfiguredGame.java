@@ -88,35 +88,10 @@ public final class ConfiguredGame<C> {
         return this.type;
     }
 
-    // TODO: Remove in 0.5 - replaced with Text variants
-    @Deprecated
-    public String getName() {
-        return this.name != null ? this.name : this.type.getIdentifier().toString();
-    }
-
-    /**
-     * @return An {@link Optional} containing the name of the game config, if specified.
-     * @deprecated use {@link Text}-returning version
-     */
-    @Deprecated
-    public Optional<String> getOptionalName() {
-        return Optional.ofNullable(this.name);
-    }
-
-    /**
-     * @param id The game ID of the current {@link ConfiguredGame}
-     * @return The name of the game as specified in the config, or the provided {@link Identifier} if it was not.
-     * @deprecated use {@link Text}-returning version
-     */
-    @Deprecated
-    public String getDisplayName(Identifier id) {
-        return this.getOptionalName().orElseGet(id::toString);
-    }
-
     /**
      * @return the name for this game config, defaulted to the game type name if none is specified
      */
-    public Text getNameText() {
+    public Text getName() {
         if (this.name != null) {
             return new LiteralText(this.name);
         } else if (this.translation != null) {

@@ -52,7 +52,7 @@ public final class PlayerConfig {
     }
 
     public static class Countdown {
-        public static final Countdown DEFAULT = new Countdown(20 * 60, 20 * 5);
+        public static final Countdown DEFAULT = new Countdown(20 * 30, 20 * 5);
 
         public static final Codec<Countdown> CODEC = RecordCodecBuilder.create(instance -> {
             return instance.group(

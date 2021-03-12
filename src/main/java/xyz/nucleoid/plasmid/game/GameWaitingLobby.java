@@ -1,6 +1,8 @@
 package xyz.nucleoid.plasmid.game;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
@@ -201,7 +203,24 @@ public final class GameWaitingLobby {
     }
 
     private boolean isFull() {
-        return this.gameSpace.getPlayerCount() >= this.playerConfig.getMaxPlayers()
-                || this.gameSpace.getPlayerCount() >= this.gameSpace.getServer().getCurrentPlayerCount();
+        int playerCount = this.gameSpace.getPlayerCount();
+        if (playerCount >= this.playerConfig.getMaxPlayers()) {
+            return true;
+        }
+
+        // if all players on the server are in this lobby
+        MinecraftServer server = this.gameSpace.getServer();
+        if (playerCount >= server.getCurrentPlayerCount()) {
+            return true;
+        }
+
+        // if there are no players outside of a game on the server
+        for (ServerWorld world : server.getWorlds()) {
+            if (!world.getPlayers().isEmpty() && ManagedGameSpace.forWorld(world) == null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

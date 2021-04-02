@@ -13,21 +13,18 @@ import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.command.argument.NbtCompoundTagArgumentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.text.Texts;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.util.dynamic.RegistryOps;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
@@ -44,6 +41,7 @@ import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 import xyz.nucleoid.plasmid.map.workspace.ReturnPosition;
 import xyz.nucleoid.plasmid.map.workspace.WorkspaceTraveler;
+import xyz.nucleoid.plasmid.mixin.MinecraftServerAccessor;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.io.IOException;
@@ -188,7 +186,14 @@ public final class MapManageCommand {
         Codec<? extends ChunkGenerator> generatorCodec = ChunkGeneratorArgument.get(context, "generator");
         CompoundTag config = NbtCompoundTagArgumentType.getCompoundTag(context, "config");
 
-        DataResult<? extends ChunkGenerator> result = generatorCodec.parse(NbtOps.INSTANCE, config);
+        MinecraftServer server = context.getSource().getMinecraftServer();
+        RegistryOps<Tag> ops = RegistryOps.of(
+                NbtOps.INSTANCE,
+                ((MinecraftServerAccessor) server).getServerResourceManager().getResourceManager(),
+                (DynamicRegistryManager.Impl) server.getRegistryManager()
+        );
+
+        DataResult<? extends ChunkGenerator> result = generatorCodec.parse(ops, config);
 
         Optional<?> error = result.error();
         if (error.isPresent()) {
@@ -197,7 +202,6 @@ public final class MapManageCommand {
 
         ChunkGenerator chunkGenerator = result.result().get();
         return MapManageCommand.openWorkspace(context, () -> {
-            MinecraftServer server = context.getSource().getMinecraftServer();
             DimensionType dimension = server.getOverworld().getDimension();
             return new DimensionOptions(() -> dimension, chunkGenerator);
         });

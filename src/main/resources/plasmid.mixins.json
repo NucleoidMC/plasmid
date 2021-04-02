@@ -4,6 +4,7 @@
   "package": "xyz.nucleoid.plasmid.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "MinecraftServerAccessor",
     "chat.PlayerManagerMixin",
     "chat.ServerPlayerEntityMixin",
     "custom.EntityMixin",

@@ -20,6 +20,7 @@ public final class GameRule {
     public static final GameRule DISMOUNT_VEHICLE = new GameRule();
     public static final GameRule PLAYER_PROJECTILE_KNOCKBACK = new GameRule();
     public static final GameRule TRIDENTS_LOYAL_IN_VOID = new GameRule();
+    public static final GameRule MODIFY_INVENTORIES = new GameRule();
 
     private final ProtectionRule rule;
 

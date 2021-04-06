@@ -1,11 +1,18 @@
 package xyz.nucleoid.plasmid.mixin.game.rule;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
+import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.network.packet.s2c.play.ConfirmScreenActionS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -45,6 +52,36 @@ public abstract class ServerPlayNetworkHandlerMixin {
             // the player is probably desynchronized: update them with the vehicle passengers
             Entity vehicle = this.player.getVehicle();
             this.sendPacket(new EntityPassengersSetS2CPacket(vehicle));
+        }
+    }
+
+    @Inject(
+            method = "onClickSlot",
+            cancellable = true,
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/server/world/ServerWorld;)V",
+                    shift = At.Shift.AFTER
+            )
+    )
+    private void onClickSlot(ClickSlotC2SPacket packet, CallbackInfo ci) {
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(this.player.world);
+
+        if (gameSpace != null) {
+            if (gameSpace.testRule(GameRule.MODIFY_INVENTORIES) == RuleResult.DENY) {
+                ci.cancel();
+                // this.player.playSound didn't appear to work, but a packet did.
+                this.sendPacket(new PlaySoundS2CPacket(
+                        SoundEvents.ENTITY_VILLAGER_NO, SoundCategory.MASTER,
+                        this.player.getX(), this.player.getY(), this.player.getZ(),
+                        1.0f, 1.0f
+                ));
+                ItemStack stack = this.player.inventory.getStack(packet.getSlot());
+                this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(packet.getSyncId(), packet.getSlot(), stack));
+                this.player.refreshScreenHandler(this.player.currentScreenHandler);
+                this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-1, -1, this.player.inventory.getCursorStack()));
+                this.sendPacket(new ConfirmScreenActionS2CPacket(packet.getSyncId(), packet.getActionId(), false));
+            }
         }
     }
 }

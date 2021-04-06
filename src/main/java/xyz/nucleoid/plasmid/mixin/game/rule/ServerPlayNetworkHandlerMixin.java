@@ -32,8 +32,6 @@ public abstract class ServerPlayNetworkHandlerMixin {
     @Shadow
     public abstract void sendPacket(Packet<?> packet);
 
-    @Shadow @Final private static Logger LOGGER;
-
     @Inject(
             method = "onPlayerMove",
             at = @At(

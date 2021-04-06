@@ -13,6 +13,8 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import org.apache.logging.log4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,6 +31,8 @@ public abstract class ServerPlayNetworkHandlerMixin {
 
     @Shadow
     public abstract void sendPacket(Packet<?> packet);
+
+    @Shadow @Final private static Logger LOGGER;
 
     @Inject(
             method = "onPlayerMove",
@@ -69,14 +73,20 @@ public abstract class ServerPlayNetworkHandlerMixin {
 
         if (gameSpace != null) {
             if (gameSpace.testRule(GameRule.MODIFY_INVENTORIES) == RuleResult.DENY) {
-                ci.cancel();
-                // this.player.playSound didn't appear to work, but a packet did.
-                this.sendPacket(new PlaySoundS2CPacket(
-                        SoundEvents.ENTITY_VILLAGER_NO, SoundCategory.MASTER,
-                        this.player.getX(), this.player.getY(), this.player.getZ(),
-                        1.0f, 1.0f
-                ));
+                if (packet.getSlot() < 0 || packet.getSlot() >= this.player.inventory.size()) return;
+
                 ItemStack stack = this.player.inventory.getStack(packet.getSlot());
+
+                ci.cancel();
+                if (!packet.getStack().isEmpty()) {
+                    // this.player.playSound didn't appear to work, but a packet did.
+                    this.sendPacket(new PlaySoundS2CPacket(
+                            SoundEvents.ENTITY_VILLAGER_NO, SoundCategory.MASTER,
+                            this.player.getX(), this.player.getY(), this.player.getZ(),
+                            1.0f, 1.0f
+                    ));
+                }
+
                 this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(packet.getSyncId(), packet.getSlot(), stack));
                 this.player.refreshScreenHandler(this.player.currentScreenHandler);
                 this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-1, -1, this.player.inventory.getCursorStack()));

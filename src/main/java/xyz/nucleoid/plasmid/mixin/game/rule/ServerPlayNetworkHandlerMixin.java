@@ -13,8 +13,6 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import org.apache.logging.log4j.Logger;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -70,8 +68,10 @@ public abstract class ServerPlayNetworkHandlerMixin {
         ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(this.player.world);
 
         if (gameSpace != null) {
-            if (gameSpace.testRule(GameRule.MODIFY_INVENTORIES) == RuleResult.DENY) {
-                if (packet.getSlot() < 0 || packet.getSlot() >= this.player.inventory.size()) return;
+            if (packet.getSlot() < 0 || packet.getSlot() >= this.player.inventory.size()) return;
+            // See https://wiki.vg/File:Inventory-slots.png for the slot numbering
+            GameRule rule = (packet.getSlot() >= 5 && packet.getSlot() <= 8) ? GameRule.MODIFY_ARMOUR : GameRule.MODIFY_INVENTORY;
+            if (gameSpace.testRule(rule) == RuleResult.DENY) {
 
                 ItemStack stack = this.player.inventory.getStack(packet.getSlot());
 

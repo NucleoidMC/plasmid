@@ -21,7 +21,7 @@ public final class GameRule {
     public static final GameRule PLAYER_PROJECTILE_KNOCKBACK = new GameRule();
     public static final GameRule TRIDENTS_LOYAL_IN_VOID = new GameRule();
     public static final GameRule MODIFY_INVENTORY = new GameRule();
-    public static final GameRule MODIFY_ARMOUR = new GameRule();
+    public static final GameRule MODIFY_ARMOR = new GameRule();
 
     private final ProtectionRule rule;
 

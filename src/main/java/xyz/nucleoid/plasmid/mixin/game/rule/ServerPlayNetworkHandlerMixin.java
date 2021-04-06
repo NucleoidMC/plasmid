@@ -70,7 +70,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
         if (gameSpace != null) {
             if (packet.getSlot() < 0 || packet.getSlot() >= this.player.inventory.size()) return;
             // See https://wiki.vg/File:Inventory-slots.png for the slot numbering
-            GameRule rule = (packet.getSlot() >= 5 && packet.getSlot() <= 8) ? GameRule.MODIFY_ARMOUR : GameRule.MODIFY_INVENTORY;
+            GameRule rule = (packet.getSlot() >= 5 && packet.getSlot() <= 8) ? GameRule.MODIFY_ARMOR : GameRule.MODIFY_INVENTORY;
             if (gameSpace.testRule(rule) == RuleResult.DENY) {
 
                 ItemStack stack = this.player.inventory.getStack(packet.getSlot());

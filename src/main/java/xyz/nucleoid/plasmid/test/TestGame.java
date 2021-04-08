@@ -41,6 +41,8 @@ public final class TestGame {
             game.setRule(GameRule.HUNGER, RuleResult.DENY);
             game.setRule(GameRule.PVP, RuleResult.ALLOW);
             game.setRule(GameRule.THROW_ITEMS, RuleResult.DENY);
+            game.setRule(GameRule.MODIFY_INVENTORY, RuleResult.DENY);
+            game.setRule(GameRule.MODIFY_ARMOR, RuleResult.ALLOW);
 
             game.on(PlayerDeathListener.EVENT, (player, source) -> {
                 player.teleport(0.0, 65.0, 0.0);

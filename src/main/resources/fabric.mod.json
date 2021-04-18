@@ -12,6 +12,13 @@
   },
   "mixins": ["plasmid.mixins.json"],
   "accessWidener": "plasmid.accesswidener",
+  "custom": {
+    "modmenu": {
+      "badges": [
+        "library"
+      ]
+    }
+  },
   "depends": {
     "fabricloader": ">=0.9.1",
     "fabric": "*",

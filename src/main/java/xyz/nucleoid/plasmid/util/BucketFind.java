@@ -1,43 +1,44 @@
 package xyz.nucleoid.plasmid.util;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.tag.Tag;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
-public class BucketFind {
+public final class BucketFind {
     /**
-     * Finds any near blocks and puts them in a set.
+     * Finds any directly connected blocks and puts them in a set.
      *
-     * @param pos      The position of the first block
-     * @param blockTag The tag of the blocks that can be accepted in the set
+     * @param origin The position of the first block
+     * @param predicate The predicate for the blocks that can be accepted in the set
+     * @param limit The amount of maximum blocks to find
      */
-    public static Set<BlockPos> find(ServerWorld world, BlockPos pos, Tag<Block> blockTag) {
-        Set<BlockPos> positions = new HashSet<>();
-        positions.add(pos);
-        searchAround(world, pos, positions, blockTag);
-        return positions;
-    }
-
-    private static void searchAround(ServerWorld world, BlockPos pos, Set<BlockPos> positions, Tag<Block> blockTag) {
-        for(int x = -1; x <= 1; x++) {
-            for(int z = -1; z <= 1; z++) {
-                for(int y = -1; y <= 1; y++) {
-                    BlockPos local = pos.add(x, y, z);
-                    BlockState state = world.getBlockState(local);
-
-                    if(!positions.contains(local)) {
-                        if(state.isIn(blockTag)) {
-                            positions.add(local);
-                            searchAround(world, local, positions, blockTag);
-                        }
+    public static Set<BlockPos> find(ServerWorld world, BlockPos origin, Predicate<BlockState> predicate, int limit) {
+        Set<BlockPos> set = new HashSet<>();
+        Set<BlockPos> ends = new HashSet<>();
+        ends.add(origin);
+        while(limit > 0) {
+            if(ends.isEmpty()) {
+                return set;
+            }
+            BlockPos pos = ends.stream().findAny().get();
+            for(Direction direction : Direction.values()) {
+                BlockPos.Mutable local = pos.offset(direction).mutableCopy();
+                BlockState state = world.getBlockState(local);
+                if(predicate.test(state)) {
+                    if(!set.contains(local)) {
+                        ends.add(local);
                     }
                 }
             }
+            set.add(pos);
+            ends.remove(pos);
+            limit--;
         }
+        return set;
     }
 }

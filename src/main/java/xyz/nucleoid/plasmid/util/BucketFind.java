@@ -41,10 +41,8 @@ public final class BucketFind {
             BlockPos pos = ends.pollLast();
             for(Direction direction : Direction.values()) {
                 local = pos.offset(direction).mutableCopy();
-                if(predicate.test(world.getBlockState(local))) {
-                    if(!set.contains(local)) {
-                        ends.push(local);
-                    }
+                if(predicate.test(world.getBlockState(local)) && !set.contains(local)) {
+                    ends.push(local);
                 }
             }
             set.add(pos);
@@ -94,10 +92,8 @@ public final class BucketFind {
             BlockPos pos = ends.pollLast();
             for(Direction direction : Direction.values()) {
                 local = pos.offset(direction).mutableCopy();
-                if(predicate.test(world.getBlockState(local))) {
-                    if(!set.contains(local)) {
-                        ends.push(local);
-                    }
+                if(predicate.test(world.getBlockState(local)) && !set.contains(local) && !ends.contains(local)) {
+                    ends.push(local);
                 }
             }
             for(int x = -1; x <= 1; x += 2) {
@@ -105,10 +101,8 @@ public final class BucketFind {
                     for(int z = -1; z <= 1; z += 2) {
                         local = pos.add(x, y, z).mutableCopy();
                         BlockState state = world.getBlockState(local);
-                        if(predicate.test(state)) {
-                            if(!set.contains(local)) {
-                                ends.push(local);
-                            }
+                        if(predicate.test(state) && !set.contains(local) && !ends.contains(local)) {
+                            ends.push(local);
                         }
                     }
                 }
@@ -163,10 +157,8 @@ public final class BucketFind {
                     for(int z = -1; z <= 1; z++) {
                         if(x == 0 && y == 0 && z == 0) continue;
                         local = pos.add(x, y, z).mutableCopy();
-                        if(predicate.test(world.getBlockState(local))) {
-                            if(!set.contains(local)) {
-                                ends.push(local);
-                            }
+                        if(predicate.test(world.getBlockState(local)) && !set.contains(local) && !ends.contains(local)) {
+                            ends.push(local);
                         }
                     }
                 }

@@ -7,6 +7,8 @@ import net.minecraft.tag.Tag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -46,25 +48,24 @@ public final class BucketFind {
      */
     public static Set<BlockPos> find(ServerWorld world, BlockPos origin, int depth, Predicate<BlockState> predicate) {
         Set<BlockPos> set = new HashSet<>();
-        Set<BlockPos> ends = new HashSet<>();
-        ends.add(origin);
+        Deque<BlockPos> ends = new ArrayDeque<>();
+        ends.push(origin);
         BlockPos.Mutable local;
         while (depth > 0) {
             if (ends.isEmpty()) {
                 return set;
             }
-            BlockPos pos = ends.stream().findAny().get();
+            BlockPos pos = ends.pollLast();
             for (Direction direction : Direction.values()) {
                 local = pos.offset(direction).mutableCopy();
                 BlockState state = world.getBlockState(local);
                 if (predicate.test(state)) {
                     if (!set.contains(local)) {
-                        ends.add(local);
+                        ends.push(local);
                     }
                 }
             }
             set.add(pos);
-            ends.remove(pos);
             depth--;
         }
         return set;

@@ -48,13 +48,14 @@ public final class BucketFind {
         Set<BlockPos> set = new HashSet<>();
         Set<BlockPos> ends = new HashSet<>();
         ends.add(origin);
+        BlockPos.Mutable local;
         while (depth > 0) {
             if (ends.isEmpty()) {
                 return set;
             }
             BlockPos pos = ends.stream().findAny().get();
             for (Direction direction : Direction.values()) {
-                BlockPos.Mutable local = pos.offset(direction).mutableCopy();
+                local = pos.offset(direction).mutableCopy();
                 BlockState state = world.getBlockState(local);
                 if (predicate.test(state)) {
                     if (!set.contains(local)) {

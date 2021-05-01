@@ -40,7 +40,7 @@ public final class BucketFind {
             }
             BlockPos pos = ends.pollLast();
             for(Direction direction : Direction.values()) {
-                local.set(pos).offset(direction);
+                local.set(pos.offset(direction));
                 if(predicate.test(world.getBlockState(local)) && !set.contains(local.asLong()) && !ends.contains(local)) {
                     ends.push(local.toImmutable());
                 }
@@ -102,7 +102,7 @@ public final class BucketFind {
             }
             BlockPos pos = ends.pollLast();
             for(Direction direction : Direction.values()) {
-                local.set(pos).offset(direction);
+                local.set(pos.offset(direction));
                 if(predicate.test(world.getBlockState(local)) && !set.contains(local.asLong()) && !ends.contains(local)) {
                     ends.push(local.toImmutable());
                 }
@@ -110,7 +110,7 @@ public final class BucketFind {
             for(int x = -1; x <= 1; x += 2) {
                 for(int y = -1; y <= 1; y += 2) {
                     for(int z = -1; z <= 1; z += 2) {
-                        local.set(pos).add(x, y, z);
+                        local.set(pos.add(x, y, z));
                         BlockState state = world.getBlockState(local);
                         if(predicate.test(state) && !set.contains(local.asLong()) && !ends.contains(local)) {
                             ends.push(local.toImmutable());
@@ -178,7 +178,7 @@ public final class BucketFind {
                 for(int y = -1; y <= 1; y++) {
                     for(int z = -1; z <= 1; z++) {
                         if(x == 0 && y == 0 && z == 0) continue;
-                        local.set(pos).add(x, y, z);
+                        local.set(pos.add(x, y, z));
                         if(predicate.test(world.getBlockState(local)) && !set.contains(local.asLong()) && !ends.contains(local)) {
                             ends.push(local.toImmutable());
                         }

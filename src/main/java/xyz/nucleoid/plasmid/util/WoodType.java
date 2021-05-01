@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.util;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
@@ -32,22 +33,35 @@ public enum WoodType {
         this.boat = boat;
     }
 
-    public WoodType getType(Block block) {
+    public static WoodType getType(Block block) {
         for (WoodType type : WoodType.values()) {
-            if (block == type.sapling || block == type.leaves || block == type.log || block == type.planks || block == type.slab || block == type.stairs || block == type.fence || block == type.fenceGate || block == type.door || block == type.sign || block == type.button || block == type.pressurePlate) {
+            if(type.contains(block)) {
                 return type;
             }
         }
         return null;
     }
 
-    public WoodType getType(Item item) {
+    public static WoodType getType(Item item) {
         for (WoodType type : WoodType.values()) {
-            if (item == type.boat) {
+            if(type.contains(item)) {
                 return type;
             }
         }
         return null;
+    }
+
+    public boolean contains(Block block) {
+        return block == this.sapling || block == this.leaves || block == this.log || block == this.planks || block == this.slab || block == this.stairs || block == this.fence || block == this.fenceGate || block == this.door || block == this.sign || block == this.button || block == this.pressurePlate;
+    }
+
+    public boolean contains(Item item) {
+        if(item instanceof BlockItem) {
+            return this.contains(((BlockItem) item).getBlock());
+        }
+        else {
+            return item == this.boat;
+        }
     }
 
     public Block getSapling() {

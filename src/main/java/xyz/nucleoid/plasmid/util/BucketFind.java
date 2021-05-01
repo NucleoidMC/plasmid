@@ -5,14 +5,12 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.structure.rule.RuleTest;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -51,6 +49,17 @@ public final class BucketFind {
             depth--;
         }
         return set;
+    }
+
+    /**
+     * Finds any 6-connected blocks and puts them in a {@link LongSet}.
+     *
+     * @param origin   the position of the first block
+     * @param depth    the amount of maximum blocks to find
+     * @param ruleTest the rule test for the blocks that can be accepted in the set
+     */
+    public static LongSet findSix(ServerWorld world, BlockPos origin, int depth, RuleTest ruleTest, Random random) {
+        return findSix(world, origin, depth, state -> ruleTest.test(state, random));
     }
 
     /**
@@ -118,6 +127,17 @@ public final class BucketFind {
     /**
      * Finds any 18-connected blocks and puts them in a {@link LongSet}.
      *
+     * @param origin   the position of the first block
+     * @param depth    the amount of maximum blocks to find
+     * @param ruleTest the rule test for the blocks that can be accepted in the set
+     */
+    public static LongSet findEighteen(ServerWorld world, BlockPos origin, int depth, RuleTest ruleTest, Random random) {
+        return findEighteen(world, origin, depth, state -> ruleTest.test(state, random));
+    }
+
+    /**
+     * Finds any 18-connected blocks and puts them in a {@link LongSet}.
+     *
      * @param origin the position of the first block
      * @param depth  the amount of maximum blocks to find
      * @param tag    the tag for the blocks that can be accepted in the set
@@ -169,6 +189,17 @@ public final class BucketFind {
             depth--;
         }
         return set;
+    }
+
+    /**
+     * Finds any 26-connected blocks and puts them in a {@link LongSet}.
+     *
+     * @param origin   the position of the first block
+     * @param depth    the amount of maximum blocks to find
+     * @param ruleTest the rule test for the blocks that can be accepted in the set
+     */
+    public static LongSet findTwentySix(ServerWorld world, BlockPos origin, int depth, RuleTest ruleTest, Random random) {
+        return findTwentySix(world, origin, depth, state -> ruleTest.test(state, random));
     }
 
     /**

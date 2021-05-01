@@ -7,6 +7,8 @@ import net.minecraft.util.math.BlockPos;
 /**
  * Called when any {@link ServerPlayerEntity} attempts to break a block.
  *
+ * <p>This includes any {@link ServerPlayerEntity} attempting to trample farmland.
+ *
  * <p>Upon return:
  * <ul>
  * <li>{@link ActionResult#SUCCESS} cancels further processing and allows the break.

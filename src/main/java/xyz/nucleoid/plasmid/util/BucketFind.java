@@ -107,14 +107,19 @@ public final class BucketFind {
                     ends.push(local.toImmutable());
                 }
             }
-            for(int x = -1; x <= 1; x += 2) {
-                for(int y = -1; y <= 1; y += 2) {
-                    for(int z = -1; z <= 1; z += 2) {
-                        local.set(pos.add(x, y, z));
-                        BlockState state = world.getBlockState(local);
-                        if(predicate.test(state) && !set.contains(local.asLong()) && !ends.contains(local)) {
-                            ends.push(local.toImmutable());
-                        }
+            for(int i = -1; i <= 1; i += 2) {
+                for(int j = -1; j <= 1; j += 2) {
+                    local.set(pos.add(i, j, 0));
+                    if(predicate.test(world.getBlockState(local)) && !set.contains(local.asLong()) && !ends.contains(local)) {
+                        ends.push(local.toImmutable());
+                    }
+                    local.set(pos.add(0, i, j));
+                    if(predicate.test(world.getBlockState(local)) && !set.contains(local.asLong()) && !ends.contains(local)) {
+                        ends.push(local.toImmutable());
+                    }
+                    local.set(pos.add(j, 0, i));
+                    if(predicate.test(world.getBlockState(local)) && !set.contains(local.asLong()) && !ends.contains(local)) {
+                        ends.push(local.toImmutable());
                     }
                 }
             }

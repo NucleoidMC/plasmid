@@ -1,5 +1,7 @@
 package xyz.nucleoid.plasmid.util;
 
+import it.unimi.dsi.fastutil.longs.LongArraySet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerWorld;
@@ -14,7 +16,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 /**
- * Methods for finding connected blocks.
+ * Methods for finding connected blocks as a {@link LongSet}. Use {@link BlockPos#fromLong} to retrieve these positions.
  *
  * @see <a href="https://en.wikipedia.org/wiki/Pixel_connectivity#3-dimensional">3-dimensional pixel connectivity</a>
  */
@@ -23,130 +25,130 @@ public final class BucketFind {
     }
 
     /**
-     * Finds any 6-connected blocks and puts them in a set.
+     * Finds any 6-connected blocks and puts them in a {@link LongSet}.
      *
      * @param origin    the position of the first block
      * @param depth     the amount of maximum blocks to find
      * @param predicate the predicate for the blocks that can be accepted in the set
      */
-    public static Set<BlockPos> findSix(ServerWorld world, BlockPos origin, int depth, Predicate<BlockState> predicate) {
-        Set<BlockPos> set = new HashSet<>();
+    public static LongSet findSix(ServerWorld world, BlockPos origin, int depth, Predicate<BlockState> predicate) {
+        LongSet set = new LongArraySet();
         Deque<BlockPos> ends = new ArrayDeque<>();
         ends.push(origin);
-        BlockPos.Mutable local;
+        BlockPos.Mutable local = origin.mutableCopy();
         while(depth > 0) {
             if(ends.isEmpty()) {
                 return set;
             }
             BlockPos pos = ends.pollLast();
             for(Direction direction : Direction.values()) {
-                local = pos.offset(direction).mutableCopy();
-                if(predicate.test(world.getBlockState(local)) && !set.contains(local)) {
-                    ends.push(local);
+                local.set(pos).offset(direction);
+                if(predicate.test(world.getBlockState(local)) && !set.contains(local.asLong()) && !ends.contains(local)) {
+                    ends.push(local.toImmutable());
                 }
             }
-            set.add(pos);
+            set.add(pos.asLong());
             depth--;
         }
         return set;
     }
 
     /**
-     * Finds any 6-connected blocks and puts them in a set.
+     * Finds any 6-connected blocks and puts them in a {@link LongSet}.
      *
      * @param origin the position of the first block
      * @param depth  the amount of maximum blocks to find
      * @param tag    the tag for the blocks that can be accepted in the set
      */
-    public static Set<BlockPos> findSix(ServerWorld world, BlockPos origin, int depth, Tag<Block> tag) {
+    public static LongSet findSix(ServerWorld world, BlockPos origin, int depth, Tag<Block> tag) {
         return findSix(world, origin, depth, state -> state.isIn(tag));
     }
 
     /**
-     * Finds any 6-connected blocks and puts them in a set.
+     * Finds any 6-connected blocks and puts them in a {@link LongSet}.
      *
      * @param origin the position of the first block
      * @param depth  the amount of maximum blocks to find
      * @param block  the block type that can be accepted in the set
      */
-    public static Set<BlockPos> findSix(ServerWorld world, BlockPos origin, int depth, Block block) {
+    public static LongSet findSix(ServerWorld world, BlockPos origin, int depth, Block block) {
         return findSix(world, origin, depth, state -> state.isOf(block));
     }
 
     /**
-     * Finds any 18-connected blocks and puts them in a set.
+     * Finds any 18-connected blocks and puts them in a {@link LongSet}..
      *
      * @param origin    the position of the first block
      * @param depth     the amount of maximum blocks to find
      * @param predicate the predicate for the blocks that can be accepted in the set
      */
-    public static Set<BlockPos> findEighteen(ServerWorld world, BlockPos origin, int depth, Predicate<BlockState> predicate) {
-        Set<BlockPos> set = new HashSet<>();
+    public static LongSet findEighteen(ServerWorld world, BlockPos origin, int depth, Predicate<BlockState> predicate) {
+        LongSet set = new LongArraySet();
         Deque<BlockPos> ends = new ArrayDeque<>();
         ends.push(origin);
-        BlockPos.Mutable local;
+        BlockPos.Mutable local = origin.mutableCopy();
         while(depth > 0) {
             if(ends.isEmpty()) {
                 return set;
             }
             BlockPos pos = ends.pollLast();
             for(Direction direction : Direction.values()) {
-                local = pos.offset(direction).mutableCopy();
-                if(predicate.test(world.getBlockState(local)) && !set.contains(local) && !ends.contains(local)) {
-                    ends.push(local);
+                local.set(pos).offset(direction);
+                if(predicate.test(world.getBlockState(local)) && !set.contains(local.asLong()) && !ends.contains(local)) {
+                    ends.push(local.toImmutable());
                 }
             }
             for(int x = -1; x <= 1; x += 2) {
                 for(int y = -1; y <= 1; y += 2) {
                     for(int z = -1; z <= 1; z += 2) {
-                        local = pos.add(x, y, z).mutableCopy();
+                        local.set(pos).add(x, y, z);
                         BlockState state = world.getBlockState(local);
-                        if(predicate.test(state) && !set.contains(local) && !ends.contains(local)) {
-                            ends.push(local);
+                        if(predicate.test(state) && !set.contains(local.asLong()) && !ends.contains(local)) {
+                            ends.push(local.toImmutable());
                         }
                     }
                 }
             }
-            set.add(pos);
+            set.add(pos.asLong());
             depth--;
         }
         return set;
     }
 
     /**
-     * Finds any 18-connected blocks and puts them in a set.
+     * Finds any 18-connected blocks and puts them in a {@link LongSet}.
      *
      * @param origin the position of the first block
      * @param depth  the amount of maximum blocks to find
      * @param tag    the tag for the blocks that can be accepted in the set
      */
-    public static Set<BlockPos> findEighteen(ServerWorld world, BlockPos origin, int depth, Tag<Block> tag) {
+    public static LongSet findEighteen(ServerWorld world, BlockPos origin, int depth, Tag<Block> tag) {
         return findEighteen(world, origin, depth, state -> state.isIn(tag));
     }
 
     /**
-     * Finds any 18-connected blocks and puts them in a set.
+     * Finds any 18-connected blocks and puts them in a {@link LongSet}.
      *
      * @param origin the position of the first block
      * @param depth  the amount of maximum blocks to find
      * @param block  the block type that can be accepted in the set
      */
-    public static Set<BlockPos> findEighteen(ServerWorld world, BlockPos origin, int depth, Block block) {
+    public static LongSet findEighteen(ServerWorld world, BlockPos origin, int depth, Block block) {
         return findEighteen(world, origin, depth, state -> state.isOf(block));
     }
 
     /**
-     * Finds any 26-connected blocks and puts them in a set.
+     * Finds any 26-connected blocks and puts them in a {@link LongSet}.
      *
      * @param origin    the position of the first block
      * @param depth     the amount of maximum blocks to find
      * @param predicate the predicate for the blocks that can be accepted in the set
      */
-    public static Set<BlockPos> findTwentySix(ServerWorld world, BlockPos origin, int depth, Predicate<BlockState> predicate) {
-        Set<BlockPos> set = new HashSet<>();
+    public static LongSet findTwentySix(ServerWorld world, BlockPos origin, int depth, Predicate<BlockState> predicate) {
+        LongSet set = new LongArraySet();
         Deque<BlockPos> ends = new ArrayDeque<>();
         ends.push(origin);
-        BlockPos.Mutable local;
+        BlockPos.Mutable local = origin.mutableCopy();
         while(depth > 0) {
             if(ends.isEmpty()) {
                 return set;
@@ -156,38 +158,38 @@ public final class BucketFind {
                 for(int y = -1; y <= 1; y++) {
                     for(int z = -1; z <= 1; z++) {
                         if(x == 0 && y == 0 && z == 0) continue;
-                        local = pos.add(x, y, z).mutableCopy();
-                        if(predicate.test(world.getBlockState(local)) && !set.contains(local) && !ends.contains(local)) {
-                            ends.push(local);
+                        local.set(pos).add(x, y, z);
+                        if(predicate.test(world.getBlockState(local)) && !set.contains(local.asLong()) && !ends.contains(local)) {
+                            ends.push(local.toImmutable());
                         }
                     }
                 }
             }
-            set.add(pos);
+            set.add(pos.asLong());
             depth--;
         }
         return set;
     }
 
     /**
-     * Finds any 26-connected blocks and puts them in a set.
+     * Finds any 26-connected blocks and puts them in a {@link LongSet}.
      *
      * @param origin the position of the first block
      * @param depth  the amount of maximum blocks to find
      * @param tag    the tag for the blocks that can be accepted in the set
      */
-    public static Set<BlockPos> findTwentySix(ServerWorld world, BlockPos origin, int depth, Tag<Block> tag) {
+    public static LongSet findTwentySix(ServerWorld world, BlockPos origin, int depth, Tag<Block> tag) {
         return findTwentySix(world, origin, depth, state -> state.isIn(tag));
     }
 
     /**
-     * Finds any 26-connected blocks and puts them in a set.
+     * Finds any 26-connected blocks and puts them in a {@link LongSet}.
      *
      * @param origin the position of the first block
      * @param depth  the amount of maximum blocks to find
      * @param block  the block type that can be accepted in the set
      */
-    public static Set<BlockPos> findTwentySix(ServerWorld world, BlockPos origin, int depth, Block block) {
+    public static LongSet findTwentySix(ServerWorld world, BlockPos origin, int depth, Block block) {
         return findTwentySix(world, origin, depth, state -> state.isOf(block));
     }
 }

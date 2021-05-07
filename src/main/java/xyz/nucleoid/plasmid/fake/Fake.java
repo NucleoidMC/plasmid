@@ -4,6 +4,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
 
+@Deprecated
 public final class Fake {
     /**
      * Resolves the proxy instance to be used to send the client

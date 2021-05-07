@@ -51,6 +51,12 @@ dependencies {
   include 'xyz.nucleoid:fantasy:0.2.6'
 
   modImplementation 'xyz.nucleoid:leukocyte:0.1.3'
+
+  modImplementation 'com.github.Patbox:polymer:0.0.1'
+  include 'com.github.Patbox:polymer:0.0.1'
+
+  modImplementation 'com.github.Patbox:sgui:0.3.0'
+  include 'com.github.Patbox:sgui:0.3.0'
 }
 
 processResources {

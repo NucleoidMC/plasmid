@@ -4,6 +4,7 @@ import net.fabricmc.fabric.impl.object.builder.FabricEntityType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 
+@Deprecated
 public class FakeEntityType<T extends Entity> extends FabricEntityType<T> {
     private final EntityType<T> proxyType;
 

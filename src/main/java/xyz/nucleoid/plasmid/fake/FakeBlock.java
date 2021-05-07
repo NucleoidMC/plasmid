@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.fake;
 
+import eu.pb4.polymer.block.VirtualBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.fluid.FluidState;
@@ -7,7 +8,8 @@ import net.minecraft.fluid.FluidState;
 /**
  * Represents a block that should be remapped to some vanilla "proxy" counterpart when being sent to clients
  */
-public interface FakeBlock {
+@Deprecated
+public interface FakeBlock extends VirtualBlock {
     Block asProxy();
 
     /**
@@ -28,6 +30,7 @@ public interface FakeBlock {
         return this.asProxy(state.getBlockState()).getFluidState();
     }
 
+
     static BlockState getProxy(BlockState state) {
         Block block = state.getBlock();
         if (block instanceof FakeBlock) {
@@ -42,7 +45,12 @@ public interface FakeBlock {
         if (block instanceof FakeBlock) {
             return ((FakeBlock) block).asProxy(state);
         }
-
         return state;
+    }
+
+    default Block getVirtualBlock() { return this.asProxy(); }
+
+    default BlockState getVirtualBlockState(BlockState state) {
+        return this.asProxy(state);
     }
 }

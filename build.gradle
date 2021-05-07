@@ -1,5 +1,5 @@
 plugins {
-  id 'fabric-loom' version '0.5-SNAPSHOT'
+  id 'fabric-loom' version '0.6-SNAPSHOT'
   id 'maven-publish'
 }
 
@@ -45,10 +45,9 @@ dependencies {
   modImplementation include('xyz.nucleoid:packet-tweaker:0.1.2')
   modImplementation include('xyz.nucleoid:fantasy:0.2.8')
   modImplementation include('xyz.nucleoid:more-codecs:0.1.3')
+  modImplementation include('eu.pb4:polymer:0.0.3')
 
   modImplementation 'xyz.nucleoid:leukocyte:0.1.3'
-
-  modImplementation include('eu.pb4:polymer:0.0.3')
 
   modCompileOnly('xyz.nucleoid:DisguiseLib:1.0.0')
 }

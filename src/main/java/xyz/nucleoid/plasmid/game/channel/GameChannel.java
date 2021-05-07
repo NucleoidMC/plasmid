@@ -7,6 +7,7 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.GameOpenException;
+import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.party.PartyManager;
 
@@ -18,6 +19,7 @@ public final class GameChannel {
     private final Identifier id;
     private final GameChannelMembers members;
     private final GameChannelBackend backend;
+    private CustomValuesConfig custom = CustomValuesConfig.empty();
 
     private final Set<GameChannelInterface> interfaces = new ObjectOpenHashSet<>();
 
@@ -27,8 +29,16 @@ public final class GameChannel {
         this.backend = backendFactory.create(server, id, this.members);
     }
 
+    void setCustom(CustomValuesConfig custom) {
+        this.custom = custom;
+    }
+
     public Identifier getId() {
         return this.id;
+    }
+
+    public CustomValuesConfig getCustom() {
+        return this.custom;
     }
 
     public void requestJoin(ServerPlayerEntity player) {

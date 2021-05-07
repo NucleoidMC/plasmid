@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.channel;
 import com.mojang.serialization.Codec;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
+import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import java.util.function.Function;
@@ -16,6 +17,8 @@ public interface GameChannelConfig {
     }
 
     GameChannelBackend createBackend(MinecraftServer server, Identifier id, GameChannelMembers members);
+
+    CustomValuesConfig getCustom();
 
     Codec<? extends GameChannelConfig> getCodec();
 }

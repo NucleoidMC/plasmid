@@ -25,8 +25,6 @@ public final class Fake {
             return (T) FakeBlock.getProxy((FluidState) entry);
         } else if (entry instanceof ItemStack) {
             return (T) FakeItem.getProxy((ItemStack) entry);
-        } else if (entry instanceof FakeEntityType) {
-            return (T) ((FakeEntityType<?>) entry).asProxy();
         }
 
         return entry;

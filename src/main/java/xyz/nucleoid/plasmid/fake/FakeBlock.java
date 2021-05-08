@@ -30,7 +30,6 @@ public interface FakeBlock extends VirtualBlock {
         return this.asProxy(state.getBlockState()).getFluidState();
     }
 
-
     static BlockState getProxy(BlockState state) {
         Block block = state.getBlock();
         if (block instanceof FakeBlock) {

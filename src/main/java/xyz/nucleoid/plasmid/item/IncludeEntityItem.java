@@ -68,13 +68,6 @@ public final class IncludeEntityItem extends Item implements VirtualItem {
 
     @Override
     public Item getVirtualItem() {
-        return Items.LEAD;
-    }
-
-    @Override
-    public ItemStack getVirtualItemStack(ItemStack itemStack, ServerPlayerEntity player) {
-        ItemStack virtual = ItemHelper.createBasicVirtualItemStack(itemStack, player);
-        virtual.addEnchantment(Enchantments.POWER, 1);
-        return virtual;
+        return Items.DEBUG_STICK;
     }
 }

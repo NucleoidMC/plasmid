@@ -45,11 +45,4 @@ public final class AddRegionItem extends Item implements VirtualItem {
     public Item getVirtualItem() {
         return Items.STICK;
     }
-
-    @Override
-    public ItemStack getVirtualItemStack(ItemStack itemStack, ServerPlayerEntity player) {
-        ItemStack virtual = ItemHelper.createBasicVirtualItemStack(itemStack, player);
-        virtual.addEnchantment(Enchantments.POWER, 1);
-        return virtual;
-    }
 }

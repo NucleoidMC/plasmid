@@ -4,6 +4,9 @@ import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 
+/**
+ * @deprecated This class is deprecated in favour of {@link eu.pb4.polymer.item.VirtualBlockItem} or {@link eu.pb4.polymer.item.VirtualHeadBlockItem}
+ */
 @Deprecated
 public class FakeBlockItem extends BlockItem implements FakeItem {
 

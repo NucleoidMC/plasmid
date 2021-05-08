@@ -6,6 +6,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.fluid.FluidState;
 
 /**
+ * @deprecated This interface is deprecated in favour of {@link eu.pb4.polymer.block.VirtualBlock}
+ *
  * Represents a block that should be remapped to some vanilla "proxy" counterpart when being sent to clients
  */
 @Deprecated

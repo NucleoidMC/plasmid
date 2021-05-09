@@ -1,13 +1,18 @@
 package xyz.nucleoid.plasmid.fake;
 
+import eu.pb4.polymer.item.VirtualItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 
 /**
+ * @deprecated This interface is deprecated in favour of {@link eu.pb4.polymer.item.VirtualItem}
+ *
  * Represents an item that should be remapped to some vanilla "proxy" counterpart when being sent to clients
  */
-public interface FakeItem {
+@Deprecated
+public interface FakeItem extends VirtualItem {
+    @Deprecated
     Item asProxy();
 
     /**
@@ -44,4 +49,6 @@ public interface FakeItem {
 
         return stack;
     }
+
+    default Item getVirtualItem() { return this.asProxy(); }
 }

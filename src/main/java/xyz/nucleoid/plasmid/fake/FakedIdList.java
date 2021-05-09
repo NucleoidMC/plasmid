@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 
+@Deprecated
 public final class FakedIdList<T> extends IdList<T> {
     private final IdList<T> parent;
 

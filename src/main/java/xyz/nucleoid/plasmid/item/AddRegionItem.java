@@ -1,5 +1,8 @@
 package xyz.nucleoid.plasmid.item;
 
+import eu.pb4.polymer.item.ItemHelper;
+import eu.pb4.polymer.item.VirtualItem;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -8,11 +11,10 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import xyz.nucleoid.plasmid.fake.FakeItem;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 import xyz.nucleoid.plasmid.map.workspace.editor.WorkspaceEditor;
 
-public final class AddRegionItem extends Item implements FakeItem {
+public final class AddRegionItem extends Item implements VirtualItem {
     public AddRegionItem(Item.Settings settings) {
         super(settings);
     }
@@ -40,7 +42,7 @@ public final class AddRegionItem extends Item implements FakeItem {
     }
 
     @Override
-    public Item asProxy() {
+    public Item getVirtualItem() {
         return Items.STICK;
     }
 }

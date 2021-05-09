@@ -1,13 +1,17 @@
 package xyz.nucleoid.plasmid.fake;
 
+import eu.pb4.polymer.block.VirtualBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.fluid.FluidState;
 
 /**
+ * @deprecated This interface is deprecated in favour of {@link eu.pb4.polymer.block.VirtualBlock}
+ *
  * Represents a block that should be remapped to some vanilla "proxy" counterpart when being sent to clients
  */
-public interface FakeBlock {
+@Deprecated
+public interface FakeBlock extends VirtualBlock {
     Block asProxy();
 
     /**
@@ -42,7 +46,12 @@ public interface FakeBlock {
         if (block instanceof FakeBlock) {
             return ((FakeBlock) block).asProxy(state);
         }
-
         return state;
+    }
+
+    default Block getVirtualBlock() { return this.asProxy(); }
+
+    default BlockState getVirtualBlockState(BlockState state) {
+        return this.asProxy(state);
     }
 }

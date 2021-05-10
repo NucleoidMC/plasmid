@@ -58,6 +58,6 @@
   "text.plasmid.shop.cost.iron": "%s fer",
   "text.plasmid.shop.cost.no": "Ne peut pas acheter",
   "text.plasmid.team_selection.request_team": "Demander l'équipe %s",
-  "text.plasmid.team_selection.requested_team": "Vous avez demandé de rejoindre l'%s",
+  "text.plasmid.team_selection.requested_team": "Vous avez demandé à rejoindre l'%s",
   "text.plasmid.team_selection.suffixed_team": "équipe %s"
 }

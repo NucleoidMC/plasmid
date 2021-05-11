@@ -52,8 +52,8 @@ dependencies {
 
   modImplementation 'xyz.nucleoid:leukocyte:0.1.3'
 
-  modImplementation 'eu.pb4:polymer:0.0.1'
-  include 'eu.pb4:polymer:0.0.1'
+  modImplementation 'eu.pb4:polymer:0.0.2'
+  include 'eu.pb4:polymer:0.0.2'
 }
 
 processResources {

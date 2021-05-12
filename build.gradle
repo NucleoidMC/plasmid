@@ -47,8 +47,8 @@ dependencies {
   modImplementation 'xyz.nucleoid:packet-tweaker:0.1.2'
   include 'xyz.nucleoid:packet-tweaker:0.1.2'
 
-  modImplementation 'xyz.nucleoid:fantasy:0.2.6'
-  include 'xyz.nucleoid:fantasy:0.2.6'
+  modImplementation 'xyz.nucleoid:fantasy:0.2.8'
+  include 'xyz.nucleoid:fantasy:0.2.8'
 
   modImplementation 'xyz.nucleoid:leukocyte:0.1.3'
 

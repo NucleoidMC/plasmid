@@ -1,8 +1,6 @@
 package xyz.nucleoid.plasmid.mixin.game.channel;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -15,23 +13,29 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.entity.FloatingText;
-import xyz.nucleoid.plasmid.game.channel.GameChannelInterface;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
+import xyz.nucleoid.plasmid.game.channel.GameChannelInterface;
 
-@Mixin(MobEntity.class)
-public abstract class MobEntityMixin extends LivingEntity implements GameChannelInterface {
+@Mixin(Entity.class)
+public abstract class EntityMixin implements GameChannelInterface {
+    @Shadow
+    public World world;
+
+    @Shadow
+    public abstract Vec3d getPos();
+
+    @Shadow
+    public abstract float getHeight();
+
     private FloatingText display;
     private GameChannel channel;
     private Identifier loadedChannel;
-
-    private MobEntityMixin(EntityType<? extends LivingEntity> type, World world) {
-        super(type, world);
-    }
 
     @Override
     public void setChannel(GameChannel channel) {
@@ -48,15 +52,8 @@ public abstract class MobEntityMixin extends LivingEntity implements GameChannel
         return this.channel;
     }
 
-    @Override
-    public void setPos(double x, double y, double z) {
-        Vec3d pos = this.getPos();
-        if (pos.x == x && pos.y == y && pos.z == z) {
-            return;
-        }
-
-        super.setPos(x, y, z);
-
+    @Inject(method = "setPos", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/Entity;chunkPosUpdateRequested:Z"))
+    private void setPos(double x, double y, double z, CallbackInfo ci) {
         if (this.display != null) {
             this.display.setPos(this.getDisplayAnchor());
         }
@@ -116,11 +113,9 @@ public abstract class MobEntityMixin extends LivingEntity implements GameChannel
         this.loadedChannel = this.deserializeChannelId(root);
     }
 
-    @Override
-    public void remove() {
+    @Inject(method = "remove", at = @At("HEAD"))
+    private void remove(CallbackInfo ci) {
         this.invalidateChannel();
         this.removeDisplay();
-
-        super.remove();
     }
 }

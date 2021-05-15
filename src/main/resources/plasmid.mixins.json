@@ -9,7 +9,7 @@
     "chat.ServerPlayerEntityMixin",
     "custom.EntityMixin",
     "fix.ServerPlayNetworkHandlerMixin",
-    "game.channel.MobEntityMixin",
+    "game.channel.EntityMixin",
     "game.channel.SignBlockEntityMixin",
     "game.event.BlockItemMixin",
     "game.event.BowItemMixin",

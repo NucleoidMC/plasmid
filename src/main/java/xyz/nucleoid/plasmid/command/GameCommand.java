@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
-
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.NbtCompoundTagArgumentType;
 import net.minecraft.entity.Entity;
@@ -55,7 +54,7 @@ public final class GameCommand {
     });
 
     public static final DynamicCommandExceptionType PLAYER_NOT_IN_GAME = new DynamicCommandExceptionType(player -> {
-            return new TranslatableText("text.plasmid.game.locate.player_not_in_game", player);
+        return new TranslatableText("text.plasmid.game.locate.player_not_in_game", player);
     });
 
     // @formatter:off
@@ -74,8 +73,10 @@ public final class GameCommand {
                 .then(literal("propose")
                     .requires(source -> source.hasPermissionLevel(2))
                     .then(GameChannelArgument.argument("game_channel")
-                    .executes(GameCommand::proposeGame)
-                ))
+                        .executes(GameCommand::proposeGame)
+                    )
+                        .executes(GameCommand::proposeCurrentGame)
+                )
                 .then(literal("start")
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(GameCommand::startGame)
@@ -189,8 +190,22 @@ public final class GameCommand {
 
     private static int proposeGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         GameChannel channel = GameChannelArgument.get(context, "game_channel");
+        return proposeGame(context.getSource(), channel);
+    }
 
+    private static int proposeCurrentGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
+
+        GameChannelManager channelManager = GameChannelManager.get(source.getMinecraftServer());
+        GameChannel channel = channelManager.getChannelFor(source.getPlayer());
+        if (channel == null) {
+            throw NO_GAME_IN_WORLD.create();
+        }
+
+        return proposeGame(source, channel);
+    }
+
+    private static int proposeGame(ServerCommandSource source, GameChannel channel) {
         Text openMessage = new TranslatableText("text.plasmid.game.propose", source.getDisplayName(), channel.getName().shallowCopy().formatted(Formatting.GRAY))
                 .append(channel.createJoinLink());
 
@@ -259,7 +274,6 @@ public final class GameCommand {
                 .max(Comparator.comparingInt(GameChannel::getPlayerCount))
                 .orElseThrow(NO_GAME_OPEN::create);
     }
-
 
     private static int locatePlayer(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();

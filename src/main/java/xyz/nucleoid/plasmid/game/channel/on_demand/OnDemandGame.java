@@ -11,13 +11,13 @@ import xyz.nucleoid.plasmid.game.config.GameConfigs;
 
 import java.util.concurrent.CompletableFuture;
 
-final class OnDemandGame {
+public final class OnDemandGame {
     private final Identifier gameId;
 
     private GameLifecycle.Listeners lifecycleListeners;
     private CompletableFuture<ManagedGameSpace> gameFuture;
 
-    OnDemandGame(Identifier gameId) {
+    public OnDemandGame(Identifier gameId) {
         this.gameId = gameId;
     }
 

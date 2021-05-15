@@ -13,7 +13,6 @@ import xyz.nucleoid.plasmid.party.PartyManager;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 
 public final class GameChannel {
     private final Identifier id;
@@ -22,10 +21,10 @@ public final class GameChannel {
 
     private final Set<GameChannelInterface> interfaces = new ObjectOpenHashSet<>();
 
-    public GameChannel(MinecraftServer server, Identifier id, Function<GameChannelMembers, GameChannelBackend> backendFactory) {
+    public GameChannel(MinecraftServer server, Identifier id, GameChannelBackend.Factory backendFactory) {
         this.id = id;
         this.members = new GameChannelMembers(server, this);
-        this.backend = backendFactory.apply(this.members);
+        this.backend = backendFactory.create(server, id, this.members);
     }
 
     public Identifier getId() {
@@ -36,7 +35,7 @@ public final class GameChannel {
         PartyManager partyManager = PartyManager.get(player.server);
         Collection<ServerPlayerEntity> players = partyManager.getPartyMembers(player);
 
-        this.requestJoinAll(players).thenAcceptAsync(result -> {
+        this.requestJoinAll(player, players).thenAcceptAsync(result -> {
             if (result.isError()) {
                 player.sendMessage(result.getError().shallowCopy().formatted(Formatting.RED), false);
             }
@@ -44,26 +43,28 @@ public final class GameChannel {
     }
 
     @SuppressWarnings("unchecked")
-    private CompletableFuture<JoinResult> requestJoinAll(Collection<ServerPlayerEntity> players) {
-        int i = 0;
-        CompletableFuture<JoinResult>[] futures = new CompletableFuture[players.size()];
-        for (ServerPlayerEntity player : players) {
-            futures[i++] = this.backend.requestJoin(player);
-        }
-
-        return CompletableFuture.allOf(futures).handle((v, throwable) -> {
-            if (throwable != null) {
-                return JoinResult.err(this.getFeedbackForException(throwable));
+    private CompletableFuture<JoinResult> requestJoinAll(ServerPlayerEntity primaryPlayer, Collection<ServerPlayerEntity> players) {
+        return this.backend.requestJoin(primaryPlayer).thenCompose(joinTicket -> {
+            int i = 0;
+            CompletableFuture<JoinResult>[] futures = new CompletableFuture[players.size()];
+            for (ServerPlayerEntity player : players) {
+                futures[i++] = joinTicket.tryJoin(player);
             }
 
-            for (CompletableFuture<JoinResult> future : futures) {
-                JoinResult result = future.join();
-                if (result.isError()) {
-                    return result;
+            return CompletableFuture.allOf(futures).handle((v, throwable) -> {
+                if (throwable != null) {
+                    return JoinResult.err(this.getFeedbackForException(throwable));
                 }
-            }
 
-            return JoinResult.ok();
+                for (CompletableFuture<JoinResult> future : futures) {
+                    JoinResult result = future.join();
+                    if (result.isError()) {
+                        return result;
+                    }
+                }
+
+                return JoinResult.ok();
+            });
         });
     }
 

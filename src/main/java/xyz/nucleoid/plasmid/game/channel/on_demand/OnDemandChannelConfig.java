@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game.channel.on_demand;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.channel.GameChannelBackend;
 import xyz.nucleoid.plasmid.game.channel.GameChannelConfig;
@@ -24,7 +25,7 @@ public final class OnDemandChannelConfig implements GameChannelConfig {
     }
 
     @Override
-    public GameChannelBackend createBackend(GameChannelMembers members) {
+    public GameChannelBackend createBackend(MinecraftServer server, Identifier id, GameChannelMembers members) {
         if (this.continuous) {
             return new ContinuousOnDemandChannelBackend(this.gameId, members);
         } else {

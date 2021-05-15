@@ -1,13 +1,18 @@
 package xyz.nucleoid.plasmid.game.channel;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import xyz.nucleoid.plasmid.game.player.JoinResult;
+import net.minecraft.util.Identifier;
 
 import java.util.concurrent.CompletableFuture;
 
 public interface GameChannelBackend {
     Text getName();
 
-    CompletableFuture<JoinResult> requestJoin(ServerPlayerEntity player);
+    CompletableFuture<ChannelJoinTicket> requestJoin(ServerPlayerEntity player);
+
+    interface Factory {
+        GameChannelBackend create(MinecraftServer server, Identifier id, GameChannelMembers members);
+    }
 }

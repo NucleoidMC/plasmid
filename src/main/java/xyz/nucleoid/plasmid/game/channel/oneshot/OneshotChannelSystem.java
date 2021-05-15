@@ -40,16 +40,16 @@ public final class OneshotChannelSystem implements GameChannelSystem {
     }
 
     private GameChannel createChannel(Identifier gameId, ManagedGameSpace gameSpace) {
-        Identifier id = this.createChannelIdFor(gameId);
+        Identifier channelId = this.createChannelIdFor(gameId);
 
         gameSpace.getLifecycle().addListeners(new GameLifecycle.Listeners() {
             @Override
             public void onClosed(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
-                OneshotChannelSystem.this.closeChannel(id);
+                OneshotChannelSystem.this.closeChannel(channelId);
             }
         });
 
-        return new GameChannel(this.server, id, members -> new OneshotChannelBackend(gameSpace, members));
+        return new GameChannel(this.server, channelId, (server, id, members) -> new OneshotChannelBackend(gameSpace, members));
     }
 
     private Identifier createChannelIdFor(Identifier gameId) {

@@ -21,6 +21,7 @@ import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.channel.ConfiguredChannelSystem;
 import xyz.nucleoid.plasmid.game.channel.GameChannelConfig;
 import xyz.nucleoid.plasmid.game.channel.GameChannelInterface;
+import xyz.nucleoid.plasmid.game.channel.menu.MenuChannelConfig;
 import xyz.nucleoid.plasmid.game.channel.on_demand.OnDemandChannelConfig;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
@@ -48,6 +49,7 @@ public final class Plasmid implements ModInitializer {
         MapTemplateSerializer.INSTANCE.register();
 
         GameChannelConfig.register(new Identifier(ID, "on_demand"), OnDemandChannelConfig.CODEC);
+        GameChannelConfig.register(new Identifier(ID, "menu"), MenuChannelConfig.CODEC);
 
         GameType.register(new Identifier(Plasmid.ID, "test"), TestGame::open, Codec.unit(Unit.INSTANCE));
         GameType.register(new Identifier(Plasmid.ID, "random"), RandomGame::open, RandomGameConfig.CODEC);

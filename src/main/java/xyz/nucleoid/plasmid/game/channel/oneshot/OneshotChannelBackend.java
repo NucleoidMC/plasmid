@@ -6,9 +6,9 @@ import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.game.GameLifecycle;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.channel.ChannelJoinTicket;
 import xyz.nucleoid.plasmid.game.channel.GameChannelBackend;
 import xyz.nucleoid.plasmid.game.channel.GameChannelMembers;
-import xyz.nucleoid.plasmid.game.player.JoinResult;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -29,8 +29,9 @@ public final class OneshotChannelBackend implements GameChannelBackend {
     }
 
     @Override
-    public CompletableFuture<JoinResult> requestJoin(ServerPlayerEntity player) {
-        return this.gameSpace.offerPlayer(player);
+    public CompletableFuture<ChannelJoinTicket> requestJoin(ServerPlayerEntity player) {
+        ChannelJoinTicket ticket = ChannelJoinTicket.forGameSpace(this.gameSpace);
+        return CompletableFuture.completedFuture(ticket);
     }
 
     private class LifecycleListeners implements GameLifecycle.Listeners {

@@ -6,9 +6,9 @@ import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameLifecycle;
 import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.channel.ChannelJoinTicket;
 import xyz.nucleoid.plasmid.game.channel.GameChannelBackend;
 import xyz.nucleoid.plasmid.game.channel.GameChannelMembers;
-import xyz.nucleoid.plasmid.game.player.JoinResult;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -30,9 +30,9 @@ public final class OnDemandChannelBackend implements GameChannelBackend {
     }
 
     @Override
-    public CompletableFuture<JoinResult> requestJoin(ServerPlayerEntity player) {
+    public CompletableFuture<ChannelJoinTicket> requestJoin(ServerPlayerEntity player) {
         return this.game.getOrOpen(player.server)
-                .thenCompose(gameSpace -> gameSpace.offerPlayer(player));
+                .thenApply(ChannelJoinTicket::forGameSpace);
     }
 
     private void onGameClose() {

@@ -13,6 +13,8 @@ import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
 import xyz.nucleoid.plasmid.game.channel.GameChannelManager;
 
+import java.util.Comparator;
+
 public final class GameChannelArgument {
     private static final SimpleCommandExceptionType CHANNEL_NOT_FOUND = new SimpleCommandExceptionType(new TranslatableText("text.plasmid.channel.channel_not_found"));
 
@@ -23,7 +25,9 @@ public final class GameChannelArgument {
                     GameChannelManager channelManager = GameChannelManager.get(source.getMinecraftServer());
 
                     return CommandSource.suggestIdentifiers(
-                            channelManager.keySet().stream(),
+                            channelManager.getChannels().stream()
+                                    .sorted(Comparator.comparingInt(GameChannel::getPlayerCount).reversed())
+                                    .map(GameChannel::getId),
                             builder
                     );
                 });

@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.channel.menu;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.game.GameLifecycle;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.channel.ChannelJoinTicket;
@@ -22,7 +23,7 @@ public final class MenuChannelBackend implements GameChannelBackend {
     private final GameChannelMembers members;
 
     MenuChannelBackend(Text name, List<MenuChannelConfig.Entry> games, GameChannelMembers members) {
-        this.name = name;
+        this.name = name.shallowCopy().formatted(Formatting.AQUA);
         this.games = this.buildGames(games);
         this.members = members;
     }

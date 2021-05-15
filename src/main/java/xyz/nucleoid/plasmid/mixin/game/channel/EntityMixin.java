@@ -1,13 +1,10 @@
 package xyz.nucleoid.plasmid.mixin.game.channel;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -36,6 +33,15 @@ public abstract class EntityMixin implements GameChannelInterface {
     private FloatingText display;
     private GameChannel channel;
     private Identifier loadedChannel;
+
+    @Override
+    public boolean interactWithChannel(ServerPlayerEntity player) {
+        if (this.channel != null) {
+            this.channel.requestJoin(player);
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public void setChannel(GameChannel channel) {
@@ -95,20 +101,12 @@ public abstract class EntityMixin implements GameChannelInterface {
         }
     }
 
-    @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
-    private void onInteract(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> ci) {
-        if (this.channel != null && player instanceof ServerPlayerEntity && hand == Hand.MAIN_HAND) {
-            this.channel.requestJoin((ServerPlayerEntity) player);
-            ci.setReturnValue(ActionResult.SUCCESS);
-        }
-    }
-
-    @Inject(method = "writeCustomDataToTag", at = @At("RETURN"))
-    private void toTag(CompoundTag root, CallbackInfo ci) {
+    @Inject(method = "toTag", at = @At("RETURN"))
+    private void toTag(CompoundTag root, CallbackInfoReturnable<CompoundTag> ci) {
         this.serializeChannel(root);
     }
 
-    @Inject(method = "readCustomDataFromTag", at = @At("RETURN"))
+    @Inject(method = "fromTag", at = @At("RETURN"))
     private void fromTag(CompoundTag root, CallbackInfo ci) {
         this.loadedChannel = this.deserializeChannelId(root);
     }

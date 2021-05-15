@@ -20,6 +20,7 @@ import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.channel.ConfiguredChannelSystem;
 import xyz.nucleoid.plasmid.game.channel.GameChannelConfig;
+import xyz.nucleoid.plasmid.game.channel.GameChannelInterface;
 import xyz.nucleoid.plasmid.game.channel.on_demand.OnDemandChannelConfig;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
@@ -63,6 +64,16 @@ public final class Plasmid implements ModInitializer {
             PartyCommand.register(dispatcher);
             ChatCommand.register(dispatcher);
             ShoutCommand.register(dispatcher);
+        });
+
+        UseEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
+            if (player instanceof ServerPlayerEntity && entity instanceof GameChannelInterface && hand == Hand.MAIN_HAND) {
+                if (((GameChannelInterface) entity).interactWithChannel((ServerPlayerEntity) player)) {
+                    return ActionResult.SUCCESS;
+                }
+            }
+
+            return ActionResult.PASS;
         });
 
         UseItemCallback.EVENT.register((player, world, hand) -> {

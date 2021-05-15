@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.channel;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -10,6 +11,8 @@ import xyz.nucleoid.plasmid.Plasmid;
 
 public interface GameChannelInterface {
     String NBT_KEY = Plasmid.ID + ":channel";
+
+    boolean interactWithChannel(ServerPlayerEntity player);
 
     void setChannel(GameChannel channel);
 

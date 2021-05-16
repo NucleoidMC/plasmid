@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.entity.FloatingText;
 import xyz.nucleoid.plasmid.game.channel.GameChannel;
 import xyz.nucleoid.plasmid.game.channel.GameChannelInterface;
+import xyz.nucleoid.plasmid.util.CompatibilityUtil;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements GameChannelInterface {
@@ -26,9 +27,6 @@ public abstract class EntityMixin implements GameChannelInterface {
 
     @Shadow
     public abstract Vec3d getPos();
-
-    @Shadow
-    public abstract float getHeight();
 
     private FloatingText display;
     private GameChannel channel;
@@ -83,7 +81,7 @@ public abstract class EntityMixin implements GameChannelInterface {
     }
 
     private Vec3d getDisplayAnchor() {
-        return this.getPos().add(0.0, this.getHeight(), 0.0);
+        return this.getPos().add(0.0, CompatibilityUtil.getClientEntityHeight((Entity) (Object) this), 0.0);
     }
 
     private void removeDisplay() {

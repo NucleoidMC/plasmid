@@ -9,7 +9,7 @@ public class CompatibilityUtil {
 
     public static double getClientEntityHeight(Entity entity) {
         if (DISGUISELIB_COMPATIBILITY) {
-            return getDisguisedHeight(entity)
+            return getDisguisedHeight(entity);
         }
 
         return entity.getHeight();

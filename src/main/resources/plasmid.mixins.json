@@ -24,6 +24,7 @@
     "game.event.ServerPlayNetworkHandlerMixin",
     "game.map.ServerPlayerEntityMixin",
     "game.map.ServerWorldMixin",
+    "game.rule.ArmorAndElytraItemMixin",
     "game.rule.PlayerEntityMixin",
     "game.rule.ServerPlayerEntityMixin",
     "game.rule.ServerPlayNetworkHandlerMixin",

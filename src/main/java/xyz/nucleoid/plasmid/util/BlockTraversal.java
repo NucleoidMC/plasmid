@@ -1,12 +1,15 @@
 package xyz.nucleoid.plasmid.util;
 
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.shorts.ShortArrayFIFOQueue;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -68,32 +71,25 @@ public final class BlockTraversal {
      */
     public void accept(BlockPos origin, Visitor visitor) {
         State state = new State(this.order);
+        state.enqueue(origin, origin, 0);
 
-        state.tryVisit(origin);
-        if (visitor.visit(origin, null, 0) == Result.TERMINATE) {
-            return;
-        }
-
-        state.enqueue(origin, 0);
-
-        BlockPos.Mutable nextPos = new BlockPos.Mutable();
+        BlockPos.Mutable pos = new BlockPos.Mutable();
         BlockPos.Mutable fromPos = new BlockPos.Mutable();
-        long[] offsets = this.connectivity.offsets;
+
+        Vec3i[] offsets = this.connectivity.offsets;
 
         while (!state.isComplete()) {
-            fromPos.set(state.dequeuePos());
-            int fromDepth = state.dequeueDepth();
-            int nextDepth = fromDepth + 1;
+            pos.set(state.dequeuePos());
+            fromPos.set(state.dequeueFromPos());
+            int depth = state.dequeueDepth();
 
-            for (long offset : offsets) {
-                nextPos.set(fromPos,
-                        BlockPos.unpackLongX(offset),
-                        BlockPos.unpackLongY(offset),
-                        BlockPos.unpackLongZ(offset)
-                );
+            if (state.tryVisit(pos) && visitor.visit(pos, fromPos, depth) == Result.CONTINUE) {
+                int nextDepth = depth + 1;
+                fromPos.set(pos);
 
-                if (state.tryVisit(nextPos) && visitor.visit(nextPos, fromPos, nextDepth) == Result.CONTINUE) {
-                    state.enqueue(nextPos, nextDepth);
+                for (Vec3i offset : offsets) {
+                    pos.set(fromPos, offset.getX(), offset.getY(), offset.getZ());
+                    state.enqueue(pos, fromPos, nextDepth);
                 }
             }
         }
@@ -104,6 +100,7 @@ public final class BlockTraversal {
 
         private final LongSet visited = new LongOpenHashSet();
         private final LongArrayFIFOQueue queue = new LongArrayFIFOQueue();
+        private final LongArrayFIFOQueue fromQueue = new LongArrayFIFOQueue();
         private final ShortArrayFIFOQueue depthQueue = new ShortArrayFIFOQueue();
 
         State(Order order) {
@@ -114,17 +111,26 @@ public final class BlockTraversal {
             return this.visited.add(pos.asLong());
         }
 
-        void enqueue(BlockPos pos, int depth) {
+        void enqueue(BlockPos pos, BlockPos from, int depth) {
             this.queue.enqueue(pos.asLong());
+            this.fromQueue.enqueue(from.asLong());
             this.depthQueue.enqueue((short) depth);
         }
 
         long dequeuePos() {
-            return this.order == Order.BREADTH_FIRST ? this.queue.dequeueLastLong() : this.queue.dequeueLong();
+            return this.dequeuePos(this.queue);
+        }
+
+        long dequeueFromPos() {
+            return this.dequeuePos(this.fromQueue);
+        }
+
+        long dequeuePos(LongArrayFIFOQueue queue) {
+            return this.order == Order.BREADTH_FIRST ? queue.dequeueLong() : queue.dequeueLastLong();
         }
 
         int dequeueDepth() {
-            return this.order == Order.BREADTH_FIRST ? this.depthQueue.dequeueLastShort() : this.depthQueue.dequeueShort();
+            return this.order == Order.BREADTH_FIRST ? this.depthQueue.dequeueShort() : this.depthQueue.dequeueLastShort();
         }
 
         boolean isComplete() {
@@ -140,19 +146,16 @@ public final class BlockTraversal {
         public static final Connectivity EIGHTEEN = create(Connectivity::eighteen);
         public static final Connectivity TWENTY_SIX = create(Connectivity::twentySix);
 
-        final long[] offsets;
+        final Vec3i[] offsets;
 
-        Connectivity(long[] offsets) {
+        Connectivity(Vec3i[] offsets) {
             this.offsets = offsets;
         }
 
         static Connectivity create(Consumer<Consumer<Vec3i>> generator) {
-            LongList offsets = new LongArrayList();
-            generator.accept(pos -> {
-                long packed = BlockPos.asLong(pos.getX(), pos.getY(), pos.getZ());
-                offsets.add(packed);
-            });
-            return new Connectivity(offsets.toLongArray());
+            List<Vec3i> offsets = new ArrayList<>();
+            generator.accept(offsets::add);
+            return new Connectivity(offsets.toArray(new Vec3i[0]));
         }
 
         private static void six(Consumer<Vec3i> consumer) {
@@ -211,12 +214,12 @@ public final class BlockTraversal {
         /**
          * Called for each traversed block and determines whether traversal should continue from each block.
          *
-         * @param pos the current block position
-         * @param fromPos the block position the current was found from. Can be {@code null} for the origin!
+         * @param pos the current block position.
+         * @param fromPos the block position the current was found from. Can be equal to the current pos for the origin.
          * @param depth the depth at the current block (how many steps we have taken from the origin)
-         * @return whether or not traversal should continue from this point
+         * @return whether or not traversal should continue from this point.
          */
-        Result visit(BlockPos pos, @Nullable BlockPos fromPos, int depth);
+        Result visit(BlockPos pos, BlockPos fromPos, int depth);
     }
 
     public enum Result {

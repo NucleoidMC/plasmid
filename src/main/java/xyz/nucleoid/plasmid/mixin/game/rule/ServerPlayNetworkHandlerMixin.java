@@ -9,6 +9,7 @@ import net.minecraft.network.packet.s2c.play.ConfirmScreenActionS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
+import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
@@ -70,7 +71,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
         if (gameSpace != null) {
             if (packet.getSlot() < 0 || packet.getSlot() >= this.player.inventory.size()) return;
             // See https://wiki.vg/File:Inventory-slots.png for the slot numbering
-            boolean isArmor = (packet.getSlot() >= 5 && packet.getSlot() <= 8);
+            boolean isArmor = (packet.getSlot() >= 5 && packet.getSlot() <= 8) && this.player.currentScreenHandler instanceof PlayerScreenHandler;
             boolean denyModifyInventory = gameSpace.testRule(GameRule.MODIFY_INVENTORY) == RuleResult.DENY;
             RuleResult modifyArmor = gameSpace.testRule(GameRule.MODIFY_ARMOR);
             if ((denyModifyInventory && (!isArmor || modifyArmor != RuleResult.ALLOW))

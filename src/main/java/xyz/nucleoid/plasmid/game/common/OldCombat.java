@@ -13,6 +13,11 @@ import net.minecraft.item.ToolMaterial;
 
 import java.util.UUID;
 
+/**
+ * A utility class that allows old-style 1.8 combat to be applied to any given {@link ItemStack}.
+ * <p>
+ * This works by modifying the damage and attack speed attributes to match their 1.8 levels.
+ */
 public final class OldCombat {
     private static final EntityAttribute DAMAGE_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_DAMAGE;
     private static final EntityAttribute SPEED_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_SPEED;

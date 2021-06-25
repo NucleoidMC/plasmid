@@ -22,24 +22,42 @@ public interface GameActivity extends GameBehavior {
     GameActivitySource getSource();
 
     /**
-     * Sets a rule on this {@link GameActivity} that will be enforced while this activity is active.
+     * Sets a rule on this {@link GameActivity} that will be enforced while this activity is enabled.
      *
-     * @param rule the rule type
-     * @param result the behavior to be used for this rule
-     * @return the updated {@link GameActivity}
+     * @param rule the rule type to set
+     * @param result how this rule should be responded to
+     * @return this {@link GameActivity}
      */
     GameActivity setRule(GameRule rule, ActionResult result);
 
+    /**
+     * Sets a rule on this {@link GameActivity} to {@link ActionResult#SUCCESS} which will be enforced while this
+     * activity is enabled.
+     *
+     * @param rule the rule type to set
+     * @return this {@link GameActivity}
+     * @see ActionResult#SUCCESS
+     * @see GameActivity#setRule(GameRule, ActionResult)
+     */
     default GameActivity allow(GameRule rule) {
         return this.setRule(rule, ActionResult.SUCCESS);
     }
 
+    /**
+     * Sets a rule on this {@link GameActivity} to {@link ActionResult#FAIL} which will be enforced while this
+     * activity is enabled.
+     *
+     * @param rule the rule type to set
+     * @return this {@link GameActivity}
+     * @see ActionResult#FAIL
+     * @see GameActivity#setRule(GameRule, ActionResult)
+     */
     default GameActivity deny(GameRule rule) {
         return this.setRule(rule, ActionResult.FAIL);
     }
 
     /**
-     * Attaches a listener for the given event to this {@link GameActivity}
+     * Registers a listener for the given event to this {@link GameActivity}.
      *
      * @param event the event type to listen for
      * @param listener the listener to call when this event is invoked
@@ -50,10 +68,10 @@ public interface GameActivity extends GameBehavior {
 
     /**
      * Adds a resource to this {@link GameActivity} object that will be automatically closed when the {@link GameActivity}
-     * instance is changed on the parent {@link GameSpace}.
+     * is destroyed.
      *
-     * @param resource the resource to close when this {@link GameActivity} closes
-     * @return the updated {@link GameActivity}
+     * @param resource the resource to close when this {@link GameActivity} is destroyed
+     * @return this {@link GameActivity}
      */
     GameActivity addResource(AutoCloseable resource);
 }

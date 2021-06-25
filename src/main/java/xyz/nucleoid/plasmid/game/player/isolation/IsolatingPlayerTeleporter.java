@@ -9,34 +9,76 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.WorldProperties;
 import net.minecraft.world.biome.source.BiomeAccess;
+import xyz.nucleoid.plasmid.game.GameSpace;
 
 import java.util.function.Function;
 
+/**
+ * Teleports payer in and out of a {@link GameSpace}. This involves ensuring that the player does not bring anything
+ * into the game space as well as to not bring anything out of the game space.
+ * <p>
+ * The player's NBT must be saved on entry to a game space, and it must not be saved when exiting and instead restored.
+ * <p>
+ * This class is also responsible for resetting player state and sending packets such that the player is fully refreshed
+ * after teleporting and no weird issues can arise from invalid state passing through dimensions.
+ */
 public final class IsolatingPlayerTeleporter {
     private final MinecraftServer server;
-    private final PlayerManagerAccess playerManager;
 
     public IsolatingPlayerTeleporter(MinecraftServer server) {
         this.server = server;
-        this.playerManager = (PlayerManagerAccess) server.getPlayerManager();
     }
 
+    /**
+     * Teleports a player into a {@link GameSpace}. The player will save any associated data before teleporting.
+     *
+     * @param player the player to teleport
+     * @param recreate a function describing how the new teleported player should be initialized
+     */
     public void teleportIn(ServerPlayerEntity player, Function<ServerPlayerEntity, ServerWorld> recreate) {
         this.teleport(player, recreate, true);
     }
 
+    /**
+     * Teleports a player out of a {@link GameSpace}. The player will NOT save any associated data before teleporting,
+     * and instead will restore any previously saved data.
+     *
+     * @param player the player to teleport
+     * @param recreate a function describing how the new teleported player should be initialized
+     */
     public void teleportOut(ServerPlayerEntity player, Function<ServerPlayerEntity, ServerWorld> recreate) {
         this.teleport(player, recreate, false);
     }
 
-    private void teleport(ServerPlayerEntity player, Function<ServerPlayerEntity, ServerWorld> recreate, boolean save) {
+    /**
+     * Teleports a player out of a {@link GameSpace} and into the passed world. The player will NOT save any associated
+     * data before teleporting, and instead will restore any previously saved data.
+     *
+     * @param player the player to teleport
+     * @param world the world to teleport to
+     */
+    public void teleportOutTo(ServerPlayerEntity player, ServerWorld world) {
+        this.teleportOut(player, newPlayer -> world);
+    }
+
+    /**
+     * Teleports a player out of a {@link GameSpace} and into the previous world that they were apart of. The player
+     * will NOT save any associated data before teleporting, and instead will restore any previously saved data.
+     *
+     * @param player the player to teleport
+     */
+    public void teleportOut(ServerPlayerEntity player) {
+        this.teleportOut(player, ServerPlayerEntity::getServerWorld);
+    }
+
+    private void teleport(ServerPlayerEntity player, Function<ServerPlayerEntity, ServerWorld> recreate, boolean in) {
         PlayerManager playerManager = this.server.getPlayerManager();
         PlayerManagerAccess playerManagerAccess = (PlayerManagerAccess) playerManager;
 
         player.detach();
         player.setCameraEntity(player);
 
-        if (save) {
+        if (in) {
             playerManagerAccess.plasmid$savePlayerData(player);
         }
 
@@ -49,6 +91,10 @@ public final class IsolatingPlayerTeleporter {
         playerManagerAccess.plasmid$getPlayerResetter().apply(player);
 
         ServerWorld world = recreate.apply(player);
+        if (!in) {
+            playerManagerAccess.plasmid$loadIntoPlayer(player);
+        }
+
         player.setWorld(world);
         player.interactionManager.setWorld(world);
 
@@ -85,19 +131,5 @@ public final class IsolatingPlayerTeleporter {
         for (StatusEffectInstance effect : player.getStatusEffects()) {
             networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getEntityId(), effect));
         }
-    }
-
-    public void teleportOutTo(ServerPlayerEntity player, ServerWorld world) {
-        this.teleportOut(player, newPlayer -> {
-            this.playerManager.plasmid$loadIntoPlayer(newPlayer);
-            return world;
-        });
-    }
-
-    public void teleportOut(ServerPlayerEntity player) {
-        this.teleportOut(player, newPlayer -> {
-            this.playerManager.plasmid$loadIntoPlayer(newPlayer);
-            return newPlayer.getServerWorld();
-        });
     }
 }

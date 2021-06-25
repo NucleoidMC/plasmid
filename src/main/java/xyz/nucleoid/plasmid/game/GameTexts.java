@@ -5,6 +5,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
+/**
+ * Utility class containing various functions that supply {@link Text} instances.
+ * <p>
+ * This provides a common path for Plasmid and game implementations to share common messages.
+ */
 public final class GameTexts {
     public static MutableText commandLink(String text, String command) {
         return new LiteralText(text).setStyle(commandLinkStyle(command));
@@ -29,7 +34,7 @@ public final class GameTexts {
         public static MutableText gameOpened(ServerCommandSource source, GameSpace gameSpace) {
             MutableText gameName = gameSpace.getSourceConfig().getName().shallowCopy().formatted(Formatting.GRAY);
 
-            return  new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), gameName)
+            return new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
         }
 
@@ -41,7 +46,7 @@ public final class GameTexts {
         }
 
         public static MutableText gameOpenError() {
-            return  new TranslatableText("text.plasmid.game.open.error");
+            return new TranslatableText("text.plasmid.game.open.error");
         }
     }
 

@@ -10,6 +10,9 @@ import net.minecraft.util.math.MathHelper;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.util.ItemStackBuilder;
 
+/**
+ * A simple representation of a team type, containing a name and color.
+ */
 public final class GameTeam {
     public static final Codec<GameTeam> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(

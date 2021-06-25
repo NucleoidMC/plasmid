@@ -11,6 +11,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Iterator;
 import java.util.Random;
 
+/**
+ * Represents an axis-aligned-bounding-box aligned to the block grid.
+ *
+ * This is made up of an inclusive minimum and maximum {@link BlockPos}.
+ */
 public final class BlockBounds implements Iterable<BlockPos> {
     public static final Codec<BlockBounds> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
@@ -18,8 +23,6 @@ public final class BlockBounds implements Iterable<BlockPos> {
                 BlockPos.CODEC.fieldOf("max").forGetter(b -> b.max)
         ).apply(instance, BlockBounds::new);
     });
-
-    public static final BlockBounds EMPTY = BlockBounds.of(BlockPos.ORIGIN);
 
     private final BlockPos min;
     private final BlockPos max;

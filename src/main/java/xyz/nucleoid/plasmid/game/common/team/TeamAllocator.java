@@ -11,6 +11,16 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.BiConsumer;
 
+/**
+ * Utility class for allocating players into teams that takes into account maximum team sizes as well as team
+ * preferences.
+ * <p>
+ * Given a team preference, the allocator will try its best to satisfy as many players as possible while remaining fair
+ * and balanced.
+ *
+ * @param <T> the team type
+ * @param <V> the "player" type
+ */
 public final class TeamAllocator<T, V> {
     private final List<T> teams;
     private final List<V> players = new ArrayList<>();
@@ -24,6 +34,12 @@ public final class TeamAllocator<T, V> {
         this.teamSizes.defaultReturnValue(-1);
     }
 
+    /**
+     * Sets the maximum amount of players that can be allocated to the given team.
+     *
+     * @param team the team to set a maximum size for
+     * @param maxSize the maximum number of players that can be allocated to this team
+     */
     public void setSizeForTeam(T team, int maxSize) {
         Preconditions.checkArgument(this.teams.contains(team), "invalid team: " + team);
         Preconditions.checkArgument(maxSize > 0, "max team size must be >0");
@@ -31,6 +47,12 @@ public final class TeamAllocator<T, V> {
         this.teamSizes.put(team, maxSize);
     }
 
+    /**
+     * Adds a player for consideration by this {@link TeamAllocator} with an optional team preference.
+     *
+     * @param player the player to add to this allocator
+     * @param preference the preference team for this player, or {@code null} if no preference
+     */
     public void add(V player, @Nullable T preference) {
         this.players.add(player);
         if (preference != null) {
@@ -38,12 +60,24 @@ public final class TeamAllocator<T, V> {
         }
     }
 
+    /**
+     * Allocates all players added through {@link TeamAllocator#add} into teams, taking preference and max size into
+     * account.
+     *
+     * @param apply a consumer that is called for each player and their allocated team
+     */
     public void allocate(BiConsumer<T, V> apply) {
-        Multimap<T, V> teamToPlayers = this.build();
+        Multimap<T, V> teamToPlayers = this.allocate();
         teamToPlayers.forEach(apply);
     }
 
-    public Multimap<T, V> build() {
+    /**
+     * Allocates all players added through {@link TeamAllocator#add} into teams, taking preference and max size into
+     * account.
+     *
+     * @return a {@link Multimap} containing every team and the allocated players
+     */
+    public Multimap<T, V> allocate() {
         Multimap<T, V> teamToPlayers = HashMultimap.create();
         Map<V, T> playerToTeam = new Object2ObjectOpenHashMap<>();
 

@@ -24,4 +24,8 @@ public final class RandomGameConfig {
     public GameConfig<?> selectGame(Random random) {
         return this.games.selectGame(random);
     }
+
+    public boolean isEmpty() {
+        return this.games.isEmpty();
+    }
 }

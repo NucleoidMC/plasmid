@@ -25,7 +25,7 @@ public final class GameActivityStack<A extends GameActivity> implements GameBeha
 
     @Nullable
     public A peek() {
-        return this.stack.peek();
+        return this.stack.peekLast();
     }
 
     public boolean isEnabled(A activity) {
@@ -48,7 +48,7 @@ public final class GameActivityStack<A extends GameActivity> implements GameBeha
     @Override
     @NotNull
     public <T> T invoker(StimulusEvent<T> event) {
-        A activity = this.stack.peek();
+        A activity = this.stack.peekLast();
         if (activity != null) {
             return activity.invoker(event);
         } else {
@@ -59,7 +59,7 @@ public final class GameActivityStack<A extends GameActivity> implements GameBeha
     @Override
     @NotNull
     public <T> T propagatingInvoker(StimulusEvent<T> event) {
-        A activity = this.stack.peek();
+        A activity = this.stack.peekLast();
         if (activity != null) {
             return activity.propagatingInvoker(event);
         } else {
@@ -70,7 +70,7 @@ public final class GameActivityStack<A extends GameActivity> implements GameBeha
     @Override
     @NotNull
     public <T> Iterable<T> getInvokers(StimulusEvent<T> event) {
-        A activity = this.stack.peek();
+        A activity = this.stack.peekLast();
         if (activity != null) {
             return activity.getInvokers(event);
         } else {
@@ -81,7 +81,7 @@ public final class GameActivityStack<A extends GameActivity> implements GameBeha
     @Override
     @NotNull
     public ActionResult testRule(GameRuleType rule) {
-        A activity = this.stack.peek();
+        A activity = this.stack.peekLast();
         if (activity != null) {
             return activity.testRule(rule);
         } else {

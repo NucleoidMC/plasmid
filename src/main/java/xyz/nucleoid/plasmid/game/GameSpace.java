@@ -52,14 +52,6 @@ public interface GameSpace {
     boolean kickPlayer(ServerPlayerEntity player);
 
     /**
-     * Closes this {@link GameSpace} with the given reason.
-     * All associated {@link GameActivity} instances are closed and all players will be removed.
-     *
-     * @param reason the reason for this game closing
-     */
-    void close(GameCloseReason reason);
-
-    /**
      * Returns all {@link ServerPlayerEntity}s in this {@link GameSpace}.
      *
      * <p>{@link GameSpace#containsPlayer(ServerPlayerEntity)} can be used to check if a {@link ServerPlayerEntity} is in this {@link GameSpace} instead.

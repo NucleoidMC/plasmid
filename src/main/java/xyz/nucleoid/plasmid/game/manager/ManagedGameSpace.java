@@ -153,6 +153,12 @@ public final class ManagedGameSpace implements GameSpace {
         if (this.activityStack.pop(activity)) {
             this.disableActivity(activity);
             this.destroyActivity(activity, reason);
+
+            if (!this.activityStack.isEmpty()) {
+                this.enableActivity(this.activityStack.peek());
+            } else {
+                this.close(reason);
+            }
         } else {
             throw new IllegalArgumentException("Given GameActivity is not currently enabled!");
         }
@@ -305,7 +311,12 @@ public final class ManagedGameSpace implements GameSpace {
         this.close(GameCloseReason.ERRORED);
     }
 
-    @Override
+    /**
+     * Closes this {@link GameSpace} with the given reason.
+     * All associated {@link GameActivity} instances are closed and all players will be removed.
+     *
+     * @param reason the reason for this game closing
+     */
     public void close(GameCloseReason reason) {
         if (this.closed) {
             return;

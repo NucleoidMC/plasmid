@@ -275,7 +275,6 @@ public final class GameCommand {
 
     private static GameSpace getJoinableGameSpace() throws CommandSyntaxException {
         return GameSpaceManager.get().getOpenGameSpaces().stream()
-                .filter(game -> game.getPlayerCount() > 0)
                 .max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount))
                 .orElseThrow(NO_GAME_OPEN::create);
     }

@@ -43,4 +43,8 @@ public final class GameListConfig {
         }
         return games.get(random.nextInt(games.size()));
     }
+
+    public boolean isEmpty() {
+        return this.games.isEmpty();
+    }
 }

@@ -19,7 +19,7 @@ import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
-import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
+import xyz.nucleoid.plasmid.game.world.generator.view.VoidBlockView;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.Arrays;

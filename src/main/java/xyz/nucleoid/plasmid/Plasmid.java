@@ -7,26 +7,30 @@ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.fabricmc.fabric.api.event.player.*;
-import net.minecraft.item.ItemStack;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Unit;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import xyz.nucleoid.plasmid.chat.ChatChannelManager;
 import xyz.nucleoid.plasmid.command.*;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameType;
-import xyz.nucleoid.plasmid.game.ManagedGameSpace;
-import xyz.nucleoid.plasmid.game.channel.ConfiguredChannelSystem;
-import xyz.nucleoid.plasmid.game.channel.GameChannelConfig;
-import xyz.nucleoid.plasmid.game.channel.GameChannelInterface;
-import xyz.nucleoid.plasmid.game.channel.menu.MenuChannelConfig;
-import xyz.nucleoid.plasmid.game.channel.on_demand.OnDemandChannelConfig;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
-import xyz.nucleoid.plasmid.game.event.*;
+import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
+import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.portal.GamePortalConfig;
+import xyz.nucleoid.plasmid.game.portal.GamePortalInterface;
+import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
+import xyz.nucleoid.plasmid.game.portal.menu.MenuPortalConfig;
+import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandPortalConfig;
+import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
 import xyz.nucleoid.plasmid.item.PlasmidItems;
 import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
@@ -42,17 +46,18 @@ public final class Plasmid implements ModInitializer {
         Reflection.initialize(PlasmidItems.class);
 
         Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "void"), VoidChunkGenerator.CODEC);
+        Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
 
         GameConfigs.register();
-        ConfiguredChannelSystem.register();
+        GamePortalManager.register();
 
         MapTemplateSerializer.INSTANCE.register();
 
-        GameChannelConfig.register(new Identifier(ID, "on_demand"), OnDemandChannelConfig.CODEC);
-        GameChannelConfig.register(new Identifier(ID, "menu"), MenuChannelConfig.CODEC);
+        GamePortalConfig.register(new Identifier(ID, "on_demand"), OnDemandPortalConfig.CODEC);
+        GamePortalConfig.register(new Identifier(ID, "menu"), MenuPortalConfig.CODEC);
 
-        GameType.register(new Identifier(Plasmid.ID, "test"), TestGame::open, Codec.unit(Unit.INSTANCE));
-        GameType.register(new Identifier(Plasmid.ID, "random"), RandomGame::open, RandomGameConfig.CODEC);
+        GameType.register(new Identifier(Plasmid.ID, "test"), Codec.unit(Unit.INSTANCE), TestGame::open);
+        GameType.register(new Identifier(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
 
         this.registerCallbacks();
     }
@@ -62,15 +67,15 @@ public final class Plasmid implements ModInitializer {
             MapManageCommand.register(dispatcher);
             MapMetadataCommand.register(dispatcher);
             GameCommand.register(dispatcher);
-            GameChannelCommand.register(dispatcher);
+            GamePortalCommand.register(dispatcher);
             PartyCommand.register(dispatcher);
             ChatCommand.register(dispatcher);
             ShoutCommand.register(dispatcher);
         });
 
         UseEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
-            if (player instanceof ServerPlayerEntity && entity instanceof GameChannelInterface && hand == Hand.MAIN_HAND) {
-                if (((GameChannelInterface) entity).interactWithChannel((ServerPlayerEntity) player)) {
+            if (player instanceof ServerPlayerEntity && entity instanceof GamePortalInterface && hand == Hand.MAIN_HAND) {
+                if (((GamePortalInterface) entity).interactWithPortal((ServerPlayerEntity) player)) {
                     return ActionResult.SUCCESS;
                 }
             }
@@ -78,84 +83,14 @@ public final class Plasmid implements ModInitializer {
             return ActionResult.PASS;
         });
 
-        UseItemCallback.EVENT.register((player, world, hand) -> {
-            if (!world.isClient && player instanceof ServerPlayerEntity) {
-                ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
-                if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
-                    try {
-                        UseItemListener invoker = gameSpace.invoker(UseItemListener.EVENT);
-                        return invoker.onUseItem((ServerPlayerEntity) player, hand);
-                    } catch (Throwable t) {
-                        LOGGER.error("An unexpected exception occurred while dispatching use item event", t);
-                        gameSpace.reportError(t, "Use item");
-                    }
-                }
-            }
-
-            return TypedActionResult.pass(ItemStack.EMPTY);
-        });
-
-        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (!world.isClient && player instanceof ServerPlayerEntity) {
-                ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
-                if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
-                    try {
-                        UseBlockListener invoker = gameSpace.invoker(UseBlockListener.EVENT);
-                        return invoker.onUseBlock((ServerPlayerEntity) player, hand, hitResult);
-                    } catch (Throwable t) {
-                        LOGGER.error("An unexpected exception occurred while dispatching use block event", t);
-                        gameSpace.reportError(t, "Use block");
-                    }
-                }
-            }
-
-            return ActionResult.PASS;
-        });
-
-        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, entity) -> {
-            if (!world.isClient && player instanceof ServerPlayerEntity) {
-                ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
-                if (gameSpace != null && gameSpace.containsPlayer((ServerPlayerEntity) player)) {
-                    try {
-                        BreakBlockListener invoker = gameSpace.invoker(BreakBlockListener.EVENT);
-                        return invoker.onBreak((ServerPlayerEntity) player, pos) != ActionResult.FAIL;
-                    } catch (Throwable t) {
-                        LOGGER.error("An unexpected exception occurred while dispatching block break event", t);
-                        gameSpace.reportError(t, "Break block");
-                    }
-                }
-            }
-            return true;
-        });
-
-        AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (!world.isClient && player instanceof ServerPlayerEntity) {
-                ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-
-                ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
-                if (gameSpace != null && gameSpace.containsPlayer(serverPlayer)) {
-                    try {
-                        AttackEntityListener invoker = gameSpace.invoker(AttackEntityListener.EVENT);
-                        return invoker.onAttackEntity(serverPlayer, hand, entity, hitResult);
-                    } catch (Throwable t) {
-                        LOGGER.error("An unexpected exception occurred while dispatching attack entity event", t);
-                        gameSpace.reportError(t, "Attack entity");
-                    }
-                }
-            }
-
-            return ActionResult.PASS;
-        });
+        ChatChannelManager.registerCallbacks();
 
         ServerTickEvents.END_WORLD_TICK.register(world -> {
-            ManagedGameSpace game = ManagedGameSpace.forWorld(world);
+            ManagedGameSpace game = GameSpaceManager.get().byWorld(world);
             if (game != null) {
                 try {
-                    game.invoker(GameTickListener.EVENT).onTick();
+                    game.getBehavior().propagatingInvoker(GameActivityEvents.TICK).onTick();
                 } catch (Throwable t) {
-                    LOGGER.error("An unexpected exception occurred while ticking the game", t);
-                    game.reportError(t, "Ticking game");
-
                     game.closeWithError("An unexpected error occurred while ticking the game");
                 }
             }
@@ -163,21 +98,22 @@ public final class Plasmid implements ModInitializer {
 
         ServerTickEvents.START_SERVER_TICK.register(server -> {
             MapWorkspaceManager.get(server).tick();
+
+            GamePortalManager.INSTANCE.tick();
         });
 
-        ServerLifecycleEvents.SERVER_STARTING.register(ConfiguredChannelSystem.INSTANCE::setup);
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+            GameSpaceManager.openServer(server);
+            GamePortalManager.INSTANCE.setup(server);
+        });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            for (ManagedGameSpace gameSpace : ManagedGameSpace.getOpen()) {
-                gameSpace.close(GameCloseReason.CANCELED);
-            }
+            GameSpaceManager.closeServer();
+            GamePortalManager.INSTANCE.close(server);
         });
 
         ServerWorldEvents.UNLOAD.register((server, world) -> {
-            ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(world);
-            if (gameSpace != null) {
-                gameSpace.close(GameCloseReason.GARBAGE_COLLECTED);
-            }
+            GameSpaceManager.unloadWorld(world);
         });
     }
 }

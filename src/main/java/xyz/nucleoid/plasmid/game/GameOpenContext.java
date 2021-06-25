@@ -1,21 +1,26 @@
 package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.server.MinecraftServer;
-import xyz.nucleoid.fantasy.BubbleWorldConfig;
+import xyz.nucleoid.plasmid.game.activity.GameActivity;
+import xyz.nucleoid.plasmid.game.activity.GameActivitySource;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 
 import java.util.function.Consumer;
 
 public final class GameOpenContext<C> {
     private final MinecraftServer server;
-    private final ConfiguredGame<C> game;
+    private final GameConfig<C> game;
 
-    GameOpenContext(MinecraftServer server, ConfiguredGame<C> game) {
+    public GameOpenContext(MinecraftServer server, GameConfig<C> game) {
         this.server = server;
         this.game = game;
     }
 
-    public GameOpenProcedure createOpenProcedure(BubbleWorldConfig worldConfig, Consumer<GameLogic> configureGame) {
-        return new GameOpenProcedure(this.server, this.game, this.game, worldConfig, configureGame);
+    public GameOpenProcedure open(Consumer<GameActivity> setup) {
+        return gameSpace -> {
+            GameActivitySource activities = gameSpace.activitySource(this.game);
+            activities.push(setup);
+        };
     }
 
     public MinecraftServer getServer() {
@@ -26,7 +31,7 @@ public final class GameOpenContext<C> {
         return this.game.getConfig();
     }
 
-    public ConfiguredGame<C> getGame() {
+    public GameConfig<C> getGame() {
         return this.game;
     }
 }

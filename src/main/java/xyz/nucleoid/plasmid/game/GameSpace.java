@@ -1,26 +1,38 @@
 package xyz.nucleoid.plasmid.game;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import xyz.nucleoid.plasmid.game.activity.GameActivity;
+import xyz.nucleoid.plasmid.game.activity.GameActivitySource;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
+import java.util.Collection;
 
 /**
- * Represents the space within which a game occurs through attached {@link GameLogic}
+ * Represents the space within which a game occurs through attached {@link GameActivity}
  */
-public interface GameSpace extends AutoCloseable {
+public interface GameSpace {
     /**
-     * Swaps out the active {@link GameLogic} within this {@link GameSpace}.
-     *
-     * @param builder the builder to apply on the newly constructed {@link GameLogic}
+     * @return the host server of this {@link GameSpace}
      */
-    void openGame(Consumer<GameLogic> builder);
+    MinecraftServer getServer();
 
-    CompletableFuture<StartResult> requestStart();
+    // TODO: should this be here?
+    GameActivitySource activitySource(GameConfig<?> config);
+
+    ServerWorld addWorld(RuntimeWorldConfig worldConfig);
+
+    void removeWorld(ServerWorld world);
+
+    GameResult requestStart();
+
+    GameResult screenPlayerJoins(Collection<ServerPlayerEntity> players);
+
+    GameResult offerPlayer(ServerPlayerEntity player);
 
     /**
      * Attempts to remove the given {@link ServerPlayerEntity} from this {@link GameSpace}.
@@ -29,7 +41,7 @@ public interface GameSpace extends AutoCloseable {
      * @param player {@link ServerPlayerEntity} to remove from this {@link GameSpace}
      * @return whether the {@link ServerPlayerEntity} was successfully removed
      */
-    boolean removePlayer(ServerPlayerEntity player);
+    boolean kickPlayer(ServerPlayerEntity player);
 
     /**
      * Closes this game with a reason
@@ -37,18 +49,6 @@ public interface GameSpace extends AutoCloseable {
      * @param reason the reason for this game closing
      */
     void close(GameCloseReason reason);
-
-    /**
-     * Adds a resource to this {@link GameSpace} object that will be automatically closed when this {@link GameSpace}
-     * is closed.
-     *
-     * This differs from {@link GameLogic#addResource(AutoCloseable)}, which will be closed when the {@link GameLogic}
-     * instance is closed.
-     *
-     * @param resource the resource to close when this {@link GameSpace} closes
-     * @return the added resource
-     */
-    <T extends AutoCloseable> T addResource(T resource);
 
     /**
      * Returns all {@link ServerPlayerEntity}s in this {@link GameSpace}.
@@ -77,41 +77,13 @@ public interface GameSpace extends AutoCloseable {
     }
 
     /**
-     * Returns whether this {@link GameSpace} contains the given {@link Entity}.
-     *
-     * @param entity {@link Entity} to check existence of
-     * @return whether the given {@link Entity} exists in this {@link GameSpace}
-     */
-    default boolean containsEntity(Entity entity) {
-        return this.getWorld().getEntity(entity.getUuid()) != null;
-    }
-
-    /**
-     * Returns the {@link ServerWorld} that this {@link GameSpace} is hosted in.
-     *
-     * @return the host world of this {@link GameSpace}.
-     */
-    ServerWorld getWorld();
-
-    /**
-     * @return the host server of this {@link GameSpace}
-     */
-    default MinecraftServer getServer() {
-        return this.getWorld().getServer();
-    }
-
-    /**
-     * @return the game config that is running within this {@link GameSpace}
-     */
-    ConfiguredGame<?> getGameConfig();
-
-    /**
-     * @return the game config that created this {@link GameSpace}
-     */
-    ConfiguredGame<?> getSourceGameConfig();
-
-    /**
      * @return the lifecycle manager for this {@link GameSpace}
      */
     GameLifecycle getLifecycle();
+
+    GameConfig<?> getSourceConfig();
+
+    Identifier getId();
+
+    long getTime();
 }

@@ -11,6 +11,7 @@ import com.mojang.serialization.DataResult;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.NbtCompoundTagArgumentType;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.MessageType;
@@ -23,19 +24,19 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.command.argument.GameChannelArgument;
 import xyz.nucleoid.plasmid.command.argument.GameConfigArgument;
-import xyz.nucleoid.plasmid.game.ConfiguredGame;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameOpenException;
-import xyz.nucleoid.plasmid.game.ManagedGameSpace;
-import xyz.nucleoid.plasmid.game.channel.GameChannel;
-import xyz.nucleoid.plasmid.game.channel.GameChannelManager;
+import xyz.nucleoid.plasmid.command.argument.GameSpaceArgument;
+import xyz.nucleoid.plasmid.game.*;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
 import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -45,8 +46,8 @@ public final class GameCommand {
             new TranslatableText("text.plasmid.game.join.no_game_open")
     );
 
-    public static final SimpleCommandExceptionType NO_GAME_IN_WORLD = new SimpleCommandExceptionType(
-            new TranslatableText("text.plasmid.game.no_game_in_world")
+    public static final SimpleCommandExceptionType NOT_IN_GAME = new SimpleCommandExceptionType(
+            new TranslatableText("text.plasmid.game.not_in_game")
     );
 
     public static final DynamicCommandExceptionType MALFORMED_CONFIG = new DynamicCommandExceptionType(error -> {
@@ -72,7 +73,7 @@ public final class GameCommand {
                 )
                 .then(literal("propose")
                     .requires(source -> source.hasPermissionLevel(2))
-                    .then(GameChannelArgument.argument("game_channel")
+                    .then(GameSpaceArgument.argument("game_space")
                         .executes(GameCommand::proposeGame)
                     )
                         .executes(GameCommand::proposeCurrentGame)
@@ -91,7 +92,7 @@ public final class GameCommand {
                 )
                 .then(literal("join")
                     .executes(GameCommand::joinGame)
-                    .then(GameChannelArgument.argument("game_channel")
+                    .then(GameSpaceArgument.argument("game_space")
                         .executes(GameCommand::joinQualifiedGame)
                     )
                 )
@@ -113,67 +114,61 @@ public final class GameCommand {
     // @formatter:on
 
     private static int openGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Pair<Identifier, ConfiguredGame<?>> game = GameConfigArgument.get(context, "game_config");
+        Pair<Identifier, GameConfig<?>> game = GameConfigArgument.get(context, "game_config");
         return openGame(context, game.getSecond());
     }
 
     private static int openAnonymousGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         CompoundTag configNbt = NbtCompoundTagArgumentType.getCompoundTag(context, "game_config_nbt");
-        DataResult<ConfiguredGame<?>> result = ConfiguredGame.CODEC.decode(NbtOps.INSTANCE, configNbt).map(Pair::getFirst);
+        DataResult<GameConfig<?>> result = GameConfig.CODEC.parse(NbtOps.INSTANCE, configNbt);
         if (result.error().isPresent()) {
             throw MALFORMED_CONFIG.create(result.error().get());
         }
 
-        ConfiguredGame<?> game = result.result().get();
+        GameConfig<?> game = result.result().get();
         return openGame(context, game);
     }
 
-    private static int openGame(CommandContext<ServerCommandSource> context, ConfiguredGame<?> game) {
+    private static int openGame(CommandContext<ServerCommandSource> context, GameConfig<?> config) {
         ServerCommandSource source = context.getSource();
         MinecraftServer server = source.getMinecraftServer();
-        PlayerManager playerManager = server.getPlayerManager();
 
         Entity entity = source.getEntity();
         ServerPlayerEntity player = entity instanceof ServerPlayerEntity ? (ServerPlayerEntity) entity : null;
 
         server.submit(() -> {
             if (player != null) {
-                ManagedGameSpace currentGameSpace = ManagedGameSpace.forWorld(player.world);
+                ManagedGameSpace currentGameSpace = GameSpaceManager.get().byPlayer(player);
                 if (currentGameSpace != null) {
-                    currentGameSpace.removePlayer(player);
+                    currentGameSpace.kickPlayer(player);
                 }
             }
 
-            GameChannelManager channelManager = GameChannelManager.get(server);
-
-            try {
-                channelManager.openOneshot(game).handleAsync((channel, throwable) -> {
-                    if (throwable == null) {
-                        if (player != null && ManagedGameSpace.forWorld(player.world) == null) {
-                            channel.requestJoin(player);
+            GameSpaceManager.get().open(config)
+                    .handleAsync((gameSpace, throwable) -> {
+                        if (throwable == null) {
+                            if (player != null) {
+                                tryJoinGame(player, gameSpace);
+                            }
+                            onOpenSuccess(source, gameSpace);
+                        } else {
+                            onOpenError(source, throwable);
                         }
-                        onOpenSuccess(source, channel, game, playerManager);
-                    } else {
-                        onOpenError(playerManager, throwable);
-                    }
-                    return null;
-                }, server);
-            } catch (Throwable throwable) {
-                onOpenError(playerManager, throwable);
-            }
+                        return null;
+                    }, server);
         });
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(ServerCommandSource source, GameChannel channel, ConfiguredGame<?> game, PlayerManager playerManager) {
-        Text openMessage = new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), game.getName().shallowCopy().formatted(Formatting.GRAY))
-                .append(channel.createJoinLink());
+    private static void onOpenSuccess(ServerCommandSource source, GameSpace gameSpace) {
+        PlayerManager players = source.getMinecraftServer().getPlayerManager();
 
-        playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
+        Text message = GameTexts.Broadcast.gameOpened(source, gameSpace);
+        players.broadcastChatMessage(message, MessageType.SYSTEM, Util.NIL_UUID);
     }
 
-    private static void onOpenError(PlayerManager playerManager, Throwable throwable) {
+    private static void onOpenError(ServerCommandSource source, Throwable throwable) {
         Plasmid.LOGGER.error("Failed to start game", throwable);
 
         GameOpenException gameOpenException = GameOpenException.unwrap(throwable);
@@ -182,112 +177,119 @@ public final class GameCommand {
         if (gameOpenException != null) {
             message = ((GameOpenException) throwable).getReason().shallowCopy();
         } else {
-            message = new TranslatableText("text.plasmid.game.open.error");
+            message = GameTexts.Broadcast.gameOpenError();
         }
 
-        playerManager.broadcastChatMessage(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);
+        PlayerManager players = source.getMinecraftServer().getPlayerManager();
+        players.broadcastChatMessage(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);
     }
 
     private static int proposeGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameChannel channel = GameChannelArgument.get(context, "game_channel");
-        return proposeGame(context.getSource(), channel);
+        GameSpace gameSpace = GameSpaceArgument.get(context, "game_space");
+        return proposeGame(context.getSource(), gameSpace);
     }
 
     private static int proposeCurrentGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
 
-        GameChannelManager channelManager = GameChannelManager.get(source.getMinecraftServer());
-        GameChannel channel = channelManager.getChannelFor(source.getPlayer());
-        if (channel == null) {
-            throw NO_GAME_IN_WORLD.create();
+        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
+        if (gameSpace == null) {
+            throw NOT_IN_GAME.create();
         }
 
-        return proposeGame(source, channel);
+        return proposeGame(source, gameSpace);
     }
 
-    private static int proposeGame(ServerCommandSource source, GameChannel channel) {
-        Text openMessage = new TranslatableText("text.plasmid.game.propose", source.getDisplayName(), channel.getName().shallowCopy().formatted(Formatting.GRAY))
-                .append(channel.createJoinLink());
+    private static int proposeGame(ServerCommandSource source, GameSpace gameSpace) {
+        Text message = GameTexts.Broadcast.propose(source, gameSpace);
 
         PlayerManager playerManager = source.getMinecraftServer().getPlayerManager();
-        playerManager.broadcastChatMessage(openMessage, MessageType.SYSTEM, Util.NIL_UUID);
+        playerManager.broadcastChatMessage(message, MessageType.SYSTEM, Util.NIL_UUID);
 
         return Command.SINGLE_SUCCESS;
     }
 
+    // TODO: display gui with all relevant games?
     private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameChannel channel = getJoinableChannel(context);
-        channel.requestJoin(context.getSource().getPlayer());
+        GameSpace gameSpace = getJoinableGameSpace();
+        tryJoinGame(context.getSource().getPlayer(), gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int joinQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameChannel channel = GameChannelArgument.get(context, "game_channel");
-        channel.requestJoin(context.getSource().getPlayer());
+        GameSpace gameSpace = GameSpaceArgument.get(context, "game_space");
+        tryJoinGame(context.getSource().getPlayer(), gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int joinAllGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        MinecraftServer server = context.getSource().getMinecraftServer();
-        GameChannelManager channelManager = GameChannelManager.get(server);
-
-        GameChannel channel = null;
+        GameSpace gameSpace = null;
 
         Entity entity = context.getSource().getEntity();
         if (entity instanceof ServerPlayerEntity) {
-            channel = channelManager.getChannelFor((ServerPlayerEntity) entity);
+            gameSpace = GameSpaceManager.get().byPlayer((PlayerEntity) entity);
         }
 
-        if (channel == null) {
-            channel = getJoinableChannel(context);
+        if (gameSpace == null) {
+            gameSpace = getJoinableGameSpace();
         }
 
-        joinAllPlayersToChannel(context, channel);
+        joinAllPlayersToGame(context, gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int joinAllQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameChannel channel = GameChannelArgument.get(context, "game_channel");
-        joinAllPlayersToChannel(context, channel);
+        GameSpace gameSpace = GameSpaceArgument.get(context, "game_space");
+        joinAllPlayersToGame(context, gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void joinAllPlayersToChannel(CommandContext<ServerCommandSource> context, GameChannel channel) {
+    private static void joinAllPlayersToGame(CommandContext<ServerCommandSource> context, GameSpace gameSpace) {
         PlayerManager playerManager = context.getSource().getMinecraftServer().getPlayerManager();
-        for (ServerPlayerEntity player : playerManager.getPlayerList()) {
-            if (ManagedGameSpace.forWorld(player.world) == null) {
-                channel.requestJoin(player);
+
+        List<ServerPlayerEntity> players = playerManager.getPlayerList().stream()
+                .filter(player -> !GameSpaceManager.get().inGame(player))
+                .collect(Collectors.toList());
+
+        GameResult screen = gameSpace.screenPlayerJoins(players);
+        if (screen.isOk()) {
+            for (ServerPlayerEntity player : players) {
+                gameSpace.offerPlayer(player);
             }
+        } else {
+            context.getSource().sendError(screen.getError().shallowCopy().formatted(Formatting.RED));
         }
     }
 
-    private static GameChannel getJoinableChannel(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        MinecraftServer server = context.getSource().getMinecraftServer();
-        GameChannelManager channelManager = GameChannelManager.get(server);
+    private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
+        GameResult result = gameSpace.offerPlayer(player);
+        if (result.isError()) {
+            Text error = result.getError();
+            player.sendMessage(error.shallowCopy().formatted(Formatting.RED), false);
+        }
+    }
 
-        return channelManager.getChannels().stream()
-                .filter(channel -> channel.getPlayerCount() > 0)
-                .max(Comparator.comparingInt(GameChannel::getPlayerCount))
+    private static GameSpace getJoinableGameSpace() throws CommandSyntaxException {
+        return GameSpaceManager.get().getOpenGameSpaces().stream()
+                .filter(game -> game.getPlayerCount() > 0)
+                .max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount))
                 .orElseThrow(NO_GAME_OPEN::create);
     }
 
     private static int locatePlayer(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = EntityArgumentType.getPlayer(context, "player");
 
-        GameChannelManager channelManager = GameChannelManager.get(source.getMinecraftServer());
-        GameChannel channel = channelManager.getChannelFor(player);
-        if (channel == null) {
+        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(player);
+        if (gameSpace == null) {
             throw PLAYER_NOT_IN_GAME.create(player.getEntityName());
         }
 
-        Text locateMessage = new TranslatableText("text.plasmid.game.locate.located", player.getDisplayName(), channel.getName().shallowCopy().formatted(Formatting.GRAY))
-                .append(channel.createJoinLink());
-        context.getSource().sendFeedback(locateMessage, false);
+        MutableText message = GameTexts.Command.located(player, gameSpace);
+        context.getSource().sendFeedback(message, false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -296,13 +298,13 @@ public final class GameCommand {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(source.getWorld());
+        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(player);
         if (gameSpace == null) {
-            throw NO_GAME_IN_WORLD.create();
+            throw NOT_IN_GAME.create();
         }
 
         Scheduler.INSTANCE.submit(server -> {
-            gameSpace.removePlayer(player);
+            gameSpace.kickPlayer(player);
         });
 
         return Command.SINGLE_SUCCESS;
@@ -311,12 +313,14 @@ public final class GameCommand {
     private static int startGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
 
-        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(source.getWorld());
+        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
         if (gameSpace == null) {
-            throw NO_GAME_IN_WORLD.create();
+            throw NOT_IN_GAME.create();
         }
 
-        gameSpace.requestStart().thenAccept(startResult -> {
+        source.getMinecraftServer().submit(() -> {
+            GameResult startResult = gameSpace.requestStart();
+
             Text message;
             if (startResult.isError()) {
                 Text error = startResult.getError();
@@ -334,9 +338,9 @@ public final class GameCommand {
 
     private static int stopGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
-        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(source.getWorld());
+        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
         if (gameSpace == null) {
-            throw NO_GAME_IN_WORLD.create();
+            throw NOT_IN_GAME.create();
         }
 
         PlayerSet playerSet = gameSpace.getPlayers();
@@ -355,24 +359,26 @@ public final class GameCommand {
 
     private static int stopGameConfirmed(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
-        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(source.getWorld());
+        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
         if (gameSpace == null) {
-            throw NO_GAME_IN_WORLD.create();
+            throw NOT_IN_GAME.create();
         }
 
-        PlayerSet playerSet = gameSpace.getPlayers().copy(source.getMinecraftServer());
+        source.getMinecraftServer().submit(() -> {
+            PlayerSet playerSet = gameSpace.getPlayers().copy(source.getMinecraftServer());
 
-        try {
-            gameSpace.close(GameCloseReason.CANCELED);
+            try {
+                gameSpace.close(GameCloseReason.CANCELED);
 
-            MutableText message = new TranslatableText("text.plasmid.game.stopped.player", source.getDisplayName());
-            playerSet.sendMessage(message.formatted(Formatting.GRAY));
-        } catch (Throwable throwable) {
-            Plasmid.LOGGER.error("Failed to stop game", throwable);
+                MutableText message = new TranslatableText("text.plasmid.game.stopped.player", source.getDisplayName());
+                playerSet.sendMessage(message.formatted(Formatting.GRAY));
+            } catch (Throwable throwable) {
+                Plasmid.LOGGER.error("Failed to stop game", throwable);
 
-            MutableText message = new TranslatableText("text.plasmid.game.stopped.error");
-            playerSet.sendMessage(message.formatted(Formatting.RED));
-        }
+                MutableText message = new TranslatableText("text.plasmid.game.stopped.error");
+                playerSet.sendMessage(message.formatted(Formatting.RED));
+            }
+        });
 
         return Command.SINGLE_SUCCESS;
     }

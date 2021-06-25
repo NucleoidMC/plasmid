@@ -99,19 +99,27 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
         this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, title));
         this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.SUBTITLE, subtitle));
     }
+
     @Override
-    default void sendActionbar(Text text, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+    default void sendActionBar(Text message) {
+        for (ServerPlayerEntity player : this) {
+            player.sendMessage(message, true);
+        }
+    }
+
+    @Override
+    default void sendActionBar(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks) {
         this.sendPacket(new TitleS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
-        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, text));
+        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, message));
     }
 
     @Override
-    default void sendSound(SoundEvent sound) {
-        this.sendSound(sound, SoundCategory.PLAYERS, 1.0F, 1.0F);
+    default void playSound(SoundEvent sound) {
+        this.playSound(sound, SoundCategory.PLAYERS, 1.0F, 1.0F);
     }
 
     @Override
-    default void sendSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
+    default void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
         for (ServerPlayerEntity player : this) {
             player.playSound(sound, category, volume, pitch);
         }

@@ -19,11 +19,13 @@ public interface PlayerOps {
 
     void sendTitle(Text title, Text subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks);
 
-    void sendActionbar(Text text, int fadeInTicks, int stayTicks, int fadeOutTicks);
+    void sendActionBar(Text message);
 
-    void sendSound(SoundEvent sound);
+    void sendActionBar(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks);
 
-    void sendSound(SoundEvent sound, SoundCategory category, float volume, float pitch);
+    void playSound(SoundEvent sound);
+
+    void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch);
 
     void addStatusEffect(StatusEffectInstance effect);
 }

@@ -8,6 +8,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
@@ -52,6 +53,10 @@ public final class MapTemplate {
 
     public static MapTemplate createEmpty() {
         return new MapTemplate();
+    }
+
+    public TemplateChunkGenerator asChunkGenerator(MinecraftServer server) {
+        return new TemplateChunkGenerator(server, this);
     }
 
     /**

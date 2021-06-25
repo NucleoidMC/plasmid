@@ -28,7 +28,7 @@ import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
-import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.command.argument.ChunkGeneratorArgument;
 import xyz.nucleoid.plasmid.command.argument.DimensionOptionsArgument;
@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -132,7 +131,7 @@ public final class MapManageCommand {
     }
     // @formatter:on
 
-    private static int openWorkspace(CommandContext<ServerCommandSource> context, @Nullable Supplier<DimensionOptions> options) throws CommandSyntaxException {
+    private static int openWorkspace(CommandContext<ServerCommandSource> context, RuntimeWorldConfig worldConfig) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
 
         Identifier givenIdentifier = IdentifierArgumentType.getIdentifier(context, "workspace");
@@ -152,34 +151,36 @@ public final class MapManageCommand {
             throw MAP_ALREADY_EXISTS.create(identifier);
         }
 
-        CompletableFuture<MapWorkspace> future;
-        if (options != null) {
-            future = workspaceManager.open(identifier, options);
-        } else {
-            future = workspaceManager.open(identifier);
-        }
+        source.getMinecraftServer().submit(() -> {
+            try {
+                if (worldConfig != null) {
+                    workspaceManager.open(identifier, worldConfig);
+                } else {
+                    workspaceManager.open(identifier);
+                }
 
-        future.handleAsync((workspace, throwable) -> {
-            if (throwable == null) {
                 source.sendFeedback(
                         new TranslatableText("text.plasmid.map.open.success",
-							identifier,
-							new TranslatableText("text.plasmid.map.open.join_command", identifier).formatted(Formatting.GRAY)),
+                                identifier,
+                                new TranslatableText("text.plasmid.map.open.join_command", identifier).formatted(Formatting.GRAY)),
                         false
                 );
-            } else {
+            } catch (Throwable throwable) {
                 source.sendError(new TranslatableText("text.plasmid.map.open.error"));
                 Plasmid.LOGGER.error("Failed to open workspace", throwable);
             }
-            return null;
-        }, source.getMinecraftServer());
+        });
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int openWorkspaceLikeDimension(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         DimensionOptions dimension = DimensionOptionsArgument.get(context, "dimension");
-        return MapManageCommand.openWorkspace(context, () -> new DimensionOptions(dimension.getDimensionTypeSupplier(), dimension.getChunkGenerator()));
+        RuntimeWorldConfig worldConfig = new RuntimeWorldConfig()
+                .setDimensionType(dimension.getDimensionType())
+                .setGenerator(dimension.getChunkGenerator());
+
+        return MapManageCommand.openWorkspace(context, worldConfig);
     }
 
     private static int openWorkspaceByGenerator(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -201,10 +202,11 @@ public final class MapManageCommand {
         }
 
         ChunkGenerator chunkGenerator = result.result().get();
-        return MapManageCommand.openWorkspace(context, () -> {
-            DimensionType dimension = server.getOverworld().getDimension();
-            return new DimensionOptions(() -> dimension, chunkGenerator);
-        });
+
+        RuntimeWorldConfig worldConfig = new RuntimeWorldConfig()
+                .setDimensionType(DimensionType.OVERWORLD_REGISTRY_KEY)
+                .setGenerator(chunkGenerator);
+        return MapManageCommand.openWorkspace(context, worldConfig);
     }
 
     private static int setWorkspaceOrigin(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -267,8 +269,8 @@ public final class MapManageCommand {
 
         source.sendFeedback(
                 new TranslatableText("text.plasmid.map.join.success",
-					workspace.getIdentifier(),
-					new TranslatableText("text.plasmid.map.join.leave_command").formatted(Formatting.GRAY)),
+                        workspace.getIdentifier(),
+                        new TranslatableText("text.plasmid.map.join.leave_command").formatted(Formatting.GRAY)),
                 false
         );
 
@@ -314,8 +316,8 @@ public final class MapManageCommand {
         if (bounds.getMin().getY() < 0 || bounds.getMax().getY() > 255) {
             source.sendFeedback(
                     new TranslatableText("text.plasmid.map.export.vertical_bounds_warning.line.1").append("\n")
-                    		.append(new TranslatableText("text.plasmid.map.export.vertical_bounds_warning.line.2")).append("\n")
-                       		.append(new TranslatableText("text.plasmid.map.export.vertical_bounds_warning.line.3"))
+                            .append(new TranslatableText("text.plasmid.map.export.vertical_bounds_warning.line.2")).append("\n")
+                            .append(new TranslatableText("text.plasmid.map.export.vertical_bounds_warning.line.3"))
                             .formatted(Formatting.YELLOW),
                     false
             );
@@ -374,26 +376,26 @@ public final class MapManageCommand {
 
         future.thenAcceptAsync(template -> {
             if (template != null) {
-                workspaceManager.open(toWorkspaceId).thenAcceptAsync(workspace -> {
-                    source.sendFeedback(new TranslatableText("text.plasmid.map.import.importing"), false);
+                source.sendFeedback(new TranslatableText("text.plasmid.map.import.importing"), false);
 
-                    workspace.setBounds(template.getBounds().offset(origin));
-                    workspace.setOrigin(origin);
+                MapWorkspace workspace = workspaceManager.open(toWorkspaceId);
 
-                    for (TemplateRegion region : template.getMetadata().getRegions()) {
-                        workspace.addRegion(region.getMarker(), region.getBounds().offset(origin), region.getData());
-                    }
+                workspace.setBounds(template.getBounds().offset(origin));
+                workspace.setOrigin(origin);
 
-                    workspace.setData(template.getMetadata().getData());
+                for (TemplateRegion region : template.getMetadata().getRegions()) {
+                    workspace.addRegion(region.getMarker(), region.getBounds().offset(origin), region.getData());
+                }
 
-                    try {
-                        MapTemplatePlacer placer = new MapTemplatePlacer(template);
-                        placer.placeAt(workspace.getWorld(), origin);
-                        source.sendFeedback(new TranslatableText("text.plasmid.map.import.success", toWorkspaceId), false);
-                    } catch (Exception e) {
-                        Plasmid.LOGGER.error("Failed to place template into world!", e);
-                    }
-                }, source.getMinecraftServer());
+                workspace.setData(template.getMetadata().getData());
+
+                try {
+                    MapTemplatePlacer placer = new MapTemplatePlacer(template);
+                    placer.placeAt(workspace.getWorld(), origin);
+                    source.sendFeedback(new TranslatableText("text.plasmid.map.import.success", toWorkspaceId), false);
+                } catch (Exception e) {
+                    Plasmid.LOGGER.error("Failed to place template into world!", e);
+                }
             } else {
                 source.sendError(new TranslatableText("text.plasmid.map.import.no_template_found", location));
             }

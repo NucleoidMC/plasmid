@@ -11,6 +11,7 @@ import xyz.nucleoid.plasmid.util.PlayerRef;
 import java.util.Collection;
 import java.util.Collections;
 
+// TODO: does not handle players leaving the server!
 public final class PartyManager {
     private static PartyManager instance;
 

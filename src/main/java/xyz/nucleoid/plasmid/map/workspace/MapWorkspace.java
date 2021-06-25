@@ -17,7 +17,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
-import xyz.nucleoid.fantasy.PersistentWorldHandle;
+import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 import xyz.nucleoid.plasmid.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.map.template.MapTemplateMetadata;
 import xyz.nucleoid.plasmid.util.BlockBounds;
@@ -30,7 +30,7 @@ import java.util.*;
  * It stores regions and arbitrary data destined to be compiled into a {@link MapTemplate}.
  */
 public final class MapWorkspace {
-    private final PersistentWorldHandle worldHandle;
+    private final RuntimeWorldHandle worldHandle;
 
     private final Identifier identifier;
 
@@ -51,7 +51,7 @@ public final class MapWorkspace {
 
     private final List<WorkspaceListener> listeners = new ArrayList<>();
 
-    public MapWorkspace(PersistentWorldHandle worldHandle, Identifier identifier, BlockBounds bounds) {
+    public MapWorkspace(RuntimeWorldHandle worldHandle, Identifier identifier, BlockBounds bounds) {
         this.worldHandle = worldHandle;
         this.identifier = identifier;
         this.bounds = bounds;
@@ -213,7 +213,7 @@ public final class MapWorkspace {
         return root;
     }
 
-    public static MapWorkspace deserialize(PersistentWorldHandle worldHandle, CompoundTag root) {
+    public static MapWorkspace deserialize(RuntimeWorldHandle worldHandle, CompoundTag root) {
         Identifier identifier = new Identifier(root.getString("identifier"));
         BlockBounds bounds = BlockBounds.deserialize(root);
 
@@ -339,7 +339,7 @@ public final class MapWorkspace {
         return this.worldHandle.asWorld();
     }
 
-    PersistentWorldHandle getWorldHandle() {
+    RuntimeWorldHandle getWorldHandle() {
         return this.worldHandle;
     }
 }

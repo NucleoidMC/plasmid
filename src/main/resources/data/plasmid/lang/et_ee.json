@@ -1,8 +1,8 @@
 {
     "game.plasmid.random": "Juhuslik mäng",
     "game.plasmid.test": "Plasmidi testmäng",
-    "text.plasmid.channel.channel_not_found": "Seda kanalit ei leitud!",
-    "text.plasmid.channel.join_link_hover": "Liitu kanaliga %s",
+    "text.plasmid.portal.portal_not_found": "Seda kanalit ei leitud!",
+    "text.plasmid.join_link_hover": "Liitu kanaliga %s",
     "text.plasmid.chat.switch.all": "Avalikule vestluskanalile lülitatud",
     "text.plasmid.chat.switch.team": "Meeskonna vestluskanalile lülitatud",
     "text.plasmid.chat.team": "[Meeskond] %s",
@@ -17,7 +17,6 @@
     "text.plasmid.game.list": "Registreeritud mängud:",
     "text.plasmid.game.locate.located": "%s on hetkel %s mängus. ",
     "text.plasmid.game.locate.player_not_in_game": "%s ei ole mängus!",
-    "text.plasmid.game.no_game_in_world": "Selles maailmas pole mänge avatud!",
     "text.plasmid.game.open.error": "Mängul esines käivitumisel ootamatu tõrge!",
     "text.plasmid.game.open.join": "Klõpsa liitumiseks siia",
     "text.plasmid.game.open.malformed_config": "Sobimatu seadistus: %s",

@@ -9,10 +9,10 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.registry.Registry;
 
 public final class PlayerResetter {
-    private final CompoundTag resetTag;
+    private final CompoundTag resetNbt;
 
-    public PlayerResetter(CompoundTag resetTag) {
-        this.resetTag = resetTag;
+    public PlayerResetter(CompoundTag resetNbt) {
+        this.resetNbt = resetNbt;
     }
 
     public void apply(ServerPlayerEntity player) {
@@ -20,7 +20,7 @@ public final class PlayerResetter {
         player.clearStatusEffects();
         player.getScoreboardTags().clear();
 
-        player.fromTag(this.resetTag);
+        player.fromTag(this.resetNbt);
     }
 
     private void clearAttributeModifiers(ServerPlayerEntity player) {

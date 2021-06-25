@@ -16,7 +16,6 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import xyz.nucleoid.plasmid.chat.ChatChannelManager;
 import xyz.nucleoid.plasmid.command.*;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
@@ -82,8 +81,6 @@ public final class Plasmid implements ModInitializer {
 
             return ActionResult.PASS;
         });
-
-        ChatChannelManager.registerCallbacks();
 
         ServerTickEvents.END_WORLD_TICK.register(world -> {
             ManagedGameSpace game = GameSpaceManager.get().byWorld(world);

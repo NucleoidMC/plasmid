@@ -88,9 +88,6 @@ public final class GameRule {
                 }
             });
 
-    // TODO: make this not a rule?
-    public static final GameRule TEAM_CHAT = GameRule.create();
-
     public static final GameRule DISMOUNT_VEHICLE = GameRule.create();
     public static final GameRule PLAYER_PROJECTILE_KNOCKBACK = GameRule.create();
     public static final GameRule TRIDENTS_LOYAL_IN_VOID = GameRule.create();

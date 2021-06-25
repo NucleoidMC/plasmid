@@ -35,7 +35,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
             return;
         }
 
-        if (!this.world.isClient) {
+        if (!this.world.isClient()) {
             ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(this);
             if (gameSpace != null && gameSpace.getBehavior().testRule(GameRule.DISMOUNT_VEHICLE) == ActionResult.FAIL) {
                 ci.cancel();

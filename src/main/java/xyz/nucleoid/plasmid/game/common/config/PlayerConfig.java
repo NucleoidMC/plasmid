@@ -2,9 +2,18 @@ package xyz.nucleoid.plasmid.game.common.config;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import xyz.nucleoid.plasmid.game.common.GameWaitingLobby;
 
 import java.util.Optional;
 
+/**
+ * A standard configuration type that contains various data used by a {@link GameWaitingLobby}.
+ * <p>
+ * This involves values such as how many players are required in the game, or how many there can be at a maximum, as
+ * well as how long players should wait in the waiting lobby given there being a sufficient number of players.
+ *
+ * @see GameWaitingLobby
+ */
 public final class PlayerConfig {
     public static final Codec<PlayerConfig> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(

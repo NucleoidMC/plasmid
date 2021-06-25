@@ -22,7 +22,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
     @Inject(method = "damage", at = @At(value = "RETURN", ordinal = 3), cancellable = true)
     private void damage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (!this.world.isClient && source.isProjectile()) {
+        if (!this.world.isClient() && source.isProjectile()) {
             ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer((PlayerEntity) (Object) this);
             if (gameSpace != null && gameSpace.getBehavior().testRule(GameRule.PLAYER_PROJECTILE_KNOCKBACK) == ActionResult.SUCCESS) {
                 cir.setReturnValue(super.damage(source, amount));

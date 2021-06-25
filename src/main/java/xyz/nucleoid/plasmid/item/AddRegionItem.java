@@ -19,7 +19,7 @@ public final class AddRegionItem extends Item implements VirtualItem {
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        if (world.isClient) {
+        if (world.isClient()) {
             return super.use(world, player, hand);
         }
 

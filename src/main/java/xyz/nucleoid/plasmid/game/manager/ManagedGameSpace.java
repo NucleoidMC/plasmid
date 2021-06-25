@@ -304,11 +304,6 @@ public final class ManagedGameSpace implements GameSpace {
         this.close(GameCloseReason.ERRORED);
     }
 
-    /**
-     * Closes this {@link GameSpace}.
-     *
-     * <p>Upon close, all players in this {@link GameSpace} are removed and restored to their state prior to entering this game space.
-     */
     @Override
     public void close(GameCloseReason reason) {
         if (this.closed) {

@@ -5,6 +5,11 @@ import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+/**
+ * An implementation of {@link GameWidget} which displays a boss bar at the top of players' screens.
+ *
+ * @see ServerBossBar
+ */
 public final class BossBarWidget implements GameWidget {
     private final ServerBossBar bar;
 

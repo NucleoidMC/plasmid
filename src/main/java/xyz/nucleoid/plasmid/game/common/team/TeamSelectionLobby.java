@@ -14,8 +14,8 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.activity.GameActivity;
 import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.activity.GameActivity;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.util.ColoredBlocks;
 import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
@@ -25,6 +25,17 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
+/**
+ * A very simple team selection lobby implementation that allows players to select a team while waiting to start a game.
+ * <p>
+ * This makes use of {@link TeamAllocator} in order to assign players teams fairly and take into account maximum team
+ * sizes as well as team preferences.
+ *
+ * @see TeamSelectionLobby#allocate(BiConsumer)
+ * @see GameTeam
+ * @see TeamAllocator
+ * @see xyz.nucleoid.plasmid.game.common.GameWaitingLobby
+ */
 public final class TeamSelectionLobby {
     private static final String TEAM_KEY = Plasmid.ID + ":team";
 
@@ -39,10 +50,23 @@ public final class TeamSelectionLobby {
         this.teams = teams;
     }
 
+    /**
+     * Sets the maximum number of players that can be allocated to the given team.
+     *
+     * @param team the team to set a maximum size for
+     * @param size the maximum number of players that can be allocated
+     */
     public void setSizeForTeam(GameTeam team, int size) {
         this.maxTeamSize.put(team, size);
     }
 
+    /**
+     * Applies this team selection lobby implementation to the given {@link GameActivity} with the given teams.
+     *
+     * @param activity the activity to apply this lobby to
+     * @param teams the teams to allow players to select
+     * @return a {@link TeamSelectionLobby} instance which should be used to extract allocated team data
+     */
     public static TeamSelectionLobby applyTo(GameActivity activity, Collection<GameTeam> teams) {
         Map<String, GameTeam> teamMap = new Object2ObjectOpenHashMap<>();
         for (GameTeam team : teams) {
@@ -96,6 +120,12 @@ public final class TeamSelectionLobby {
         return TypedActionResult.pass(ItemStack.EMPTY);
     }
 
+    /**
+     * Allocates all the players within this lobby into teams depending on their specified preferences.
+     *
+     * @param apply a consumer that accepts each player and their corresponding team
+     * @see TeamAllocator
+     */
     public void allocate(BiConsumer<GameTeam, ServerPlayerEntity> apply) {
         TeamAllocator<GameTeam, ServerPlayerEntity> allocator = new TeamAllocator<>(this.teams.values());
 

@@ -28,7 +28,7 @@ public final class IncludeEntityItem extends Item implements VirtualItem {
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
         World world = user.getEntityWorld();
-        if (!world.isClient) {
+        if (!world.isClient()) {
             MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(world.getServer());
 
             MapWorkspace workspace = workspaceManager.byDimension(world.getRegistryKey());

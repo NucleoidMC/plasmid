@@ -13,7 +13,15 @@ import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import java.util.Collection;
 
 /**
- * Represents the space within which a game occurs through attached {@link GameActivity}
+ * Represents an instance of a game, and the "space" within which it occurs.
+ * <p>
+ * The {@link GameSpace} controls all of its attached {@link ServerWorld} objects, all joined players, and all the
+ * behavior that takes place within the game.
+ * <p>
+ * Behavior should be controlled by game implementations through the use of {@link GameActivity} instances.
+ *
+ * @see GameType
+ * @see GameActivity
  */
 public interface GameSpace {
     /**
@@ -44,7 +52,8 @@ public interface GameSpace {
     boolean kickPlayer(ServerPlayerEntity player);
 
     /**
-     * Closes this game with a reason
+     * Closes this {@link GameSpace} with the given reason.
+     * All associated {@link GameActivity} instances are closed and all players will be removed.
      *
      * @param reason the reason for this game closing
      */

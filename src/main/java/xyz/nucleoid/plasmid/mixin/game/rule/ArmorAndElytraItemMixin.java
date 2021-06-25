@@ -22,7 +22,7 @@ import xyz.nucleoid.plasmid.game.rule.GameRule;
 public class ArmorAndElytraItemMixin {
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
     private void use(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> ci) {
-        if (world.isClient) {
+        if (world.isClient()) {
             return;
         }
 

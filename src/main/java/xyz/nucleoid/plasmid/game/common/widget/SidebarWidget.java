@@ -28,6 +28,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+/**
+ * An implementation of {@link GameWidget} which provides a sidebar through the use of the vanilla scoreboard which
+ * displays at the right side of players' screens.
+ *
+ * @see net.minecraft.scoreboard.Scoreboard
+ */
 public final class SidebarWidget implements GameWidget {
     private static final int SIDEBAR_SLOT = 1;
     private static final int ADD_OBJECTIVE = 0;
@@ -72,6 +78,11 @@ public final class SidebarWidget implements GameWidget {
         this.title = title;
     }
 
+    /**
+     * Sets the title of this sidebar which is shown at the top.
+     *
+     * @param title the new title
+     */
     public void setTitle(Text title) {
         this.title = title;
 
@@ -81,6 +92,11 @@ public final class SidebarWidget implements GameWidget {
         }
     }
 
+    /**
+     * Updates the content of this sidebar by calling the given {@code writer}.
+     *
+     * @param writer the writer logic that should describe the content of this sidebar
+     */
     public void set(Consumer<Content> writer) {
         writer.accept(this.content);
         this.content.flush();
@@ -135,6 +151,13 @@ public final class SidebarWidget implements GameWidget {
         return line;
     }
 
+    /**
+     * Represents the content within a sidebar to be written to.
+     * <p>
+     * Each line should be written sequentially through this instance.
+     *
+     * @see SidebarWidget#set(Consumer)
+     */
     public class Content {
         private Lines lines = new Lines();
         private Lines lastLines = new Lines();

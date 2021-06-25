@@ -26,6 +26,16 @@ import xyz.nucleoid.plasmid.game.rule.GameRule;
 
 import java.util.Collection;
 
+/**
+ * A very simple waiting lobby implementation that games can easily apply to their {@link GameActivity}.
+ * <p>
+ * This implements both control for minimum/maximum players as well as a countdown for game start, and additionally
+ * sets some basic rules which prevent players from damaging the map or each other.
+ *
+ * @see GameWaitingLobby#applyTo(GameActivity, PlayerConfig)
+ * @see PlayerConfig
+ * @see xyz.nucleoid.plasmid.game.common.team.TeamSelectionLobby
+ */
 public final class GameWaitingLobby {
     private static final Text WAITING_TITLE = new TranslatableText("text.plasmid.game.waiting_lobby.bar.waiting");
 
@@ -47,6 +57,12 @@ public final class GameWaitingLobby {
         this.bar = bar;
     }
 
+    /**
+     * Applies this waiting lobby implementation to the given {@link GameActivity}.
+     *
+     * @param activity the activity to apply to
+     * @param playerConfig the config that this waiting lobby should respect regarding player counts and countdowns
+     */
     public static void applyTo(GameActivity activity, PlayerConfig playerConfig) {
         GlobalWidgets widgets = GlobalWidgets.addTo(activity);
         BossBarWidget bar = widgets.addBossBar(WAITING_TITLE);

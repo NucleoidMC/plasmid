@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.manager;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -180,14 +181,29 @@ public final class GameSpaceManager {
     final class ListenerSelector implements EventListenerSelector {
         @Override
         public <T> Iterator<T> selectListeners(MinecraftServer server, StimulusEvent<T> event, EventSource source) {
-            if (source.getDimension() != null) {
-                ManagedGameSpace gameSpace = GameSpaceManager.this.dimensionToGameSpace.get(source.getDimension());
-                if (gameSpace != null) {
-                    return gameSpace.getBehavior().getInvokers(event).iterator();
-                }
+            ManagedGameSpace gameSpace = this.getGameSpaceFor(source);
+            if (gameSpace != null) {
+                return gameSpace.getBehavior().getInvokers(event).iterator();
             }
 
             return Collections.emptyIterator();
+        }
+
+        @Nullable
+        private ManagedGameSpace getGameSpaceFor(EventSource source) {
+            Entity entity = source.getEntity();
+            if (entity instanceof ServerPlayerEntity) {
+                ManagedGameSpace gameSpace = GameSpaceManager.this.playerToGameSpace.get(entity.getUuid());
+                if (gameSpace != null) {
+                    return gameSpace;
+                }
+            }
+
+            if (source.getDimension() != null) {
+                return GameSpaceManager.this.dimensionToGameSpace.get(source.getDimension());
+            }
+
+            return null;
         }
     }
 }

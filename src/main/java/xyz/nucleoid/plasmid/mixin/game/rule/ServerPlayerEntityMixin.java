@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
+import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin extends PlayerEntity {
@@ -37,7 +37,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
         if (!this.world.isClient()) {
             ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(this);
-            if (gameSpace != null && gameSpace.getBehavior().testRule(GameRule.DISMOUNT_VEHICLE) == ActionResult.FAIL) {
+            if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.DISMOUNT_VEHICLE) == ActionResult.FAIL) {
                 ci.cancel();
                 this.networkHandler.sendPacket(new EntityPassengersSetS2CPacket(vehicle));
             }

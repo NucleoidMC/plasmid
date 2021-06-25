@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
+import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 
 @Mixin(TridentEntity.class)
 public abstract class TridentEntityMixin extends PersistentProjectileEntity {
@@ -27,7 +27,7 @@ public abstract class TridentEntityMixin extends PersistentProjectileEntity {
     private void tick(CallbackInfo ci) {
         if (!this.dealtDamage && this.getY() <= 0.0 && !this.world.isClient()) {
             ManagedGameSpace gameSpace = GameSpaceManager.get().byWorld(this.world);
-            if (gameSpace != null && gameSpace.getBehavior().testRule(GameRule.TRIDENTS_LOYAL_IN_VOID) == ActionResult.SUCCESS) {
+            if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.TRIDENTS_LOYAL_IN_VOID) == ActionResult.SUCCESS) {
                 this.dealtDamage = true;
                 this.setVelocity(0.0, 0.0, 0.0);
             }

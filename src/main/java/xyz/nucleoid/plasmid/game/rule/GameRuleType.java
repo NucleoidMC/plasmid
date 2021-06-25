@@ -25,20 +25,20 @@ import java.util.ArrayList;
 
 // TODO: re-evaluate all the rules we have + add more
 // TODO: name this differently? confusion with vanilla
-public final class GameRule {
-    public static final GameRule BREAK_BLOCKS = GameRule.create()
+public final class GameRuleType {
+    public static final GameRuleType BREAK_BLOCKS = GameRuleType.create()
             .enforces(BlockBreakEvent.EVENT, result -> (player, world, pos) -> result);
 
-    public static final GameRule PLACE_BLOCKS = GameRule.create()
+    public static final GameRuleType PLACE_BLOCKS = GameRuleType.create()
             .enforces(BlockPlaceEvent.BEFORE, result -> (player, world, pos, state, ctx) -> result);
 
-    public static final GameRule PORTALS = GameRule.create()
+    public static final GameRuleType PORTALS = GameRuleType.create()
             .enforces(NetherPortalOpenEvent.EVENT, result -> (world, pos) -> result);
 
-    public static final GameRule CRAFTING = GameRule.create()
+    public static final GameRuleType CRAFTING = GameRuleType.create()
             .enforces(ItemCraftEvent.EVENT, result -> (player, recipe) -> result);
 
-    public static final GameRule PVP = GameRule.create()
+    public static final GameRuleType PVP = GameRuleType.create()
             .enforces(PlayerDamageEvent.EVENT, result -> (player, source, amount) -> {
                 if (source.getSource() instanceof PlayerEntity) {
                     return result;
@@ -47,10 +47,10 @@ public final class GameRule {
                 }
             });
 
-    public static final GameRule HUNGER = GameRule.create()
+    public static final GameRuleType HUNGER = GameRuleType.create()
             .enforces(PlayerConsumeHungerEvent.EVENT, result -> (player, foodLevel, saturation, exhaustion) -> result);
 
-    public static final GameRule FALL_DAMAGE = GameRule.create()
+    public static final GameRuleType FALL_DAMAGE = GameRuleType.create()
             .enforces(PlayerDamageEvent.EVENT, result -> (player, source, amount) -> {
                 if (source == DamageSource.FALL) {
                     return result;
@@ -59,16 +59,16 @@ public final class GameRule {
                 }
             });
 
-    public static final GameRule USE_BLOCKS = GameRule.create()
+    public static final GameRuleType USE_BLOCKS = GameRuleType.create()
             .enforces(BlockUseEvent.EVENT, result -> (player, hand, hitResult) -> result);
-    public static final GameRule USE_ITEMS = GameRule.create()
+    public static final GameRuleType USE_ITEMS = GameRuleType.create()
             .enforces(ItemUseEvent.EVENT, result -> (player, hand) -> new TypedActionResult<>(result, ItemStack.EMPTY));
-    public static final GameRule USE_ENTITIES = GameRule.create()
+    public static final GameRuleType USE_ENTITIES = GameRuleType.create()
             .enforces(EntityUseEvent.EVENT, result -> (player, entity, hand, hitResult) -> result);
 
-    public static final GameRule INTERACTION = GameRule.allOf(USE_BLOCKS, USE_ITEMS, USE_ENTITIES);
+    public static final GameRuleType INTERACTION = GameRuleType.allOf(USE_BLOCKS, USE_ITEMS, USE_ENTITIES);
 
-    public static final GameRule BLOCK_DROPS = GameRule.create()
+    public static final GameRuleType BLOCK_DROPS = GameRuleType.create()
             .enforces(BlockDropItemsEvent.EVENT, result -> (entity, world, pos, state, drops) -> {
                 if (result == ActionResult.FAIL) {
                     return TypedActionResult.fail(new ArrayList<>());
@@ -77,10 +77,10 @@ public final class GameRule {
                 }
             });
 
-    public static final GameRule THROW_ITEMS = GameRule.create()
+    public static final GameRuleType THROW_ITEMS = GameRuleType.create()
             .enforces(ItemThrowEvent.EVENT, result -> (player, slot, stack) -> result);
 
-    public static final GameRule UNSTABLE_TNT = GameRule.create()
+    public static final GameRuleType UNSTABLE_TNT = GameRuleType.create()
             .enforces(BlockPlaceEvent.AFTER, result -> (player, world, pos, state) -> {
                 if (result == ActionResult.SUCCESS && state.getBlock() == Blocks.TNT) {
                     TntBlock.primeTnt(player.world, pos);
@@ -88,37 +88,37 @@ public final class GameRule {
                 }
             });
 
-    public static final GameRule DISMOUNT_VEHICLE = GameRule.create();
-    public static final GameRule PLAYER_PROJECTILE_KNOCKBACK = GameRule.create();
-    public static final GameRule TRIDENTS_LOYAL_IN_VOID = GameRule.create();
-    public static final GameRule MODIFY_INVENTORY = GameRule.create();
-    public static final GameRule MODIFY_ARMOR = GameRule.create();
+    public static final GameRuleType DISMOUNT_VEHICLE = GameRuleType.create();
+    public static final GameRuleType PLAYER_PROJECTILE_KNOCKBACK = GameRuleType.create();
+    public static final GameRuleType TRIDENTS_LOYAL_IN_VOID = GameRuleType.create();
+    public static final GameRuleType MODIFY_INVENTORY = GameRuleType.create();
+    public static final GameRuleType MODIFY_ARMOR = GameRuleType.create();
 
     private GameRuleEnforcer enforcer;
 
-    private GameRule() {
+    private GameRuleType() {
     }
 
-    public static GameRule create() {
-        return new GameRule();
+    public static GameRuleType create() {
+        return new GameRuleType();
     }
 
-    public static GameRule allOf(GameRule... rules) {
-        return new GameRule().enforcesAll(rules);
+    public static GameRuleType allOf(GameRuleType... rules) {
+        return new GameRuleType().enforcesAll(rules);
     }
 
-    public GameRule enforces(GameRuleEnforcer enforcer) {
+    public GameRuleType enforces(GameRuleEnforcer enforcer) {
         this.enforcer = enforcer;
         return this;
     }
 
-    public <T> GameRule enforces(StimulusEvent<T> event, GameRuleEnforcer.ListenerFactory<T> enforcer) {
+    public <T> GameRuleType enforces(StimulusEvent<T> event, GameRuleEnforcer.ListenerFactory<T> enforcer) {
         return this.enforces(GameRuleEnforcer.singleEvent(event, enforcer));
     }
 
-    public GameRule enforcesAll(GameRule... rules) {
+    public GameRuleType enforcesAll(GameRuleType... rules) {
         return this.enforces((events, result) -> {
-            for (GameRule rule : rules) {
+            for (GameRuleType rule : rules) {
                 rule.enforce(events, result);
             }
         });

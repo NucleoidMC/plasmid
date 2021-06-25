@@ -22,7 +22,7 @@ import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
+import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 
 import java.util.Collection;
 
@@ -69,9 +69,9 @@ public final class GameWaitingLobby {
 
         GameWaitingLobby lobby = new GameWaitingLobby(activity.getGameSpace(), playerConfig, bar);
 
-        activity.deny(GameRule.PVP).deny(GameRule.FALL_DAMAGE).deny(GameRule.HUNGER)
-                .deny(GameRule.CRAFTING).deny(GameRule.PORTALS).deny(GameRule.THROW_ITEMS)
-                .deny(GameRule.INTERACTION).deny(GameRule.PLACE_BLOCKS).deny(GameRule.BREAK_BLOCKS);
+        activity.deny(GameRuleType.PVP).deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER)
+                .deny(GameRuleType.CRAFTING).deny(GameRuleType.PORTALS).deny(GameRuleType.THROW_ITEMS)
+                .deny(GameRuleType.INTERACTION).deny(GameRuleType.PLACE_BLOCKS).deny(GameRuleType.BREAK_BLOCKS);
 
         activity.listen(GameActivityEvents.TICK, lobby::onTick);
         activity.listen(GameActivityEvents.REQUEST_START, lobby::requestStart);

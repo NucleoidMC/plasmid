@@ -12,7 +12,7 @@ import xyz.nucleoid.plasmid.game.activity.GameActivitySource;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameEventExceptionHandler;
 import xyz.nucleoid.plasmid.game.event.GameEventListeners;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
+import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.game.rule.GameRuleMap;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
@@ -68,7 +68,7 @@ public final class ManagedGameActivity implements GameActivity {
     }
 
     @Override
-    public ManagedGameActivity setRule(GameRule rule, ActionResult result) {
+    public ManagedGameActivity setRule(GameRuleType rule, ActionResult result) {
         this.rules.set(rule, result);
         return this;
     }
@@ -116,7 +116,7 @@ public final class ManagedGameActivity implements GameActivity {
 
     @Override
     @NotNull
-    public ActionResult testRule(GameRule rule) {
+    public ActionResult testRule(GameRuleType rule) {
         return this.rules.test(rule);
     }
 

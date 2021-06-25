@@ -1,10 +1,13 @@
 package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
+import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.plasmid.game.activity.GameActivity;
 import xyz.nucleoid.plasmid.game.activity.GameActivitySource;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class GameOpenContext<C> {
@@ -21,6 +24,13 @@ public final class GameOpenContext<C> {
             GameActivitySource activities = gameSpace.activitySource(this.game);
             activities.push(setup);
         };
+    }
+
+    public GameOpenProcedure openWithWorld(RuntimeWorldConfig worldConfig, BiConsumer<GameActivity, ServerWorld> setup) {
+        return this.open(activity -> {
+            ServerWorld world = activity.getGameSpace().addWorld(worldConfig);
+            setup.accept(activity, world);
+        });
     }
 
     public MinecraftServer getServer() {

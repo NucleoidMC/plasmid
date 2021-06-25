@@ -4,7 +4,7 @@ import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.GameBehavior;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
+import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.ArrayDeque;
@@ -80,7 +80,7 @@ public final class GameActivityStack<A extends GameActivity> implements GameBeha
 
     @Override
     @NotNull
-    public ActionResult testRule(GameRule rule) {
+    public ActionResult testRule(GameRuleType rule) {
         A activity = this.stack.peek();
         if (activity != null) {
             return activity.testRule(rule);

@@ -3,7 +3,7 @@ package xyz.nucleoid.plasmid.game;
 import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.plasmid.game.activity.GameActivity;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
+import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 /**
@@ -13,7 +13,7 @@ import xyz.nucleoid.stimuli.event.StimulusEvent;
  * containing rules which can simply allow or disallow certain behavior in the world.
  *
  * @see StimulusEvent
- * @see GameRule
+ * @see GameRuleType
  * @see GameSpace
  * @see GameActivity
  */
@@ -28,15 +28,15 @@ public interface GameBehavior {
     <T> Iterable<T> getInvokers(StimulusEvent<T> event);
 
     /**
-     * Tests whether the given {@link GameRule} passes in this {@link GameBehavior}.
+     * Tests whether the given {@link GameRuleType} passes in this {@link GameBehavior}.
      *
-     * <p>As an example, calling this method with {@link GameRule#BLOCK_DROPS} will return a {@link ActionResult} that describes whether blocks can drop.
+     * <p>As an example, calling this method with {@link GameRuleType#BLOCK_DROPS} will return a {@link ActionResult} that describes whether blocks can drop.
      *
-     * @param rule the {@link GameRule} to test in this {@link GameBehavior}
-     * @return a {@link ActionResult} that describes whether the {@link GameRule} passes
+     * @param rule the {@link GameRuleType} to test in this {@link GameBehavior}
+     * @return a {@link ActionResult} that describes whether the {@link GameRuleType} passes
      *
      * @see ActionResult
      */
     @NotNull
-    ActionResult testRule(GameRule rule);
+    ActionResult testRule(GameRuleType rule);
 }

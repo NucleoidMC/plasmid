@@ -4,7 +4,7 @@ import net.minecraft.util.ActionResult;
 import xyz.nucleoid.plasmid.game.GameBehavior;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
-import xyz.nucleoid.plasmid.game.rule.GameRule;
+import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 public interface GameActivity extends GameBehavior {
@@ -28,7 +28,7 @@ public interface GameActivity extends GameBehavior {
      * @param result how this rule should be responded to
      * @return this {@link GameActivity}
      */
-    GameActivity setRule(GameRule rule, ActionResult result);
+    GameActivity setRule(GameRuleType rule, ActionResult result);
 
     /**
      * Sets a rule on this {@link GameActivity} to {@link ActionResult#SUCCESS} which will be enforced while this
@@ -37,9 +37,9 @@ public interface GameActivity extends GameBehavior {
      * @param rule the rule type to set
      * @return this {@link GameActivity}
      * @see ActionResult#SUCCESS
-     * @see GameActivity#setRule(GameRule, ActionResult)
+     * @see GameActivity#setRule(GameRuleType, ActionResult)
      */
-    default GameActivity allow(GameRule rule) {
+    default GameActivity allow(GameRuleType rule) {
         return this.setRule(rule, ActionResult.SUCCESS);
     }
 
@@ -50,9 +50,9 @@ public interface GameActivity extends GameBehavior {
      * @param rule the rule type to set
      * @return this {@link GameActivity}
      * @see ActionResult#FAIL
-     * @see GameActivity#setRule(GameRule, ActionResult)
+     * @see GameActivity#setRule(GameRuleType, ActionResult)
      */
-    default GameActivity deny(GameRule rule) {
+    default GameActivity deny(GameRuleType rule) {
         return this.setRule(rule, ActionResult.FAIL);
     }
 

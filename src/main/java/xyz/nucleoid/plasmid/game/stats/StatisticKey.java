@@ -20,6 +20,7 @@ public abstract class StatisticKey<T extends Number> {
     protected final StatisticType type;
 
     protected StatisticKey(Identifier id, StatisticType type) {
+        StatisticKey.validateKeyId(id);
         this.id = id;
         this.type = type;
     }
@@ -52,6 +53,17 @@ public abstract class StatisticKey<T extends Number> {
 
     public static StatisticKey<Double> doubleKey(Identifier id, StatisticType type) {
         return new DoubleStatisticKey(id, type);
+    }
+
+    /**
+     * {@link StatisticKey} ids cannot contain '.' characters as they could potentially cause issues with the backend.
+     *
+     * @param id The {@link Identifier} to check
+     */
+    private static void validateKeyId(Identifier id) {
+        if (id.getNamespace().contains(".") || id.getPath().contains(".")) {
+            throw new IllegalArgumentException("StatisticKey ids cannot contain '.'");
+        }
     }
 
     public enum StatisticType implements StringIdentifiable {

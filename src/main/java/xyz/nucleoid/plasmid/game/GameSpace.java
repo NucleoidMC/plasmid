@@ -5,7 +5,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
+import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -123,4 +125,15 @@ public interface GameSpace extends AutoCloseable {
      * @return the lifecycle manager for this {@link GameSpace}
      */
     GameLifecycle getLifecycle();
+
+    /**
+     * @param namespace The statistic namespace to get a bundle for
+     * @return the {@link GameStatisticBundle} for the given namespace
+     */
+    GameStatisticBundle getStatistics(String namespace);
+
+    /**
+     * @return All created {@link GameStatisticBundle}s in this {@link GameSpace} that are not {@link GameStatisticBundle#isEmpty() empty}.
+     */
+    Map<String, GameStatisticBundle> getAllStatistics();
 }

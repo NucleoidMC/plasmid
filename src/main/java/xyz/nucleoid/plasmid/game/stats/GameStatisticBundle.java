@@ -30,43 +30,6 @@ public class GameStatisticBundle {
         return this.players.getOrDefault(uuid, new StatisticBundle());
     }
 
-    // Gotta love generics
-    public void increment(ServerPlayerEntity player, StatisticKey<Double> key, double amount) {
-        this.getPlayer(player).increment(key, amount);
-    }
-
-    public void increment(PlayerRef player, StatisticKey<Double> key, double amount) {
-        this.getPlayer(player).increment(key, amount);
-    }
-
-    public void increment(UUID uuid, StatisticKey<Double> key, double amount) {
-        this.getPlayer(uuid).increment(key, amount);
-    }
-
-    public void increment(ServerPlayerEntity player, StatisticKey<Float> key, float amount) {
-        this.getPlayer(player).increment(key, amount);
-    }
-
-    public void increment(PlayerRef player, StatisticKey<Float> key, float amount) {
-        this.getPlayer(player).increment(key, amount);
-    }
-
-    public void increment(UUID uuid, StatisticKey<Float> key, float amount) {
-        this.getPlayer(uuid).increment(key, amount);
-    }
-
-    public void increment(ServerPlayerEntity player, StatisticKey<Integer> key, int amount) {
-        this.getPlayer(player).increment(key, amount);
-    }
-
-    public void increment(PlayerRef player, StatisticKey<Integer> key, int amount) {
-        this.getPlayer(player).increment(key, amount);
-    }
-
-    public void increment(UUID uuid, StatisticKey<Integer> key, int amount) {
-        this.getPlayer(uuid).increment(key, amount);
-    }
-
     public boolean isEmpty() {
         return this.players.isEmpty() || this.players.values().stream().allMatch(StatisticBundle::isEmpty);
     }

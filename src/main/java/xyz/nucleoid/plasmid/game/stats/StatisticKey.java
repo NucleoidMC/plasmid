@@ -9,8 +9,11 @@ import net.minecraft.util.StringIdentifiable;
  * <p>
  * Ideally should have a corresponding translation key in the form <code>statistic.[bundle namespace].[key namespace].[key path]</code>
  * or <code>statistic.[key namespace].[key path]</code> for future-proofing
+ * <p>
+ * See {@link StatisticKeys} for some general keys for minigames to make use of.
  *
  * @param <T> The type of {@link Number} this key stores
+ * @see StatisticKeys
  */
 public class StatisticKey<T extends Number> {
     protected final Identifier id;

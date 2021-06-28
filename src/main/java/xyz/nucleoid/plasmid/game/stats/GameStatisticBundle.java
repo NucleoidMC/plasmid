@@ -14,6 +14,7 @@ import java.util.UUID;
  */
 public class GameStatisticBundle {
     private final Object2ObjectMap<UUID, StatisticBundle> players = new Object2ObjectOpenHashMap<>();
+    private final StatisticBundle global = new StatisticBundle();
 
     public StatisticBundle getPlayer(PlayerRef player) {
         return this.getPlayer(player.getId());
@@ -30,14 +31,22 @@ public class GameStatisticBundle {
         return this.players.getOrDefault(uuid, new StatisticBundle());
     }
 
+    public StatisticBundle getGlobal() {
+        return this.global;
+    }
+
     public boolean isEmpty() {
-        return this.players.isEmpty() || this.players.values().stream().allMatch(StatisticBundle::isEmpty);
+        return this.global.isEmpty()
+                && (this.players.isEmpty() || this.players.values().stream().allMatch(StatisticBundle::isEmpty));
     }
 
     public JsonObject encodeBundle() {
         JsonObject obj = new JsonObject();
         for (Map.Entry<UUID, StatisticBundle> entry : this.players.entrySet()) {
             obj.add(entry.getKey().toString(), entry.getValue().encodeBundle());
+        }
+        if (!this.global.isEmpty()) {
+            obj.add("global", this.global.encodeBundle());
         }
         return obj;
     }

@@ -143,5 +143,6 @@
   "statistic.plasmid.damage_dealt": "Damage dealt",
   "statistic.plasmid.blocks_broken": "Blocks broken",
   "statistic.plasmid.points": "Points",
-  "statistic.plasmid.time_survived": "Time survived"
+  "statistic.plasmid.time_survived": "Time survived",
+  "statistic.plasmid.ranking": "Ranking"
 }

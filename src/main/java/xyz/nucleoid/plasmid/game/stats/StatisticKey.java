@@ -3,9 +3,6 @@ package xyz.nucleoid.plasmid.game.stats;
 import com.google.gson.JsonObject;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
-import xyz.nucleoid.plasmid.game.stats.key.DoubleStatisticKey;
-import xyz.nucleoid.plasmid.game.stats.key.FloatStatisticKey;
-import xyz.nucleoid.plasmid.game.stats.key.IntStatisticKey;
 
 /**
  * Type-safe keys for identifying statistics.
@@ -15,14 +12,16 @@ import xyz.nucleoid.plasmid.game.stats.key.IntStatisticKey;
  *
  * @param <T> The type of {@link Number} this key stores
  */
-public abstract class StatisticKey<T extends Number> {
+public class StatisticKey<T extends Number> {
     protected final Identifier id;
-    protected final StatisticType type;
+    private final ValueType valueType;
+    protected final StorageType storageType;
 
-    protected StatisticKey(Identifier id, StatisticType type) {
+    protected StatisticKey(Identifier id, ValueType valueType, StorageType storageType) {
+        this.valueType = valueType;
         StatisticKey.validateKeyId(id);
         this.id = id;
-        this.type = type;
+        this.storageType = storageType;
     }
 
     public Identifier getId() {
@@ -41,18 +40,20 @@ public abstract class StatisticKey<T extends Number> {
         return obj;
     }
 
-    protected abstract String encodeType();
-
-    public static StatisticKey<Integer> intKey(Identifier id, StatisticType type) {
-        return new IntStatisticKey(id, type);
+    private String encodeType() {
+        return this.valueType.asString() + "_" + this.storageType.asString();
     }
 
-    public static StatisticKey<Float> floatKey(Identifier id, StatisticType type) {
-        return new FloatStatisticKey(id, type);
+    public static StatisticKey<Integer> intKey(Identifier id, StorageType storageType) {
+        return new StatisticKey<>(id, ValueType.INT, storageType);
     }
 
-    public static StatisticKey<Double> doubleKey(Identifier id, StatisticType type) {
-        return new DoubleStatisticKey(id, type);
+    public static StatisticKey<Float> floatKey(Identifier id, StorageType storageType) {
+        return new StatisticKey<>(id, ValueType.FLOAT, storageType);
+    }
+
+    public static StatisticKey<Double> doubleKey(Identifier id, StorageType storageType) {
+        return new StatisticKey<>(id, ValueType.FLOAT, storageType);
     }
 
     /**
@@ -66,13 +67,29 @@ public abstract class StatisticKey<T extends Number> {
         }
     }
 
-    public enum StatisticType implements StringIdentifiable {
+    public enum ValueType implements StringIdentifiable {
+        INT("int"),
+        FLOAT("float"),
+        ;
+        private final String name;
+
+        ValueType(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String asString() {
+            return null;
+        }
+    }
+
+    public enum StorageType implements StringIdentifiable {
         TOTAL("total"),
         ROLLING_AVERAGE("rolling_average"),
         ;
         private final String name;
 
-        StatisticType(String name) {
+        StorageType(String name) {
             this.name = name;
         }
 

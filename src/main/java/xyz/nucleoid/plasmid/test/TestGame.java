@@ -28,7 +28,7 @@ import xyz.nucleoid.plasmid.widget.GlobalWidgets;
 import xyz.nucleoid.plasmid.widget.SidebarWidget;
 
 public final class TestGame {
-    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(new Identifier(Plasmid.ID, "test"), StatisticKey.StatisticType.TOTAL);
+    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(new Identifier(Plasmid.ID, "test"), StatisticKey.StorageType.TOTAL);
 
     public static GameOpenProcedure open(GameOpenContext<Unit> context) {
         MapTemplate template = TestGame.buildTemplate();

@@ -60,17 +60,14 @@ public final class MutablePlayerSet implements PlayerSet {
         return new AbstractIterator<ServerPlayerEntity>() {
             @Override
             protected ServerPlayerEntity computeNext() {
-                while (true) {
-                    if (!ids.hasNext()) {
-                        return this.endOfData();
-                    }
-
+                while (ids.hasNext()) {
                     UUID id = ids.next();
                     ServerPlayerEntity player = playerManager.getPlayer(id);
                     if (player != null) {
                         return player;
                     }
                 }
+                return this.endOfData();
             }
         };
     }

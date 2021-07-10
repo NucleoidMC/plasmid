@@ -31,41 +31,55 @@ final class DiscordErrorReporter implements ErrorReporter {
             return;
         }
 
-        List<ReportedError> errors = this.reportedErrors;
-        int displayCount = Math.min(errors.size(), 20);
+        int displayCount = Math.min(this.reportedErrors.size(), 20);
+        List<ReportedError> errors = this.reportedErrors.subList(0, displayCount);
 
         StringBuilder content = new StringBuilder();
-        content.append(":warning: Reporting ").append(displayCount).append(" errors from: **").append(this.source).append("** :warning:\n");
+        content.append(":warning: Reporting ").append(errors.size()).append(" errors from: **").append(this.source).append("** :warning:\n");
 
-        if (displayCount < errors.size()) {
-            content.append("_Skipping ").append(errors.size() - displayCount).append(" errors..._\n");
+        if (errors.size() < this.reportedErrors.size()) {
+            content.append("_Skipping ").append(this.reportedErrors.size() - errors.size()).append(" errors..._\n");
         }
 
         content.append('\n');
 
-        StringBuilder errorsContent = new StringBuilder();
-
-        for (int i = 0; i < displayCount; i++) {
-            ReportedError error = errors.get(i);
-            StringWriter traceWriter = new StringWriter();
-            error.cause.printStackTrace(new PrintWriter(traceWriter));
-
-            if (error.context != null) {
-                errorsContent.append("**").append(error.context).append("**\n");
-            }
-
-            errorsContent.append("```\n");
-            errorsContent.append(traceWriter.toString());
-            errorsContent.append("```\n");
-        }
+        String errorsContent = this.generateErrorsContent(errors, true);
 
         if (content.length() + errorsContent.length() < MAX_CHARACTER_LIMIT) {
             content.append(errorsContent);
             this.webhook.post(new DiscordWebhook.Message(content.toString()));
         } else {
             content.append("Traces have been attached.");
-            this.webhook.post(new DiscordWebhook.Message(content.toString()).addFile("trace.txt", errorsContent.toString()));
+
+            errorsContent = this.generateErrorsContent(errors, false);
+            this.webhook.post(new DiscordWebhook.Message(content.toString()).addFile("trace.txt", errorsContent));
         }
+    }
+
+    private String generateErrorsContent(List<ReportedError> errors, boolean message) {
+        StringBuilder errorsContent = new StringBuilder();
+
+        for (ReportedError error : errors) {
+            StringWriter traceWriter = new StringWriter();
+            error.cause.printStackTrace(new PrintWriter(traceWriter));
+
+            if (message) {
+                if (error.context != null) {
+                    errorsContent.append("**").append(error.context).append("**\n");
+                }
+
+                errorsContent.append("```\n");
+                errorsContent.append(traceWriter);
+                errorsContent.append("```\n");
+            } else {
+                if (error.context != null) {
+                    errorsContent.append(error.context).append(":\n\n");
+                }
+                errorsContent.append(traceWriter);
+            }
+        }
+
+        return errorsContent.toString();
     }
 
     private static class ReportedError {

@@ -66,7 +66,10 @@ public final class MapTemplateSerializer {
 
     public MapTemplate loadFromExport(Identifier location) throws IOException {
         Path path = getExportPathFor(location);
-        Files.createDirectories(path.getParent());
+        if (!Files.exists(path)) {
+            throw new IOException("Export does not exist for " + location + "!");
+        }
+
         try (InputStream input = Files.newInputStream(path)) {
             return this.loadFrom(input);
         }

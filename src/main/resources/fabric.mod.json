@@ -22,7 +22,6 @@
   "depends": {
     "fabricloader": ">=0.9.1",
     "fabric": "*",
-    "minecraft": "1.16.x",
-    "leukocyte": "0.1.x"
+    "minecraft": "1.16.x"
   }
 }

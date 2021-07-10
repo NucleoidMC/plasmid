@@ -1,5 +1,7 @@
 package xyz.nucleoid.plasmid.util;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.nbt.CompoundTag;
@@ -7,9 +9,20 @@ import net.minecraft.util.math.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
+import java.util.Random;
 
+/**
+ * Represents an axis-aligned-bounding-box aligned to the block grid.
+ *
+ * This is made up of an inclusive minimum and maximum {@link BlockPos}.
+ */
 public final class BlockBounds implements Iterable<BlockPos> {
-    public static final BlockBounds EMPTY = BlockBounds.of(BlockPos.ORIGIN);
+    public static final Codec<BlockBounds> CODEC = RecordCodecBuilder.create(instance -> {
+        return instance.group(
+                BlockPos.CODEC.fieldOf("min").forGetter(b -> b.min),
+                BlockPos.CODEC.fieldOf("max").forGetter(b -> b.max)
+        ).apply(instance, BlockBounds::new);
+    });
 
     private final BlockPos min;
     private final BlockPos max;
@@ -161,6 +174,18 @@ public final class BlockBounds implements Iterable<BlockPos> {
         }
 
         return chunks;
+    }
+
+    public BlockPos sampleBlock(Random random) {
+        return new BlockPos(
+                sampleAxis(random, this.min.getX(), this.max.getX()),
+                sampleAxis(random, this.min.getY(), this.max.getY()),
+                sampleAxis(random, this.min.getZ(), this.max.getZ())
+        );
+    }
+
+    private static int sampleAxis(Random random, int min, int max) {
+        return min + random.nextInt(max - min + 1);
     }
 
     public CompoundTag serialize(CompoundTag root) {

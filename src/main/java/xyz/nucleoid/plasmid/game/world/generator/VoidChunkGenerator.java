@@ -21,7 +21,7 @@ import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.feature.StructureFeature;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.game.world.view.VoidBlockView;
+import xyz.nucleoid.plasmid.game.world.generator.view.VoidBlockView;
 
 import java.util.Collections;
 import java.util.Optional;

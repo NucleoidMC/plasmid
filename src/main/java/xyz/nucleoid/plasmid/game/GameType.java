@@ -5,23 +5,47 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
+import java.util.function.Consumer;
+
+/**
+ * Represents a specific "type" of game. A {@link GameType} is simply responsible for taking a configuration object
+ * and setting up game state.
+ * <p>
+ * A {@link GameType} cannot be directly interacted with from inside the game, but is instead referenced through game
+ * configurations which are stored in a datapack.
+ *
+ * @param <C> the type of config that should be loaded
+ * @see GameConfig
+ */
 public final class GameType<C> {
-    public static final TinyRegistry<GameType<?>> REGISTRY = TinyRegistry.newStable();
+    public static final TinyRegistry<GameType<?>> REGISTRY = TinyRegistry.create();
 
     private final Identifier identifier;
-    private final Open<C> open;
     private final Codec<C> configCodec;
+    private final Open<C> open;
 
-    private GameType(Identifier identifier, Open<C> open, Codec<C> configCodec) {
+    private GameType(Identifier identifier, Codec<C> configCodec, Open<C> open) {
         this.identifier = identifier;
-        this.open = open;
         this.configCodec = configCodec;
+        this.open = open;
     }
 
-    public static <C> GameType<C> register(Identifier identifier, Open<C> open, Codec<C> configCodec) {
-        GameType<C> type = new GameType<>(identifier, open, configCodec);
+    /**
+     * Registers a new {@link GameType} with the given id, codec to parse a config, and function to set up the game.
+     *
+     * @param identifier a unique identifier to register this game type with
+     * @param configCodec a {@link Codec} that can deserialize
+     * @param open a function that describes how the game should be set up, given a configuration
+     * @param <C> the type of config that should be loadedS
+     * @return the registered {@link GameType} instance
+     * @see Codec
+     * @see com.mojang.serialization.codecs.RecordCodecBuilder
+     */
+    public static <C> GameType<C> register(Identifier identifier, Codec<C> configCodec, Open<C> open) {
+        GameType<C> type = new GameType<>(identifier, configCodec, open);
         REGISTRY.register(identifier, type);
         return type;
     }
@@ -51,23 +75,16 @@ public final class GameType<C> {
         return REGISTRY.get(identifier);
     }
 
-    @Override
-    public int hashCode() {
-        return this.identifier.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-
-        if (obj instanceof GameType) {
-            return ((GameType<?>) obj).identifier.equals(this.identifier);
-        }
-
-        return false;
-    }
-
     public interface Open<C> {
+        /**
+         * Given a game configuration, returns a {@link GameOpenProcedure} describing how this game should be opened.
+         * <p>
+         * This code runs off-thread, so all blocking or slow operations should run here. Logic interacting with the
+         * game should be run in the {@link GameActivity} setup function (see {@link GameOpenContext#open(Consumer)}).
+         *
+         * @param context the context with which to construct a {@link GameOpenContext} and access configuration
+         * @return a {@link GameOpenContext} describing how the game should be opened
+         */
         GameOpenProcedure open(GameOpenContext<C> context);
     }
 }

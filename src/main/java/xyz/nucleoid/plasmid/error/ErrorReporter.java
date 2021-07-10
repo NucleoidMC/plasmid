@@ -2,7 +2,7 @@ package xyz.nucleoid.plasmid.error;
 
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.config.PlasmidConfig;
-import xyz.nucleoid.plasmid.game.ConfiguredGame;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 
 public interface ErrorReporter extends AutoCloseable {
     ErrorReporter VOID = new ErrorReporter() {
@@ -26,7 +26,7 @@ public interface ErrorReporter extends AutoCloseable {
         return new DiscordErrorReporter(source, DiscordWebhook.open(webhookUrl));
     }
 
-    static ErrorReporter open(ConfiguredGame<?> game) {
+    static ErrorReporter open(GameConfig<?> game) {
         String name = game.getName().getString();
         String source = name + " (" + game.getSource() + ")";
         return ErrorReporter.open(source);

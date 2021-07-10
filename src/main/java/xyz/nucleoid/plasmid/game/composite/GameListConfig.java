@@ -5,7 +5,7 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.ConfiguredGame;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 
 import java.util.ArrayList;
@@ -22,10 +22,10 @@ public final class GameListConfig {
         this.games = games;
     }
 
-    public List<ConfiguredGame<?>> collectGames() {
-        List<ConfiguredGame<?>> games = new ArrayList<>(this.games.size());
+    public List<GameConfig<?>> collectGames() {
+        List<GameConfig<?>> games = new ArrayList<>(this.games.size());
         for (Identifier gameId : this.games) {
-            ConfiguredGame<?> game = GameConfigs.get(gameId);
+            GameConfig<?> game = GameConfigs.get(gameId);
             if (game == null) {
                 Plasmid.LOGGER.warn("Missing game config by id '{}'!", gameId);
                 continue;
@@ -36,11 +36,15 @@ public final class GameListConfig {
     }
 
     @Nullable
-    public ConfiguredGame<?> selectGame(Random random) {
-        List<ConfiguredGame<?>> games = this.collectGames();
+    public GameConfig<?> selectGame(Random random) {
+        List<GameConfig<?>> games = this.collectGames();
         if (games.isEmpty()) {
             return null;
         }
         return games.get(random.nextInt(games.size()));
+    }
+
+    public boolean isEmpty() {
+        return this.games.isEmpty();
     }
 }

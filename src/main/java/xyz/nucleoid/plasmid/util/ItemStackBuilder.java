@@ -6,10 +6,7 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.DyeableItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -32,6 +29,26 @@ public final class ItemStackBuilder {
 
     public static ItemStackBuilder of(ItemStack stack) {
         return new ItemStackBuilder(stack.copy());
+    }
+
+    public static ItemStackBuilder firework(int color, int flight, FireworkItem.Type type) {
+        ItemStack rocket = new ItemStack(Items.FIREWORK_ROCKET, 1);
+
+        ItemStack star = new ItemStack(Items.FIREWORK_STAR);
+        CompoundTag explosion = star.getOrCreateSubTag("Explosion");
+
+        explosion.putIntArray("Colors", new int[] { color });
+        explosion.putByte("Type", (byte) type.getId());
+
+        CompoundTag fireworks = rocket.getOrCreateSubTag("Fireworks");
+
+        ListTag explosions = new ListTag();
+        explosions.add(explosion);
+        fireworks.put("Explosions", explosions);
+
+        fireworks.putByte("Flight", (byte) flight);
+
+        return new ItemStackBuilder(rocket);
     }
 
     public ItemStackBuilder setCount(int count) {
@@ -103,7 +120,7 @@ public final class ItemStackBuilder {
         return this;
     }
 
-    public ItemStackBuilder setColor(int color) {
+    public ItemStackBuilder setDyeColor(int color) {
         Item item = this.stack.getItem();
         if (item instanceof DyeableItem) {
             ((DyeableItem) item).setColor(this.stack, color);

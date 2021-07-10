@@ -28,15 +28,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
-/**
- * Represents the space within which a game occurs through attached {@link GameActivity}
- *
- * <p>Each world has a {@link net.minecraft.world.gen.chunk.ChunkGenerator} which is invoked as chunks are requested.
- * It is important to note that not all chunks will be loaded on start, and the game logic must take care to handle this.
- * Players can only be added to this game space through {@link GameSpace#offerPlayer}.
- */
-// TODO: Go over the new 0.5 API and add proper documentation!
-
 public final class ManagedGameSpace implements GameSpace {
     private final MinecraftServer server;
     private final GameSpaceManager manager;

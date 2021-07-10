@@ -9,6 +9,7 @@ import net.minecraft.text.Text;
  * An implementation of {@link GameWidget} which displays a boss bar at the top of players' screens.
  *
  * @see ServerBossBar
+ * @see xyz.nucleoid.plasmid.game.common.GlobalWidgets
  */
 public final class BossBarWidget implements GameWidget {
     private final ServerBossBar bar;

@@ -1,6 +1,10 @@
 package xyz.nucleoid.plasmid.game;
 
-// TODO: rename?
+/**
+ * Holds the logic controlling how a {@link GameSpace} should be opened.
+ *
+ * @see GameOpenContext
+ */
 public interface GameOpenProcedure {
     void apply(GameSpace gameSpace);
 }

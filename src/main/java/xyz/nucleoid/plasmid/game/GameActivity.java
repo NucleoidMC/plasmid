@@ -22,6 +22,8 @@ public interface GameActivity extends GameBehavior {
      * @param rule the rule type to set
      * @param result how this rule should be responded to
      * @return this {@link GameActivity}
+     * @see GameActivity#allow(GameRuleType)
+     * @see GameActivity#deny(GameRuleType)
      */
     GameActivity setRule(GameRuleType rule, ActionResult result);
 

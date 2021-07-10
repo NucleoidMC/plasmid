@@ -33,6 +33,7 @@ import java.util.function.Consumer;
  * displays at the right side of players' screens.
  *
  * @see net.minecraft.scoreboard.Scoreboard
+ * @see xyz.nucleoid.plasmid.game.common.GlobalWidgets
  */
 public final class SidebarWidget implements GameWidget {
     private static final int SIDEBAR_SLOT = 1;

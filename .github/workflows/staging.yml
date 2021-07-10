@@ -1,0 +1,55 @@
+name: Build Staging
+
+on:
+  push:
+    branches: [ 'staging/**' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/loom-cache
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-
+
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 16
+
+      - name: Read mod version from Gradle
+        id: read_version
+        uses: christian-draeger/read-properties@1.0.1
+        with:
+          path: './gradle.properties'
+          property: 'mod_version'
+
+      - name: Generate build number
+        uses: zyborg/gh-action-buildnum@v1
+        with:
+          version_key: staging-${{ steps.read_version.outputs.value }}
+          gist_token: ${{ secrets.GIST_TOKEN }}
+          set_env: true
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build and publish with Gradle
+        run: ./gradlew build publish
+        env:
+          MAVEN_URL: ${{ secrets.MAVEN_URL }}
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: artifacts
+          path: build/libs

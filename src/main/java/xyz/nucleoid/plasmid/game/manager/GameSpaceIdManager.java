@@ -15,9 +15,9 @@ final class GameSpaceIdManager {
     private final Map<Identifier, GameConfig<?>> idToConfig = new Object2ObjectOpenHashMap<>();
 
     public Identifier acquire(GameConfig<?> config) {
-        Collection<Identifier> ids = this.configToIds.get(config);
+        var ids = this.configToIds.get(config);
 
-        Identifier uniqueId = this.generateUniqueId(config, ids);
+        var uniqueId = this.generateUniqueId(config, ids);
         ids.add(uniqueId);
 
         this.idToConfig.put(uniqueId, config);
@@ -26,14 +26,14 @@ final class GameSpaceIdManager {
     }
 
     public void release(Identifier id) {
-        GameConfig<?> config = this.idToConfig.remove(id);
+        var config = this.idToConfig.remove(id);
         if (config != null) {
             this.configToIds.remove(config, id);
         }
     }
 
     private Identifier generateUniqueId(GameConfig<?> config, Collection<Identifier> ids) {
-        Identifier configId = this.getIdForConfig(config);
+        var configId = this.getIdForConfig(config);
         if (ids.isEmpty()) {
             return configId;
         }
@@ -47,7 +47,7 @@ final class GameSpaceIdManager {
     }
 
     private Identifier generateRandomId(Identifier configId) {
-        String random = RandomStringUtils.randomAlphabetic(4);
+        var random = RandomStringUtils.randomAlphabetic(4);
         return new Identifier(configId.getNamespace(), configId.getPath() + "/" + random);
     }
 

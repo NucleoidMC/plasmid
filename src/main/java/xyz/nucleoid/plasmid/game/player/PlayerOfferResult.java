@@ -71,17 +71,7 @@ public interface PlayerOfferResult {
         }
     }
 
-    final class Reject implements PlayerOfferResult {
-        private final Text reason;
-
-        Reject(Text reason) {
-            this.reason = reason;
-        }
-
-        public Text getReason() {
-            return this.reason;
-        }
-
+    record Reject(Text reason) implements PlayerOfferResult {
         @Override
         public Reject asReject() {
             return this;

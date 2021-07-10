@@ -86,14 +86,14 @@ public final class BlockBounds implements Iterable<BlockPos> {
             return null;
         }
 
-        BlockPos min = max(this.getMin(), bounds.getMin());
-        BlockPos max = min(this.getMax(), bounds.getMax());
+        var min = max(this.getMin(), bounds.getMin());
+        var max = min(this.getMax(), bounds.getMax());
         return new BlockBounds(min, max);
     }
 
     public BlockBounds union(BlockBounds bounds) {
-        BlockPos min = min(this.getMin(), bounds.getMin());
-        BlockPos max = max(this.getMax(), bounds.getMax());
+        var min = min(this.getMin(), bounds.getMin());
+        var max = max(this.getMax(), bounds.getMax());
         return new BlockBounds(min, max);
     }
 
@@ -144,7 +144,7 @@ public final class BlockBounds implements Iterable<BlockPos> {
         int maxChunkX = this.max.getX() >> 4;
         int maxChunkZ = this.max.getZ() >> 4;
 
-        LongOpenHashSet chunks = new LongOpenHashSet((maxChunkX - minChunkX + 1) * (maxChunkZ - minChunkZ + 1));
+        var chunks = new LongOpenHashSet((maxChunkX - minChunkX + 1) * (maxChunkZ - minChunkZ + 1));
 
         for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
             for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
@@ -163,7 +163,7 @@ public final class BlockBounds implements Iterable<BlockPos> {
         int maxChunkY = this.max.getY() >> 4;
         int maxChunkZ = this.max.getZ() >> 4;
 
-        LongOpenHashSet chunks = new LongOpenHashSet((maxChunkX - minChunkX + 1) * (maxChunkY - minChunkY + 1) * (maxChunkZ - minChunkZ + 1));
+        var chunks = new LongOpenHashSet((maxChunkX - minChunkX + 1) * (maxChunkY - minChunkY + 1) * (maxChunkZ - minChunkZ + 1));
 
         for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
             for (int chunkY = minChunkY; chunkY <= maxChunkY; chunkY++) {
@@ -195,8 +195,8 @@ public final class BlockBounds implements Iterable<BlockPos> {
     }
 
     public static BlockBounds deserialize(NbtCompound root) {
-        int[] minArray = root.getIntArray("min");
-        int[] maxArray = root.getIntArray("max");
+        var minArray = root.getIntArray("min");
+        var maxArray = root.getIntArray("max");
         return new BlockBounds(
                 new BlockPos(minArray[0], minArray[1], minArray[2]),
                 new BlockPos(maxArray[0], maxArray[1], maxArray[2])

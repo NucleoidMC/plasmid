@@ -25,10 +25,10 @@ public final class MenuPortalBackend implements GamePortalBackend {
     }
 
     private List<GameEntry> buildGames(List<MenuPortalConfig.Entry> configs) {
-        List<GameEntry> games = new ArrayList<>(configs.size());
-        for (MenuPortalConfig.Entry configEntry : configs) {
-            OnDemandGame game = new OnDemandGame(configEntry.game);
-            games.add(new GameEntry(game, configEntry.icon));
+        var games = new ArrayList<GameEntry>(configs.size());
+        for (var configEntry : configs) {
+            var game = new OnDemandGame(configEntry.game());
+            games.add(new GameEntry(game, configEntry.icon()));
         }
 
         return games;
@@ -39,7 +39,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
         display.set(GamePortalDisplay.NAME, this.name);
 
         int count = 0;
-        for (GameEntry entry : this.games) {
+        for (var entry : this.games) {
             count += entry.game.getPlayerCount();
         }
 
@@ -48,11 +48,11 @@ public final class MenuPortalBackend implements GamePortalBackend {
 
     @Override
     public CompletableFuture<GameSpace> requestJoin(ServerPlayerEntity player) {
-        CompletableFuture<GameSpace> future = new CompletableFuture<>();
+        var future = new CompletableFuture<GameSpace>();
 
-        ShopUi ui = ShopUi.create(this.name, builder -> {
-            for (GameEntry entry : this.games) {
-                ShopEntry uiEntry = ShopEntry.ofIcon(entry.icon).noCost()
+        var ui = ShopUi.create(this.name, builder -> {
+            for (var entry : this.games) {
+                var uiEntry = ShopEntry.ofIcon(entry.icon).noCost()
                         .withName(entry.game.getName())
                         .onBuy(p -> {
                             entry.game.getOrOpen(player.server).handle((gameSpace, throwable) -> {
@@ -74,13 +74,6 @@ public final class MenuPortalBackend implements GamePortalBackend {
         return future;
     }
 
-    static class GameEntry {
-        final OnDemandGame game;
-        final ItemStack icon;
-
-        GameEntry(OnDemandGame game, ItemStack icon) {
-            this.game = game;
-            this.icon = icon;
-        }
+    record GameEntry(OnDemandGame game, ItemStack icon) {
     }
 }

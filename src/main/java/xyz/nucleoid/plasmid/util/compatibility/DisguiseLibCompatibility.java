@@ -17,14 +17,14 @@ public final class DisguiseLibCompatibility {
     }
 
     private static double getDisguisedHeight(Entity entity) {
-        Entity disguise = getDisguiseFor(entity);
+        var disguise = getDisguiseFor(entity);
         return disguise != null ? disguise.getHeight() : entity.getHeight();
     }
 
     @Nullable
     private static Entity getDisguiseFor(Entity entity) {
-        if (entity instanceof EntityDisguise && ((EntityDisguise) entity).isDisguised()) {
-            return ((EntityDisguise) entity).getDisguiseEntity();
+        if (entity instanceof EntityDisguise disguised && disguised.isDisguised()) {
+            return disguised.getDisguiseEntity();
         } else {
             return null;
         }

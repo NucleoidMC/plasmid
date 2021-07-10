@@ -69,8 +69,8 @@ public abstract class EntityMixin implements GamePortalInterface {
     public void setDisplay(GamePortalDisplay display) {
         this.removeDisplay();
 
-        Text name = display.get(GamePortalDisplay.NAME);
-        Integer playerCount = display.get(GamePortalDisplay.PLAYER_COUNT);
+        var name = display.get(GamePortalDisplay.NAME);
+        var playerCount = display.get(GamePortalDisplay.PLAYER_COUNT);
         if (name != null && playerCount != null) {
             FloatingText floatingText = this.createDisplay();
             floatingText.setText(new Text[] { name, new LiteralText(playerCount + " players") });
@@ -79,7 +79,7 @@ public abstract class EntityMixin implements GamePortalInterface {
 
     private FloatingText createDisplay() {
         if (this.display == null) {
-            Vec3d anchor = this.getDisplayAnchor();
+            var anchor = this.getDisplayAnchor();
             this.display = FloatingText.create((ServerWorld) this.world, anchor, FloatingText.VerticalAlign.BOTTOM);
         }
         return this.display;

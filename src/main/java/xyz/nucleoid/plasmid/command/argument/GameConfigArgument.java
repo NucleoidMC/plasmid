@@ -26,7 +26,7 @@ public final class GameConfigArgument {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((ctx, builder) -> {
                     Iterable<Identifier> candidates = GameConfigs.getKeys().stream()::iterator;
-                    String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+                    var remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
                     CommandSource.forEachMatching(candidates, remaining, Function.identity(), id -> {
                         builder.suggest(id.toString(), GameConfigs.get(id).getName());
@@ -36,9 +36,9 @@ public final class GameConfigArgument {
     }
 
     public static Pair<Identifier, GameConfig<?>> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
-        Identifier identifier = IdentifierArgumentType.getIdentifier(context, name);
+        var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
-        GameConfig<?> config = GameConfigs.get(identifier);
+        var config = GameConfigs.get(identifier);
         if (config == null) {
             throw GAME_NOT_FOUND.create(identifier);
         }

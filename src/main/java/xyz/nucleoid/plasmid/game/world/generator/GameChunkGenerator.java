@@ -5,10 +5,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.*;
+import net.minecraft.world.ChunkRegion;
+import net.minecraft.world.HeightLimitView;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.biome.source.BiomeSource;
@@ -47,7 +48,7 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
     }
 
     protected static FixedBiomeSource createBiomeSource(MinecraftServer server, RegistryKey<Biome> biome) {
-        DynamicRegistryManager registryManager = server.getRegistryManager();
+        var registryManager = server.getRegistryManager();
         return new FixedBiomeSource(registryManager.get(Registry.BIOME_KEY).get(biome));
     }
 

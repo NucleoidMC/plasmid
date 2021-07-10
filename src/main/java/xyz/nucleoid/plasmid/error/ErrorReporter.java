@@ -16,9 +16,9 @@ public interface ErrorReporter extends AutoCloseable {
     };
 
     static ErrorReporter open(String source) {
-        PlasmidConfig config = PlasmidConfig.get();
+        var config = PlasmidConfig.get();
 
-        String webhookUrl = config.getErrorReportingWebhookUrl();
+        var webhookUrl = config.getErrorReportingWebhookUrl();
         if (webhookUrl == null) {
             return VOID;
         }
@@ -27,8 +27,8 @@ public interface ErrorReporter extends AutoCloseable {
     }
 
     static ErrorReporter open(GameConfig<?> game) {
-        String name = game.getName().getString();
-        String source = name + " (" + game.getSource() + ")";
+        var name = game.getName().getString();
+        var source = name + " (" + game.getSource() + ")";
         return ErrorReporter.open(source);
     }
 

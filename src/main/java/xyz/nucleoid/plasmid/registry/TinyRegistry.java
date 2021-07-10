@@ -57,7 +57,7 @@ public final class TinyRegistry<T> implements Codec<T> {
 
     @Override
     public <U> DataResult<U> encode(T input, DynamicOps<U> ops, U prefix) {
-        Identifier identifier = this.getIdentifier(input);
+        var identifier = this.getIdentifier(input);
         if (identifier == null) {
             return DataResult.error("Unknown registry element " + input);
         }

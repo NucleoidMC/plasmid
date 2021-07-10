@@ -6,9 +6,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.IdListPalette;
@@ -51,7 +50,7 @@ final class MapChunk {
      * @param position The entity position relative to the map.
      */
     public void addEntity(Entity entity, Vec3d position) {
-        MapEntity mapEntity = MapEntity.fromEntity(entity, position);
+        var mapEntity = MapEntity.fromEntity(entity, position);
         if (mapEntity != null) {
             this.entities.add(mapEntity);
         }
@@ -78,8 +77,8 @@ final class MapChunk {
         this.container.write(tag, "palette", "block_states");
 
         if (!this.entities.isEmpty()) {
-            NbtList entitiesTag = new NbtList();
-            for (MapEntity entity : this.entities) {
+            var entitiesTag = new NbtList();
+            for (var entity : this.entities) {
                 entitiesTag.add(entity.tag);
             }
             tag.put("entities", entitiesTag);
@@ -87,12 +86,12 @@ final class MapChunk {
     }
 
     public static MapChunk deserialize(ChunkSectionPos pos, NbtCompound tag) {
-        MapChunk chunk = new MapChunk(pos);
+        var chunk = new MapChunk(pos);
         chunk.container.read(tag.getList("palette", NbtType.COMPOUND), tag.getLongArray("block_states"));
 
         if (tag.contains("entities", NbtType.LIST)) {
-            NbtList entitiesTag = tag.getList("entities", NbtType.COMPOUND);
-            for (NbtElement entityTag : entitiesTag) {
+            var entitiesTag = tag.getList("entities", NbtType.COMPOUND);
+            for (var entityTag : entitiesTag) {
                 chunk.entities.add(MapEntity.fromTag(pos, (NbtCompound) entityTag));
             }
         }

@@ -37,7 +37,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @return a {@link GlobalWidgets} instance which can be used to add various widgets for all players
      */
     public static GlobalWidgets addTo(GameActivity activity) {
-        GlobalWidgets widgets = new GlobalWidgets(activity.getGameSpace());
+        var widgets = new GlobalWidgets(activity.getGameSpace());
 
         activity.listen(GamePlayerEvents.ADD, widgets::onAddPlayer);
         activity.listen(GamePlayerEvents.REMOVE, widgets::onRemovePlayer);
@@ -86,7 +86,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @return the added widget
      */
     public <T extends GameWidget> T addWidget(T widget) {
-        for (ServerPlayerEntity player : this.gameSpace.getPlayers()) {
+        for (var player : this.gameSpace.getPlayers()) {
             widget.addPlayer(player);
         }
         this.widgets.add(widget);
@@ -105,20 +105,20 @@ public final class GlobalWidgets implements AutoCloseable {
     }
 
     private void onAddPlayer(ServerPlayerEntity player) {
-        for (GameWidget widget : this.widgets) {
+        for (var widget : this.widgets) {
             widget.addPlayer(player);
         }
     }
 
     private void onRemovePlayer(ServerPlayerEntity player) {
-        for (GameWidget widget : this.widgets) {
+        for (var widget : this.widgets) {
             widget.removePlayer(player);
         }
     }
 
     @Override
     public void close() {
-        for (GameWidget widget : this.widgets) {
+        for (var widget : this.widgets) {
             widget.close();
         }
         this.widgets.clear();

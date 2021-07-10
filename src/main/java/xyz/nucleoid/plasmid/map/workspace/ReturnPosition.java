@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.map.workspace;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
@@ -28,7 +27,7 @@ public final class ReturnPosition {
     }
 
     public void applyTo(ServerPlayerEntity player) {
-        ServerWorld world = player.getServer().getWorld(this.dimension);
+        var world = player.getServer().getWorld(this.dimension);
         player.teleport(world, this.position.x, this.position.y, this.position.z, this.yaw, this.pitch);
     }
 
@@ -43,7 +42,7 @@ public final class ReturnPosition {
     }
 
     public static ReturnPosition read(NbtCompound root) {
-        RegistryKey<World> dimension = RegistryKey.of(Registry.WORLD_KEY, new Identifier(root.getString("dimension")));
+        var dimension = RegistryKey.of(Registry.WORLD_KEY, new Identifier(root.getString("dimension")));
         double x = root.getDouble("x");
         double y = root.getDouble("y");
         double z = root.getDouble("z");

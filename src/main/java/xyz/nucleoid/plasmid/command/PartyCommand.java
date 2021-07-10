@@ -1,24 +1,18 @@
 package xyz.nucleoid.plasmid.command;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.GameProfileArgumentType;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
-import xyz.nucleoid.plasmid.party.Party;
 import xyz.nucleoid.plasmid.party.PartyError;
 import xyz.nucleoid.plasmid.party.PartyManager;
-import xyz.nucleoid.plasmid.party.PartyResult;
 import xyz.nucleoid.plasmid.util.PlayerRef;
-
-import java.util.Collection;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -55,31 +49,30 @@ public final class PartyCommand {
     }
 
     private static Text displayError(PartyError error, String player) {
-        switch (error) {
-            case DOES_NOT_EXIST: return new TranslatableText("text.plasmid.party.error.does_not_exist");
-            case ALREADY_INVITED: return new TranslatableText("text.plasmid.party.error.already_invited", player);
-            case ALREADY_IN_PARTY: return new TranslatableText("text.plasmid.party.error.already_in_party");
-            case CANNOT_REMOVE_SELF: return new TranslatableText("text.plasmid.party.error.cannot_remove_self");
-            case NOT_IN_PARTY: return new TranslatableText("text.plasmid.party.error.not_in_party", player);
-            case NOT_INVITED: return new TranslatableText("text.plasmid.party.error.not_invited");
-            default: throw new UnsupportedOperationException();
-        }
+        return switch (error) {
+            case DOES_NOT_EXIST -> new TranslatableText("text.plasmid.party.error.does_not_exist");
+            case ALREADY_INVITED -> new TranslatableText("text.plasmid.party.error.already_invited", player);
+            case ALREADY_IN_PARTY -> new TranslatableText("text.plasmid.party.error.already_in_party");
+            case CANNOT_REMOVE_SELF -> new TranslatableText("text.plasmid.party.error.cannot_remove_self");
+            case NOT_IN_PARTY -> new TranslatableText("text.plasmid.party.error.not_in_party", player);
+            case NOT_INVITED -> new TranslatableText("text.plasmid.party.error.not_invited");
+        };
     }
 
     private static int invitePlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity owner = source.getPlayer();
+        var source = ctx.getSource();
+        var owner = source.getPlayer();
 
-        ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+        var player = EntityArgumentType.getPlayer(ctx, "player");
 
-        PartyManager partyManager = PartyManager.get(source.getServer());
-        PartyResult result = partyManager.invitePlayer(PlayerRef.of(owner), PlayerRef.of(player));
+        var partyManager = PartyManager.get(source.getServer());
+        var result = partyManager.invitePlayer(PlayerRef.of(owner), PlayerRef.of(player));
         if (result.isOk()) {
             MutableText message = new TranslatableText("text.plasmid.party.invited.sender", player.getDisplayName());
 
             source.sendFeedback(message.formatted(Formatting.GOLD), false);
 
-            MutableText notificationLink = new TranslatableText("text.plasmid.party.invited.receiver.click")
+            var notificationLink = new TranslatableText("text.plasmid.party.invited.receiver.click")
                     .setStyle(Style.EMPTY
                             .withColor(Formatting.BLUE)
                             .withColor(Formatting.UNDERLINE)
@@ -93,13 +86,13 @@ public final class PartyCommand {
                             ))
                     );
 
-            MutableText notification = new TranslatableText("text.plasmid.party.invited.receiver", owner.getDisplayName())
+            var notification = new TranslatableText("text.plasmid.party.invited.receiver", owner.getDisplayName())
                     .formatted(Formatting.GOLD)
                     .append(notificationLink);
 
             player.sendMessage(notification, false);
         } else {
-            PartyError error = result.getError();
+            var error = result.error();
             source.sendError(displayError(error, player));
         }
 
@@ -107,26 +100,26 @@ public final class PartyCommand {
     }
 
     private static int kickPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource source = ctx.getSource();
-        MinecraftServer server = source.getServer();
-        ServerPlayerEntity owner = source.getPlayer();
+        var source = ctx.getSource();
+        var server = source.getServer();
+        var owner = source.getPlayer();
 
-        Collection<GameProfile> profiles = GameProfileArgumentType.getProfileArgument(ctx, "player");
+        var profiles = GameProfileArgumentType.getProfileArgument(ctx, "player");
 
-        for (GameProfile profile : profiles) {
-            PartyManager partyManager = PartyManager.get(source.getServer());
-            PartyResult result = partyManager.kickPlayer(PlayerRef.of(owner), PlayerRef.of(profile));
+        for (var profile : profiles) {
+            var partyManager = PartyManager.get(source.getServer());
+            var result = partyManager.kickPlayer(PlayerRef.of(owner), PlayerRef.of(profile));
             if (result.isOk()) {
-                Party party = result.getParty();
+                var party = result.party();
 
-                MutableText message = new TranslatableText("text.plasmid.party.kicked.sender", owner.getDisplayName());
+                var message = new TranslatableText("text.plasmid.party.kicked.sender", owner.getDisplayName());
                 party.getMemberPlayers().sendMessage(message.formatted(Formatting.GOLD));
 
                 PlayerRef.of(profile).ifOnline(server, player -> {
                     player.sendMessage(new TranslatableText("text.plasmid.party.kicked.receiver").formatted(Formatting.RED), false);
                 });
             } else {
-                PartyError error = result.getError();
+                var error = result.error();
                 source.sendError(displayError(error, profile.getName()));
             }
         }
@@ -135,13 +128,13 @@ public final class PartyCommand {
     }
 
     private static int transferToPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity owner = source.getPlayer();
+        var source = ctx.getSource();
+        var owner = source.getPlayer();
 
-        ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+        var player = EntityArgumentType.getPlayer(ctx, "player");
 
-        PartyManager partyManager = PartyManager.get(source.getServer());
-        PartyResult result = partyManager.transferParty(PlayerRef.of(owner), PlayerRef.of(player));
+        var partyManager = PartyManager.get(source.getServer());
+        var result = partyManager.transferParty(PlayerRef.of(owner), PlayerRef.of(player));
         if (result.isOk()) {
             source.sendFeedback(
                     new TranslatableText("text.plasmid.party.transferred.sender", player.getDisplayName())
@@ -155,7 +148,7 @@ public final class PartyCommand {
                     false
             );
         } else {
-            PartyError error = result.getError();
+            var error = result.error();
             source.sendError(displayError(error, player));
         }
 
@@ -163,20 +156,20 @@ public final class PartyCommand {
     }
 
     private static int acceptInvite(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player = source.getPlayer();
+        var source = ctx.getSource();
+        var player = source.getPlayer();
 
-        ServerPlayerEntity owner = EntityArgumentType.getPlayer(ctx, "player");
+        var owner = EntityArgumentType.getPlayer(ctx, "player");
 
-        PartyManager partyManager = PartyManager.get(source.getServer());
-        PartyResult result = partyManager.acceptInvite(PlayerRef.of(player), PlayerRef.of(owner));
+        var partyManager = PartyManager.get(source.getServer());
+        var result = partyManager.acceptInvite(PlayerRef.of(player), PlayerRef.of(owner));
         if (result.isOk()) {
-            Party party = result.getParty();
+            var party = result.party();
 
-            MutableText message = new TranslatableText("text.plasmid.party.join.success", player.getDisplayName());
+            var message = new TranslatableText("text.plasmid.party.join.success", player.getDisplayName());
             party.getMemberPlayers().sendMessage(message.formatted(Formatting.GOLD));
         } else {
-            PartyError error = result.getError();
+            var error = result.error();
             source.sendError(displayError(error, player));
         }
 
@@ -184,18 +177,18 @@ public final class PartyCommand {
     }
 
     private static int leave(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player = source.getPlayer();
+        var source = ctx.getSource();
+        var player = source.getPlayer();
 
-        PartyManager partyManager = PartyManager.get(source.getServer());
-        PartyResult result = partyManager.leaveParty(PlayerRef.of(player));
+        var partyManager = PartyManager.get(source.getServer());
+        var result = partyManager.leaveParty(PlayerRef.of(player));
         if (result.isOk()) {
-            Party party = result.getParty();
+            var party = result.party();
 
-            MutableText message = new TranslatableText("text.plasmid.party.leave.success", player.getDisplayName());
+            var message = new TranslatableText("text.plasmid.party.leave.success", player.getDisplayName());
             party.getMemberPlayers().sendMessage(message.formatted(Formatting.GOLD));
         } else {
-            PartyError error = result.getError();
+            var error = result.error();
             source.sendError(displayError(error, player));
         }
 
@@ -203,18 +196,18 @@ public final class PartyCommand {
     }
 
     private static int disband(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity owner = source.getPlayer();
+        var source = ctx.getSource();
+        var owner = source.getPlayer();
 
-        PartyManager partyManager = PartyManager.get(source.getServer());
-        PartyResult result = partyManager.disbandParty(PlayerRef.of(owner));
+        var partyManager = PartyManager.get(source.getServer());
+        var result = partyManager.disbandParty(PlayerRef.of(owner));
         if (result.isOk()) {
-            Party party = result.getParty();
+            var party = result.party();
 
-            MutableText message = new TranslatableText("text.plasmid.party.disband.success");
+            var message = new TranslatableText("text.plasmid.party.disband.success");
             party.getMemberPlayers().sendMessage(message.formatted(Formatting.GOLD));
         } else {
-            PartyError error = result.getError();
+            var error = result.error();
             source.sendError(displayError(error, owner));
         }
 

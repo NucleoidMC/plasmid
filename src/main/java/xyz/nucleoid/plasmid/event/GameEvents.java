@@ -18,33 +18,33 @@ public final class GameEvents {
     }
 
     public static final Event<GameSpaceOpened> OPENED = EventFactory.createArrayBacked(GameSpaceOpened.class, listeners -> (game, gameSpace) -> {
-        for (GameSpaceOpened listener : listeners) {
+        for (var listener : listeners) {
             listener.onGameSpaceOpened(game, gameSpace);
         }
     });
 
     public static final Event<CreateActivity> CREATE_ACTIVITY = EventFactory.createArrayBacked(CreateActivity.class, listeners -> (gameSpace, activity) -> {
-        for (CreateActivity listener : listeners) {
+        for (var listener : listeners) {
             listener.onCreateActivity(gameSpace, activity);
         }
     });
 
     public static final Event<DestroyActivity> DESTROY_ACTIVITY = EventFactory.createArrayBacked(DestroyActivity.class, listeners -> (gameSpace, activity, reason) -> {
-        for (DestroyActivity listener : listeners) {
+        for (var listener : listeners) {
             listener.onDestroyActivity(gameSpace, activity, reason);
         }
     });
 
     public static final Event<RequestStart> START_REQUEST = EventFactory.createArrayBacked(RequestStart.class, listeners -> (gameSpace, result) -> {
-        for (RequestStart listener : listeners) {
-            GameResult tmp = listener.onRequestStart(gameSpace, result);
+        for (var listener : listeners) {
+            var tmp = listener.onRequestStart(gameSpace, result);
             if (tmp != null) result = tmp;
         }
         return result;
     });
 
     public static final Event<GameSpaceClosing> CLOSING = EventFactory.createArrayBacked(GameSpaceClosing.class, listeners -> (gameSpace, reason) -> {
-        for (GameSpaceClosing listener : listeners) {
+        for (var listener : listeners) {
             listener.onGameSpaceClosing(gameSpace, reason);
         }
     });

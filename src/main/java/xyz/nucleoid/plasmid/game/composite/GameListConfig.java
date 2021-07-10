@@ -12,20 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public final class GameListConfig {
+public record GameListConfig(List<Identifier> games) {
     public static final Codec<GameListConfig> CODEC = MoreCodecs.listOrUnit(Identifier.CODEC)
             .xmap(GameListConfig::new, config -> config.games);
 
-    private final List<Identifier> games;
-
-    public GameListConfig(List<Identifier> games) {
-        this.games = games;
-    }
-
     public List<GameConfig<?>> collectGames() {
-        List<GameConfig<?>> games = new ArrayList<>(this.games.size());
-        for (Identifier gameId : this.games) {
-            GameConfig<?> game = GameConfigs.get(gameId);
+        var games = new ArrayList<GameConfig<?>>(this.games.size());
+        for (var gameId : this.games) {
+            var game = GameConfigs.get(gameId);
             if (game == null) {
                 Plasmid.LOGGER.warn("Missing game config by id '{}'!", gameId);
                 continue;
@@ -37,7 +31,7 @@ public final class GameListConfig {
 
     @Nullable
     public GameConfig<?> selectGame(Random random) {
-        List<GameConfig<?>> games = this.collectGames();
+        var games = this.collectGames();
         if (games.isEmpty()) {
             return null;
         }

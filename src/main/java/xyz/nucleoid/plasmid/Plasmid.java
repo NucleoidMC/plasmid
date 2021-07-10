@@ -22,7 +22,6 @@ import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.portal.GamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.GamePortalInterface;
 import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
@@ -72,8 +71,12 @@ public final class Plasmid implements ModInitializer {
         });
 
         UseEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
-            if (player instanceof ServerPlayerEntity && entity instanceof GamePortalInterface && hand == Hand.MAIN_HAND) {
-                if (((GamePortalInterface) entity).interactWithPortal((ServerPlayerEntity) player)) {
+            if (
+                    player instanceof ServerPlayerEntity serverPlayer
+                            && entity instanceof GamePortalInterface portalInterface
+                            && hand == Hand.MAIN_HAND
+            ) {
+                if (portalInterface.interactWithPortal(serverPlayer)) {
                     return ActionResult.SUCCESS;
                 }
             }
@@ -82,7 +85,7 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerTickEvents.END_WORLD_TICK.register(world -> {
-            ManagedGameSpace game = GameSpaceManager.get().byWorld(world);
+            var game = GameSpaceManager.get().byWorld(world);
             if (game != null) {
                 try {
                     game.getBehavior().propagatingInvoker(GameActivityEvents.TICK).onTick();

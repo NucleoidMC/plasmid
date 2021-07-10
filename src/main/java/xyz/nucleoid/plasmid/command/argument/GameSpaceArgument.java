@@ -20,7 +20,7 @@ public final class GameSpaceArgument {
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((context, builder) -> {
-                    GameSpaceManager gameSpaceManager = GameSpaceManager.get();
+                    var gameSpaceManager = GameSpaceManager.get();
 
                     return CommandSource.suggestIdentifiers(
                             gameSpaceManager.getOpenGameSpaces().stream().map(ManagedGameSpace::getId),
@@ -30,9 +30,9 @@ public final class GameSpaceArgument {
     }
 
     public static GameSpace get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
-        Identifier identifier = IdentifierArgumentType.getIdentifier(context, name);
+        var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
-        GameSpace gameSpace = GameSpaceManager.get().byId(identifier);
+        var gameSpace = GameSpaceManager.get().byId(identifier);
         if (gameSpace == null) {
             throw GAME_NOT_FOUND.create();
         }

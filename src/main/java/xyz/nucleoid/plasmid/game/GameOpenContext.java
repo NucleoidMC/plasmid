@@ -19,15 +19,7 @@ import java.util.function.Consumer;
  * @see GameOpenProcedure
  * @see GameType.Open
  */
-public final class GameOpenContext<C> {
-    private final MinecraftServer server;
-    private final GameConfig<C> game;
-
-    public GameOpenContext(MinecraftServer server, GameConfig<C> game) {
-        this.server = server;
-        this.game = game;
-    }
-
+public record GameOpenContext<C>(MinecraftServer server, GameConfig<C> game) {
     /**
      * Creates a {@link GameOpenProcedure} that opens a game given the {@code setup} function.
      * <p>
@@ -67,21 +59,23 @@ public final class GameOpenContext<C> {
     /**
      * @return the server instance for this game to be opened in
      */
-    public MinecraftServer getServer() {
+    @Override
+    public MinecraftServer server() {
         return this.server;
     }
 
     /**
      * @return the configuration that this game was opened with
      */
-    public C getConfig() {
+    public C config() {
         return this.game.getConfig();
     }
 
     /**
      * @return the specific {@link GameConfig} that was responsible for requesting this game
      */
-    public GameConfig<C> getGame() {
+    @Override
+    public GameConfig<C> game() {
         return this.game;
     }
 }

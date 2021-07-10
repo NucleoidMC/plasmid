@@ -11,8 +11,6 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.world.World;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 
 public final class IncludeEntityItem extends Item implements VirtualItem {
@@ -27,11 +25,11 @@ public final class IncludeEntityItem extends Item implements VirtualItem {
 
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
-        World world = user.getEntityWorld();
+        var world = user.getEntityWorld();
         if (!world.isClient()) {
-            MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(world.getServer());
+            var workspaceManager = MapWorkspaceManager.get(world.getServer());
 
-            MapWorkspace workspace = workspaceManager.byDimension(world.getRegistryKey());
+            var workspace = workspaceManager.byDimension(world.getRegistryKey());
             if (workspace != null) {
                 if (!workspace.getBounds().contains(entity.getBlockPos())) {
                     user.sendMessage(

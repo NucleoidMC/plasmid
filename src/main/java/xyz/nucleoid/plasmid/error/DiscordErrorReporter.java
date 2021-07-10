@@ -32,9 +32,9 @@ final class DiscordErrorReporter implements ErrorReporter {
         }
 
         int displayCount = Math.min(this.reportedErrors.size(), 20);
-        List<ReportedError> errors = this.reportedErrors.subList(0, displayCount);
+        var errors = this.reportedErrors.subList(0, displayCount);
 
-        StringBuilder content = new StringBuilder();
+        var content = new StringBuilder();
         content.append(":warning: Reporting ").append(errors.size()).append(" errors from: **").append(this.source).append("** :warning:\n");
 
         if (errors.size() < this.reportedErrors.size()) {
@@ -43,7 +43,7 @@ final class DiscordErrorReporter implements ErrorReporter {
 
         content.append('\n');
 
-        String errorsContent = this.generateErrorsContent(errors, true);
+        var errorsContent = this.generateErrorsContent(errors, true);
 
         if (content.length() + errorsContent.length() < MAX_CHARACTER_LIMIT) {
             content.append(errorsContent);
@@ -57,10 +57,10 @@ final class DiscordErrorReporter implements ErrorReporter {
     }
 
     private String generateErrorsContent(List<ReportedError> errors, boolean message) {
-        StringBuilder errorsContent = new StringBuilder();
+        var errorsContent = new StringBuilder();
 
-        for (ReportedError error : errors) {
-            StringWriter traceWriter = new StringWriter();
+        for (var error : errors) {
+            var traceWriter = new StringWriter();
             error.cause.printStackTrace(new PrintWriter(traceWriter));
 
             if (message) {
@@ -82,13 +82,6 @@ final class DiscordErrorReporter implements ErrorReporter {
         return errorsContent.toString();
     }
 
-    private static class ReportedError {
-        private final Throwable cause;
-        private final String context;
-
-        ReportedError(Throwable cause, String context) {
-            this.cause = cause;
-            this.context = context;
-        }
+    private record ReportedError(Throwable cause, String context) {
     }
 }

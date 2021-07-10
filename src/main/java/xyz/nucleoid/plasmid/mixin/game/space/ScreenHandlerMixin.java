@@ -21,7 +21,7 @@ public class ScreenHandlerMixin implements ScreenHandlerAccess {
     @Override
     public void plasmid$resetTrackedState() {
         for (int i = 0; i < this.slots.size(); i++) {
-            ItemStack stack = this.slots.get(i).getStack();
+            var stack = this.slots.get(i).getStack();
             this.trackedStacks.set(i, stack.copy());
         }
     }

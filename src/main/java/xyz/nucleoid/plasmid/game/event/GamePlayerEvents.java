@@ -12,7 +12,7 @@ import java.util.Collection;
 public final class GamePlayerEvents {
     public static final StimulusEvent<Add> ADD = StimulusEvent.create(Add.class, ctx -> player -> {
         try {
-            for (Add listener : ctx.getListeners()) {
+            for (var listener : ctx.getListeners()) {
                 listener.onAddPlayer(player);
             }
         } catch (Throwable throwable) {
@@ -22,7 +22,7 @@ public final class GamePlayerEvents {
 
     public static final StimulusEvent<Remove> REMOVE = StimulusEvent.create(Remove.class, ctx -> player -> {
         try {
-            for (Remove listener : ctx.getListeners()) {
+            for (var listener : ctx.getListeners()) {
                 listener.onRemovePlayer(player);
             }
         } catch (Throwable throwable) {
@@ -32,7 +32,7 @@ public final class GamePlayerEvents {
 
     public static final StimulusEvent<Add> JOIN = StimulusEvent.create(Add.class, ctx -> player -> {
         try {
-            for (Add listener : ctx.getListeners()) {
+            for (var listener : ctx.getListeners()) {
                 listener.onAddPlayer(player);
             }
         } catch (Throwable throwable) {
@@ -42,7 +42,7 @@ public final class GamePlayerEvents {
 
     public static final StimulusEvent<Remove> LEAVE = StimulusEvent.create(Remove.class, ctx -> player -> {
         try {
-            for (Remove listener : ctx.getListeners()) {
+            for (var listener : ctx.getListeners()) {
                 listener.onRemovePlayer(player);
             }
         } catch (Throwable throwable) {
@@ -52,8 +52,8 @@ public final class GamePlayerEvents {
 
     public static final StimulusEvent<ScreenJoins> SCREEN_JOINS = StimulusEvent.create(ScreenJoins.class, ctx -> players -> {
         try {
-            for (ScreenJoins listener : ctx.getListeners()) {
-                GameResult result = listener.screenJoins(players);
+            for (var listener : ctx.getListeners()) {
+                var result = listener.screenJoins(players);
                 if (result.isError()) {
                     return result;
                 }
@@ -67,8 +67,8 @@ public final class GamePlayerEvents {
 
     public static final StimulusEvent<Offer> OFFER = StimulusEvent.create(Offer.class, ctx -> offer -> {
         try {
-            for (Offer listener : ctx.getListeners()) {
-                PlayerOfferResult result = listener.onOfferPlayer(offer);
+            for (var listener : ctx.getListeners()) {
+                var result = listener.onOfferPlayer(offer);
                 if (result.isTerminal()) {
                     return result;
                 }

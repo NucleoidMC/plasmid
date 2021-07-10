@@ -31,7 +31,7 @@ public final class GamePortalDisplay {
         if (this == obj) return true;
         if (obj == null || this.getClass() != obj.getClass()) return false;
 
-        GamePortalDisplay display = (GamePortalDisplay) obj;
+        var display = (GamePortalDisplay) obj;
         return this.fields.equals(display.fields);
     }
 

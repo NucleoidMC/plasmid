@@ -4,9 +4,7 @@ import com.google.common.base.Preconditions;
 import fr.catcore.server.translations.api.LocalizationTarget;
 import fr.catcore.server.translations.api.text.LocalizableText;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
-import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
-import it.unimi.dsi.fastutil.chars.CharSet;
 import net.minecraft.network.packet.s2c.play.ScoreboardDisplayS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScoreboardObjectiveUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScoreboardPlayerUpdateS2CPacket;
@@ -15,7 +13,6 @@ import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
@@ -49,12 +46,12 @@ public final class SidebarWidget implements GameWidget {
     private static final int MAX_WIDTH = 40;
 
     static {
-        CharSet vanillaFormattingCodes = new CharOpenHashSet();
-        for (Formatting formatting : Formatting.values()) {
+        var vanillaFormattingCodes = new CharOpenHashSet();
+        for (var formatting : Formatting.values()) {
             vanillaFormattingCodes.add(formatting.toString().charAt(1));
         }
 
-        CharList availableFormattingCodes = new CharArrayList();
+        var availableFormattingCodes = new CharArrayList();
         for (int i = 0; i < FORMATTING_CHARS.length(); i++) {
             char code = FORMATTING_CHARS.charAt(i);
             if (!vanillaFormattingCodes.contains(code)) {
@@ -87,8 +84,8 @@ public final class SidebarWidget implements GameWidget {
     public void setTitle(Text title) {
         this.title = title;
 
-        for (ServerPlayerEntity player : this.players) {
-            ScoreboardObjective objective = this.createDummyObjective(player);
+        for (var player : this.players) {
+            var objective = this.createDummyObjective(player);
             player.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(objective, SET_OBJECTIVE_TITLE));
         }
     }
@@ -106,7 +103,7 @@ public final class SidebarWidget implements GameWidget {
     @Override
     public void addPlayer(ServerPlayerEntity player) {
         if (this.players.add(player)) {
-            ScoreboardObjective objective = this.createDummyObjective(player);
+            var objective = this.createDummyObjective(player);
 
             player.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(objective, ADD_OBJECTIVE));
             player.networkHandler.sendPacket(new ScoreboardDisplayS2CPacket(SIDEBAR_SLOT, objective));
@@ -131,7 +128,7 @@ public final class SidebarWidget implements GameWidget {
     }
 
     private void sendRemoveForPlayer(ServerPlayerEntity player) {
-        ScoreboardObjective objective = this.createDummyObjective(player);
+        var objective = this.createDummyObjective(player);
         player.networkHandler.sendPacket(new ScoreboardObjectiveUpdateS2CPacket(objective, REMOVE_OBJECTIVE));
     }
 
@@ -189,7 +186,7 @@ public final class SidebarWidget implements GameWidget {
         }
 
         void flush() {
-            MutablePlayerSet players = SidebarWidget.this.players;
+            var players = SidebarWidget.this.players;
 
             int length = this.lines.length;
             int lastLength = this.lastLines.length;
@@ -197,13 +194,13 @@ public final class SidebarWidget implements GameWidget {
             // update all lines that have changed, indexed by score
             int maxScore = Math.max(length, lastLength);
             for (int score = 1; score <= maxScore; score++) {
-                Object line = this.lines.byScore(score);
-                Object lastLine = this.lastLines.byScore(score);
+                var line = this.lines.byScore(score);
+                var lastLine = this.lastLines.byScore(score);
                 if (Objects.equals(line, lastLine)) {
                     continue;
                 }
 
-                for (ServerPlayerEntity player : players) {
+                for (var player : players) {
                     if (lastLine != null) {
                         this.sendRemoveLine(player, score);
                     }
@@ -213,7 +210,7 @@ public final class SidebarWidget implements GameWidget {
                 }
             }
 
-            Lines swap = this.lastLines;
+            var swap = this.lastLines;
             swap.clear();
 
             this.lastLines = this.lines;
@@ -221,9 +218,9 @@ public final class SidebarWidget implements GameWidget {
         }
 
         void sendTo(ServerPlayerEntity player) {
-            Lines lines = this.lastLines;
+            var lines = this.lastLines;
             for (int i = 0; i < lines.length; i++) {
-                String line = this.getLineForPlayer(lines.byIndex(i), lines.scoreFor(i), player);
+                var line = this.getLineForPlayer(lines.byIndex(i), lines.scoreFor(i), player);
                 this.sendUpdateLine(player, line, lines.scoreFor(i));
             }
         }
@@ -236,7 +233,7 @@ public final class SidebarWidget implements GameWidget {
         }
 
         void sendRemoveLine(ServerPlayerEntity player, int score) {
-            String line = this.getLineForPlayer(this.lastLines.byScore(score), score, player);
+            var line = this.getLineForPlayer(this.lastLines.byScore(score), score, player);
             player.networkHandler.sendPacket(new ScoreboardPlayerUpdateS2CPacket(
                     ServerScoreboard.UpdateMode.REMOVE, null,
                     line, -1
@@ -247,16 +244,14 @@ public final class SidebarWidget implements GameWidget {
             String text;
             if (line instanceof String) {
                 text = (String) line;
-            } else if (line instanceof Text) {
-                Text txt = (Text) line;
-
-                StringBuilder message = new StringBuilder();
-                Style style = txt.getStyle();
+            } else if (line instanceof Text txt) {
+                var message = new StringBuilder();
+                var style = txt.getStyle();
                 if (style.getColor() != null && !style.getColor().getName().startsWith("#")) {
                     message.append(Objects.requireNonNull(
                             Formatting.byName(style.getColor().getName()),
                             "formatting"
-                    ).toString());
+                    ));
                 }
                 if (style.isBold()) {
                     message.append(Formatting.BOLD);

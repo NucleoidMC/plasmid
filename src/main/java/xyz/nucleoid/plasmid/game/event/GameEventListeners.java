@@ -34,7 +34,7 @@ public final class GameEventListeners implements EventRegistrar {
 
     @Override
     public <T> void unlisten(StimulusEvent<T> event, T listener) {
-        List<Object> listeners = this.listeners.get(event);
+        var listeners = this.listeners.get(event);
         if (listeners != null && listeners.remove(listener)) {
             if (listeners.isEmpty()) {
                 this.listeners.remove(event);
@@ -45,9 +45,9 @@ public final class GameEventListeners implements EventRegistrar {
 
     @SuppressWarnings("unchecked")
     private <T> void updateInvoker(StimulusEvent<T> event) {
-        List<T> listeners = (List<T>) this.listeners.get(event);
+        var listeners = (List<T>) this.listeners.get(event);
         if (listeners != null && !listeners.isEmpty()) {
-            InvokerEntry<T> entry = (InvokerEntry<T>) this.invokers.get(event);
+            var entry = (InvokerEntry<T>) this.invokers.get(event);
             if (entry != null) {
                 entry.listeners = listeners;
             } else {
@@ -60,19 +60,19 @@ public final class GameEventListeners implements EventRegistrar {
 
     @NotNull
     public <T> T getInvoker(StimulusEvent<T> event) {
-        InvokerEntry<T> entry = this.getInvokerEntry(event);
+        var entry = this.getInvokerEntry(event);
         return entry != null ? entry.invoker : event.emptyInvoker();
     }
 
     @NotNull
     public <T> T getPropagatingInvoker(StimulusEvent<T> event) {
-        InvokerEntry<T> entry = this.getInvokerEntry(event);
+        var entry = this.getInvokerEntry(event);
         return entry != null ? entry.propagatingInvoker : event.emptyInvoker();
     }
 
     @NotNull
     public <T> Iterable<T> getInvokers(StimulusEvent<T> event) {
-        InvokerEntry<T> entry = this.getInvokerEntry(event);
+        var entry = this.getInvokerEntry(event);
         return entry != null ? entry : Collections.emptyList();
     }
 
@@ -98,7 +98,7 @@ public final class GameEventListeners implements EventRegistrar {
             this.event = event;
             this.listeners = listeners;
 
-            GameEventExceptionHandler exceptionHandler = GameEventListeners.this.exceptionHandler;
+            var exceptionHandler = GameEventListeners.this.exceptionHandler;
 
             this.invoker = this.createInvoker(throwable -> {
                 exceptionHandler.handleException(event, throwable);

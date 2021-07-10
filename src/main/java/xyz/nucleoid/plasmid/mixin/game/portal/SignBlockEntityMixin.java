@@ -6,7 +6,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -51,7 +50,7 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     @Override
     public void setDisplay(GamePortalDisplay display) {
         for (int i = 0; i < 4; i++) {
-            Text line = this.getDisplayLine(display, i);
+            var line = this.getDisplayLine(display, i);
             this.setTextOnRow(i, line);
         }
 
@@ -65,12 +64,12 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     @NotNull
     private Text getDisplayLine(GamePortalDisplay display, int line) {
         if (line == 0) {
-            Text name = display.get(GamePortalDisplay.NAME);
+            var name = display.get(GamePortalDisplay.NAME);
             if (name != null) {
                 return name;
             }
         } else if (line == 1) {
-            Integer playerCount = display.get(GamePortalDisplay.PLAYER_COUNT);
+            var playerCount = display.get(GamePortalDisplay.PLAYER_COUNT);
             if (playerCount != null) {
                 return new LiteralText(playerCount + " players");
             }
@@ -100,7 +99,7 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     public void setWorld(World world) {
         super.setWorld(world);
 
-        MinecraftServer server = world.getServer();
+        var server = world.getServer();
         if (server != null && this.loadedPortalId != null) {
             this.tryConnectTo(this.loadedPortalId);
             this.loadedPortalId = null;

@@ -30,7 +30,7 @@ public final class ShopInventory implements Inventory {
     }
 
     private void buildGrid() {
-        ShopBuilder builder = new ShopBuilder();
+        var builder = new ShopBuilder();
         this.builder.accept(builder);
 
         this.fillGrid(builder.rows);
@@ -66,7 +66,7 @@ public final class ShopInventory implements Inventory {
 
     @Override
     public ItemStack getStack(int index) {
-        ShopEntry element = this.elements[index];
+        var element = this.elements[index];
         if (element == null) {
             return ItemStack.EMPTY;
         }
@@ -86,7 +86,7 @@ public final class ShopInventory implements Inventory {
     }
 
     private void handleElementClick(int index) {
-        ShopEntry element = this.elements[index];
+        var element = this.elements[index];
         if (element != null) {
             element.onClick(this.player);
         }

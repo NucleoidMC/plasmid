@@ -10,9 +10,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.SimpleRegistry;
 import net.minecraft.world.dimension.DimensionOptions;
-import net.minecraft.world.gen.GeneratorOptions;
 
 public final class DimensionOptionsArgument {
     public static final DynamicCommandExceptionType DIMENSION_NOT_FOUND = new DynamicCommandExceptionType(arg ->
@@ -22,9 +20,9 @@ public final class DimensionOptionsArgument {
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((context, builder) -> {
-                    ServerCommandSource source = context.getSource();
-                    GeneratorOptions options = source.getServer().getSaveProperties().getGeneratorOptions();
-                    SimpleRegistry<DimensionOptions> dimensions = options.getDimensions();
+                    var source = context.getSource();
+                    var options = source.getServer().getSaveProperties().getGeneratorOptions();
+                    var dimensions = options.getDimensions();
 
                     return CommandSource.suggestIdentifiers(
                             dimensions.getIds().stream(),
@@ -34,13 +32,13 @@ public final class DimensionOptionsArgument {
     }
 
     public static DimensionOptions get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
-        Identifier identifier = IdentifierArgumentType.getIdentifier(context, name);
+        var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
-        ServerCommandSource source = context.getSource();
-        GeneratorOptions options = source.getServer().getSaveProperties().getGeneratorOptions();
-        SimpleRegistry<DimensionOptions> dimensions = options.getDimensions();
+        var source = context.getSource();
+        var options = source.getServer().getSaveProperties().getGeneratorOptions();
+        var dimensions = options.getDimensions();
 
-        DimensionOptions dimension = dimensions.get(identifier);
+        var dimension = dimensions.get(identifier);
         if (dimension == null) {
             throw DIMENSION_NOT_FOUND.create(identifier);
         }

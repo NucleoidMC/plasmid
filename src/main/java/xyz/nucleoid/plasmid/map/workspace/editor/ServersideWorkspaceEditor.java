@@ -7,12 +7,9 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.network.packet.s2c.play.EntitiesDestroyS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.WorkspaceRegion;
@@ -39,7 +36,7 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
         this.player = player;
         this.workspace = workspace;
 
-        ArmorStandEntity markerEntity = new ArmorStandEntity(EntityType.ARMOR_STAND, player.world);
+        var markerEntity = new ArmorStandEntity(EntityType.ARMOR_STAND, player.world);
         markerEntity.setInvisible(true);
         markerEntity.setInvulnerable(true);
         markerEntity.setNoGravity(true);
@@ -58,7 +55,7 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
         }
 
         if (this.tracing != null && this.player.age % 5 == 0) {
-            BlockPos pos = this.traceMode.tryTrace(this.player);
+            var pos = this.traceMode.tryTrace(this.player);
             if (pos != null) {
                 this.tracing.setTarget(pos);
             }
@@ -78,15 +75,15 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
     @Override
     @Nullable
     public BlockBounds takeTracedRegion() {
-        BlockBounds traced = this.traced;
+        var traced = this.traced;
         this.traced = null;
         return traced;
     }
 
     private void updateTrace() {
-        BlockPos pos = this.traceMode.tryTrace(this.player);
+        var pos = this.traceMode.tryTrace(this.player);
         if (pos != null) {
-            PartialRegion tracing = this.tracing;
+            var tracing = this.tracing;
             if (tracing != null) {
                 tracing.setTarget(pos);
                 this.traced = tracing.asComplete();
@@ -99,7 +96,7 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
     }
 
     private void changeTraceMode() {
-        RegionTraceMode nextMode = this.traceMode.next();
+        var nextMode = this.traceMode.next();
         this.traceMode = nextMode;
         this.player.sendMessage(new TranslatableText("item.plasmid.add_region.trace_mode.changed", nextMode.getName()), true);
     }
@@ -108,14 +105,14 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
     public void addRegion(WorkspaceRegion region) {
         int markerEntityId = this.nextMarkerId();
 
-        Vec3d markerPos = region.bounds.getCenter();
+        var markerPos = region.bounds.getCenter();
 
-        ArmorStandEntity markerEntity = this.markerEntity;
+        var markerEntity = this.markerEntity;
         markerEntity.setId(markerEntityId);
         markerEntity.setPos(markerPos.x, markerPos.y, markerPos.z);
         markerEntity.setCustomName(new LiteralText(region.marker));
 
-        ServerPlayNetworkHandler networkHandler = this.player.networkHandler;
+        var networkHandler = this.player.networkHandler;
         networkHandler.sendPacket(markerEntity.createSpawnPacket());
         networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(markerEntityId, markerEntity.getDataTracker(), true));
 
@@ -137,7 +134,7 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
             return;
         }
 
-        ArmorStandEntity markerEntity = this.markerEntity;
+        var markerEntity = this.markerEntity;
         markerEntity.setId(markerEntityId);
         markerEntity.setCustomName(new LiteralText(newRegion.marker));
 
@@ -149,14 +146,14 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
     }
 
     private void renderWorkspaceBounds() {
-        MapWorkspace workspace = this.workspace;
-        BlockBounds bounds = workspace.getBounds();
+        var workspace = this.workspace;
+        var bounds = workspace.getBounds();
         ParticleOutlineRenderer.render(this.player, bounds.getMin(), bounds.getMax(), 1.0F, 0.0F, 0.0F);
 
-        for (WorkspaceRegion region : workspace.getRegions()) {
-            BlockBounds regionBounds = region.bounds;
-            BlockPos min = regionBounds.getMin();
-            BlockPos max = regionBounds.getMax();
+        for (var region : workspace.getRegions()) {
+            var regionBounds = region.bounds;
+            var min = regionBounds.getMin();
+            var max = regionBounds.getMax();
             double distance = this.player.squaredDistanceTo(
                     (min.getX() + max.getX()) / 2.0,
                     (min.getY() + max.getY()) / 2.0,
@@ -175,8 +172,8 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
     }
 
     private void renderTracingBounds() {
-        PartialRegion tracing = this.tracing;
-        BlockBounds traced = this.traced;
+        var tracing = this.tracing;
+        var traced = this.traced;
         if (tracing != null) {
             ParticleOutlineRenderer.render(this.player, tracing.getMin(), tracing.getMax(), 0.0F, 0.8F, 0.0F);
         } else if (traced != null) {

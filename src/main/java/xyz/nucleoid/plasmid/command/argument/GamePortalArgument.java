@@ -19,7 +19,7 @@ public final class GamePortalArgument {
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((context, builder) -> {
-                    GamePortalManager portalManager = GamePortalManager.INSTANCE;
+                    var portalManager = GamePortalManager.INSTANCE;
 
                     return CommandSource.suggestIdentifiers(
                             portalManager.getPortals().stream().map(GamePortal::getId),
@@ -29,9 +29,9 @@ public final class GamePortalArgument {
     }
 
     public static GamePortal get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
-        Identifier identifier = IdentifierArgumentType.getIdentifier(context, name);
+        var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
-        GamePortal portal = GamePortalManager.INSTANCE.byId(identifier);
+        var portal = GamePortalManager.INSTANCE.byId(identifier);
         if (portal == null) {
             throw PORTAL_NOT_FOUND.create();
         }

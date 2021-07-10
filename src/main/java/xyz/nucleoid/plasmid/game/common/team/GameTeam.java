@@ -13,101 +13,60 @@ import xyz.nucleoid.plasmid.util.ItemStackBuilder;
 /**
  * A simple representation of a team type, containing a name and color.
  */
-public final class GameTeam {
+public final record GameTeam(String display, String key, DyeColor dye, Formatting formatting) {
     public static final Codec<GameTeam> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
-                Codec.STRING.fieldOf("key").forGetter(GameTeam::getKey),
-                Codec.STRING.fieldOf("display").forGetter(GameTeam::getDisplay),
-                MoreCodecs.DYE_COLOR.fieldOf("color").forGetter(GameTeam::getDye)
+                Codec.STRING.fieldOf("key").forGetter(GameTeam::key),
+                Codec.STRING.fieldOf("display").forGetter(GameTeam::display),
+                MoreCodecs.DYE_COLOR.fieldOf("color").forGetter(GameTeam::dye)
         ).apply(instance, GameTeam::new);
     });
 
-    private final String display;
-    private final String key;
-    private final DyeColor dye;
-    private final Formatting formatting;
-
     public GameTeam(String key, String display, DyeColor dye) {
-        this.display = display;
-        this.key = key;
-        this.dye = dye;
-        this.formatting = formatByDye(dye);
-    }
-
-    public String getDisplay() {
-        return this.display;
-    }
-
-    public String getKey() {
-        return this.key;
-    }
-
-    public DyeColor getDye() {
-        return this.dye;
-    }
-
-    public Formatting getFormatting() {
-        return this.formatting;
+        this(key, display, dye, formatByDye(dye));
     }
 
     public ItemStack createFirework(int flight, FireworkItem.Type type) {
-        return ItemStackBuilder.firework(this.getFireworkColor(), flight, type)
+        return ItemStackBuilder.firework(this.fireworkColor(), flight, type)
                 .build();
     }
 
     public ItemStack dye(ItemStack stack) {
         return ItemStackBuilder.of(stack)
-                .setDyeColor(this.getColor())
+                .setDyeColor(this.color())
                 .build();
     }
 
-    public int getColor() {
-        float[] components = this.dye.getColorComponents();
+    public int color() {
+        var components = this.dye.getColorComponents();
         int red = MathHelper.floor(components[0] * 255.0F) & 0xFF;
         int green = MathHelper.floor(components[1] * 255.0F) & 0xFF;
         int blue = MathHelper.floor(components[2] * 255.0F) & 0xFF;
         return (red << 16) | (green << 8) | blue;
     }
 
-    public int getFireworkColor() {
+    public int fireworkColor() {
         return this.dye.getFireworkColor();
     }
 
-    @Override
-    public int hashCode() {
-        return this.key.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-
-        if (obj instanceof GameTeam) {
-            return ((GameTeam) obj).key.equals(this.key);
-        }
-
-        return false;
-    }
-
     private static Formatting formatByDye(DyeColor dye) {
-        switch (dye) {
-            case WHITE: return Formatting.WHITE;
-            case ORANGE: return Formatting.GOLD;
-            case MAGENTA: return Formatting.LIGHT_PURPLE;
-            case LIGHT_BLUE: return Formatting.AQUA;
-            case YELLOW: return Formatting.YELLOW;
-            case LIME: return Formatting.GREEN;
-            case PINK: return Formatting.LIGHT_PURPLE;
-            case GRAY: return Formatting.DARK_GRAY;
-            case LIGHT_GRAY: return Formatting.GRAY;
-            case CYAN: return Formatting.DARK_AQUA;
-            case PURPLE: return Formatting.DARK_PURPLE;
-            case BLUE: return Formatting.BLUE;
-            case BROWN: return Formatting.DARK_RED;
-            case GREEN: return Formatting.DARK_GREEN;
-            case RED: return Formatting.RED;
-            case BLACK: return Formatting.BLACK;
-            default: return Formatting.RESET;
-        }
+        return switch (dye) {
+            case WHITE -> Formatting.WHITE;
+            case ORANGE -> Formatting.GOLD;
+            case MAGENTA -> Formatting.LIGHT_PURPLE;
+            case LIGHT_BLUE -> Formatting.AQUA;
+            case YELLOW -> Formatting.YELLOW;
+            case LIME -> Formatting.GREEN;
+            case PINK -> Formatting.LIGHT_PURPLE;
+            case GRAY -> Formatting.DARK_GRAY;
+            case LIGHT_GRAY -> Formatting.GRAY;
+            case CYAN -> Formatting.DARK_AQUA;
+            case PURPLE -> Formatting.DARK_PURPLE;
+            case BLUE -> Formatting.BLUE;
+            case BROWN -> Formatting.DARK_RED;
+            case GREEN -> Formatting.DARK_GREEN;
+            case RED -> Formatting.RED;
+            case BLACK -> Formatting.BLACK;
+        };
     }
 }

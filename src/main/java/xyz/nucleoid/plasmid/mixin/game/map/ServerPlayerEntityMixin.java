@@ -44,13 +44,13 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Wo
 
     @Inject(method = "writeCustomDataToNbt", at = @At("RETURN"))
     private void writeData(NbtCompound root, CallbackInfo ci) {
-        NbtCompound plasmid = new NbtCompound();
+        var plasmid = new NbtCompound();
 
-        NbtCompound workspaceReturns = new NbtCompound();
+        var workspaceReturns = new NbtCompound();
 
-        for (Map.Entry<RegistryKey<World>, ReturnPosition> entry : this.workspaceReturns.entrySet()) {
-            Identifier key = entry.getKey().getValue();
-            ReturnPosition position = entry.getValue();
+        for (var entry : this.workspaceReturns.entrySet()) {
+            var key = entry.getKey().getValue();
+            var position = entry.getValue();
             workspaceReturns.put(key.toString(), position.write(new NbtCompound()));
         }
 
@@ -65,15 +65,15 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Wo
 
     @Inject(method = "readCustomDataFromNbt", at = @At("RETURN"))
     private void readData(NbtCompound root, CallbackInfo ci) {
-        NbtCompound plasmid = root.getCompound(Plasmid.ID);
+        var plasmid = root.getCompound(Plasmid.ID);
 
         this.workspaceReturns.clear();
         this.leaveReturn = null;
 
-        NbtCompound workspaceReturnPositions = plasmid.getCompound("workspace_return");
-        for (String key : workspaceReturnPositions.getKeys()) {
-            RegistryKey<World> dimensionKey = RegistryKey.of(Registry.WORLD_KEY, new Identifier(key));
-            ReturnPosition position = ReturnPosition.read(workspaceReturnPositions.getCompound(key));
+        var workspaceReturnPositions = plasmid.getCompound("workspace_return");
+        for (var key : workspaceReturnPositions.getKeys()) {
+            var dimensionKey = RegistryKey.of(Registry.WORLD_KEY, new Identifier(key));
+            var position = ReturnPosition.read(workspaceReturnPositions.getCompound(key));
             this.workspaceReturns.put(dimensionKey, position);
         }
 
@@ -84,7 +84,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Wo
 
     @Inject(method = "copyFrom", at = @At("RETURN"))
     private void copyFrom(ServerPlayerEntity from, boolean alive, CallbackInfo ci) {
-        ServerPlayerEntityMixin fromTraveler = (ServerPlayerEntityMixin) (Object) from;
+        var fromTraveler = (ServerPlayerEntityMixin) (Object) from;
         this.leaveReturn = fromTraveler.leaveReturn;
         this.workspaceReturns.clear();
         this.workspaceReturns.putAll(fromTraveler.workspaceReturns);
@@ -101,10 +101,10 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Wo
     }
 
     private void onDimensionChange(ServerWorld targetWorld) {
-        RegistryKey<World> sourceDimension = this.world.getRegistryKey();
-        RegistryKey<World> targetDimension = targetWorld.getRegistryKey();
+        var sourceDimension = this.world.getRegistryKey();
+        var targetDimension = targetWorld.getRegistryKey();
 
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(this.server);
+        var workspaceManager = MapWorkspaceManager.get(this.server);
         if (workspaceManager.isWorkspace(sourceDimension)) {
             this.workspaceReturns.put(sourceDimension, ReturnPosition.capture(this));
         } else if (workspaceManager.isWorkspace(targetDimension)) {

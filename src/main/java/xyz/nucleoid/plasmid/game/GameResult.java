@@ -55,7 +55,7 @@ public final class GameResult {
      * @return the error of this {@link GameResult}, or null if one does not exist
      */
     @Nullable
-    public Text getError() {
+    public Text error() {
         return this.error;
     }
 }

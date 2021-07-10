@@ -118,14 +118,14 @@ public final class GameRuleType {
 
     public GameRuleType enforcesAll(GameRuleType... rules) {
         return this.enforces((events, result) -> {
-            for (GameRuleType rule : rules) {
+            for (var rule : rules) {
                 rule.enforce(events, result);
             }
         });
     }
 
     public void enforce(EventRegistrar events, ActionResult result) {
-        GameRuleEnforcer enforcer = this.enforcer;
+        var enforcer = this.enforcer;
         if (enforcer != null) {
             enforcer.apply(events, result);
         }

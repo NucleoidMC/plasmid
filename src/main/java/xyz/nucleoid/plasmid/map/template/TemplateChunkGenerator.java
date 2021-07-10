@@ -1,11 +1,9 @@
 package xyz.nucleoid.plasmid.map.template;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.world.ChunkRegion;
@@ -58,16 +56,16 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
 
     @Override
     public CompletableFuture<Chunk> populateNoise(Executor executor, StructureAccessor accessor, Chunk chunk) {
-        ChunkPos chunkPos = chunk.getPos();
+        var chunkPos = chunk.getPos();
 
-        BlockBounds chunkBounds = BlockBounds.of(chunkPos);
+        var chunkBounds = BlockBounds.of(chunkPos);
         if (!this.worldBounds.intersects(chunkBounds)) {
             return CompletableFuture.completedFuture(chunk);
         }
 
         return CompletableFuture.supplyAsync(() -> {
-            ProtoChunk protoChunk = (ProtoChunk) chunk;
-            BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+            var protoChunk = (ProtoChunk) chunk;
+            var mutablePos = new BlockPos.Mutable();
 
             int minWorldX = chunkPos.getStartX();
             int minWorldZ = chunkPos.getStartZ();
@@ -78,12 +76,12 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
             for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
                 long sectionPos = ChunkSectionPos.asLong(chunkPos.x, sectionY, chunkPos.z);
 
-                MapChunk templateChunk = this.template.getChunk(sectionPos);
+                var templateChunk = this.template.getChunk(sectionPos);
                 if (templateChunk == null) {
                     continue;
                 }
 
-                ChunkSection section = protoChunk.getSection(sectionY);
+                var section = protoChunk.getSection(sectionY);
                 section.lock();
 
                 try {
@@ -99,13 +97,13 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     }
 
     private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable templatePos, ProtoChunk chunk, ChunkSection section, MapChunk templateChunk) {
-        Heightmap oceanFloor = chunk.getHeightmap(Heightmap.Type.OCEAN_FLOOR_WG);
-        Heightmap worldSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
+        var oceanFloor = chunk.getHeightmap(Heightmap.Type.OCEAN_FLOOR_WG);
+        var worldSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
 
         for (int y = 0; y < 16; y++) {
             for (int z = 0; z < 16; z++) {
                 for (int x = 0; x < 16; x++) {
-                    BlockState state = templateChunk.get(x, y, z);
+                    var state = templateChunk.get(x, y, z);
                     if (state.isAir()) {
                         continue;
                     }
@@ -122,7 +120,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
                         chunk.addLightSource(templatePos);
                     }
 
-                    NbtCompound blockEntityTag = this.template.getBlockEntityTag(templatePos);
+                    var blockEntityTag = this.template.getBlockEntityTag(templatePos);
                     if (blockEntityTag != null) {
                         chunk.addPendingBlockEntityNbt(blockEntityTag);
                     }
@@ -135,19 +133,19 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     public void populateEntities(ChunkRegion region) {
         var chunkPos = region.getCenterPos();
 
-        BlockBounds chunkBounds = BlockBounds.of(chunkPos);
+        var chunkBounds = BlockBounds.of(chunkPos);
         if (!this.worldBounds.intersects(chunkBounds)) {
             return;
         }
 
-        ProtoChunk protoChunk = (ProtoChunk) region.getChunk(chunkPos.x, chunkPos.z);
+        var protoChunk = (ProtoChunk) region.getChunk(chunkPos.x, chunkPos.z);
 
         int minSectionY = this.worldBounds.getMin().getY() >> 4;
         int maxSectionY = this.worldBounds.getMax().getY() >> 4;
 
         for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
             this.template.getEntitiesInChunk(chunkPos.x, sectionY, chunkPos.z).forEach(entity -> {
-                NbtCompound entityTag = entity.createEntityTag(BlockPos.ORIGIN);
+                var entityTag = entity.createEntityTag(BlockPos.ORIGIN);
                 protoChunk.addEntity(entityTag);
             });
         }
@@ -164,12 +162,12 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     @Override
     public VerticalBlockSample getColumnSample(int x, int z, HeightLimitView world) {
         if (this.worldBounds.contains(x, z)) {
-            BlockPos.Mutable mutablePos = new BlockPos.Mutable(x, 0, z);
+            var mutablePos = new BlockPos.Mutable(x, 0, z);
 
             int minY = this.worldBounds.getMin().getY();
             int maxY = this.worldBounds.getMax().getY();
 
-            BlockState[] column = new BlockState[maxY - minY + 1];
+            var column = new BlockState[maxY - minY + 1];
             for (int y = maxY; y >= minY; y--) {
                 mutablePos.setY(y);
                 column[y] = this.template.getBlockState(mutablePos);

@@ -1,7 +1,6 @@
 package xyz.nucleoid.plasmid.mixin.game.rule;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -15,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 
 @Mixin(ServerPlayerEntity.class)
@@ -29,14 +27,14 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
     @Inject(method = "stopRiding", at = @At("HEAD"), cancellable = true)
     private void stopRiding(CallbackInfo ci) {
-        Entity vehicle = this.getVehicle();
+        var vehicle = this.getVehicle();
         if (vehicle == null) {
             // how did we get here?
             return;
         }
 
         if (!this.world.isClient()) {
-            ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(this);
+            var gameSpace = GameSpaceManager.get().byPlayer(this);
             if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.DISMOUNT_VEHICLE) == ActionResult.FAIL) {
                 ci.cancel();
                 this.networkHandler.sendPacket(new EntityPassengersSetS2CPacket(vehicle));

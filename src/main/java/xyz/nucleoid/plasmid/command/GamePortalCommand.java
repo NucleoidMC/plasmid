@@ -5,18 +5,12 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.Entity;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
 import xyz.nucleoid.plasmid.command.argument.GamePortalArgument;
-import xyz.nucleoid.plasmid.game.portal.GamePortal;
 import xyz.nucleoid.plasmid.game.portal.GamePortalInterface;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -52,16 +46,16 @@ public final class GamePortalCommand {
     // @formatter:on
 
     private static int connectEntity(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GamePortal portal = GamePortalArgument.get(context, "portal");
+        var portal = GamePortalArgument.get(context, "portal");
 
-        Entity entity = EntityArgumentType.getEntity(context, "entity");
+        var entity = EntityArgumentType.getEntity(context, "entity");
 
-        if (entity instanceof GamePortalInterface) {
-            if (!portal.addInterface((GamePortalInterface) entity)) {
+        if (entity instanceof GamePortalInterface portalInterface) {
+            if (!portal.addInterface(portalInterface)) {
                 throw INTERFACE_ALREADY_CONNECTED.create();
             }
 
-            MutableText message = new TranslatableText("text.plasmid.game.portal.connect.entity", portal.getId(), entity.getEntityName());
+            var message = new TranslatableText("text.plasmid.game.portal.connect.entity", portal.getId(), entity.getEntityName());
             context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;
@@ -71,19 +65,19 @@ public final class GamePortalCommand {
     }
 
     private static int connectBlock(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerWorld world = source.getWorld();
+        var source = context.getSource();
+        var world = source.getWorld();
 
-        GamePortal portal = GamePortalArgument.get(context, "portal");
-        BlockPos pos = BlockPosArgumentType.getLoadedBlockPos(context, "pos");
+        var portal = GamePortalArgument.get(context, "portal");
+        var pos = BlockPosArgumentType.getLoadedBlockPos(context, "pos");
 
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof GamePortalInterface) {
-            if (!portal.addInterface((GamePortalInterface) blockEntity)) {
+        var blockEntity = world.getBlockEntity(pos);
+        if (blockEntity instanceof GamePortalInterface portalInterface) {
+            if (!portal.addInterface(portalInterface)) {
                 throw INTERFACE_ALREADY_CONNECTED.create();
             }
 
-            MutableText message = new TranslatableText("text.plasmid.game.portal.connect.block", portal.getId(), pos.getX(), pos.getY(), pos.getZ());
+            var message = new TranslatableText("text.plasmid.game.portal.connect.block", portal.getId(), pos.getX(), pos.getY(), pos.getZ());
             source.sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;
@@ -93,12 +87,12 @@ public final class GamePortalCommand {
     }
 
     private static int disconnectEntity(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Entity entity = EntityArgumentType.getEntity(context, "entity");
+        var entity = EntityArgumentType.getEntity(context, "entity");
 
-        if (entity instanceof GamePortalInterface) {
-            ((GamePortalInterface) entity).invalidatePortal();
+        if (entity instanceof GamePortalInterface portalInterface) {
+            portalInterface.invalidatePortal();
 
-            MutableText message = new TranslatableText("text.plasmid.game.portal.disconnect.entity", entity.getEntityName());
+            var message = new TranslatableText("text.plasmid.game.portal.disconnect.entity", entity.getEntityName());
             context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;
@@ -108,16 +102,16 @@ public final class GamePortalCommand {
     }
 
     private static int disconnectBlock(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerWorld world = source.getWorld();
+        var source = context.getSource();
+        var world = source.getWorld();
 
-        BlockPos pos = BlockPosArgumentType.getLoadedBlockPos(context, "pos");
+        var pos = BlockPosArgumentType.getLoadedBlockPos(context, "pos");
 
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof GamePortalInterface) {
-            ((GamePortalInterface) blockEntity).invalidatePortal();
+        var blockEntity = world.getBlockEntity(pos);
+        if (blockEntity instanceof GamePortalInterface portalInterface) {
+            portalInterface.invalidatePortal();
 
-            MutableText message = new TranslatableText("text.plasmid.game.portal.disconnect.block", pos.getX(), pos.getY(), pos.getZ());
+            var message = new TranslatableText("text.plasmid.game.portal.disconnect.block", pos.getX(), pos.getY(), pos.getZ());
             source.sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;

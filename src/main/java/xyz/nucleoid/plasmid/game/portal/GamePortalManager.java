@@ -1,13 +1,10 @@
 package xyz.nucleoid.plasmid.game.portal;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
@@ -19,7 +16,6 @@ import xyz.nucleoid.plasmid.registry.TinyRegistry;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -58,7 +54,7 @@ public final class GamePortalManager {
     public void setup(MinecraftServer server) {
         this.server = server;
 
-        Map<Identifier, GamePortalConfig> queue = this.portalQueue;
+        var queue = this.portalQueue;
         if (queue != null) {
             this.portalQueue = null;
             this.loadPortalsFrom(server, queue);
@@ -76,7 +72,7 @@ public final class GamePortalManager {
     private void reload(ResourceManager manager) {
         this.portals.clear();
 
-        Map<Identifier, GamePortalConfig> configs = this.loadConfigs(manager);
+        var configs = this.loadConfigs(manager);
         if (this.server != null) {
             this.loadPortalsFrom(this.server, configs);
         } else {
@@ -85,11 +81,11 @@ public final class GamePortalManager {
     }
 
     private void loadPortalsFrom(MinecraftServer server, Map<Identifier, GamePortalConfig> queue) {
-        for (Map.Entry<Identifier, GamePortalConfig> entry : queue.entrySet()) {
-            Identifier identifier = entry.getKey();
-            GamePortalConfig config = entry.getValue();
+        for (var entry : queue.entrySet()) {
+            var identifier = entry.getKey();
+            var config = entry.getValue();
 
-            GamePortal portal = new GamePortal(server, identifier, config::createBackend);
+            var portal = new GamePortal(server, identifier, config::createBackend);
             portal.setCustom(config.getCustom());
 
             this.portals.register(identifier, portal);
@@ -97,19 +93,19 @@ public final class GamePortalManager {
     }
 
     private Map<Identifier, GamePortalConfig> loadConfigs(ResourceManager manager) {
-        Map<Identifier, GamePortalConfig> configs = new Object2ObjectOpenHashMap<>();
+        var configs = new Object2ObjectOpenHashMap<Identifier, GamePortalConfig>();
 
-        Collection<Identifier> resources = manager.findResources(PATH, path -> path.endsWith(".json"));
+        var resources = manager.findResources(PATH, path -> path.endsWith(".json"));
 
-        for (Identifier path : resources) {
+        for (var path : resources) {
             try {
-                Resource resource = manager.getResource(path);
-                try (Reader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-                    JsonElement json = new JsonParser().parse(reader);
+                var resource = manager.getResource(path);
+                try (var reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
+                    var json = new JsonParser().parse(reader);
 
-                    Identifier identifier = identifierFromPath(path);
+                    var identifier = identifierFromPath(path);
 
-                    DataResult<GamePortalConfig> result = GamePortalConfig.CODEC.parse(JsonOps.INSTANCE, json);
+                    var result = GamePortalConfig.CODEC.parse(JsonOps.INSTANCE, json);
 
                     result.result().ifPresent(config -> {
                         configs.put(identifier, config);
@@ -128,13 +124,13 @@ public final class GamePortalManager {
     }
 
     private static Identifier identifierFromPath(Identifier location) {
-        String path = location.getPath();
+        var path = location.getPath();
         path = path.substring(PATH.length() + 1, path.length() - ".json".length());
         return new Identifier(location.getNamespace(), path);
     }
 
     public void tick() {
-        MinecraftServer server = this.server;
+        var server = this.server;
         if (server == null) {
             return;
         }
@@ -147,7 +143,7 @@ public final class GamePortalManager {
     }
 
     private void updatePortalDisplays() {
-        for (GamePortal portal : this.portals.values()) {
+        for (var portal : this.portals.values()) {
             portal.updateDisplay();
         }
     }

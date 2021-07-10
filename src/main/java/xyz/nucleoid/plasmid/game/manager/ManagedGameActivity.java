@@ -33,7 +33,7 @@ public final class ManagedGameActivity implements GameActivity {
 
         this.errorReporter = ErrorReporter.open(config);
 
-        GameEventExceptionHandler exceptionHandler = createExceptionHandler(this.errorReporter);
+        var exceptionHandler = createExceptionHandler(this.errorReporter);
         this.listeners = new GameEventListeners(exceptionHandler);
     }
 
@@ -41,7 +41,7 @@ public final class ManagedGameActivity implements GameActivity {
         return new GameEventExceptionHandler() {
             @Override
             public <T> void handleException(StimulusEvent<T> event, Throwable throwable) {
-                String listenerName = event.getListenerType().getSimpleName();
+                var listenerName = event.getListenerType().getSimpleName();
 
                 Plasmid.LOGGER.warn("An unexpected exception occurred while invoking {}", listenerName, throwable);
                 errorReporter.report(throwable, "Invoking " + listenerName);
@@ -92,8 +92,8 @@ public final class ManagedGameActivity implements GameActivity {
     @Override
     @NotNull
     public <T> Iterable<T> getInvokers(StimulusEvent<T> event) {
-        Iterable<T> eventInvokers = this.listeners.getInvokersOrNull(event);
-        Iterable<T> ruleInvokers = this.rules.getInvokersOrNull(event);
+        var eventInvokers = this.listeners.getInvokersOrNull(event);
+        var ruleInvokers = this.rules.getInvokersOrNull(event);
 
         if (eventInvokers != null && ruleInvokers != null) {
             return Iterables.concat(eventInvokers, ruleInvokers);

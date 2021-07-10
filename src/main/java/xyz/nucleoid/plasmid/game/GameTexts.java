@@ -32,14 +32,14 @@ public final class GameTexts {
 
     public static final class Broadcast {
         public static MutableText gameOpened(ServerCommandSource source, GameSpace gameSpace) {
-            MutableText gameName = gameSpace.getSourceConfig().getName().shallowCopy().formatted(Formatting.GRAY);
+            var gameName = gameSpace.getSourceConfig().getName().shallowCopy().formatted(Formatting.GRAY);
 
             return new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
         }
 
         public static MutableText propose(ServerCommandSource source, GameSpace gameSpace) {
-            MutableText gameName = gameSpace.getSourceConfig().getName().shallowCopy().formatted(Formatting.GRAY);
+            var gameName = gameSpace.getSourceConfig().getName().shallowCopy().formatted(Formatting.GRAY);
 
             return new TranslatableText("text.plasmid.game.propose", source.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
@@ -52,7 +52,7 @@ public final class GameTexts {
 
     public static final class Command {
         public static MutableText located(ServerPlayerEntity player, GameSpace gameSpace) {
-            Text gameName = gameSpace.getSourceConfig().getName().shallowCopy().formatted(Formatting.GRAY);
+            var gameName = gameSpace.getSourceConfig().getName().shallowCopy().formatted(Formatting.GRAY);
 
             return new TranslatableText("text.plasmid.game.locate.located", player.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
@@ -79,7 +79,7 @@ public final class GameTexts {
         }
 
         public static MutableText link(GameSpace gameSpace) {
-            Text hover = new TranslatableText("text.plasmid.join_link_hover", gameSpace.getSourceConfig().getName());
+            var hover = new TranslatableText("text.plasmid.join_link_hover", gameSpace.getSourceConfig().getName());
 
             return new TranslatableText("text.plasmid.game.open.join")
                     .setStyle(commandLinkStyle("/game join " + gameSpace.getId(), hover));

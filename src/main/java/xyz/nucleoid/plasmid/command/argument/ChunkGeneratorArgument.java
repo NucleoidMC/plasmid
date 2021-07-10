@@ -30,9 +30,9 @@ public final class ChunkGeneratorArgument {
     }
 
     public static Codec<? extends ChunkGenerator> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
-        Identifier identifier = IdentifierArgumentType.getIdentifier(context, name);
+        var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
-        Codec<? extends ChunkGenerator> generator = Registry.CHUNK_GENERATOR.get(identifier);
+        var generator = Registry.CHUNK_GENERATOR.get(identifier);
         if (generator == null) {
             throw GENERATOR_NOT_FOUND.create(identifier);
         }

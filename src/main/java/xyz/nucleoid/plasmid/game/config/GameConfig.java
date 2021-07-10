@@ -52,7 +52,7 @@ public final class GameConfig<C> {
     }
 
     public GameOpenProcedure openProcedure(MinecraftServer server) {
-        GameOpenContext<C> context = new GameOpenContext<>(server, this);
+        var context = new GameOpenContext<C>(server, this);
         return this.type.open(context);
     }
 
@@ -108,14 +108,14 @@ public final class GameConfig<C> {
 
         @Override
         public <T> DataResult<GameConfig<?>> decode(DynamicOps<T> ops, MapLike<T> input) {
-            DataResult<GameType<?>> typeResult = GameType.REGISTRY.decode(ops, input.get("type")).map(Pair::getFirst);
+            var typeResult = GameType.REGISTRY.decode(ops, input.get("type")).map(Pair::getFirst);
 
             return typeResult.flatMap(type -> {
-                String name = this.decodeStringOrNull(ops, input.get("name"));
-                String translation = this.decodeStringOrNull(ops, input.get("translation"));
-                CustomValuesConfig custom = this.decodeCustomValues(ops, input.get("custom"));
+                var name = this.decodeStringOrNull(ops, input.get("name"));
+                var translation = this.decodeStringOrNull(ops, input.get("translation"));
+                var custom = this.decodeCustomValues(ops, input.get("custom"));
 
-                Codec<?> configCodec = type.getConfigCodec();
+                var configCodec = type.getConfigCodec();
                 return this.decodeConfig(ops, input, configCodec).map(config -> {
                     return this.createConfigUnchecked(type, name, translation, custom, config);
                 });
@@ -135,8 +135,8 @@ public final class GameConfig<C> {
         }
 
         private <T> DataResult<?> decodeConfig(DynamicOps<T> ops, MapLike<T> input, Codec<?> configCodec) {
-            if (configCodec instanceof MapCodec.MapCodecCodec<?>) {
-                return ((MapCodecCodec<?>) configCodec).codec().decode(ops, input).map(Function.identity());
+            if (configCodec instanceof MapCodecCodec<?> mapCodec) {
+                return mapCodec.codec().decode(ops, input).map(Function.identity());
             } else {
                 return configCodec.decode(ops, input.get("config")).map(Pair::getFirst);
             }
@@ -153,9 +153,9 @@ public final class GameConfig<C> {
         }
 
         private <T, C> RecordBuilder<T> encodeUnchecked(GameConfig<C> game, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-            Codec<C> codec = game.type.getConfigCodec();
-            if (codec instanceof MapCodecCodec<?>) {
-                prefix = ((MapCodecCodec<C>) codec).codec().encode(game.config, ops, prefix);
+            var codec = game.type.getConfigCodec();
+            if (codec instanceof MapCodecCodec<C> mapCodec) {
+                prefix = mapCodec.codec().encode(game.config, ops, prefix);
             } else {
                 prefix.add("config", codec.encodeStart(ops, game.config));
             }

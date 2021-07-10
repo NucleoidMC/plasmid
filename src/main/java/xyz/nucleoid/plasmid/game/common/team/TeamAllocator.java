@@ -67,7 +67,7 @@ public final class TeamAllocator<T, V> {
      * @param apply a consumer that is called for each player and their allocated team
      */
     public void allocate(BiConsumer<T, V> apply) {
-        Multimap<T, V> teamToPlayers = this.allocate();
+        var teamToPlayers = this.allocate();
         teamToPlayers.forEach(apply);
     }
 
@@ -78,8 +78,8 @@ public final class TeamAllocator<T, V> {
      * @return a {@link Multimap} containing every team and the allocated players
      */
     public Multimap<T, V> allocate() {
-        Multimap<T, V> teamToPlayers = HashMultimap.create();
-        Map<V, T> playerToTeam = new Object2ObjectOpenHashMap<>();
+        var teamToPlayers = HashMultimap.<T, V>create();
+        var playerToTeam = new Object2ObjectOpenHashMap<V, T>();
 
         // 1. place players evenly and randomly into all the teams
         this.placePlayersRandomly(teamToPlayers, playerToTeam);
@@ -91,21 +91,21 @@ public final class TeamAllocator<T, V> {
     }
 
     private void placePlayersRandomly(Multimap<T, V> teamToPlayers, Map<V, T> playerToTeam) {
-        List<T> availableTeams = new ArrayList<>(this.teams);
-        List<V> players = new ArrayList<>(this.players);
+        var availableTeams = new ArrayList<T>(this.teams);
+        var players = new ArrayList<V>(this.players);
 
         // shuffle the player and teams list for random initial allocation
         Collections.shuffle(availableTeams);
         Collections.shuffle(players);
 
         int teamIndex = 0;
-        for (V player : players) {
+        for (var player : players) {
             // all teams are full! we cannot allocate any more players
             if (availableTeams.isEmpty()) {
                 throw new IllegalStateException("team overflow! all teams have exceeded maximum capacity");
             }
 
-            T team = availableTeams.get(teamIndex);
+            var team = availableTeams.get(teamIndex);
             teamToPlayers.put(team, player);
             playerToTeam.put(player, team);
 
@@ -121,20 +121,20 @@ public final class TeamAllocator<T, V> {
     }
 
     private void optimizeTeamsByPreference(Multimap<T, V> teamToPlayers, Map<V, T> playerToTeam) {
-        List<V> players = new ArrayList<>(this.players);
+        var players = new ArrayList<V>(this.players);
         Collections.shuffle(players);
 
-        for (V player : players) {
-            T preference = this.teamPreferences.get(player);
-            T current = playerToTeam.get(player);
+        for (var player : players) {
+            var preference = this.teamPreferences.get(player);
+            var current = playerToTeam.get(player);
 
             // we have no preference or we are already in our desired position, continue
             if (preference == null || current == preference) {
                 continue;
             }
 
-            Collection<V> currentTeamMembers = teamToPlayers.get(current);
-            Collection<V> swapCandidates = teamToPlayers.get(preference);
+            var currentTeamMembers = teamToPlayers.get(current);
+            var swapCandidates = teamToPlayers.get(preference);
 
             // we can move without swapping if the other team is smaller than ours if it has not exceeded the max size
             // we only care about keeping the teams balanced, so this is safe
@@ -146,8 +146,8 @@ public final class TeamAllocator<T, V> {
             } else {
                 V swapWith = null;
 
-                for (V swapCandidate : swapCandidates) {
-                    T swapCandidatePreference = this.teamPreferences.get(swapCandidate);
+                for (var swapCandidate : swapCandidates) {
+                    var swapCandidatePreference = this.teamPreferences.get(swapCandidate);
                     if (swapCandidatePreference == preference) {
                         // we can't swap with this player: they are already in their chosen team
                         continue;

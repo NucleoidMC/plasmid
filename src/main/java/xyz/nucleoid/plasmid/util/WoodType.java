@@ -34,7 +34,7 @@ public enum WoodType {
     }
 
     public static WoodType getType(Block block) {
-        for (WoodType type : WoodType.values()) {
+        for (var type : WoodType.values()) {
             if(type.contains(block)) {
                 return type;
             }
@@ -43,7 +43,7 @@ public enum WoodType {
     }
 
     public static WoodType getType(Item item) {
-        for (WoodType type : WoodType.values()) {
+        for (var type : WoodType.values()) {
             if(type.contains(item)) {
                 return type;
             }
@@ -56,8 +56,8 @@ public enum WoodType {
     }
 
     public boolean contains(Item item) {
-        if(item instanceof BlockItem) {
-            return this.contains(((BlockItem) item).getBlock());
+        if(item instanceof BlockItem blockItem) {
+            return this.contains(blockItem.getBlock());
         }
         else {
             return item == this.boat;

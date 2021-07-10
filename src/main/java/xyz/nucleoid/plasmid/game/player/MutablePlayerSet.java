@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.game.player;
 import com.google.common.collect.AbstractIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.PlayerRef;
@@ -30,7 +29,7 @@ public final class MutablePlayerSet implements PlayerSet {
     }
 
     public boolean add(PlayerRef ref) {
-        return this.players.add(ref.getId());
+        return this.players.add(ref.id());
     }
 
     public boolean remove(ServerPlayerEntity player) {
@@ -38,7 +37,7 @@ public final class MutablePlayerSet implements PlayerSet {
     }
 
     public boolean remove(PlayerRef ref) {
-        return this.players.remove(ref.getId());
+        return this.players.remove(ref.id());
     }
 
     @Nullable
@@ -54,15 +53,15 @@ public final class MutablePlayerSet implements PlayerSet {
 
     @Override
     public Iterator<ServerPlayerEntity> iterator() {
-        PlayerManager playerManager = this.server.getPlayerManager();
-        Iterator<UUID> ids = this.players.iterator();
+        var playerManager = this.server.getPlayerManager();
+        var ids = this.players.iterator();
 
         return new AbstractIterator<ServerPlayerEntity>() {
             @Override
             protected ServerPlayerEntity computeNext() {
                 while (ids.hasNext()) {
-                    UUID id = ids.next();
-                    ServerPlayerEntity player = playerManager.getPlayer(id);
+                    var id = ids.next();
+                    var player = playerManager.getPlayer(id);
                     if (player != null) {
                         return player;
                     }
@@ -79,7 +78,7 @@ public final class MutablePlayerSet implements PlayerSet {
 
     @Override
     public MutablePlayerSet copy(MinecraftServer server) {
-        MutablePlayerSet copy = new MutablePlayerSet(server);
+        var copy = new MutablePlayerSet(server);
         copy.players.addAll(this.players);
         return copy;
     }

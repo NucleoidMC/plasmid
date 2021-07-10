@@ -12,11 +12,11 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.dimension.DimensionType;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.fantasy.Fantasy;
-import xyz.nucleoid.fantasy.PersistentWorldHandle;
+import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
 import xyz.nucleoid.plasmid.map.workspace.editor.WorkspaceEditor;
@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 public final class MapWorkspaceManager extends PersistentState {
     public static final String KEY = Plasmid.ID + ":map_workspaces";
@@ -70,25 +68,25 @@ public final class MapWorkspaceManager extends PersistentState {
         this.editorManager.onPlayerRemoveFromWorld(player, world);
     }
 
-    public CompletableFuture<MapWorkspace> open(Identifier identifier) {
-        return this.open(identifier, this::createVoidOptions);
+    public MapWorkspace open(Identifier identifier) {
+        return this.open(identifier, this.createDefaultConfig());
     }
 
-    public CompletableFuture<MapWorkspace> open(Identifier identifier, Supplier<DimensionOptions> options) {
+    public MapWorkspace open(Identifier identifier, RuntimeWorldConfig config) {
         MapWorkspace existingWorkspace = this.workspacesById.get(identifier);
         if (existingWorkspace != null) {
-            return CompletableFuture.completedFuture(existingWorkspace);
+            return existingWorkspace;
         }
 
-        CompletableFuture<PersistentWorldHandle> dimension = this.getOrCreateDimension(identifier, options);
-        return dimension.thenApplyAsync(worldHandle -> {
-            worldHandle.setTickWhenEmpty(false);
-            MapWorkspace workspace = new MapWorkspace(worldHandle, identifier, DEFAULT_BOUNDS);
-            this.workspacesById.put(identifier, workspace);
-            this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
-            this.editorManager.addWorkspace(workspace);
-            return workspace;
-        }, this.server);
+        RuntimeWorldHandle worldHandle = this.getOrCreateDimension(identifier, config);
+        worldHandle.setTickWhenEmpty(false);
+
+        MapWorkspace workspace = new MapWorkspace(worldHandle, identifier, DEFAULT_BOUNDS);
+        this.workspacesById.put(identifier, workspace);
+        this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
+        this.editorManager.addWorkspace(workspace);
+
+        return workspace;
     }
 
     public boolean delete(MapWorkspace workspace) {
@@ -144,13 +142,13 @@ public final class MapWorkspaceManager extends PersistentState {
             Identifier identifier = new Identifier(key);
             CompoundTag root = tag.getCompound(key);
 
-            this.getOrCreateDimension(identifier, this::createVoidOptions).thenAcceptAsync(worldHandle -> {
-                worldHandle.setTickWhenEmpty(false);
-                MapWorkspace workspace = MapWorkspace.deserialize(worldHandle, root);
-                this.workspacesById.put(identifier, workspace);
-                this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
-                this.editorManager.addWorkspace(workspace);
-            }, this.server);
+            RuntimeWorldHandle worldHandle = this.getOrCreateDimension(identifier, this.createDefaultConfig());
+            worldHandle.setTickWhenEmpty(false);
+
+            MapWorkspace workspace = MapWorkspace.deserialize(worldHandle, root);
+            this.workspacesById.put(identifier, workspace);
+            this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
+            this.editorManager.addWorkspace(workspace);
         }
     }
 
@@ -168,16 +166,17 @@ public final class MapWorkspaceManager extends PersistentState {
         return true;
     }
 
-    private CompletableFuture<PersistentWorldHandle> getOrCreateDimension(Identifier identifier, Supplier<DimensionOptions> options) {
+    private RuntimeWorldHandle getOrCreateDimension(Identifier identifier, RuntimeWorldConfig config) {
         Identifier dimensionId = new Identifier(identifier.getNamespace(), "workspace_" + identifier.getPath());
-        return Fantasy.get(this.server).getOrOpenPersistentWorld(dimensionId, options);
+        return Fantasy.get(this.server).getOrOpenPersistentWorld(dimensionId, config);
     }
 
-    private DimensionOptions createVoidOptions() {
+    private RuntimeWorldConfig createDefaultConfig() {
         DynamicRegistryManager registries = this.server.getRegistryManager();
-        DimensionType overworld = registries.getDimensionTypes().get(DimensionType.OVERWORLD_REGISTRY_KEY);
         VoidChunkGenerator generator = new VoidChunkGenerator(registries.get(Registry.BIOME_KEY));
 
-        return new DimensionOptions(() -> overworld, generator);
+        return new RuntimeWorldConfig()
+                .setDimensionType(DimensionType.OVERWORLD_REGISTRY_KEY)
+                .setGenerator(generator);
     }
 }

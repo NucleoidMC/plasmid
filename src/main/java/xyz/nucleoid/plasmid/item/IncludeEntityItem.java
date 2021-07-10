@@ -1,15 +1,12 @@
 package xyz.nucleoid.plasmid.item;
 
-import eu.pb4.polymer.item.ItemHelper;
 import eu.pb4.polymer.item.VirtualItem;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -31,7 +28,7 @@ public final class IncludeEntityItem extends Item implements VirtualItem {
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
         World world = user.getEntityWorld();
-        if (!world.isClient) {
+        if (!world.isClient()) {
             MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(world.getServer());
 
             MapWorkspace workspace = workspaceManager.byDimension(world.getRegistryKey());

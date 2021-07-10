@@ -18,6 +18,15 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+/**
+ * Represents a set of {@link ServerPlayerEntity} on a server. These players are not guaranteed to be currently online,
+ * but all functionality will operate only on currently online players.
+ * <p>
+ * Can be iterated, and additionally implements {@link PlayerOps} which allows for quickly applying various operations
+ * to all players within the set such as sending a message.
+ *
+ * @see MutablePlayerSet
+ */
 public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
     PlayerSet EMPTY = new PlayerSet() {
         @Override
@@ -48,27 +57,79 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
         }
     };
 
+    /**
+     * Queries whether this {@link PlayerSet} contains the given player {@link UUID}.
+     * This will return {@code true} for players that are included in the {@link PlayerSet} even if they are not online.
+     *
+     * @param id the player uuid to query
+     * @return {@code true} if this player {@link UUID} is contained within this {@link PlayerSet}
+     */
     boolean contains(UUID id);
 
-    @Nullable
-    ServerPlayerEntity getEntity(UUID id);
-
+    /**
+     * Queries whether this {@link PlayerSet} contains the given {@link PlayerRef}.
+     * This will return {@code true} for players that are included in the {@link PlayerSet} even if they are not online.
+     *
+     * @param ref the {@link PlayerRef} to query
+     * @return {@code true} if this {@link PlayerRef} is contained within this {@link PlayerSet}
+     */
     default boolean contains(PlayerRef ref) {
         return this.contains(ref.getId());
     }
 
+    /**
+     * Queries whether this {@link PlayerSet} contains the given {@link ServerPlayerEntity}.
+     *
+     * @param player the {@link ServerPlayerEntity} to query
+     * @return {@code true} if this {@link ServerPlayerEntity} is contained within this {@link PlayerSet}
+     */
     default boolean contains(ServerPlayerEntity player) {
         return this.contains(player.getUuid());
     }
 
+    /**
+     * Looks up a corresponding online {@link ServerPlayerEntity} that is contained within this {@link PlayerSet}
+     * given a player {@link UUID}.
+     *
+     * @param id the id to look up in this set
+     * @return the corresponding online {@link ServerPlayerEntity}, or {@code null} if not contained or offline
+     */
+    @Nullable
+    ServerPlayerEntity getEntity(UUID id);
+
+    /**
+     * Returns the number of players contained within this {@link PlayerSet}, including offline players.
+     *
+     * @return the number of players in this {@link PlayerSet}
+     */
     int size();
 
+    /**
+     * Returns whether this {@link PlayerSet} is empty (including offline players).
+     *
+     * @return {@code true} if this {@link PlayerSet} is empty
+     */
     default boolean isEmpty() {
         return this.size() <= 0;
     }
 
+    /**
+     * Creates a mutable copy of this {@link PlayerSet}.
+     *
+     * @param server the {@link MinecraftServer} instance that these players exist within
+     * @return a mutable copy of this {@link PlayerSet}
+     */
     MutablePlayerSet copy(MinecraftServer server);
 
+    /**
+     * @return an iterator over the online {@link ServerPlayerEntity} within this {@link PlayerSet}
+     */
+    @Override
+    Iterator<ServerPlayerEntity> iterator();
+
+    /**
+     * @return a stream of online {@link ServerPlayerEntity} within this {@link PlayerSet}
+     */
     default Stream<ServerPlayerEntity> stream() {
         return StreamSupport.stream(this.spliterator(), false);
     }
@@ -88,30 +149,38 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
     }
 
     @Override
-    default void sendTitle(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+    default void showTitle(Text title, int fadeInTicks, int stayTicks, int fadeOutTicks) {
         this.sendPacket(new TitleS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
-        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, message));
+        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, title));
     }
 
     @Override
-    default void sendTitle(Text title, Text subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+    default void showTitle(Text title, Text subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
         this.sendPacket(new TitleS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
         this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, title));
         this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.SUBTITLE, subtitle));
     }
+
     @Override
-    default void sendActionbar(Text text, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+    default void sendActionBar(Text message) {
+        for (ServerPlayerEntity player : this) {
+            player.sendMessage(message, true);
+        }
+    }
+
+    @Override
+    default void sendActionBar(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks) {
         this.sendPacket(new TitleS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
-        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, text));
+        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, message));
     }
 
     @Override
-    default void sendSound(SoundEvent sound) {
-        this.sendSound(sound, SoundCategory.PLAYERS, 1.0F, 1.0F);
+    default void playSound(SoundEvent sound) {
+        this.playSound(sound, SoundCategory.PLAYERS, 1.0F, 1.0F);
     }
 
     @Override
-    default void sendSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
+    default void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
         for (ServerPlayerEntity player : this) {
             player.playSound(sound, category, volume, pitch);
         }

@@ -8,6 +8,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
@@ -19,6 +20,7 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.BlockBounds;
@@ -52,6 +54,16 @@ public final class MapTemplate {
 
     public static MapTemplate createEmpty() {
         return new MapTemplate();
+    }
+
+    /**
+     * Creates a chunk generator instance that will place this {@link MapTemplate} into the world.
+     *
+     * @param server the server instance to create a {@link ChunkGenerator} from
+     * @return a {@link ChunkGenerator} that places this {@link MapTemplate} into the world
+     */
+    public TemplateChunkGenerator asChunkGenerator(MinecraftServer server) {
+        return new TemplateChunkGenerator(server, this);
     }
 
     /**
@@ -364,7 +376,6 @@ public final class MapTemplate {
      *
      * @param primary the primary map template to merge (overrides the secondary template)
      * @param secondary the secondary map template to merge
-     *
      * @return the merged template
      */
     public static MapTemplate merged(MapTemplate primary, MapTemplate secondary) {

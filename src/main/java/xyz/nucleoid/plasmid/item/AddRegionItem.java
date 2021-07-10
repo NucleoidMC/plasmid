@@ -1,8 +1,6 @@
 package xyz.nucleoid.plasmid.item;
 
-import eu.pb4.polymer.item.ItemHelper;
 import eu.pb4.polymer.item.VirtualItem;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -21,7 +19,7 @@ public final class AddRegionItem extends Item implements VirtualItem {
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        if (world.isClient) {
+        if (world.isClient()) {
             return super.use(world, player, hand);
         }
 

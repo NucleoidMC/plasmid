@@ -11,7 +11,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.game.ConfiguredGame;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 
 import java.util.Locale;
@@ -35,14 +35,14 @@ public final class GameConfigArgument {
                 });
     }
 
-    public static Pair<Identifier, ConfiguredGame<?>> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static Pair<Identifier, GameConfig<?>> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
         Identifier identifier = IdentifierArgumentType.getIdentifier(context, name);
 
-        ConfiguredGame<?> configuredGame = GameConfigs.get(identifier);
-        if (configuredGame == null) {
+        GameConfig<?> config = GameConfigs.get(identifier);
+        if (config == null) {
             throw GAME_NOT_FOUND.create(identifier);
         }
 
-        return new Pair<>(identifier, configuredGame);
+        return new Pair<>(identifier, config);
     }
 }

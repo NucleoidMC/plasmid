@@ -1,54 +1,125 @@
 package xyz.nucleoid.plasmid.game;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
+import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
+import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
- * Represents the space within which a game occurs through attached {@link GameLogic}
+ * Represents an instance of a game, and the "space" within which it occurs.
+ * <p>
+ * The {@link GameSpace} controls all of its attached {@link ServerWorld} objects, all joined players, and all the
+ * behavior that takes place within the game.
+ * <p>
+ * Behavior should be controlled by game implementations through the use of {@link GameActivity} instances.
+ *
+ * @see GameType
+ * @see GameActivity
  */
-public interface GameSpace extends AutoCloseable {
+public interface GameSpace {
     /**
-     * Swaps out the active {@link GameLogic} within this {@link GameSpace}.
-     *
-     * @param builder the builder to apply on the newly constructed {@link GameLogic}
+     * @return the host server of this {@link GameSpace}
      */
-    void openGame(Consumer<GameLogic> builder);
-
-    CompletableFuture<StartResult> requestStart();
+    MinecraftServer getServer();
 
     /**
-     * Attempts to remove the given {@link ServerPlayerEntity} from this {@link GameSpace}.
-     * When a player is removed, they will be teleported back to their former location prior to joining
+     * Sets and replaces the active {@link GameActivity} on this {@link GameSpace}.
+     * <p>
+     * The old activity will be closed with all its players removed. The sequence of expected events follows that as
+     * described by {@link GameSpace#close(GameCloseReason)}.
+     * <p>
+     * After being built, the following events will be fired on the new activity in sequence:
+     * <li>{@link GameActivityEvents#CREATE}</li>
+     * <li>{@link GamePlayerEvents#ADD} for every player in this {@link GameSpace}</li>
+     * <li>{@link GameActivityEvents#ENABLE}</li>
      *
-     * @param player {@link ServerPlayerEntity} to remove from this {@link GameSpace}
-     * @return whether the {@link ServerPlayerEntity} was successfully removed
+     * @param config the game config which created this activity
+     * @param builder a builder to set up a new activity's listeners and rules
      */
-    boolean removePlayer(ServerPlayerEntity player);
+    void setActivity(GameConfig<?> config, Consumer<GameActivity> builder);
 
     /**
-     * Closes this game with a reason
+     * Closes this {@link GameSpace} with the given reason.
+     * The associated {@link GameActivity} is closed and all players will be removed.
+     * <p>
+     * The following events will be fired on the closed activity in sequence:
+     * <li>{@link GameActivityEvents#DISABLE}</li>
+     * <li>{@link GamePlayerEvents#REMOVE} for every player in this {@link GameSpace}</li>
+     * <li>{@link GameActivityEvents#DESTROY}</li>
      *
      * @param reason the reason for this game closing
      */
     void close(GameCloseReason reason);
 
     /**
-     * Adds a resource to this {@link GameSpace} object that will be automatically closed when this {@link GameSpace}
-     * is closed.
+     * Creates and adds a temporary world to be associated with this {@link GameSpace}.
+     * When the game is closed, the world will be deleted.
      *
-     * This differs from {@link GameLogic#addResource(AutoCloseable)}, which will be closed when the {@link GameLogic}
-     * instance is closed.
-     *
-     * @param resource the resource to close when this {@link GameSpace} closes
-     * @return the added resource
+     * @param worldConfig a config describing how the new world should be created
+     * @return the created world instance
+     * @see RuntimeWorldConfig
      */
-    <T extends AutoCloseable> T addResource(T resource);
+    ServerWorld addWorld(RuntimeWorldConfig worldConfig);
+
+    /**
+     * Removes and deletes a temporary world that is associated with this {@link GameSpace}.
+     * The passed world must have been created through {@link GameSpace#addWorld(RuntimeWorldConfig)}.
+     *
+     * @param world the world instance to delete
+     * @see GameSpace#addWorld(RuntimeWorldConfig)
+     */
+    void removeWorld(ServerWorld world);
+
+    /**
+     * Submits a request to the currently active {@link GameActivity} for this game to be started.
+     * What a start request means is dependent on the game implementation, and a game does not necessarily need to
+     * respond to this event unless they wish to respond to the {@code /game start} command.
+     *
+     * @return a {@link GameResult} describing whether this game was successfully started, or an error if not
+     * @see GameActivityEvents#REQUEST_START
+     */
+    GameResult requestStart();
+
+    /**
+     * Screens a group of players and returns whether the collective group should be allowed into the game.
+     * <p>
+     * This logic is controlled through the active {@link GameActivity} through {@link GamePlayerEvents#SCREEN_JOINS}.
+     *
+     * @param players the group of players trying to join
+     * @return a {@link GameResult} describing whether this group can join this game, or an error if not
+     * @see GamePlayerEvents#SCREEN_JOINS
+     * @see GameSpace#offerPlayer(ServerPlayerEntity)
+     */
+    GameResult screenPlayerJoins(Collection<ServerPlayerEntity> players);
+
+    /**
+     * Offers an individual player to join this game. If accepted, they will be teleported into the game, and if not
+     * an error {@link GameResult} will be returned.
+     * <p>
+     * This logic is controlled through the active {@link GameActivity} through {@link GamePlayerEvents#OFFER}.
+     *
+     * @param player the player trying to join
+     * @return a {@link GameResult} describing whether this player joined the game, or an error if not
+     * @see GamePlayerEvents#OFFER
+     */
+    GameResult offerPlayer(ServerPlayerEntity player);
+
+    /**
+     * Attempts to remove the given {@link ServerPlayerEntity} from this {@link GameSpace}.
+     * When a player is removed, they will be teleported back to their former location prior to joining.
+     *
+     * @param player {@link ServerPlayerEntity} to remove from this {@link GameSpace}
+     * @return whether the {@link ServerPlayerEntity} was successfully removed
+     */
+    boolean kickPlayer(ServerPlayerEntity player);
 
     /**
      * Returns all {@link ServerPlayerEntity}s in this {@link GameSpace}.
@@ -77,41 +148,22 @@ public interface GameSpace extends AutoCloseable {
     }
 
     /**
-     * Returns whether this {@link GameSpace} contains the given {@link Entity}.
-     *
-     * @param entity {@link Entity} to check existence of
-     * @return whether the given {@link Entity} exists in this {@link GameSpace}
-     */
-    default boolean containsEntity(Entity entity) {
-        return this.getWorld().getEntity(entity.getUuid()) != null;
-    }
-
-    /**
-     * Returns the {@link ServerWorld} that this {@link GameSpace} is hosted in.
-     *
-     * @return the host world of this {@link GameSpace}.
-     */
-    ServerWorld getWorld();
-
-    /**
-     * @return the host server of this {@link GameSpace}
-     */
-    default MinecraftServer getServer() {
-        return this.getWorld().getServer();
-    }
-
-    /**
-     * @return the game config that is running within this {@link GameSpace}
-     */
-    ConfiguredGame<?> getGameConfig();
-
-    /**
-     * @return the game config that created this {@link GameSpace}
-     */
-    ConfiguredGame<?> getSourceGameConfig();
-
-    /**
      * @return the lifecycle manager for this {@link GameSpace}
      */
     GameLifecycle getLifecycle();
+
+    /**
+     * @return the {@link GameConfig} that was responsible for creating this {@link GameSpace}
+     */
+    GameConfig<?> getSourceConfig();
+
+    /**
+     * @return the unique ID assigned to this {@link GameSpace} instance
+     */
+    Identifier getId();
+
+    /**
+     * @return the number of ticks that have passed since this {@link GameSpace} was created
+     */
+    long getTime();
 }

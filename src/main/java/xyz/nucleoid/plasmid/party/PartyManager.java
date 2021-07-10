@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 // TODO: does not handle players leaving the server!
+// TODO: also split party handling into its own mod
 public final class PartyManager {
     private static PartyManager instance;
 

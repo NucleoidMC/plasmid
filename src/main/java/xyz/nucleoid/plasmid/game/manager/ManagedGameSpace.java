@@ -8,6 +8,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
@@ -64,6 +65,7 @@ public final class ManagedGameSpace implements GameSpace {
                 return activity;
             });
         } catch (Throwable throwable) {
+            Plasmid.LOGGER.error("An unexpected error occurred while setting game activity", throwable);
             this.closeWithError("An unexpected error occurred while setting game activity");
         }
     }

@@ -13,7 +13,7 @@ import xyz.nucleoid.plasmid.util.ItemStackBuilder;
 /**
  * A simple representation of a team type, containing a name and color.
  */
-public final record GameTeam(String display, String key, DyeColor dye, Formatting formatting) {
+public final record GameTeam(String key, String display, DyeColor dye, Formatting formatting) {
     public static final Codec<GameTeam> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
                 Codec.STRING.fieldOf("key").forGetter(GameTeam::key),

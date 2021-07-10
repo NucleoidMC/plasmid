@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.entity;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.decoration.ArmorStandEntity;
@@ -125,7 +126,7 @@ public final class FloatingText {
     public void remove() {
         if (this.entities != null) {
             for (ArmorStandEntity entity : this.entities) {
-                entity.remove();
+                entity.remove(Entity.RemovalReason.DISCARDED);
             }
             this.entities = null;
         }

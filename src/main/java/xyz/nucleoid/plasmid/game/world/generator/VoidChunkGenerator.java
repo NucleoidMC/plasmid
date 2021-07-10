@@ -19,12 +19,14 @@ import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.StructuresConfig;
+import net.minecraft.world.gen.chunk.VerticalBlockSample;
 import net.minecraft.world.gen.feature.StructureFeature;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.game.world.generator.view.VoidBlockView;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 public class VoidChunkGenerator extends ChunkGenerator {
@@ -68,7 +70,8 @@ public class VoidChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    public void populateNoise(WorldAccess world, StructureAccessor accessor, Chunk chunk) {
+    public CompletableFuture<Chunk> populateNoise(Executor executor, StructureAccessor accessor, Chunk chunk) {
+        return CompletableFuture.completedFuture(chunk);
     }
 
     @Override
@@ -88,8 +91,13 @@ public class VoidChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    public int getHeight(int x, int z, Heightmap.Type heightmapType) {
+    public int getHeight(int x, int z, Heightmap.Type heightmap, HeightLimitView world) {
         return 0;
+    }
+
+    @Override
+    public VerticalBlockSample getColumnSample(int x, int z, HeightLimitView world) {
+        return GeneratorBlockSamples.VOID;
     }
 
     @Nullable
@@ -101,10 +109,5 @@ public class VoidChunkGenerator extends ChunkGenerator {
     @Override
     public boolean isStrongholdStartingChunk(ChunkPos chunkPos) {
         return false;
-    }
-
-    @Override
-    public BlockView getColumnSample(int x, int z) {
-        return VoidBlockView.INSTANCE;
     }
 }

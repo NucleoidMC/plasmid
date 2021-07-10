@@ -131,7 +131,7 @@ public final class GameCommand {
 
     private static int openGame(CommandContext<ServerCommandSource> context, GameConfig<?> config) {
         ServerCommandSource source = context.getSource();
-        MinecraftServer server = source.getMinecraftServer();
+        MinecraftServer server = source.getServer();
 
         Entity entity = source.getEntity();
         ServerPlayerEntity player = entity instanceof ServerPlayerEntity ? (ServerPlayerEntity) entity : null;
@@ -162,7 +162,7 @@ public final class GameCommand {
     }
 
     private static void onOpenSuccess(ServerCommandSource source, GameSpace gameSpace) {
-        PlayerManager players = source.getMinecraftServer().getPlayerManager();
+        PlayerManager players = source.getServer().getPlayerManager();
 
         Text message = GameTexts.Broadcast.gameOpened(source, gameSpace);
         players.broadcastChatMessage(message, MessageType.SYSTEM, Util.NIL_UUID);
@@ -180,7 +180,7 @@ public final class GameCommand {
             message = GameTexts.Broadcast.gameOpenError();
         }
 
-        PlayerManager players = source.getMinecraftServer().getPlayerManager();
+        PlayerManager players = source.getServer().getPlayerManager();
         players.broadcastChatMessage(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);
     }
 
@@ -203,7 +203,7 @@ public final class GameCommand {
     private static int proposeGame(ServerCommandSource source, GameSpace gameSpace) {
         Text message = GameTexts.Broadcast.propose(source, gameSpace);
 
-        PlayerManager playerManager = source.getMinecraftServer().getPlayerManager();
+        PlayerManager playerManager = source.getServer().getPlayerManager();
         playerManager.broadcastChatMessage(message, MessageType.SYSTEM, Util.NIL_UUID);
 
         return Command.SINGLE_SUCCESS;
@@ -249,7 +249,7 @@ public final class GameCommand {
     }
 
     private static void joinAllPlayersToGame(CommandContext<ServerCommandSource> context, GameSpace gameSpace) {
-        PlayerManager playerManager = context.getSource().getMinecraftServer().getPlayerManager();
+        PlayerManager playerManager = context.getSource().getServer().getPlayerManager();
 
         List<ServerPlayerEntity> players = playerManager.getPlayerList().stream()
                 .filter(player -> !GameSpaceManager.get().inGame(player))
@@ -317,7 +317,7 @@ public final class GameCommand {
             throw NOT_IN_GAME.create();
         }
 
-        source.getMinecraftServer().submit(() -> {
+        source.getServer().submit(() -> {
             GameResult startResult = gameSpace.requestStart();
 
             Text message;
@@ -363,8 +363,8 @@ public final class GameCommand {
             throw NOT_IN_GAME.create();
         }
 
-        source.getMinecraftServer().submit(() -> {
-            PlayerSet playerSet = gameSpace.getPlayers().copy(source.getMinecraftServer());
+        source.getServer().submit(() -> {
+            PlayerSet playerSet = gameSpace.getPlayers().copy(source.getServer());
 
             try {
                 gameSpace.close(GameCloseReason.CANCELED);

@@ -48,7 +48,7 @@ public final class OldCombat {
 
         if (defaultModifiers.containsKey(DAMAGE_ATTRIBUTE)) {
             float attackDamage = material.getAttackDamage();
-            int baseDamage = getBaseDamage(item);
+            int baseDamage = getBaseDamage(stack);
 
             EntityAttributeModifier modifier = createDamageModifier(attackDamage + baseDamage);
             stack.addAttributeModifier(DAMAGE_ATTRIBUTE, modifier, EquipmentSlot.MAINHAND);
@@ -65,16 +65,16 @@ public final class OldCombat {
         return new EntityAttributeModifier(DAMAGE_ID, "Weapon modifier", damage, EntityAttributeModifier.Operation.ADDITION);
     }
 
-    private static int getBaseDamage(Item item) {
-        if (item.isIn(FabricToolTags.SWORDS)) {
+    private static int getBaseDamage(ItemStack stack) {
+        if (stack.isIn(FabricToolTags.SWORDS)) {
             return SWORD_BASE_DAMAGE;
-        } else if (item.isIn(FabricToolTags.AXES)) {
+        } else if (stack.isIn(FabricToolTags.AXES)) {
             return AXE_BASE_DAMAGE;
-        } else if (item.isIn(FabricToolTags.PICKAXES)) {
+        } else if (stack.isIn(FabricToolTags.PICKAXES)) {
             return PICKAXE_BASE_DAMAGE;
-        } else if (item.isIn(FabricToolTags.SHOVELS)) {
+        } else if (stack.isIn(FabricToolTags.SHOVELS)) {
             return SHOVEL_BASE_DAMAGE;
-        } else if (item.isIn(FabricToolTags.HOES)) {
+        } else if (stack.isIn(FabricToolTags.HOES)) {
             return HOE_BASE_DAMAGE;
         }
         return 0;

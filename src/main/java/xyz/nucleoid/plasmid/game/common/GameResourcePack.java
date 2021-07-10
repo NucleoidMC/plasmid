@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game.common;
 
 import joptsimple.internal.Strings;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 
@@ -18,10 +19,32 @@ public final class GameResourcePack {
 
     private final String url;
     private final String hash;
+    private boolean required;
+    private Text prompt;
 
     public GameResourcePack(String url, String hash) {
         this.url = url;
         this.hash = hash;
+    }
+
+    /**
+     * Indicates to clients that this resource pack is required and cannot be rejected.
+     *
+     * @return this {@link GameResourcePack} instance
+     */
+    public GameResourcePack setRequired() {
+        this.required = true;
+        return this;
+    }
+
+    /**
+     * Sets a message to display to players when prompted to accept the resource pack.
+     *
+     * @return this {@link GameResourcePack} instance
+     */
+    public GameResourcePack setPrompt(Text prompt) {
+        this.prompt = prompt;
+        return this;
     }
 
     /**
@@ -36,14 +59,14 @@ public final class GameResourcePack {
         String serverHash = server.getResourcePackHash();
 
         activity.listen(GamePlayerEvents.ADD, player -> {
-            player.sendResourcePackUrl(this.url, this.hash);
+            player.sendResourcePackUrl(this.url, this.hash, this.required, this.prompt);
         });
 
         activity.listen(GamePlayerEvents.REMOVE, player -> {
             if (!Strings.isNullOrEmpty(serverUrl) && !Strings.isNullOrEmpty(serverHash)) {
-                player.sendResourcePackUrl(serverUrl, serverHash);
+                player.sendResourcePackUrl(serverUrl, serverHash, true, null);
             } else {
-                player.sendResourcePackUrl(EMPTY_PACK_URL, EMPTY_PACK_HASH);
+                player.sendResourcePackUrl(EMPTY_PACK_URL, EMPTY_PACK_HASH, true, null);
             }
         });
     }

@@ -34,7 +34,7 @@ public class ShoutCommand {
         hasChatChannel.setChatChannel(ChatChannel.ALL);
 
         String message = StringArgumentType.getString(context, "message");
-        context.getSource().getMinecraftServer().getPlayerManager().broadcastChatMessage(
+        context.getSource().getServer().getPlayerManager().broadcastChatMessage(
                 new TranslatableText("chat.type.text", player.getDisplayName(), message),
                 MessageType.CHAT,
                 context.getSource().getPlayer().getUuid()

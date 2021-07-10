@@ -23,7 +23,7 @@ public final class DimensionOptionsArgument {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((context, builder) -> {
                     ServerCommandSource source = context.getSource();
-                    GeneratorOptions options = source.getMinecraftServer().getSaveProperties().getGeneratorOptions();
+                    GeneratorOptions options = source.getServer().getSaveProperties().getGeneratorOptions();
                     SimpleRegistry<DimensionOptions> dimensions = options.getDimensions();
 
                     return CommandSource.suggestIdentifiers(
@@ -37,7 +37,7 @@ public final class DimensionOptionsArgument {
         Identifier identifier = IdentifierArgumentType.getIdentifier(context, name);
 
         ServerCommandSource source = context.getSource();
-        GeneratorOptions options = source.getMinecraftServer().getSaveProperties().getGeneratorOptions();
+        GeneratorOptions options = source.getServer().getSaveProperties().getGeneratorOptions();
         SimpleRegistry<DimensionOptions> dimensions = options.getDimensions();
 
         DimensionOptions dimension = dimensions.get(identifier);

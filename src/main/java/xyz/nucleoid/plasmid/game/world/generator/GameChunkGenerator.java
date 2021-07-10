@@ -8,10 +8,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.ChunkRegion;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.biome.source.BiomeSource;
@@ -20,13 +17,15 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.StructuresConfig;
-import xyz.nucleoid.plasmid.game.world.generator.view.VoidBlockView;
+import net.minecraft.world.gen.chunk.VerticalBlockSample;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 public abstract class GameChunkGenerator extends ChunkGenerator {
-    public static final Codec<? extends ChunkGenerator> CODEC = new Codec<ChunkGenerator>() {
+    public static final Codec<? extends ChunkGenerator> CODEC = new Codec<>() {
         @Override
         public <T> DataResult<Pair<ChunkGenerator, T>> decode(DynamicOps<T> ops, T input) {
             return Biome.REGISTRY_CODEC.decode(ops, ops.createString(BiomeKeys.THE_VOID.getValue().toString()))
@@ -62,7 +61,8 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    public void populateNoise(WorldAccess world, StructureAccessor structures, Chunk chunk) {
+    public CompletableFuture<Chunk> populateNoise(Executor executor, StructureAccessor accessor, Chunk chunk) {
+        return CompletableFuture.completedFuture(chunk);
     }
 
     @Override
@@ -74,13 +74,13 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    public int getHeight(int x, int z, Heightmap.Type heightmapType) {
+    public int getHeight(int x, int z, Heightmap.Type heightmap, HeightLimitView world) {
         return 0;
     }
 
     @Override
-    public BlockView getColumnSample(int x, int z) {
-        return VoidBlockView.INSTANCE;
+    public VerticalBlockSample getColumnSample(int x, int z, HeightLimitView world) {
+        return GeneratorBlockSamples.VOID;
     }
 
     @Override

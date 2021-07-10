@@ -1,7 +1,6 @@
 package xyz.nucleoid.plasmid.map.template;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureManager;
@@ -9,7 +8,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.world.*;
+import net.minecraft.world.ChunkRegion;
+import net.minecraft.world.HeightLimitView;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
@@ -19,12 +21,13 @@ import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
-import xyz.nucleoid.plasmid.game.world.generator.view.VoidBlockView;
+import xyz.nucleoid.plasmid.game.world.generator.GeneratorBlockSamples;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 public class TemplateChunkGenerator extends GameChunkGenerator {
     private final MapTemplate template;
@@ -54,41 +57,45 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     }
 
     @Override
-    public void populateNoise(WorldAccess world, StructureAccessor structures, Chunk chunk) {
+    public CompletableFuture<Chunk> populateNoise(Executor executor, StructureAccessor accessor, Chunk chunk) {
         ChunkPos chunkPos = chunk.getPos();
 
         BlockBounds chunkBounds = BlockBounds.of(chunkPos);
         if (!this.worldBounds.intersects(chunkBounds)) {
-            return;
+            return CompletableFuture.completedFuture(chunk);
         }
 
-        ProtoChunk protoChunk = (ProtoChunk) chunk;
-        BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+        return CompletableFuture.supplyAsync(() -> {
+            ProtoChunk protoChunk = (ProtoChunk) chunk;
+            BlockPos.Mutable mutablePos = new BlockPos.Mutable();
 
-        int minWorldX = chunkPos.getStartX();
-        int minWorldZ = chunkPos.getStartZ();
+            int minWorldX = chunkPos.getStartX();
+            int minWorldZ = chunkPos.getStartZ();
 
-        int minSectionY = this.worldBounds.getMin().getY() >> 4;
-        int maxSectionY = this.worldBounds.getMax().getY() >> 4;
+            int minSectionY = this.worldBounds.getMin().getY() >> 4;
+            int maxSectionY = this.worldBounds.getMax().getY() >> 4;
 
-        for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
-            long sectionPos = ChunkSectionPos.asLong(chunkPos.x, sectionY, chunkPos.z);
+            for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
+                long sectionPos = ChunkSectionPos.asLong(chunkPos.x, sectionY, chunkPos.z);
 
-            MapChunk templateChunk = this.template.getChunk(sectionPos);
-            if (templateChunk == null) {
-                continue;
+                MapChunk templateChunk = this.template.getChunk(sectionPos);
+                if (templateChunk == null) {
+                    continue;
+                }
+
+                ChunkSection section = protoChunk.getSection(sectionY);
+                section.lock();
+
+                try {
+                    int minWorldY = sectionY << 4;
+                    this.addSection(minWorldX, minWorldY, minWorldZ, mutablePos, protoChunk, section, templateChunk);
+                } finally {
+                    section.unlock();
+                }
             }
 
-            ChunkSection section = protoChunk.getSection(sectionY);
-            section.lock();
-
-            try {
-                int minWorldY = sectionY << 4;
-                this.addSection(minWorldX, minWorldY, minWorldZ, mutablePos, protoChunk, section, templateChunk);
-            } finally {
-                section.unlock();
-            }
-        }
+            return chunk;
+        }, executor);
     }
 
     private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable templatePos, ProtoChunk chunk, ChunkSection section, MapChunk templateChunk) {
@@ -106,7 +113,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
                     int worldY = y + minWorldY;
                     templatePos.set(x + minWorldX, worldY, z + minWorldZ);
 
-                    section.setBlockState(x, y, z, state);
+                    section.setBlockState(x, y, z, state, false);
 
                     oceanFloor.trackUpdate(x, worldY, z, state);
                     worldSurface.trackUpdate(x, worldY, z, state);
@@ -126,17 +133,14 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
 
     @Override
     public void populateEntities(ChunkRegion region) {
-        int chunkX = region.getCenterChunkX();
-        int chunkZ = region.getCenterChunkZ();
-
-        ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
+        var chunkPos = region.getCenterPos();
 
         BlockBounds chunkBounds = BlockBounds.of(chunkPos);
         if (!this.worldBounds.intersects(chunkBounds)) {
             return;
         }
 
-        ProtoChunk protoChunk = (ProtoChunk) region.getChunk(chunkX, chunkZ);
+        ProtoChunk protoChunk = (ProtoChunk) region.getChunk(chunkPos.x, chunkPos.z);
 
         int minSectionY = this.worldBounds.getMin().getY() >> 4;
         int maxSectionY = this.worldBounds.getMax().getY() >> 4;
@@ -150,32 +154,30 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     }
 
     @Override
-    public int getHeight(int x, int z, Heightmap.Type heightmapType) {
+    public int getHeight(int x, int z, Heightmap.Type heightmap, HeightLimitView world) {
         if (this.worldBounds.contains(x, z)) {
-            return this.template.getTopY(x, z, heightmapType);
+            return this.template.getTopY(x, z, heightmap, world);
         }
         return 0;
     }
 
     @Override
-    public BlockView getColumnSample(int x, int z) {
+    public VerticalBlockSample getColumnSample(int x, int z, HeightLimitView world) {
         if (this.worldBounds.contains(x, z)) {
             BlockPos.Mutable mutablePos = new BlockPos.Mutable(x, 0, z);
 
             int minY = this.worldBounds.getMin().getY();
             int maxY = this.worldBounds.getMax().getY();
 
-            BlockState[] column = new BlockState[maxY + 1];
-            Arrays.fill(column, minY, 0, Blocks.AIR.getDefaultState());
-
+            BlockState[] column = new BlockState[maxY - minY + 1];
             for (int y = maxY; y >= minY; y--) {
                 mutablePos.setY(y);
                 column[y] = this.template.getBlockState(mutablePos);
             }
 
-            return new VerticalBlockSample(column);
+            return new VerticalBlockSample(minY, column);
         }
 
-        return VoidBlockView.INSTANCE;
+        return GeneratorBlockSamples.VOID;
     }
 }

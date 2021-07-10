@@ -36,7 +36,7 @@ public final class TestGame {
             activity.listen(GamePlayerEvents.OFFER, offer -> {
                 ServerPlayerEntity player = offer.getPlayer();
                 return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
-                        .and(() -> player.setGameMode(GameMode.ADVENTURE));
+                        .and(() -> player.changeGameMode(GameMode.ADVENTURE));
             });
 
             activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);

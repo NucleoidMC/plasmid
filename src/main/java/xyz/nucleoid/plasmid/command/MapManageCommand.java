@@ -24,7 +24,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.dynamic.RegistryOps;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
@@ -146,12 +145,12 @@ public final class MapManageCommand {
             identifier = givenIdentifier;
         }
 
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
+        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
         if (workspaceManager.byId(identifier) != null) {
             throw MAP_ALREADY_EXISTS.create(identifier);
         }
 
-        source.getMinecraftServer().submit(() -> {
+        source.getServer().submit(() -> {
             try {
                 if (worldConfig != null) {
                     workspaceManager.open(identifier, worldConfig);
@@ -187,11 +186,11 @@ public final class MapManageCommand {
         Codec<? extends ChunkGenerator> generatorCodec = ChunkGeneratorArgument.get(context, "generator");
         NbtCompound config = NbtCompoundArgumentType.getNbtCompound(context, "config");
 
-        MinecraftServer server = context.getSource().getMinecraftServer();
+        MinecraftServer server = context.getSource().getServer();
         RegistryOps<NbtElement> ops = RegistryOps.of(
                 NbtOps.INSTANCE,
                 ((MinecraftServerAccessor) server).getServerResourceManager().getResourceManager(),
-                (DynamicRegistryManager.Impl) server.getRegistryManager()
+                server.getRegistryManager()
         );
 
         DataResult<? extends ChunkGenerator> result = generatorCodec.parse(ops, config);
@@ -262,8 +261,8 @@ public final class MapManageCommand {
             player.teleport(workspaceWorld, 0.0, 64.0, 0.0, 0.0F, 0.0F);
         }
 
-        if (player.abilities.allowFlying) {
-            player.abilities.flying = true;
+        if (player.getAbilities().allowFlying) {
+            player.getAbilities().flying = true;
             player.sendAbilitiesUpdate();
         }
 
@@ -281,7 +280,7 @@ public final class MapManageCommand {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
+        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
         MapWorkspace workspace = workspaceManager.byDimension(player.world.getRegistryKey());
 
         if (workspace == null) {
@@ -292,7 +291,7 @@ public final class MapManageCommand {
         if (returnPosition != null) {
             returnPosition.applyTo(player);
         } else {
-            ServerWorld overworld = source.getMinecraftServer().getOverworld();
+            ServerWorld overworld = source.getServer().getOverworld();
             BlockPos spawnPos = overworld.getSpawnPos();
             player.teleport(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0.0F, 0.0F);
         }
@@ -347,7 +346,7 @@ public final class MapManageCommand {
             throw MAP_MISMATCH.create();
         }
 
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
+        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
 
         MutableText message;
         if (workspaceManager.delete(workspace)) {
@@ -367,7 +366,7 @@ public final class MapManageCommand {
         Identifier location = IdentifierArgumentType.getIdentifier(context, "location");
         Identifier toWorkspaceId = IdentifierArgumentType.getIdentifier(context, "to_workspace");
 
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
+        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
         if (workspaceManager.byId(toWorkspaceId) != null) {
             throw MAP_ALREADY_EXISTS.create(toWorkspaceId);
         }
@@ -399,7 +398,7 @@ public final class MapManageCommand {
             } else {
                 source.sendError(new TranslatableText("text.plasmid.map.import.no_template_found", location));
             }
-        }, source.getMinecraftServer());
+        }, source.getServer());
 
         return Command.SINGLE_SUCCESS;
     }

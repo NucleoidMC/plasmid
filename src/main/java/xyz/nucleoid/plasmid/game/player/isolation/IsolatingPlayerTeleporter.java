@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.player.isolation;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.MinecraftServer;
@@ -85,8 +86,8 @@ public final class IsolatingPlayerTeleporter {
         player.getAdvancementTracker().clearCriteria();
         this.server.getBossBarManager().onPlayerDisconnect(player);
 
-        player.getServerWorld().removePlayer(player);
-        player.removed = false;
+        player.getServerWorld().removePlayer(player, Entity.RemovalReason.CHANGED_DIMENSION);
+        player.unsetRemoved();
 
         playerManagerAccess.plasmid$getPlayerResetter().apply(player);
 
@@ -109,8 +110,8 @@ public final class IsolatingPlayerTeleporter {
         ));
 
         networkHandler.sendPacket(new DifficultyS2CPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
-        networkHandler.sendPacket(new PlayerAbilitiesS2CPacket(player.abilities));
-        networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(player.inventory.selectedSlot));
+        networkHandler.sendPacket(new PlayerAbilitiesS2CPacket(player.getAbilities()));
+        networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(player.getInventory().selectedSlot));
 
         player.closeHandledScreen();
 
@@ -118,7 +119,7 @@ public final class IsolatingPlayerTeleporter {
         player.getRecipeBook().sendInitRecipesPacket(player);
 
         world.onPlayerTeleport(player);
-        networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.yaw, player.pitch);
+        networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
 
         this.server.getBossBarManager().onPlayerConnect(player);
 
@@ -129,7 +130,7 @@ public final class IsolatingPlayerTeleporter {
         ((ScreenHandlerAccess) player.playerScreenHandler).plasmid$resetTrackedState();
 
         for (StatusEffectInstance effect : player.getStatusEffects()) {
-            networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getEntityId(), effect));
+            networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getId(), effect));
         }
     }
 }

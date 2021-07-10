@@ -38,27 +38,15 @@ public final class ShopUi implements NamedScreenHandlerFactory {
         return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X5, syncId, playerInventory, inventory, 5) {
             @Override
             public ItemStack transferSlot(PlayerEntity player, int invSlot) {
-                this.resendInventory();
+                this.syncState();
                 return ItemStack.EMPTY;
             }
 
             @Override
-            public ItemStack onSlotClick(int slot, int data, SlotActionType action, PlayerEntity player) {
+            public void onSlotClick(int slot, int data, SlotActionType action, PlayerEntity player) {
                 if (action == SlotActionType.SWAP || action == SlotActionType.THROW || action == SlotActionType.CLONE) {
-                    this.resendInventory();
-                    return ItemStack.EMPTY;
+                    this.syncState();
                 }
-
-                return super.onSlotClick(slot, data, action, player);
-            }
-
-            private void resendInventory() {
-                serverPlayer.onHandlerRegistered(this, this.getStacks());
-            }
-
-            @Override
-            public boolean isNotRestricted(PlayerEntity player) {
-                return true;
             }
         };
     }

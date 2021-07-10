@@ -9,13 +9,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import xyz.nucleoid.plasmid.game.player.isolation.ScreenHandlerAccess;
 
-import java.util.List;
-
 @Mixin(ScreenHandler.class)
 public class ScreenHandlerMixin implements ScreenHandlerAccess {
     @Shadow
     @Final
-    public List<Slot> slots;
+    public DefaultedList<Slot> slots;
     @Shadow
     @Final
     private DefaultedList<ItemStack> trackedStacks;

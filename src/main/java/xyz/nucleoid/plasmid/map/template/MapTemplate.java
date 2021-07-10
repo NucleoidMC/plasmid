@@ -17,6 +17,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
@@ -100,7 +101,7 @@ public final class MapTemplate {
 
         this.generatedBounds = null;
 
-        if (state.getBlock().hasBlockEntity()) {
+        if (state.hasBlockEntity()) {
             NbtCompound tag = new NbtCompound();
             tag.putString("id", "DUMMY");
             tag.putInt("x", pos.getX());
@@ -186,11 +187,11 @@ public final class MapTemplate {
     }
 
     // TODO: store / lookup more efficiently?
-    public int getTopY(int x, int z, Heightmap.Type heightmap) {
+    public int getTopY(int x, int z, Heightmap.Type heightmap, HeightLimitView heightLimit) {
         Predicate<BlockState> predicate = heightmap.getBlockPredicate();
 
-        int maxY = 255;
-        int minY = 0;
+        int maxY = heightLimit.getTopY();
+        int minY = heightLimit.getBottomY();
 
         BlockBounds bounds = this.getBoundsOrNull();
         if (bounds != null) {
@@ -211,8 +212,8 @@ public final class MapTemplate {
         return 0;
     }
 
-    public BlockPos getTopPos(int x, int z, Heightmap.Type heightmap) {
-        int y = this.getTopY(x, z, heightmap);
+    public BlockPos getTopPos(int x, int z, Heightmap.Type heightmap, HeightLimitView heightLimit) {
+        int y = this.getTopY(x, z, heightmap, heightLimit);
         return new BlockPos(x, y, z);
     }
 

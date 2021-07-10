@@ -58,7 +58,7 @@ public abstract class EntityMixin implements GamePortalInterface {
         return this.portal;
     }
 
-    @Inject(method = "setPos", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/Entity;chunkPosUpdateRequested:Z"))
+    @Inject(method = "setPos", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/Entity;entityChangeListener:Lnet/minecraft/world/entity/EntityChangeListener;"))
     private void setPos(double x, double y, double z, CallbackInfo ci) {
         if (this.display != null) {
             this.display.setPos(this.getDisplayAnchor());

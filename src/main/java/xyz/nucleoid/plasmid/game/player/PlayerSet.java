@@ -2,6 +2,9 @@ package xyz.nucleoid.plasmid.game.player;
 
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.network.Packet;
+import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket;
+import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket;
+import net.minecraft.network.packet.s2c.play.TitleFadeS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -150,15 +153,15 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
 
     @Override
     default void showTitle(Text title, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-        this.sendPacket(new TitleS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
-        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, title));
+        this.sendPacket(new TitleFadeS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
+        this.sendPacket(new TitleS2CPacket(title));
     }
 
     @Override
     default void showTitle(Text title, Text subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-        this.sendPacket(new TitleS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
-        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.TITLE, title));
-        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.SUBTITLE, subtitle));
+        this.sendPacket(new TitleFadeS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
+        this.sendPacket(new TitleS2CPacket(title));
+        this.sendPacket(new SubtitleS2CPacket(subtitle));
     }
 
     @Override
@@ -170,8 +173,8 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
 
     @Override
     default void sendActionBar(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-        this.sendPacket(new TitleS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
-        this.sendPacket(new TitleS2CPacket(TitleS2CPacket.Action.ACTIONBAR, message));
+        this.sendPacket(new TitleFadeS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
+        this.sendPacket(new OverlayMessageS2CPacket(message));
     }
 
     @Override

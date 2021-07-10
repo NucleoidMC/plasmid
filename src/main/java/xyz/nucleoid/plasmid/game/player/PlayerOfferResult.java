@@ -52,7 +52,7 @@ public interface PlayerOfferResult {
         }
 
         public ServerWorld applyJoin(ServerPlayerEntity player) {
-            player.setGameMode(GameMode.SURVIVAL);
+            player.changeGameMode(GameMode.SURVIVAL);
             player.refreshPositionAndAngles(this.position.x, this.position.y, this.position.z, 0.0F, 0.0F);
 
             this.and.forEach(Runnable::run);

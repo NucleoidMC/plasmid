@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerLightingProvider;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -96,9 +96,9 @@ public final class MapTemplatePlacer {
             long chunkPos = ChunkPos.toLong(chunkX, chunkZ);
             WorldChunk chunk = chunkCache.get(chunkPos);
 
-            CompoundTag blockEntity = template.getBlockEntityTag(templatePos, worldPos);
+            NbtCompound blockEntity = template.getBlockEntityTag(templatePos, worldPos);
             if (blockEntity != null) {
-                chunk.addPendingBlockEntityTag(blockEntity);
+                chunk.addPendingBlockEntityNbt(blockEntity);
             }
 
             chunk.setBlockState(worldPos, state, false);

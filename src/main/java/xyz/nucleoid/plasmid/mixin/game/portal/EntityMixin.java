@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.mixin.game.portal;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
@@ -104,13 +104,13 @@ public abstract class EntityMixin implements GamePortalInterface {
         }
     }
 
-    @Inject(method = "toTag", at = @At("RETURN"))
-    private void toTag(CompoundTag root, CallbackInfoReturnable<CompoundTag> ci) {
+    @Inject(method = "writeNbt", at = @At("RETURN"))
+    private void writeNbt(NbtCompound root, CallbackInfoReturnable<NbtCompound> ci) {
         this.serializePortal(root);
     }
 
-    @Inject(method = "fromTag", at = @At("RETURN"))
-    private void fromTag(CompoundTag root, CallbackInfo ci) {
+    @Inject(method = "readNbt", at = @At("RETURN"))
+    private void readNbt(NbtCompound root, CallbackInfo ci) {
         this.loadedPortalId = this.deserializePortalId(root);
     }
 

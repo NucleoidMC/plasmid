@@ -12,8 +12,8 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.*;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -75,8 +75,8 @@ public final class MapMetadataCommand {
                         .then(argument("min", BlockPosArgumentType.blockPos())
                         .then(argument("max", BlockPosArgumentType.blockPos())
                         .executes(MapMetadataCommand::addRegion)
-                        .then(argument("data", NbtCompoundTagArgumentType.nbtCompound())
-                        .executes(context -> addRegion(context, NbtCompoundTagArgumentType.getCompoundTag(context, "data")))
+                        .then(argument("data", NbtCompoundArgumentType.nbtCompound())
+                        .executes(context -> addRegion(context, NbtCompoundArgumentType.getNbtCompound(context, "data")))
                     )))))
                     .then(literal("rename")
                         .then(literal("all")
@@ -101,11 +101,11 @@ public final class MapMetadataCommand {
                         .then(argument("marker", StringArgumentType.word()).suggests(localRegionSuggestions())
                             .then(literal("get").executes(executeInRegions("", MapMetadataCommand::executeRegionDataGet)))
                             .then(literal("merge")
-                                .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
+                                .then(argument("nbt", NbtCompoundArgumentType.nbtCompound())
                                     .executes(executeInRegions("Merged data in %d regions.", MapMetadataCommand::executeRegionDataMerge))
                             ))
                             .then(literal("set")
-                                .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
+                                .then(argument("nbt", NbtCompoundArgumentType.nbtCompound())
                                     .executes(executeInRegions("Set data in %d regions.", MapMetadataCommand::executeRegionDataSet))
                             ))
                             .then(literal("remove")
@@ -125,8 +125,8 @@ public final class MapMetadataCommand {
                     .then(literal("commit")
                         .then(argument("marker", StringArgumentType.word())
                         .executes(MapMetadataCommand::commitRegion)
-                        .then(argument("data", NbtCompoundTagArgumentType.nbtCompound())
-                        .executes(context -> commitRegion(context, NbtCompoundTagArgumentType.getCompoundTag(context, "data")))
+                        .then(argument("data", NbtCompoundArgumentType.nbtCompound())
+                        .executes(context -> commitRegion(context, NbtCompoundArgumentType.getNbtCompound(context, "data")))
                     )))
                 )
                 .then(literal("entity")
@@ -159,10 +159,10 @@ public final class MapMetadataCommand {
                                 .executes(MapMetadataCommand::executeDataGetAt)
                         )))
                         .then(literal("merge")
-                            .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
+                            .then(argument("nbt", NbtCompoundArgumentType.nbtCompound())
                                 .executes(MapMetadataCommand::executeDataMerge)
                             )
-                            .then(argument("nbt", NbtTagArgumentType.nbtTag())
+                            .then(argument("nbt", NbtElementArgumentType.nbtElement())
                                 .then(literal("at")
                                 .then(argument("path", NbtPathArgumentType.nbtPath())
                                 .executes(MapMetadataCommand::executeDataMergeAt)
@@ -175,12 +175,12 @@ public final class MapMetadataCommand {
                                 .executes(context -> executeDataRemove(context, NbtPathArgumentType.getNbtPath(context, "path")))
                         )))
                         .then(literal("set")
-                            .then(argument("nbt", NbtCompoundTagArgumentType.nbtCompound())
+                            .then(argument("nbt", NbtCompoundArgumentType.nbtCompound())
                                 .executes(MapMetadataCommand::executeDataSet)
                             )
                             .then(literal("at")
                                 .then(argument("path", NbtPathArgumentType.nbtPath())
-                                    .then(argument("nbt", NbtTagArgumentType.nbtTag())
+                                    .then(argument("nbt", NbtElementArgumentType.nbtElement())
                                     .executes(MapMetadataCommand::executeDataSetAt)
                             )))
                         )
@@ -190,10 +190,10 @@ public final class MapMetadataCommand {
     // @formatter:on
 
     private static int addRegion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        return addRegion(context, new CompoundTag());
+        return addRegion(context, new NbtCompound());
     }
 
-    private static int addRegion(CommandContext<ServerCommandSource> context, CompoundTag data) throws CommandSyntaxException {
+    private static int addRegion(CommandContext<ServerCommandSource> context, NbtCompound data) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
 
         String marker = StringArgumentType.getString(context, "marker");
@@ -260,13 +260,13 @@ public final class MapMetadataCommand {
     }
 
     private static boolean executeRegionDataMerge(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region) {
-        CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
+        NbtCompound data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
         map.replaceRegion(region, region.withData(region.data.copy().copyFrom(data)));
         return true;
     }
 
     private static boolean executeRegionDataSet(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region) {
-        CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
+        NbtCompound data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
         map.replaceRegion(region, region.withData(data));
         return true;
     }
@@ -302,10 +302,10 @@ public final class MapMetadataCommand {
     }
 
     private static int commitRegion(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        return commitRegion(context, new CompoundTag());
+        return commitRegion(context, new NbtCompound());
     }
 
-    private static int commitRegion(CommandContext<ServerCommandSource> context, CompoundTag data) throws CommandSyntaxException {
+    private static int commitRegion(CommandContext<ServerCommandSource> context, NbtCompound data) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
@@ -404,8 +404,8 @@ public final class MapMetadataCommand {
     private static int executeDataMerge(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         MapWorkspace map = getWorkspaceForSource(context.getSource());
-        CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
-        CompoundTag originalData = map.getData();
+        NbtCompound data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
+        NbtCompound originalData = map.getData();
         map.setData(originalData.copy().copyFrom(data));
         source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.data.merge.success")), false);
         return Command.SINGLE_SUCCESS;
@@ -415,28 +415,28 @@ public final class MapMetadataCommand {
         ServerCommandSource source = context.getSource();
         MapWorkspace map = getWorkspaceForSource(context.getSource());
 
-        CompoundTag sourceData = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
+        NbtCompound sourceData = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
         NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
 
-        List<Tag> sourceTags = path.getOrInit(sourceData, CompoundTag::new);
-        List<Tag> mergeIntoTags = path.get(map.getData());
+        List<NbtElement> sourceTags = path.getOrInit(sourceData, NbtCompound::new);
+        List<NbtElement> mergeIntoTags = path.get(map.getData());
 
         int mergeCount = 0;
 
-        for (Tag mergeIntoTag : mergeIntoTags) {
-            if (!(mergeIntoTag instanceof CompoundTag)) {
+        for (NbtElement mergeIntoTag : mergeIntoTags) {
+            if (!(mergeIntoTag instanceof NbtCompound)) {
                 throw MODIFY_EXPECTED_OBJECT_EXCEPTION.create(mergeIntoTag);
             }
 
-            CompoundTag mergedCompound = (CompoundTag) mergeIntoTag;
-            CompoundTag previousCompound = mergedCompound.copy();
+            NbtCompound mergedCompound = (NbtCompound) mergeIntoTag;
+            NbtCompound previousCompound = mergedCompound.copy();
 
-            for (Tag sourceTag : sourceTags) {
-                if (!(sourceTag instanceof CompoundTag)) {
+            for (NbtElement sourceTag : sourceTags) {
+                if (!(sourceTag instanceof NbtCompound)) {
                     throw MODIFY_EXPECTED_OBJECT_EXCEPTION.create(sourceTag);
                 }
 
-                mergedCompound.copyFrom((CompoundTag) sourceTag);
+                mergedCompound.copyFrom((NbtCompound) sourceTag);
             }
 
             if (!previousCompound.equals(mergedCompound)) {
@@ -478,7 +478,7 @@ public final class MapMetadataCommand {
         ServerCommandSource source = context.getSource();
         MapWorkspace map = getWorkspaceForSource(context.getSource());
         if (path == null) {
-            map.setData(new CompoundTag());
+            map.setData(new NbtCompound());
             source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.data.remove.success")),
                     false);
         } else {
@@ -497,7 +497,7 @@ public final class MapMetadataCommand {
     private static int executeDataSet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         MapWorkspace map = getWorkspaceForSource(context.getSource());
-        CompoundTag data = NbtCompoundTagArgumentType.getCompoundTag(context, "nbt");
+        NbtCompound data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
         map.setData(data);
         source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.data.set.success")), false);
         return Command.SINGLE_SUCCESS;
@@ -507,8 +507,8 @@ public final class MapMetadataCommand {
         ServerCommandSource source = context.getSource();
         MapWorkspace map = getWorkspaceForSource(context.getSource());
         NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
-        Tag tag = NbtTagArgumentType.getTag(context, "nbt");
-        CompoundTag data = map.getData().copy();
+        NbtElement tag = NbtElementArgumentType.getNbtElement(context, "nbt");
+        NbtCompound data = map.getData().copy();
         if (path.put(data, tag::copy) == 0) {
             throw MERGE_FAILED_EXCEPTION.create();
         } else {
@@ -520,10 +520,10 @@ public final class MapMetadataCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static Tag getTagAt(CompoundTag data, NbtPathArgumentType.NbtPath path) throws CommandSyntaxException {
-        Collection<Tag> collection = path.get(data);
-        Iterator<Tag> iterator = collection.iterator();
-        Tag tag = iterator.next();
+    private static NbtElement getTagAt(NbtCompound data, NbtPathArgumentType.NbtPath path) throws CommandSyntaxException {
+        Collection<NbtElement> collection = path.get(data);
+        Iterator<NbtElement> iterator = collection.iterator();
+        NbtElement tag = iterator.next();
         if (iterator.hasNext()) {
             throw GET_MULTIPLE_EXCEPTION.create();
         } else {

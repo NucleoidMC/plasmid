@@ -7,9 +7,9 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.*;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.Tag;
 import net.minecraft.text.Text;
@@ -35,14 +35,14 @@ public final class ItemStackBuilder {
         ItemStack rocket = new ItemStack(Items.FIREWORK_ROCKET, 1);
 
         ItemStack star = new ItemStack(Items.FIREWORK_STAR);
-        CompoundTag explosion = star.getOrCreateSubTag("Explosion");
+        NbtCompound explosion = star.getOrCreateSubTag("Explosion");
 
         explosion.putIntArray("Colors", new int[] { color });
         explosion.putByte("Type", (byte) type.getId());
 
-        CompoundTag fireworks = rocket.getOrCreateSubTag("Fireworks");
+        NbtCompound fireworks = rocket.getOrCreateSubTag("Fireworks");
 
-        ListTag explosions = new ListTag();
+        NbtList explosions = new NbtList();
         explosions.add(explosion);
         fireworks.put("Explosions", explosions);
 
@@ -98,24 +98,24 @@ public final class ItemStackBuilder {
     }
 
     private ItemStackBuilder addPredicate(String key, String predicate) {
-        CompoundTag tag = this.stack.getOrCreateTag();
+        NbtCompound tag = this.stack.getOrCreateTag();
 
-        ListTag predicateList;
+        NbtList predicateList;
 
         if (tag.contains(key, NbtType.LIST)) {
             predicateList = tag.getList(key, NbtType.STRING);
         } else {
-            predicateList = new ListTag();
+            predicateList = new NbtList();
             tag.put(key, predicateList);
         }
 
-        predicateList.add(StringTag.of(predicate));
+        predicateList.add(NbtString.of(predicate));
 
         return this;
     }
 
     public ItemStackBuilder setUnbreakable() {
-        CompoundTag tag = this.stack.getOrCreateTag();
+        NbtCompound tag = this.stack.getOrCreateTag();
         tag.putBoolean("Unbreakable", true);
         return this;
     }
@@ -134,17 +134,17 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder addLore(Text text) {
-        CompoundTag display = this.stack.getOrCreateSubTag("display");
+        NbtCompound display = this.stack.getOrCreateSubTag("display");
 
-        ListTag loreList;
+        NbtList loreList;
         if (display.contains("Lore", 9)) {
             loreList = display.getList("Lore", 8);
         } else {
-            loreList = new ListTag();
+            loreList = new NbtList();
             display.put("Lore", loreList);
         }
 
-        loreList.add(StringTag.of(Text.Serializer.toJson(text)));
+        loreList.add(NbtString.of(Text.Serializer.toJson(text)));
 
         return this;
     }

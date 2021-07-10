@@ -5,10 +5,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.Tag;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.IdListPalette;
@@ -74,11 +74,11 @@ final class MapChunk {
         return this.entities;
     }
 
-    public void serialize(CompoundTag tag) {
+    public void serialize(NbtCompound tag) {
         this.container.write(tag, "palette", "block_states");
 
         if (!this.entities.isEmpty()) {
-            ListTag entitiesTag = new ListTag();
+            NbtList entitiesTag = new NbtList();
             for (MapEntity entity : this.entities) {
                 entitiesTag.add(entity.tag);
             }
@@ -86,14 +86,14 @@ final class MapChunk {
         }
     }
 
-    public static MapChunk deserialize(ChunkSectionPos pos, CompoundTag tag) {
+    public static MapChunk deserialize(ChunkSectionPos pos, NbtCompound tag) {
         MapChunk chunk = new MapChunk(pos);
         chunk.container.read(tag.getList("palette", NbtType.COMPOUND), tag.getLongArray("block_states"));
 
         if (tag.contains("entities", NbtType.LIST)) {
-            ListTag entitiesTag = tag.getList("entities", NbtType.COMPOUND);
-            for (Tag entityTag : entitiesTag) {
-                chunk.entities.add(MapEntity.fromTag(pos, (CompoundTag) entityTag));
+            NbtList entitiesTag = tag.getList("entities", NbtType.COMPOUND);
+            for (NbtElement entityTag : entitiesTag) {
+                chunk.entities.add(MapEntity.fromTag(pos, (NbtCompound) entityTag));
             }
         }
 

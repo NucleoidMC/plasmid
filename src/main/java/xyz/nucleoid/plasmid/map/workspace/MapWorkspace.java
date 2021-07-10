@@ -8,10 +8,10 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -45,7 +45,7 @@ public final class MapWorkspace {
     private final Set<EntityType<?>> entityTypesToInclude = new ObjectOpenHashSet<>();
 
     /* Data */
-    private CompoundTag data = new CompoundTag();
+    private NbtCompound data = new NbtCompound();
 
     private int nextRegionId;
 
@@ -69,7 +69,7 @@ public final class MapWorkspace {
         return this.nextRegionId++;
     }
 
-    public void addRegion(String marker, BlockBounds bounds, CompoundTag tag) {
+    public void addRegion(String marker, BlockBounds bounds, NbtCompound tag) {
         int runtimeId = this.nextRegionId();
         WorkspaceRegion region = new WorkspaceRegion(runtimeId, marker, bounds, tag);
         this.regions.put(runtimeId, region);
@@ -166,7 +166,7 @@ public final class MapWorkspace {
      *
      * @return the data as a compound tag
      */
-    public CompoundTag getData() {
+    public NbtCompound getData() {
         return this.data;
     }
 
@@ -175,34 +175,34 @@ public final class MapWorkspace {
      *
      * @param data the data as a compound tag
      */
-    public void setData(CompoundTag data) {
+    public void setData(NbtCompound data) {
         this.data = data;
     }
 
-    public CompoundTag serialize(CompoundTag root) {
+    public NbtCompound serialize(NbtCompound root) {
         root.putString("identifier", this.identifier.toString());
         this.bounds.serialize(root);
 
         root.putIntArray("origin", new int[] { this.origin.getX(), this.origin.getY(), this.origin.getZ() });
 
         // Regions
-        ListTag regionList = new ListTag();
+        NbtList regionList = new NbtList();
         for (WorkspaceRegion region : this.regions.values()) {
-            regionList.add(region.serialize(new CompoundTag()));
+            regionList.add(region.serialize(new NbtCompound()));
         }
         root.put("regions", regionList);
 
         // Entities
-        CompoundTag entitiesTag = new CompoundTag();
-        ListTag entityList = new ListTag();
+        NbtCompound entitiesTag = new NbtCompound();
+        NbtList entityList = new NbtList();
         for (UUID uuid : this.entitiesToInclude) {
             entityList.add(NbtHelper.fromUuid(uuid));
         }
         entitiesTag.put("uuids", entityList);
 
-        ListTag entityTypeList = new ListTag();
+        NbtList entityTypeList = new NbtList();
         for (EntityType<?> type : this.entityTypesToInclude) {
-            entityTypeList.add(StringTag.of(Registry.ENTITY_TYPE.getId(type).toString()));
+            entityTypeList.add(NbtString.of(Registry.ENTITY_TYPE.getId(type).toString()));
         }
         entitiesTag.put("types", entityTypeList);
         root.put("entities", entitiesTag);
@@ -213,7 +213,7 @@ public final class MapWorkspace {
         return root;
     }
 
-    public static MapWorkspace deserialize(RuntimeWorldHandle worldHandle, CompoundTag root) {
+    public static MapWorkspace deserialize(RuntimeWorldHandle worldHandle, NbtCompound root) {
         Identifier identifier = new Identifier(root.getString("identifier"));
         BlockBounds bounds = BlockBounds.deserialize(root);
 
@@ -227,15 +227,15 @@ public final class MapWorkspace {
         }
 
         // Regions
-        ListTag regionList = root.getList("regions", NbtType.COMPOUND);
+        NbtList regionList = root.getList("regions", NbtType.COMPOUND);
         for (int i = 0; i < regionList.size(); i++) {
-            CompoundTag regionRoot = regionList.getCompound(i);
+            NbtCompound regionRoot = regionList.getCompound(i);
             int runtimeId = map.nextRegionId();
             map.regions.put(runtimeId, WorkspaceRegion.deserialize(runtimeId, regionRoot));
         }
 
         // Entities
-        CompoundTag entitiesTag = root.getCompound("entities");
+        NbtCompound entitiesTag = root.getCompound("entities");
         entitiesTag.getList("uuids", NbtType.INT_ARRAY).stream()
                 .map(NbtHelper::toUuid)
                 .forEach(map.entitiesToInclude::add);

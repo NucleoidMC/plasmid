@@ -3,7 +3,7 @@ package xyz.nucleoid.plasmid.mixin.game.space;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.advancement.PlayerAdvancementTracker;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
@@ -63,7 +63,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     protected abstract void setGameMode(ServerPlayerEntity player, @Nullable ServerPlayerEntity oldPlayer, ServerWorld world);
 
     @Shadow
-    public abstract CompoundTag getUserData();
+    public abstract NbtCompound getUserData();
 
     @Unique
     private PlayerResetter playerResetter;
@@ -111,15 +111,15 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
 
     @Override
     public void plasmid$loadIntoPlayer(ServerPlayerEntity player) {
-        CompoundTag userData = this.getUserData();
+        NbtCompound userData = this.getUserData();
         if (userData == null) {
             userData = this.server.getSaveProperties().getPlayerData();
         }
 
-        CompoundTag playerData;
+        NbtCompound playerData;
         if (player.getName().getString().equals(this.server.getUserName()) && userData != null) {
             playerData = userData;
-            player.fromTag(userData);
+            player.readNbt(userData);
         } else {
             playerData = this.saveHandler.loadPlayerData(player);
         }
@@ -138,7 +138,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     }
 
     @Unique
-    private RegistryKey<World> getDimensionFromData(CompoundTag playerData) {
+    private RegistryKey<World> getDimensionFromData(NbtCompound playerData) {
         return DimensionType.method_28521(new Dynamic<>(NbtOps.INSTANCE, playerData.get("Dimension")))
                 .resultOrPartial(LOGGER::error)
                 .orElse(World.OVERWORLD);
@@ -162,8 +162,8 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             this.statisticsMap.remove(Util.NIL_UUID);
             this.advancementTrackers.remove(Util.NIL_UUID);
 
-            CompoundTag tag = new CompoundTag();
-            player.toTag(tag);
+            NbtCompound tag = new NbtCompound();
+            player.writeNbt(tag);
             tag.remove("UUID");
             tag.remove("Pos");
 

@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -42,37 +42,37 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Wo
         super(world, blockPos, yaw, gameProfile);
     }
 
-    @Inject(method = "writeCustomDataToTag", at = @At("RETURN"))
-    private void writeData(CompoundTag root, CallbackInfo ci) {
-        CompoundTag plasmid = new CompoundTag();
+    @Inject(method = "writeCustomDataToNbt", at = @At("RETURN"))
+    private void writeData(NbtCompound root, CallbackInfo ci) {
+        NbtCompound plasmid = new NbtCompound();
 
-        CompoundTag workspaceReturns = new CompoundTag();
+        NbtCompound workspaceReturns = new NbtCompound();
 
         for (Map.Entry<RegistryKey<World>, ReturnPosition> entry : this.workspaceReturns.entrySet()) {
             Identifier key = entry.getKey().getValue();
             ReturnPosition position = entry.getValue();
-            workspaceReturns.put(key.toString(), position.write(new CompoundTag()));
+            workspaceReturns.put(key.toString(), position.write(new NbtCompound()));
         }
 
         plasmid.put("workspace_return", workspaceReturns);
 
         if (this.leaveReturn != null) {
-            plasmid.put("leave_return", this.leaveReturn.write(new CompoundTag()));
+            plasmid.put("leave_return", this.leaveReturn.write(new NbtCompound()));
         }
 
         root.put(Plasmid.ID, plasmid);
     }
 
-    @Inject(method = "readCustomDataFromTag", at = @At("RETURN"))
-    private void readData(CompoundTag root, CallbackInfo ci) {
-        CompoundTag plasmid = root.getCompound(Plasmid.ID);
+    @Inject(method = "readCustomDataFromNbt", at = @At("RETURN"))
+    private void readData(NbtCompound root, CallbackInfo ci) {
+        NbtCompound plasmid = root.getCompound(Plasmid.ID);
 
         this.workspaceReturns.clear();
         this.leaveReturn = null;
 
-        CompoundTag workspaceReturnPositions = plasmid.getCompound("workspace_return");
+        NbtCompound workspaceReturnPositions = plasmid.getCompound("workspace_return");
         for (String key : workspaceReturnPositions.getKeys()) {
-            RegistryKey<World> dimensionKey = RegistryKey.of(Registry.DIMENSION, new Identifier(key));
+            RegistryKey<World> dimensionKey = RegistryKey.of(Registry.WORLD_KEY, new Identifier(key));
             ReturnPosition position = ReturnPosition.read(workspaceReturnPositions.getCompound(key));
             this.workspaceReturns.put(dimensionKey, position);
         }

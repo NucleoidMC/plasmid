@@ -1,14 +1,14 @@
 package xyz.nucleoid.plasmid.map.template;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 public final class TemplateRegion {
     private final String marker;
     private final BlockBounds bounds;
-    private CompoundTag data;
+    private NbtCompound data;
 
-    public TemplateRegion(String marker, BlockBounds bounds, CompoundTag data) {
+    public TemplateRegion(String marker, BlockBounds bounds, NbtCompound data) {
         this.marker = marker;
         this.bounds = bounds;
         this.data = data;
@@ -27,7 +27,7 @@ public final class TemplateRegion {
      *
      * @return the extra data
      */
-    public CompoundTag getData() {
+    public NbtCompound getData() {
         return this.data;
     }
 
@@ -36,20 +36,20 @@ public final class TemplateRegion {
      *
      * @param data the extra data
      */
-    public void setData(CompoundTag data) {
+    public void setData(NbtCompound data) {
         this.data = data;
     }
 
-    public CompoundTag serialize(CompoundTag tag) {
+    public NbtCompound serialize(NbtCompound tag) {
         tag.putString("marker", this.marker);
         this.bounds.serialize(tag);
         tag.put("data", this.data);
         return tag;
     }
 
-    public static TemplateRegion deserialize(CompoundTag tag) {
+    public static TemplateRegion deserialize(NbtCompound tag) {
         String marker = tag.getString("marker");
-        CompoundTag data = tag.getCompound("data");
+        NbtCompound data = tag.getCompound("data");
         return new TemplateRegion(marker, BlockBounds.deserialize(tag), data);
     }
 

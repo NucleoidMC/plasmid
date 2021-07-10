@@ -3,9 +3,9 @@ package xyz.nucleoid.plasmid.map.template;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.DoubleTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtDouble;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.MathHelper;
@@ -17,9 +17,9 @@ import java.util.function.Consumer;
 
 public final class MapEntity {
     private final Vec3d position;
-    final CompoundTag tag;
+    final NbtCompound tag;
 
-    MapEntity(Vec3d position, CompoundTag tag) {
+    MapEntity(Vec3d position, NbtCompound tag) {
         this.position = position;
         this.tag = tag;
     }
@@ -28,8 +28,8 @@ public final class MapEntity {
         return this.position;
     }
 
-    public CompoundTag createEntityTag(BlockPos origin) {
-        CompoundTag tag = this.tag.copy();
+    public NbtCompound createEntityTag(BlockPos origin) {
+        NbtCompound tag = this.tag.copy();
 
         Vec3d chunkLocalPos = listToPos(this.tag.getList("Pos", NbtType.DOUBLE));
 
@@ -46,7 +46,7 @@ public final class MapEntity {
     }
 
     public void createEntities(World world, BlockPos origin, Consumer<Entity> consumer) {
-        CompoundTag tag = this.createEntityTag(origin);
+        NbtCompound tag = this.createEntityTag(origin);
         EntityType.loadEntityWithPassengers(tag, world, entity -> {
             consumer.accept(entity);
             return entity;
@@ -55,8 +55,8 @@ public final class MapEntity {
 
     @Nullable
     public static MapEntity fromEntity(Entity entity, Vec3d position) {
-        CompoundTag tag = new CompoundTag();
-        if (!entity.saveToTag(tag)) {
+        NbtCompound tag = new NbtCompound();
+        if (!entity.saveNbt(tag)) {
             return null;
         }
 
@@ -80,7 +80,7 @@ public final class MapEntity {
         return new MapEntity(position, tag);
     }
 
-    public static MapEntity fromTag(ChunkSectionPos sectionPos, CompoundTag tag) {
+    public static MapEntity fromTag(ChunkSectionPos sectionPos, NbtCompound tag) {
         Vec3d localPos = listToPos(tag.getList("Pos", NbtType.DOUBLE));
         Vec3d globalPos = localPos.add(sectionPos.getMinX(), sectionPos.getMinY(), sectionPos.getMinZ());
 
@@ -89,7 +89,7 @@ public final class MapEntity {
 
     MapEntity transformed(MapTransform transform) {
         Vec3d resultPosition = transform.transformedPoint(this.position);
-        CompoundTag resultTag = this.tag.copy();
+        NbtCompound resultTag = this.tag.copy();
 
         BlockPos minChunkPos = getMinChunkPosFor(this.position);
         BlockPos minResultChunkPos = getMinChunkPosFor(resultPosition);
@@ -122,15 +122,15 @@ public final class MapEntity {
         );
     }
 
-    private static ListTag posToList(Vec3d pos) {
-        ListTag list = new ListTag();
-        list.add(DoubleTag.of(pos.x));
-        list.add(DoubleTag.of(pos.y));
-        list.add(DoubleTag.of(pos.z));
+    private static NbtList posToList(Vec3d pos) {
+        NbtList list = new NbtList();
+        list.add(NbtDouble.of(pos.x));
+        list.add(NbtDouble.of(pos.y));
+        list.add(NbtDouble.of(pos.z));
         return list;
     }
 
-    private static Vec3d listToPos(ListTag list) {
+    private static Vec3d listToPos(NbtList list) {
         return new Vec3d(list.getDouble(0), list.getDouble(1), list.getDouble(2));
     }
 }

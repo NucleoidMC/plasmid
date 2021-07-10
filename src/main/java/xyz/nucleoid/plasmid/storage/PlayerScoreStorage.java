@@ -3,9 +3,9 @@ package xyz.nucleoid.plasmid.storage;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.UUID;
@@ -35,25 +35,25 @@ public class PlayerScoreStorage implements ServerStorage {
     }
 
     @Override
-    public CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-        ListTag listTag = new ListTag();
-        this.scoreMap.forEach((uuid, score) -> listTag.add(this.createPlayerScoreTag(uuid, score)));
-        tag.put("Players", listTag);
+    public NbtCompound toTag() {
+        NbtCompound tag = new NbtCompound();
+        NbtList list = new NbtList();
+        this.scoreMap.forEach((uuid, score) -> list.add(this.createPlayerScoreTag(uuid, score)));
+        tag.put("Players", list);
         return tag;
     }
 
     @Override
-    public void fromTag(CompoundTag tag) {
-        ListTag listTag = tag.getList("Players", NbtType.COMPOUND);
-        for (Tag compound : listTag) {
-            CompoundTag playerTag = (CompoundTag) compound;
-            this.scoreMap.put(playerTag.getUuid("UUID"), playerTag.getInt("Score"));
+    public void fromTag(NbtCompound tag) {
+        NbtList list = tag.getList("Players", NbtType.COMPOUND);
+        for (NbtElement element : list) {
+            NbtCompound compound = (NbtCompound) element;
+            this.scoreMap.put(compound.getUuid("UUID"), compound.getInt("Score"));
         }
     }
 
-    private CompoundTag createPlayerScoreTag(UUID uuid, int score) {
-        CompoundTag tag = new CompoundTag();
+    private NbtCompound createPlayerScoreTag(UUID uuid, int score) {
+        NbtCompound tag = new NbtCompound();
         tag.putUuid("UUID", uuid);
         tag.putInt("Score", score);
         return tag;

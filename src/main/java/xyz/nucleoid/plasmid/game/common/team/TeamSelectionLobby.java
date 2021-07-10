@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMaps;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.ItemTags;
 import net.minecraft.text.Text;
@@ -101,7 +101,7 @@ public final class TeamSelectionLobby {
         ItemStack stack = player.getStackInHand(hand);
 
         if (stack.getItem().isIn(ItemTags.WOOL)) {
-            CompoundTag tag = stack.getOrCreateTag();
+            NbtCompound tag = stack.getOrCreateTag();
             String teamKey = tag.getString(TEAM_KEY);
 
             GameTeam team = this.teams.get(teamKey);

@@ -15,7 +15,7 @@ public final class ShopBuilder {
 
     public ShopBuilder add(ShopEntry entry) {
         var row = this.getOrCreateRow(this.currentRow);
-        if (row.size() >= ShopInventory.WIDTH) {
+        if (row.size() >= ShopUi.WIDTH) {
             row = this.getOrCreateRow(++this.currentRow);
         }
 

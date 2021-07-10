@@ -1,9 +1,12 @@
 package xyz.nucleoid.plasmid.mixin.game.portal;
 
+import eu.pb4.holograms.api.Holograms;
+import eu.pb4.holograms.api.elements.text.StaticTextHologramElement;
+import eu.pb4.holograms.api.holograms.AbstractHologram;
+import eu.pb4.holograms.api.holograms.EntityHologram;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -16,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.plasmid.entity.FloatingText;
 import xyz.nucleoid.plasmid.game.portal.GamePortal;
 import xyz.nucleoid.plasmid.game.portal.GamePortalDisplay;
 import xyz.nucleoid.plasmid.game.portal.GamePortalInterface;
@@ -30,7 +32,7 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Shadow
     public abstract Vec3d getPos();
 
-    private FloatingText display;
+    private EntityHologram hologram;
     private GamePortal portal;
     private Identifier loadedPortalId;
 
@@ -46,9 +48,8 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Override
     public void setPortal(GamePortal portal) {
         this.portal = portal;
-        if (portal == null && this.display != null) {
-            this.display.remove();
-            this.display = null;
+        if (portal == null) {
+            this.removeHologram();
         }
     }
 
@@ -58,41 +59,43 @@ public abstract class EntityMixin implements GamePortalInterface {
         return this.portal;
     }
 
-    @Inject(method = "setPos", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/Entity;entityChangeListener:Lnet/minecraft/world/entity/EntityChangeListener;"))
-    private void setPos(double x, double y, double z, CallbackInfo ci) {
-        if (this.display != null) {
-            this.display.setPos(this.getDisplayAnchor());
-        }
-    }
-
     @Override
     public void setDisplay(GamePortalDisplay display) {
-        this.removeDisplay();
+        var hologram = this.getOrCreateHologram();
+
+        hologram.clearElements();
 
         var name = display.get(GamePortalDisplay.NAME);
         var playerCount = display.get(GamePortalDisplay.PLAYER_COUNT);
         if (name != null && playerCount != null) {
-            FloatingText floatingText = this.createDisplay();
-            floatingText.setText(new Text[] { name, new LiteralText(playerCount + " players") });
+            hologram.addElement(new StaticTextHologramElement(name));
+            hologram.addElement(new StaticTextHologramElement(new LiteralText(playerCount + " players")));
         }
     }
 
-    private FloatingText createDisplay() {
-        if (this.display == null) {
-            var anchor = this.getDisplayAnchor();
-            this.display = FloatingText.create((ServerWorld) this.world, anchor, FloatingText.VerticalAlign.BOTTOM);
+    private EntityHologram getOrCreateHologram() {
+        var hologram = this.hologram;
+        if (hologram != null) {
+            return hologram;
         }
-        return this.display;
+
+        var entity = (Entity) (Object) this;
+        var offset = new Vec3d(0.0, DisguiseLibCompatibility.getEntityHeight(entity), 0.0);
+
+        this.hologram = hologram = Holograms.create(entity, offset, new Text[0]);
+        hologram.setAlignment(AbstractHologram.VerticalAlign.BOTTOM);
+
+        hologram.show();
+
+        return hologram;
     }
 
-    private Vec3d getDisplayAnchor() {
-        return this.getPos().add(0.0, DisguiseLibCompatibility.getEntityHeight((Entity) (Object) this), 0.0);
-    }
+    private void removeHologram() {
+        var hologram = this.hologram;
+        this.hologram = null;
 
-    private void removeDisplay() {
-        if (this.display != null) {
-            this.display.remove();
-            this.display = null;
+        if (hologram != null) {
+            hologram.hide();
         }
     }
 
@@ -117,6 +120,6 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Inject(method = "remove", at = @At("HEAD"))
     private void remove(CallbackInfo ci) {
         this.invalidatePortal();
-        this.removeDisplay();
+        this.removeHologram();
     }
 }

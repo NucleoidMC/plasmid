@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.shop;
 
+import eu.pb4.sgui.api.elements.GuiElement;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -98,5 +99,12 @@ public final class ShopEntry {
         }
 
         player.playSound(sound, SoundCategory.MASTER, 1.0F, 1.0F);
+    }
+
+    public GuiElement createGuiElement(ServerPlayerEntity player) {
+        var icon = this.createIcon(player);
+        return new GuiElement(icon, (index, type, action) -> {
+            this.onClick(player);
+        });
     }
 }

@@ -1,8 +1,8 @@
 package xyz.nucleoid.plasmid.storage;
 
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.PersistentState;
@@ -17,7 +17,7 @@ public final class ServerStorageManager extends PersistentState {
     }
 
     public static ServerStorageManager get(ServerWorld world) {
-        return world.getPersistentStateManager().getOrCreate(() -> new ServerStorageManager(), KEY);
+        return world.getPersistentStateManager().getOrCreate(ServerStorageManager::new, KEY);
     }
 
     public static boolean isLoaded() {
@@ -25,10 +25,10 @@ public final class ServerStorageManager extends PersistentState {
     }
 
     @Override
-    public CompoundTag toTag(CompoundTag tag) {
-        ListTag storageList = new ListTag();
+    public NbtCompound writeNbt(NbtCompound tag) {
+        NbtList storageList = new NbtList();
         ServerStorage.STORAGES.entrySet().forEach((entry) -> {
-            CompoundTag storageTag = entry.getValue().toTag();
+            NbtCompound storageTag = entry.getValue().toTag();
             storageTag.putString("id", entry.getKey().toString());
             storageList.add(storageTag);
         });
@@ -37,12 +37,12 @@ public final class ServerStorageManager extends PersistentState {
     }
 
     @Override
-    public void fromTag(CompoundTag tag) {
+    public void fromTag(NbtCompound tag) {
         loaded = true;
-        ListTag storageTags = tag.getList("storages", NbtType.COMPOUND);
+        NbtList storageTags = tag.getList("storages", NbtType.COMPOUND);
 
         for (int i = 0; i < storageTags.size(); i++) {
-            CompoundTag storageTag = storageTags.getCompound(i);
+            NbtCompound storageTag = storageTags.getCompound(i);
             ServerStorage storage = ServerStorage.STORAGES.get(new Identifier(storageTag.getString("id")));
             if (storage != null) {
                 storage.fromTag(storageTag);

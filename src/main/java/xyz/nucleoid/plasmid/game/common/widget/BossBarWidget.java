@@ -35,7 +35,7 @@ public final class BossBarWidget implements GameWidget {
 
     public void setStyle(BossBar.Color color, BossBar.Style style) {
         this.bar.setColor(color);
-        this.bar.setOverlay(style);
+        this.bar.setStyle(style);
     }
 
     @Override

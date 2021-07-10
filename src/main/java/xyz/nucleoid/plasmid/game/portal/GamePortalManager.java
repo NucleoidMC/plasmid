@@ -49,7 +49,7 @@ public final class GamePortalManager {
             }
 
             @Override
-            public void apply(ResourceManager manager) {
+            public void reload(ResourceManager manager) {
                 INSTANCE.reload(manager);
             }
         });

@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.game.portal;
 
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +19,7 @@ public interface GamePortalInterface {
 
     void setDisplay(GamePortalDisplay display);
 
-    default void serializePortal(CompoundTag root) {
+    default void serializePortal(NbtCompound root) {
         GamePortal connection = this.getPortal();
         if (connection != null) {
             root.putString(NBT_KEY, connection.getId().toString());
@@ -27,7 +27,7 @@ public interface GamePortalInterface {
     }
 
     @Nullable
-    default Identifier deserializePortalId(CompoundTag root) {
+    default Identifier deserializePortalId(NbtCompound root) {
         if (root.contains(NBT_KEY, NbtType.STRING)) {
             return new Identifier(root.getString(NBT_KEY));
         }

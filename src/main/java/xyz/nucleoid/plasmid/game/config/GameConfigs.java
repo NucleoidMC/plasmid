@@ -35,7 +35,7 @@ public final class GameConfigs {
             }
 
             @Override
-            public void apply(ResourceManager manager) {
+            public void reload(ResourceManager manager) {
                 CONFIGS.clear();
 
                 Collection<Identifier> resources = manager.findResources("games", path -> path.endsWith(".json"));

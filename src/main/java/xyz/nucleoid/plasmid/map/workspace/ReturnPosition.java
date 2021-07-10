@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.map.workspace;
 
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -32,7 +32,7 @@ public final class ReturnPosition {
         player.teleport(world, this.position.x, this.position.y, this.position.z, this.yaw, this.pitch);
     }
 
-    public CompoundTag write(CompoundTag root) {
+    public NbtCompound write(NbtCompound root) {
         root.putString("dimension", this.dimension.getValue().toString());
         root.putDouble("x", this.position.x);
         root.putDouble("y", this.position.y);
@@ -42,8 +42,8 @@ public final class ReturnPosition {
         return root;
     }
 
-    public static ReturnPosition read(CompoundTag root) {
-        RegistryKey<World> dimension = RegistryKey.of(Registry.DIMENSION, new Identifier(root.getString("dimension")));
+    public static ReturnPosition read(NbtCompound root) {
+        RegistryKey<World> dimension = RegistryKey.of(Registry.WORLD_KEY, new Identifier(root.getString("dimension")));
         double x = root.getDouble("x");
         double y = root.getDouble("y");
         double z = root.getDouble("z");

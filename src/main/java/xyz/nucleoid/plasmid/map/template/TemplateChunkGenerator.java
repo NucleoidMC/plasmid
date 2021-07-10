@@ -2,7 +2,7 @@ package xyz.nucleoid.plasmid.map.template;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.util.math.BlockPos;
@@ -115,9 +115,9 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
                         chunk.addLightSource(templatePos);
                     }
 
-                    CompoundTag blockEntityTag = this.template.getBlockEntityTag(templatePos);
+                    NbtCompound blockEntityTag = this.template.getBlockEntityTag(templatePos);
                     if (blockEntityTag != null) {
-                        chunk.addPendingBlockEntityTag(blockEntityTag);
+                        chunk.addPendingBlockEntityNbt(blockEntityTag);
                     }
                 }
             }
@@ -143,7 +143,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
 
         for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
             this.template.getEntitiesInChunk(chunkPos.x, sectionY, chunkPos.z).forEach(entity -> {
-                CompoundTag entityTag = entity.createEntityTag(BlockPos.ORIGIN);
+                NbtCompound entityTag = entity.createEntityTag(BlockPos.ORIGIN);
                 protoChunk.addEntity(entityTag);
             });
         }

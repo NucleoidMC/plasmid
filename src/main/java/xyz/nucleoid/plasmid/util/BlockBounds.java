@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -188,13 +188,13 @@ public final class BlockBounds implements Iterable<BlockPos> {
         return min + random.nextInt(max - min + 1);
     }
 
-    public CompoundTag serialize(CompoundTag root) {
+    public NbtCompound serialize(NbtCompound root) {
         root.putIntArray("min", new int[] { this.min.getX(), this.min.getY(), this.min.getZ() });
         root.putIntArray("max", new int[] { this.max.getX(), this.max.getY(), this.max.getZ() });
         return root;
     }
 
-    public static BlockBounds deserialize(CompoundTag root) {
+    public static BlockBounds deserialize(NbtCompound root) {
         int[] minArray = root.getIntArray("min");
         int[] maxArray = root.getIntArray("max");
         return new BlockBounds(

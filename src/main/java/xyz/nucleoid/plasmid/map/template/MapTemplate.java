@@ -7,7 +7,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
@@ -40,7 +40,7 @@ public final class MapTemplate {
     private static final BlockState AIR = Blocks.AIR.getDefaultState();
 
     final Long2ObjectMap<MapChunk> chunks = new Long2ObjectOpenHashMap<>();
-    final Long2ObjectMap<CompoundTag> blockEntities = new Long2ObjectOpenHashMap<>();
+    final Long2ObjectMap<NbtCompound> blockEntities = new Long2ObjectOpenHashMap<>();
 
     RegistryKey<Biome> biome = BiomeKeys.THE_VOID;
 
@@ -101,7 +101,7 @@ public final class MapTemplate {
         this.generatedBounds = null;
 
         if (state.getBlock().hasBlockEntity()) {
-            CompoundTag tag = new CompoundTag();
+            NbtCompound tag = new NbtCompound();
             tag.putString("id", "DUMMY");
             tag.putInt("x", pos.getX());
             tag.putInt("y", pos.getY());
@@ -112,13 +112,13 @@ public final class MapTemplate {
 
     public void setBlockEntity(BlockPos pos, @Nullable BlockEntity entity) {
         if (entity != null) {
-            this.setBlockEntityTag(pos, entity.toTag(new CompoundTag()));
+            this.setBlockEntityTag(pos, entity.writeNbt(new NbtCompound()));
         } else {
             this.setBlockEntityTag(pos, null);
         }
     }
 
-    public void setBlockEntityTag(BlockPos pos, @Nullable CompoundTag entityTag) {
+    public void setBlockEntityTag(BlockPos pos, @Nullable NbtCompound entityTag) {
         if (entityTag != null) {
             entityTag.putInt("x", pos.getX());
             entityTag.putInt("y", pos.getY());
@@ -139,14 +139,14 @@ public final class MapTemplate {
     }
 
     @Nullable
-    public CompoundTag getBlockEntityTag(BlockPos localPos) {
-        CompoundTag tag = this.blockEntities.get(localPos.asLong());
+    public NbtCompound getBlockEntityTag(BlockPos localPos) {
+        NbtCompound tag = this.blockEntities.get(localPos.asLong());
         return tag != null ? tag.copy() : null;
     }
 
     @Nullable
-    public CompoundTag getBlockEntityTag(BlockPos localPos, BlockPos worldPos) {
-        CompoundTag tag = this.getBlockEntityTag(localPos);
+    public NbtCompound getBlockEntityTag(BlockPos localPos, BlockPos worldPos) {
+        NbtCompound tag = this.getBlockEntityTag(localPos);
         if (tag != null) {
             tag.putInt("x", worldPos.getX());
             tag.putInt("y", worldPos.getY());
@@ -347,11 +347,11 @@ public final class MapTemplate {
             }
         }
 
-        for (Long2ObjectMap.Entry<CompoundTag> blockEntity : Long2ObjectMaps.fastIterable(this.blockEntities)) {
+        for (Long2ObjectMap.Entry<NbtCompound> blockEntity : Long2ObjectMaps.fastIterable(this.blockEntities)) {
             mutablePos.set(blockEntity.getLongKey());
             transform.transformPoint(mutablePos);
 
-            CompoundTag tag = blockEntity.getValue().copy();
+            NbtCompound tag = blockEntity.getValue().copy();
             result.setBlockEntityTag(mutablePos, tag);
         }
 

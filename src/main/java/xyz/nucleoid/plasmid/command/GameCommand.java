@@ -9,10 +9,10 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.NbtCompoundTagArgumentType;
+import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
@@ -67,7 +67,7 @@ public final class GameCommand {
                     .then(GameConfigArgument.argument("game_config")
                         .executes(GameCommand::openGame)
                     )
-                    .then(argument("game_config_nbt", NbtCompoundTagArgumentType.nbtCompound())
+                    .then(argument("game_config_nbt", NbtCompoundArgumentType.nbtCompound())
                         .executes(GameCommand::openAnonymousGame)
                     )
                 )
@@ -119,7 +119,7 @@ public final class GameCommand {
     }
 
     private static int openAnonymousGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        CompoundTag configNbt = NbtCompoundTagArgumentType.getCompoundTag(context, "game_config_nbt");
+        NbtCompound configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
         DataResult<GameConfig<?>> result = GameConfig.CODEC.parse(NbtOps.INSTANCE, configNbt);
         if (result.error().isPresent()) {
             throw MALFORMED_CONFIG.create(result.error().get());

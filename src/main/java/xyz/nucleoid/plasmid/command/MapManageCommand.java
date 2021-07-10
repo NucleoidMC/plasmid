@@ -10,10 +10,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.command.argument.NbtCompoundTagArgumentType;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.command.argument.NbtCompoundArgumentType;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -82,7 +82,7 @@ public final class MapManageCommand {
                         ))
                         .then(literal("with")
                             .then(ChunkGeneratorArgument.argument("generator")
-                            .then(argument("config", NbtCompoundTagArgumentType.nbtCompound())
+                            .then(argument("config", NbtCompoundArgumentType.nbtCompound())
                             .executes(MapManageCommand::openWorkspaceByGenerator)
                         )))
                 ))
@@ -185,10 +185,10 @@ public final class MapManageCommand {
 
     private static int openWorkspaceByGenerator(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Codec<? extends ChunkGenerator> generatorCodec = ChunkGeneratorArgument.get(context, "generator");
-        CompoundTag config = NbtCompoundTagArgumentType.getCompoundTag(context, "config");
+        NbtCompound config = NbtCompoundArgumentType.getNbtCompound(context, "config");
 
         MinecraftServer server = context.getSource().getMinecraftServer();
-        RegistryOps<Tag> ops = RegistryOps.of(
+        RegistryOps<NbtElement> ops = RegistryOps.of(
                 NbtOps.INSTANCE,
                 ((MinecraftServerAccessor) server).getServerResourceManager().getResourceManager(),
                 (DynamicRegistryManager.Impl) server.getRegistryManager()

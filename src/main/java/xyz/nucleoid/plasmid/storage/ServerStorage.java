@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.storage;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 
 import java.util.HashMap;
@@ -36,11 +36,11 @@ public interface ServerStorage {
      * Called when saving this {@link ServerStorage} to NBT.
      * @return - The serialized NBT data of this {@link ServerStorage}.
      */
-    CompoundTag toTag();
+    NbtCompound toTag();
 
     /**
      * Called when loading the saved NBT data for this {@link ServerStorage}.
      * @param tag - The deserialized NBT data of this {@link ServerStorage}.
      */
-    void fromTag(CompoundTag tag);
+    void fromTag(NbtCompound tag);
 }

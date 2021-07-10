@@ -4,14 +4,14 @@ import net.minecraft.entity.attribute.AttributeContainer;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.registry.Registry;
 
 public final class PlayerResetter {
-    private final CompoundTag resetNbt;
+    private final NbtCompound resetNbt;
 
-    public PlayerResetter(CompoundTag resetNbt) {
+    public PlayerResetter(NbtCompound resetNbt) {
         this.resetNbt = resetNbt;
     }
 
@@ -20,7 +20,7 @@ public final class PlayerResetter {
         player.clearStatusEffects();
         player.getScoreboardTags().clear();
 
-        player.fromTag(this.resetNbt);
+        player.readNbt(this.resetNbt);
     }
 
     private void clearAttributeModifiers(ServerPlayerEntity player) {

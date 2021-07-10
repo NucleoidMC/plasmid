@@ -5,7 +5,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -86,13 +86,13 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
         }
     }
 
-    @Inject(method = "toTag", at = @At("RETURN"))
-    private void toTag(CompoundTag root, CallbackInfoReturnable<CompoundTag> ci) {
+    @Inject(method = "writeNbt", at = @At("RETURN"))
+    private void writeNbt(NbtCompound root, CallbackInfoReturnable<NbtCompound> ci) {
         this.serializePortal(root);
     }
 
     @Inject(method = "fromTag", at = @At("RETURN"))
-    private void fromTag(BlockState state, CompoundTag root, CallbackInfo ci) {
+    private void readNbt(BlockState state, NbtCompound root, CallbackInfo ci) {
         this.loadedPortalId = this.deserializePortalId(root);
     }
 

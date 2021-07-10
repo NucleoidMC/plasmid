@@ -2,7 +2,7 @@ package xyz.nucleoid.plasmid.map.workspace;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -134,13 +134,13 @@ public final class MapWorkspaceManager extends PersistentState {
     }
 
     @Override
-    public void fromTag(CompoundTag tag) {
+    public void fromTag(NbtCompound tag) {
         this.workspacesById.clear();
         this.workspacesByDimension.clear();
 
         for (String key : tag.getKeys()) {
             Identifier identifier = new Identifier(key);
-            CompoundTag root = tag.getCompound(key);
+            NbtCompound root = tag.getCompound(key);
 
             RuntimeWorldHandle worldHandle = this.getOrCreateDimension(identifier, this.createDefaultConfig());
             worldHandle.setTickWhenEmpty(false);
@@ -153,10 +153,10 @@ public final class MapWorkspaceManager extends PersistentState {
     }
 
     @Override
-    public CompoundTag toTag(CompoundTag tag) {
+    public NbtCompound writeNbt(NbtCompound tag) {
         for (Map.Entry<Identifier, MapWorkspace> entry : this.workspacesById.entrySet()) {
             String key = entry.getKey().toString();
-            tag.put(key, entry.getValue().serialize(new CompoundTag()));
+            tag.put(key, entry.getValue().serialize(new NbtCompound()));
         }
         return tag;
     }

@@ -6,8 +6,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -50,7 +50,7 @@ public final class MapTemplateSerializer {
             }
 
             @Override
-            public void apply(ResourceManager manager) {
+            public void reload(ResourceManager manager) {
                 MapTemplateSerializer.this.resourceManager = manager;
             }
         });
@@ -97,14 +97,14 @@ public final class MapTemplateSerializer {
     }
 
     public void saveTo(MapTemplate template, OutputStream output) throws IOException {
-        CompoundTag root = this.save(template);
+        NbtCompound root = this.save(template);
         NbtIo.writeCompressed(root, output);
     }
 
-    private void load(MapTemplate template, CompoundTag root) {
-        ListTag chunkList = root.getList("chunks", NbtType.COMPOUND);
+    private void load(MapTemplate template, NbtCompound root) {
+        NbtList chunkList = root.getList("chunks", NbtType.COMPOUND);
         for (int i = 0; i < chunkList.size(); i++) {
-            CompoundTag chunkRoot = chunkList.getCompound(i);
+            NbtCompound chunkRoot = chunkList.getCompound(i);
 
             int[] posArray = chunkRoot.getIntArray("pos");
             if (posArray.length != 3) {
@@ -120,15 +120,15 @@ public final class MapTemplateSerializer {
 
         MapTemplateMetadata metadata = template.metadata;
 
-        ListTag regionList = root.getList("regions", NbtType.COMPOUND);
+        NbtList regionList = root.getList("regions", NbtType.COMPOUND);
         for (int i = 0; i < regionList.size(); i++) {
-            CompoundTag regionRoot = regionList.getCompound(i);
+            NbtCompound regionRoot = regionList.getCompound(i);
             metadata.regions.add(TemplateRegion.deserialize(regionRoot));
         }
 
-        ListTag blockEntityList = root.getList("block_entities", NbtType.COMPOUND);
+        NbtList blockEntityList = root.getList("block_entities", NbtType.COMPOUND);
         for (int i = 0; i < blockEntityList.size(); i++) {
-            CompoundTag blockEntity = blockEntityList.getCompound(i);
+            NbtCompound blockEntity = blockEntityList.getCompound(i);
             BlockPos pos = new BlockPos(
                     blockEntity.getInt("x"),
                     blockEntity.getInt("y"),
@@ -146,16 +146,16 @@ public final class MapTemplateSerializer {
         }
     }
 
-    private CompoundTag save(MapTemplate template) {
-        CompoundTag root = new CompoundTag();
+    private NbtCompound save(MapTemplate template) {
+        NbtCompound root = new NbtCompound();
 
-        ListTag chunkList = new ListTag();
+        NbtList chunkList = new NbtList();
 
         for (Long2ObjectMap.Entry<MapChunk> entry : Long2ObjectMaps.fastIterable(template.chunks)) {
             ChunkSectionPos pos = ChunkSectionPos.from(entry.getLongKey());
             MapChunk chunk = entry.getValue();
 
-            CompoundTag chunkRoot = new CompoundTag();
+            NbtCompound chunkRoot = new NbtCompound();
 
             chunkRoot.putIntArray("pos", new int[] { pos.getX(), pos.getY(), pos.getZ() });
             chunk.serialize(chunkRoot);
@@ -165,11 +165,11 @@ public final class MapTemplateSerializer {
 
         root.put("chunks", chunkList);
 
-        ListTag blockEntityList = new ListTag();
+        NbtList blockEntityList = new NbtList();
         blockEntityList.addAll(template.blockEntities.values());
         root.put("block_entities", blockEntityList);
 
-        root.put("bounds", template.bounds.serialize(new CompoundTag()));
+        root.put("bounds", template.bounds.serialize(new NbtCompound()));
 
         if (template.biome != null) {
             root.putString("biome", template.biome.getValue().toString());
@@ -177,9 +177,9 @@ public final class MapTemplateSerializer {
 
         MapTemplateMetadata metadata = template.metadata;
 
-        ListTag regionList = new ListTag();
+        NbtList regionList = new NbtList();
         for (TemplateRegion region : metadata.regions) {
-            regionList.add(region.serialize(new CompoundTag()));
+            regionList.add(region.serialize(new NbtCompound()));
         }
         root.put("regions", regionList);
 

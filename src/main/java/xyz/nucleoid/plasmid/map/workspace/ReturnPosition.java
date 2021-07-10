@@ -24,7 +24,7 @@ public final class ReturnPosition {
     }
 
     public static ReturnPosition capture(PlayerEntity player) {
-        return new ReturnPosition(player.world.getRegistryKey(), player.getPos(), player.yaw, player.pitch);
+        return new ReturnPosition(player.world.getRegistryKey(), player.getPos(), player.getYaw(), player.getPitch());
     }
 
     public void applyTo(ServerPlayerEntity player) {

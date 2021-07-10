@@ -86,16 +86,16 @@ public final class ShopInventory implements Inventory {
     }
 
     private void handleElementClick(int index) {
-        this.player.inventory.setCursorStack(ItemStack.EMPTY);
-        this.player.updateCursorStack();
-
         ShopEntry element = this.elements[index];
         if (element != null) {
             element.onClick(this.player);
         }
 
         this.buildGrid();
-        this.player.onHandlerRegistered(this.player.currentScreenHandler, this.player.currentScreenHandler.getStacks());
+
+        var screenHandler = this.player.currentScreenHandler;
+        screenHandler.setCursorStack(ItemStack.EMPTY);
+        screenHandler.syncState();
     }
 
     @Override

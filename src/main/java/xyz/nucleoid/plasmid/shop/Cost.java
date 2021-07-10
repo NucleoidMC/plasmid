@@ -63,7 +63,7 @@ public final class Cost {
             if (available >= count) {
                 if (!simulate) {
                     take(player, item, count);
-                    player.inventory.markDirty();
+                    player.getInventory().markDirty();
                 }
                 return true;
             }
@@ -90,8 +90,9 @@ public final class Cost {
 
     static int getAvailable(ServerPlayerEntity player, Item item) {
         int available = 0;
-        for (int i = 0; i < player.inventory.size(); i++) {
-            ItemStack stack = player.inventory.getStack(i);
+        var inventory = player.getInventory();
+        for (int i = 0; i < inventory.size(); i++) {
+            ItemStack stack = inventory.getStack(i);
             if (!stack.isEmpty() && stack.getItem().equals(item)) {
                 available += stack.getCount();
             }
@@ -100,12 +101,13 @@ public final class Cost {
     }
 
     static void take(ServerPlayerEntity player, Item item, int count) {
-        for (int slot = 0; slot < player.inventory.size(); slot++) {
-            ItemStack stack = player.inventory.getStack(slot);
+        var inventory = player.getInventory();
+        for (int slot = 0; slot < inventory.size(); slot++) {
+            ItemStack stack = inventory.getStack(slot);
 
             if (!stack.isEmpty() && stack.getItem().equals(item)) {
                 int remove = Math.min(count, stack.getCount());
-                player.inventory.removeStack(slot, remove);
+                inventory.removeStack(slot, remove);
 
                 count -= remove;
                 if (count <= 0) {

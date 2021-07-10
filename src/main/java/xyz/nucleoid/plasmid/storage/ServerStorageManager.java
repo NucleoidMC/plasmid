@@ -13,11 +13,10 @@ public final class ServerStorageManager extends PersistentState {
     private static boolean loaded = false;
 
     ServerStorageManager() {
-        super(KEY);
     }
 
     public static ServerStorageManager get(ServerWorld world) {
-        return world.getPersistentStateManager().getOrCreate(ServerStorageManager::new, KEY);
+        return world.getPersistentStateManager().getOrCreate(ServerStorageManager::readNbt, ServerStorageManager::new, KEY);
     }
 
     public static boolean isLoaded() {
@@ -25,21 +24,21 @@ public final class ServerStorageManager extends PersistentState {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound tag) {
+    public NbtCompound writeNbt(NbtCompound nbt) {
         NbtList storageList = new NbtList();
-        ServerStorage.STORAGES.entrySet().forEach((entry) -> {
-            NbtCompound storageTag = entry.getValue().toTag();
-            storageTag.putString("id", entry.getKey().toString());
+        ServerStorage.STORAGES.forEach((key, value) -> {
+            NbtCompound storageTag = value.toTag();
+            storageTag.putString("id", key.toString());
             storageList.add(storageTag);
         });
-        tag.put("storages", storageList);
-        return tag;
+        nbt.put("storages", storageList);
+        return nbt;
     }
 
-    @Override
-    public void fromTag(NbtCompound tag) {
+    private static ServerStorageManager readNbt(NbtCompound nbt) {
         loaded = true;
-        NbtList storageTags = tag.getList("storages", NbtType.COMPOUND);
+
+        NbtList storageTags = nbt.getList("storages", NbtType.COMPOUND);
 
         for (int i = 0; i < storageTags.size(); i++) {
             NbtCompound storageTag = storageTags.getCompound(i);
@@ -48,6 +47,8 @@ public final class ServerStorageManager extends PersistentState {
                 storage.fromTag(storageTag);
             }
         }
+
+        return new ServerStorageManager();
     }
 
     @Override

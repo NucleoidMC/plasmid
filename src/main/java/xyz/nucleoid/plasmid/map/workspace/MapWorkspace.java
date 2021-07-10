@@ -311,7 +311,7 @@ public final class MapWorkspace {
 
     private void writeEntitiesToTemplate(MapTemplate map, ServerWorld world) {
         List<Entity> entities = world.getEntitiesByClass(Entity.class, this.bounds.toBox(), entity -> {
-            if (entity.removed) {
+            if (entity.isRemoved()) {
                 return false;
             }
             return this.containsEntity(entity.getUuid()) || this.hasEntityType(entity.getType());

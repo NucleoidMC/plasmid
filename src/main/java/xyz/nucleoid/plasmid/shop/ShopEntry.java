@@ -40,7 +40,7 @@ public final class ShopEntry {
         icon.setCustomName(count.append(name));
 
         return new ShopEntry(icon).onBuy(player -> {
-            player.inventory.offerOrDrop(player.world, stack);
+            player.getInventory().offerOrDrop(stack);
         });
     }
 

@@ -7,10 +7,11 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 
 public final class ParticleOutlineRenderer {
     public static void render(ServerPlayerEntity player, BlockPos min, BlockPos max, float red, float green, float blue) {
-        DustParticleEffect effect = new DustParticleEffect(red, green, blue, 2.0F);
+        DustParticleEffect effect = new DustParticleEffect(new Vec3f(red, green, blue), 2.0F);
 
         Edge[] edges = edges(min, max);
 

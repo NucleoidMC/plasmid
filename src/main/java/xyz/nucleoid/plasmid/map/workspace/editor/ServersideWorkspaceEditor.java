@@ -111,7 +111,7 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
         Vec3d markerPos = region.bounds.getCenter();
 
         ArmorStandEntity markerEntity = this.markerEntity;
-        markerEntity.setEntityId(markerEntityId);
+        markerEntity.setId(markerEntityId);
         markerEntity.setPos(markerPos.x, markerPos.y, markerPos.z);
         markerEntity.setCustomName(new LiteralText(region.marker));
 
@@ -138,7 +138,7 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
         }
 
         ArmorStandEntity markerEntity = this.markerEntity;
-        markerEntity.setEntityId(markerEntityId);
+        markerEntity.setId(markerEntityId);
         markerEntity.setCustomName(new LiteralText(newRegion.marker));
 
         this.player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(markerEntityId, markerEntity.getDataTracker(), true));

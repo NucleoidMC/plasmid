@@ -14,6 +14,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.visitor.NbtTextFormatter;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -64,6 +65,8 @@ public final class MapMetadataCommand {
     private static final DynamicCommandExceptionType MODIFY_EXPECTED_OBJECT_EXCEPTION = new DynamicCommandExceptionType(
             arg -> new TranslatableText("commands.data.modify.expected_object", arg)
     );
+
+    private static final NbtTextFormatter NBT_FORMATTER = new NbtTextFormatter("  ", 0);
 
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -229,7 +232,7 @@ public final class MapMetadataCommand {
 
         return Command.SINGLE_SUCCESS;
     }
-    
+
     private static int getRegionBounds(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
         MapWorkspace map = getWorkspaceForSource(source);
@@ -253,9 +256,10 @@ public final class MapMetadataCommand {
     }
 
     private static boolean executeRegionDataGet(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region) {
-        context.getSource().sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.region.data.get",
-                        region.marker, region.data.toText("  ", 0))),
-                false);
+        var message = withMapPrefix(map,
+                new TranslatableText("text.plasmid.map.region.data.get", region.marker, NBT_FORMATTER.apply(region.data))
+        );
+        context.getSource().sendFeedback(message, false);
         return false;
     }
 
@@ -311,7 +315,7 @@ public final class MapMetadataCommand {
 
         String marker = StringArgumentType.getString(context, "marker");
 
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
+        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
         WorkspaceEditor editor = workspaceManager.getEditorFor(player);
         if (editor != null) {
             BlockBounds region = editor.takeTracedRegion();
@@ -458,7 +462,7 @@ public final class MapMetadataCommand {
         ServerCommandSource source = context.getSource();
         MapWorkspace map = getWorkspaceForSource(context.getSource());
         source.sendFeedback(new TranslatableText("text.plasmid.map.data.get",
-                        getMapPrefix(map), map.getData().toText("  ", 0)),
+                        getMapPrefix(map), NBT_FORMATTER.apply(map.getData())),
                 false);
         return Command.SINGLE_SUCCESS;
     }
@@ -469,7 +473,7 @@ public final class MapMetadataCommand {
         NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
         source.sendFeedback(new TranslatableText("text.plasmid.map.data.get.at",
                         map.getIdentifier().toString(), path.toString(),
-                        getTagAt(map.getData(), path).toText("  ", 0)),
+                        NBT_FORMATTER.apply(getTagAt(map.getData(), path))),
                 false);
         return Command.SINGLE_SUCCESS;
     }
@@ -564,7 +568,7 @@ public final class MapMetadataCommand {
     }
 
     private static @NotNull MapWorkspace getWorkspaceForSource(ServerCommandSource source) throws CommandSyntaxException {
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
+        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
         MapWorkspace workspace = workspaceManager.byDimension(source.getWorld().getRegistryKey());
         if (workspace == null) {
             throw MAP_NOT_HERE.create();

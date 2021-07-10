@@ -72,7 +72,7 @@ public final class PartyCommand {
 
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-        PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+        PartyManager partyManager = PartyManager.get(source.getServer());
         PartyResult result = partyManager.invitePlayer(PlayerRef.of(owner), PlayerRef.of(player));
         if (result.isOk()) {
             MutableText message = new TranslatableText("text.plasmid.party.invited.sender", player.getDisplayName());
@@ -108,13 +108,13 @@ public final class PartyCommand {
 
     private static int kickPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource source = ctx.getSource();
-        MinecraftServer server = source.getMinecraftServer();
+        MinecraftServer server = source.getServer();
         ServerPlayerEntity owner = source.getPlayer();
 
         Collection<GameProfile> profiles = GameProfileArgumentType.getProfileArgument(ctx, "player");
 
         for (GameProfile profile : profiles) {
-            PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+            PartyManager partyManager = PartyManager.get(source.getServer());
             PartyResult result = partyManager.kickPlayer(PlayerRef.of(owner), PlayerRef.of(profile));
             if (result.isOk()) {
                 Party party = result.getParty();
@@ -140,7 +140,7 @@ public final class PartyCommand {
 
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
 
-        PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+        PartyManager partyManager = PartyManager.get(source.getServer());
         PartyResult result = partyManager.transferParty(PlayerRef.of(owner), PlayerRef.of(player));
         if (result.isOk()) {
             source.sendFeedback(
@@ -168,7 +168,7 @@ public final class PartyCommand {
 
         ServerPlayerEntity owner = EntityArgumentType.getPlayer(ctx, "player");
 
-        PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+        PartyManager partyManager = PartyManager.get(source.getServer());
         PartyResult result = partyManager.acceptInvite(PlayerRef.of(player), PlayerRef.of(owner));
         if (result.isOk()) {
             Party party = result.getParty();
@@ -187,7 +187,7 @@ public final class PartyCommand {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity player = source.getPlayer();
 
-        PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+        PartyManager partyManager = PartyManager.get(source.getServer());
         PartyResult result = partyManager.leaveParty(PlayerRef.of(player));
         if (result.isOk()) {
             Party party = result.getParty();
@@ -206,7 +206,7 @@ public final class PartyCommand {
         ServerCommandSource source = ctx.getSource();
         ServerPlayerEntity owner = source.getPlayer();
 
-        PartyManager partyManager = PartyManager.get(source.getMinecraftServer());
+        PartyManager partyManager = PartyManager.get(source.getServer());
         PartyResult result = partyManager.disbandParty(PlayerRef.of(owner));
         if (result.isOk()) {
             Party party = result.getParty();

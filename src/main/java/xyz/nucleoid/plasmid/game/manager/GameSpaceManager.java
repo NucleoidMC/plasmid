@@ -1,13 +1,13 @@
 package xyz.nucleoid.plasmid.game.manager;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.registry.RegistryKey;
@@ -158,11 +158,13 @@ public final class GameSpaceManager {
     private void close() {
         Stimuli.unregisterSelector(this.listenerSelector);
 
-        for (ManagedGameSpace gameSpace : this.gameSpaces) {
+        var gameSpaces = Lists.newArrayList(this.gameSpaces);
+        this.gameSpaces.clear();
+
+        for (ManagedGameSpace gameSpace : gameSpaces) {
             gameSpace.close(GameCloseReason.CANCELED);
         }
 
-        this.gameSpaces.clear();
         this.idToGameSpace.clear();
         this.dimensionToGameSpace.clear();
         this.playerToGameSpace.clear();

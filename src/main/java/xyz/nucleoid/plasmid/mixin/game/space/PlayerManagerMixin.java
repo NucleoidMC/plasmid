@@ -8,7 +8,6 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.stat.ServerStatHandler;
 import net.minecraft.util.Util;
@@ -19,7 +18,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.dimension.DimensionType;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -29,10 +27,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.isolation.PlayerManagerAccess;
 import xyz.nucleoid.plasmid.game.player.isolation.PlayerResetter;
-import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 
 import java.util.Map;
 import java.util.Optional;
@@ -60,9 +58,6 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     protected abstract void savePlayerData(ServerPlayerEntity player);
 
     @Shadow
-    protected abstract void setGameMode(ServerPlayerEntity player, @Nullable ServerPlayerEntity oldPlayer, ServerWorld world);
-
-    @Shadow
     public abstract NbtCompound getUserData();
 
     @Unique
@@ -83,12 +78,12 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
                     target = "Lnet/minecraft/server/network/ServerPlayerEntity;copyFrom(Lnet/minecraft/server/network/ServerPlayerEntity;Z)V",
                     shift = At.Shift.AFTER
             ),
-            locals = LocalCapture.CAPTURE_FAILHARD
+            locals = LocalCapture.PRINT
     )
     private void respawnPlayer(
             ServerPlayerEntity oldPlayer, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> ci,
             BlockPos spawnPos, float spawnAngle, boolean spawnSet, ServerWorld spawnWorld, Optional<Vec3d> respawnPoint,
-            ServerPlayerInteractionManager interactionManager, ServerWorld respawnWorld, ServerPlayerEntity respawnedPlayer
+            ServerWorld respawnWorld, ServerPlayerEntity respawnedPlayer
     ) {
         ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(oldPlayer);
 
@@ -97,9 +92,9 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
 
             this.plasmid$loadIntoPlayer(respawnedPlayer);
             respawnedPlayer.setWorld(respawnWorld);
-            interactionManager.setWorld(respawnWorld);
 
             // this is later used to apply back to the respawned player, and we want to maintain that
+            var interactionManager = respawnedPlayer.interactionManager;
             oldPlayer.interactionManager.setGameMode(interactionManager.getGameMode(), interactionManager.getPreviousGameMode());
         }
     }
@@ -134,12 +129,12 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         player.setWorld(world);
         player.interactionManager.setWorld(world);
 
-        this.setGameMode(player, null, world);
+        player.setGameMode(playerData);
     }
 
     @Unique
     private RegistryKey<World> getDimensionFromData(NbtCompound playerData) {
-        return DimensionType.method_28521(new Dynamic<>(NbtOps.INSTANCE, playerData.get("Dimension")))
+        return DimensionType.worldFromDimensionNbt(new Dynamic<>(NbtOps.INSTANCE, playerData.get("Dimension")))
                 .resultOrPartial(LOGGER::error)
                 .orElse(World.OVERWORLD);
     }
@@ -156,9 +151,8 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         if (this.playerResetter == null) {
             ServerWorld overworld = this.server.getOverworld();
             GameProfile profile = new GameProfile(Util.NIL_UUID, "null");
-            ServerPlayerInteractionManager interactionManager = new ServerPlayerInteractionManager(overworld);
 
-            ServerPlayerEntity player = new ServerPlayerEntity(this.server, overworld, profile, interactionManager);
+            ServerPlayerEntity player = new ServerPlayerEntity(this.server, overworld, profile);
             this.statisticsMap.remove(Util.NIL_UUID);
             this.advancementTrackers.remove(Util.NIL_UUID);
 

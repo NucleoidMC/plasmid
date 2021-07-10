@@ -93,14 +93,14 @@ public final class TeamSelectionLobby {
 
             stack.getOrCreateTag().putString(TEAM_KEY, team.getKey());
 
-            player.inventory.setStack(index++, stack);
+            player.getInventory().setStack(index++, stack);
         }
     }
 
     private TypedActionResult<ItemStack> onUseItem(ServerPlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
 
-        if (stack.getItem().isIn(ItemTags.WOOL)) {
+        if (stack.isIn(ItemTags.WOOL)) {
             NbtCompound tag = stack.getOrCreateTag();
             String teamKey = tag.getString(TEAM_KEY);
 

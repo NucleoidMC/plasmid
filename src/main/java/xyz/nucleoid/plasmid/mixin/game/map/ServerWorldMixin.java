@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.mixin.game.map;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,7 +17,7 @@ public class ServerWorldMixin {
     }
 
     @Inject(method = "removePlayer", at = @At("RETURN"))
-    private void removePlayer(ServerPlayerEntity player, CallbackInfo ci) {
+    private void removePlayer(ServerPlayerEntity player, Entity.RemovalReason reason, CallbackInfo ci) {
         MapWorkspaceManager.get(player.server).onPlayerRemoveFromWorld(player, (ServerWorld) (Object) this);
     }
 }

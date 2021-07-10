@@ -2,12 +2,11 @@
   "required": true,
   "minVersion": "0.8",
   "package": "xyz.nucleoid.plasmid.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_16",
   "mixins": [
     "MinecraftServerAccessor",
     "chat.ServerPlayerEntityMixin",
     "custom.EntityMixin",
-    "fix.ServerPlayNetworkHandlerMixin",
     "game.map.ServerPlayerEntityMixin",
     "game.map.ServerWorldMixin",
     "game.portal.EntityMixin",

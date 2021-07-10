@@ -41,14 +41,17 @@ public final class MapWorkspaceManager extends PersistentState {
     private final WorkspaceEditorManager editorManager;
 
     private MapWorkspaceManager(MinecraftServer server) {
-        super(KEY);
         this.server = server;
 
         this.editorManager = new WorkspaceEditorManager();
     }
 
     public static MapWorkspaceManager get(MinecraftServer server) {
-        return server.getOverworld().getPersistentStateManager().getOrCreate(() -> new MapWorkspaceManager(server), KEY);
+        return server.getOverworld().getPersistentStateManager().getOrCreate(
+                nbt -> MapWorkspaceManager.readNbt(server, nbt),
+                () -> new MapWorkspaceManager(server),
+                KEY
+        );
     }
 
     public void tick() {
@@ -133,32 +136,32 @@ public final class MapWorkspaceManager extends PersistentState {
         return this.workspacesById.values();
     }
 
-    @Override
-    public void fromTag(NbtCompound tag) {
-        this.workspacesById.clear();
-        this.workspacesByDimension.clear();
+    private static MapWorkspaceManager readNbt(MinecraftServer server, NbtCompound nbt) {
+        MapWorkspaceManager manager = new MapWorkspaceManager(server);
 
-        for (String key : tag.getKeys()) {
+        for (String key : nbt.getKeys()) {
             Identifier identifier = new Identifier(key);
-            NbtCompound root = tag.getCompound(key);
+            NbtCompound root = nbt.getCompound(key);
 
-            RuntimeWorldHandle worldHandle = this.getOrCreateDimension(identifier, this.createDefaultConfig());
+            RuntimeWorldHandle worldHandle = manager.getOrCreateDimension(identifier, manager.createDefaultConfig());
             worldHandle.setTickWhenEmpty(false);
 
             MapWorkspace workspace = MapWorkspace.deserialize(worldHandle, root);
-            this.workspacesById.put(identifier, workspace);
-            this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
-            this.editorManager.addWorkspace(workspace);
+            manager.workspacesById.put(identifier, workspace);
+            manager.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
+            manager.editorManager.addWorkspace(workspace);
         }
+
+        return manager;
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound tag) {
+    public NbtCompound writeNbt(NbtCompound nbt) {
         for (Map.Entry<Identifier, MapWorkspace> entry : this.workspacesById.entrySet()) {
             String key = entry.getKey().toString();
-            tag.put(key, entry.getValue().serialize(new NbtCompound()));
+            nbt.put(key, entry.getValue().serialize(new NbtCompound()));
         }
-        return tag;
+        return nbt;
     }
 
     @Override

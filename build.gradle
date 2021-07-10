@@ -1,10 +1,10 @@
 plugins {
-  id 'fabric-loom' version '0.6-SNAPSHOT'
+  id 'fabric-loom' version '0.8-SNAPSHOT'
   id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -27,7 +27,7 @@ minecraft {
 
 repositories {
   maven { url = "https://maven.nucleoid.xyz/" }
-  maven { url = "https://jitpack.io/" }
+  maven { url = "https://maven.gegy.dev/" }
 }
 
 dependencies {
@@ -37,44 +37,41 @@ dependencies {
 
   modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-  modImplementation include('fr.catcore:server-translations-api:1.4.1')
-  modImplementation include('xyz.nucleoid:packet-tweaker:0.1.2')
-  modImplementation include('xyz.nucleoid:fantasy:0.4.0')
-  modImplementation include('xyz.nucleoid:more-codecs:0.1.3')
-  modImplementation include('xyz.nucleoid:stimuli:0.1.0')
-  modImplementation include('eu.pb4:polymer:0.0.3')
+  modImplementation include('fr.catcore:server-translations-api:1.4.5+1.17')
+  modImplementation include('xyz.nucleoid:packet-tweaker:0.2.0+1.17-pre1')
+  modImplementation include('xyz.nucleoid:fantasy:0.4.1+1.17')
+  modImplementation include('xyz.nucleoid:more-codecs:0.1.4')
+  modImplementation include('xyz.nucleoid:stimuli:0.2.3+1.17.1')
+  modImplementation include('eu.pb4:polymer:0.1.0-pre8+1.17.1')
 
-  modRuntime("com.github.SuperCoder7979:databreaker:0.2.6") {
+  modRuntime("supercoder79:databreaker:0.2.7") {
     exclude module: "fabric-loader"
   }
 
-  modCompileOnly('xyz.nucleoid:DisguiseLib:1.0.0')
+  modCompileOnly('xyz.nucleoid:disguiselib-fabric:1.0.4')
 }
 
 processResources {
   inputs.property "version", project.version
 
-  from(sourceSets.main.resources.srcDirs) {
-    include "fabric.mod.json"
+  filesMatching("fabric.mod.json") {
     expand "version": project.version
   }
-
-  from(sourceSets.main.resources.srcDirs) {
-    exclude "fabric.mod.json"
-  }
 }
 
-tasks.withType(JavaCompile) {
-  options.encoding = "UTF-8"
+tasks.withType(JavaCompile).configureEach {
+  it.options.encoding = "UTF-8"
+  it.options.release = 16
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-  classifier = "sources"
-  from sourceSets.main.allSource
+java {
+  withSourcesJar()
 }
 
 jar {
-  from "LICENSE"
+  from("LICENSE") {
+    rename { "${it}_${project.archivesBaseName}"}
+  }
 }
 
 publishing {

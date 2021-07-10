@@ -5,7 +5,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.network.packet.s2c.play.ConfirmScreenActionS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
@@ -70,17 +69,17 @@ public abstract class ServerPlayNetworkHandlerMixin {
         ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(this.player);
 
         if (gameSpace != null) {
-            if (packet.getSlot() < 0 || packet.getSlot() >= this.player.inventory.size()) return;
+            if (packet.getSlot() < 0 || packet.getSlot() >= this.player.getInventory().size()) return;
             // See https://wiki.vg/File:Inventory-slots.png for the slot numbering
-            boolean isArmor = (packet.getSlot() >= 5 && packet.getSlot() <= 8) && this.player.currentScreenHandler instanceof PlayerScreenHandler;
-            ;
+            var screenHandler = this.player.currentScreenHandler;
+
+            boolean isArmor = (packet.getSlot() >= 5 && packet.getSlot() <= 8) && screenHandler instanceof PlayerScreenHandler;
             boolean denyModifyInventory = gameSpace.getBehavior().testRule(GameRuleType.MODIFY_INVENTORY) == ActionResult.FAIL;
             ActionResult modifyArmor = gameSpace.getBehavior().testRule(GameRuleType.MODIFY_ARMOR);
             if ((denyModifyInventory && (!isArmor || modifyArmor != ActionResult.SUCCESS))
                     || (isArmor && modifyArmor == ActionResult.FAIL)) {
-                ItemStack stack = this.player.inventory.getStack(packet.getSlot());
+                ItemStack stack = this.player.getInventory().getStack(packet.getSlot());
 
-                ci.cancel();
                 if (!packet.getStack().isEmpty()) {
                     // this.player.playSound didn't appear to work, but a packet did.
                     this.sendPacket(new PlaySoundS2CPacket(
@@ -90,10 +89,10 @@ public abstract class ServerPlayNetworkHandlerMixin {
                     ));
                 }
 
-                this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(packet.getSyncId(), packet.getSlot(), stack));
-                this.player.refreshScreenHandler(this.player.currentScreenHandler);
-                this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-1, -1, this.player.inventory.getCursorStack()));
-                this.sendPacket(new ConfirmScreenActionS2CPacket(packet.getSyncId(), packet.getActionId(), false));
+                this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(packet.getSyncId(), screenHandler.nextRevision(), packet.getSlot(), stack));
+                this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(ScreenHandlerSlotUpdateS2CPacket.UPDATE_CURSOR_SYNC_ID, screenHandler.nextRevision(), -1, screenHandler.getCursorStack()));
+
+                ci.cancel();
             }
         }
     }

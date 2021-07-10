@@ -1,10 +1,10 @@
 package xyz.nucleoid.plasmid.mixin.game.portal;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -30,12 +30,12 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     @Shadow
     public abstract void setTextOnRow(int row, Text text);
 
+    private SignBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+    }
+
     private GamePortal portal;
     private Identifier loadedPortalId;
-
-    private SignBlockEntityMixin(BlockEntityType<?> type) {
-        super(type);
-    }
 
     @Override
     public void setPortal(GamePortal portal) {
@@ -58,7 +58,7 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
         if (this.hasWorld()) {
             this.markDirty();
             BlockState cachedState = this.getCachedState();
-            this.world.updateListeners(this.pos, cachedState, cachedState, 0b11);
+            this.world.updateListeners(this.pos, cachedState, cachedState, Block.NOTIFY_ALL);
         }
     }
 
@@ -79,9 +79,9 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     }
 
     @Inject(method = "onActivate", at = @At("HEAD"), cancellable = true)
-    private void onActivate(PlayerEntity player, CallbackInfoReturnable<Boolean> ci) {
-        if (this.portal != null && player instanceof ServerPlayerEntity) {
-            this.portal.requestJoin((ServerPlayerEntity) player);
+    private void onActivate(ServerPlayerEntity player, CallbackInfoReturnable<Boolean> ci) {
+        if (this.portal != null) {
+            this.portal.requestJoin(player);
             ci.setReturnValue(true);
         }
     }
@@ -91,25 +91,25 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
         this.serializePortal(root);
     }
 
-    @Inject(method = "fromTag", at = @At("RETURN"))
-    private void readNbt(BlockState state, NbtCompound root, CallbackInfo ci) {
+    @Inject(method = "readNbt", at = @At("RETURN"))
+    private void readNbt(NbtCompound root, CallbackInfo ci) {
         this.loadedPortalId = this.deserializePortalId(root);
     }
 
     @Override
-    public void setLocation(World world, BlockPos pos) {
+    public void setWorld(World world) {
+        super.setWorld(world);
+
         MinecraftServer server = world.getServer();
         if (server != null && this.loadedPortalId != null) {
             this.tryConnectTo(this.loadedPortalId);
             this.loadedPortalId = null;
         }
-
-        super.setLocation(world, pos);
     }
 
     @Override
-    public void markInvalid() {
-        super.markInvalid();
+    public void markRemoved() {
+        super.markRemoved();
         this.invalidatePortal();
     }
 }

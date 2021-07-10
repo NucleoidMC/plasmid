@@ -14,14 +14,13 @@
   "accessWidener": "plasmid.accesswidener",
   "custom": {
     "modmenu": {
-      "badges": [
-        "library"
-      ]
+      "badges": ["library"]
     }
   },
   "depends": {
-    "fabricloader": ">=0.9.1",
+    "fabricloader": ">=0.11",
     "fabric": "*",
-    "minecraft": "1.16.x"
+    "minecraft": "1.17.x",
+    "java": ">=16"
   }
 }

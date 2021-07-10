@@ -22,7 +22,7 @@ public final class MapWorkspaceArgument {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((context, builder) -> {
                     ServerCommandSource source = context.getSource();
-                    MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
+                    MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
 
                     return CommandSource.suggestIdentifiers(
                             workspaceManager.getWorkspaceIds().stream(),
@@ -35,7 +35,7 @@ public final class MapWorkspaceArgument {
         Identifier identifier = IdentifierArgumentType.getIdentifier(context, name);
 
         ServerCommandSource source = context.getSource();
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getMinecraftServer());
+        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
 
         MapWorkspace workspace = workspaceManager.byId(identifier);
         if (workspace == null) {

@@ -6,7 +6,6 @@
   "mixins": [
     "MinecraftServerAccessor",
     "chat.ServerPlayerEntityMixin",
-    "custom.EntityMixin",
     "game.map.ServerPlayerEntityMixin",
     "game.map.ServerWorldMixin",
     "game.portal.EntityMixin",

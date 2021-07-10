@@ -38,11 +38,13 @@ dependencies {
   modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
   modImplementation include('fr.catcore:server-translations-api:1.4.5+1.17')
-  modImplementation include('xyz.nucleoid:packet-tweaker:0.2.0+1.17-pre1')
+  modImplementation include('xyz.nucleoid:packet-tweaker:0.2.0+1.17.1')
   modImplementation include('xyz.nucleoid:fantasy:0.4.1+1.17')
   modImplementation include('xyz.nucleoid:more-codecs:0.1.4')
   modImplementation include('xyz.nucleoid:stimuli:0.2.3+1.17.1')
   modImplementation include('eu.pb4:polymer:0.1.0-pre8+1.17.1')
+  modImplementation include('eu.pb4:hologram-api:0.1.2+1.17.1')
+  modImplementation include('eu.pb4:sgui:1.0.0-rc3-1.17.1')
 
   modRuntime("supercoder79:databreaker:0.2.7") {
     exclude module: "fabric-loader"

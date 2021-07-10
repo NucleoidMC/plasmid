@@ -50,7 +50,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
     public CompletableFuture<GameSpace> requestJoin(ServerPlayerEntity player) {
         var future = new CompletableFuture<GameSpace>();
 
-        var ui = ShopUi.create(this.name, builder -> {
+        var ui = ShopUi.create(player, this.name, builder -> {
             for (var entry : this.games) {
                 var uiEntry = ShopEntry.ofIcon(entry.icon).noCost()
                         .withName(entry.game.getName())
@@ -69,7 +69,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
             }
         });
 
-        player.openHandledScreen(ui);
+        ui.open();
 
         return future;
     }

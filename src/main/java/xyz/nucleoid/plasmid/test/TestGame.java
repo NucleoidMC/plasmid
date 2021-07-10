@@ -10,6 +10,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.game.GameSpace;
@@ -60,6 +61,10 @@ public final class TestGame {
                         content.writeLine("");
                         content.writeTranslated("text.plasmid.game.started.player", "test");
                     });
+                }
+
+                if (time > 100) {
+                    gameSpace.close(GameCloseReason.FINISHED);
                 }
             });
         });

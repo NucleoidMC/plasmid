@@ -1,6 +1,5 @@
 package xyz.nucleoid.plasmid.game.manager;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -15,9 +14,6 @@ import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.*;
-import xyz.nucleoid.plasmid.game.activity.GameActivity;
-import xyz.nucleoid.plasmid.game.activity.GameActivitySource;
-import xyz.nucleoid.plasmid.game.activity.GameActivityStack;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
@@ -41,7 +37,6 @@ import java.util.function.Consumer;
  */
 // TODO: Go over the new 0.5 API and add proper documentation!
 
-// TODO: Split up & simplify this class
 public final class ManagedGameSpace implements GameSpace {
     private final MinecraftServer server;
     private final GameSpaceManager manager;
@@ -51,12 +46,13 @@ public final class ManagedGameSpace implements GameSpace {
     private final Identifier id;
 
     private final GameSpaceWorlds worlds;
-    private final GameActivityStack<ManagedGameActivity> activityStack = new GameActivityStack<>();
     private final IsolatingPlayerTeleporter playerTeleporter;
 
     private final GameLifecycle lifecycle = new GameLifecycle();
 
     private final long openTime;
+
+    private final GameActivityState state = new GameActivityState(this);
     private boolean closed;
 
     ManagedGameSpace(MinecraftServer server, GameSpaceManager manager, GameConfig<?> sourceConfig, Identifier id) {
@@ -71,6 +67,19 @@ public final class ManagedGameSpace implements GameSpace {
         this.playerTeleporter = new IsolatingPlayerTeleporter(server);
 
         this.openTime = server.getOverworld().getTime();
+    }
+
+    @Override
+    public void setActivity(GameConfig<?> config, Consumer<GameActivity> builder) {
+        try {
+            this.state.setActivity(() -> {
+                ManagedGameActivity activity = new ManagedGameActivity(this, config);
+                builder.accept(activity);
+                return activity;
+            });
+        } catch (Throwable throwable) {
+            this.closeWithError("An unexpected error occurred while setting game activity");
+        }
     }
 
     @Override
@@ -91,127 +100,12 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     @Override
-    public GameActivitySource activitySource(GameConfig<?> config) {
-        return new GameActivitySource() {
-            @Override
-            public void push(Consumer<GameActivity> builder) {
-                ManagedGameSpace.this.pushActivity(config, this, builder);
-            }
-
-            @Override
-            public void swap(Consumer<GameActivity> builder) {
-                ManagedGameSpace.this.swapActivity(config, this, builder);
-            }
-
-            @Override
-            public void pop(GameActivity activity, GameCloseReason reason) {
-                if (activity instanceof ManagedGameActivity) {
-                    ManagedGameSpace.this.popActivity((ManagedGameActivity) activity, reason);
-                }
-            }
-        };
-    }
-
-    void pushActivity(GameConfig<?> config, GameActivitySource source, Consumer<GameActivity> builder) {
-        Preconditions.checkState(!this.closed, "GameSpace already closed!");
-
-        ManagedGameActivity lastActivity = this.activityStack.peek();
-        if (lastActivity != null) {
-            this.disableActivity(lastActivity);
-        }
-
-        ManagedGameActivity activity = new ManagedGameActivity(this, config, source);
-        builder.accept(activity);
-
-        this.activityStack.push(activity);
-
-        this.createActivity(activity);
-        this.enableActivity(activity);
-    }
-
-    void swapActivity(GameConfig<?> config, GameActivitySource source, Consumer<GameActivity> builder) {
-        Preconditions.checkState(!this.closed, "GameSpace already closed!");
-
-        ManagedGameActivity closedActivity = this.activityStack.pop();
-        if (closedActivity != null) {
-            this.disableActivity(closedActivity);
-            this.destroyActivity(closedActivity, GameCloseReason.SWAPPED);
-        }
-
-        ManagedGameActivity activity = new ManagedGameActivity(this, config, source);
-        builder.accept(activity);
-
-        this.activityStack.push(activity);
-
-        this.createActivity(activity);
-        this.enableActivity(activity);
-    }
-
-    void popActivity(ManagedGameActivity activity, GameCloseReason reason) {
-        Preconditions.checkState(!this.closed, "GameSpace already closed!");
-
-        if (this.activityStack.pop(activity)) {
-            this.disableActivity(activity);
-            this.destroyActivity(activity, reason);
-
-            if (!this.activityStack.isEmpty()) {
-                this.enableActivity(this.activityStack.peek());
-            } else {
-                this.close(reason);
-            }
-        } else {
-            throw new IllegalArgumentException("Given GameActivity is not currently enabled!");
-        }
-    }
-
-    private void createActivity(ManagedGameActivity activity) {
-        try {
-            activity.propagatingInvoker(GameActivityEvents.CREATE).onCreate();
-
-            GameEvents.CREATE_ACTIVITY.invoker().onCreateActivity(this, activity);
-        } catch (Throwable throwable) {
-            this.closeWithError("An unexpected error occurred while opening the game");
-        }
-    }
-
-    private void enableActivity(ManagedGameActivity activity) {
-        for (ServerPlayerEntity player : this.players) {
-            try {
-                activity.propagatingInvoker(GamePlayerEvents.ADD).onAddPlayer(player);
-            } catch (Throwable throwable) {
-                player.sendMessage(GameTexts.Join.unexpectedError(), false);
-                this.kickPlayer(player);
-            }
-        }
-
-        try {
-            activity.propagatingInvoker(GameActivityEvents.ENABLE).onEnable();
-        } catch (Throwable throwable) {
-            this.closeWithError("An unexpected error occurred while resuming a game activity");
-        }
-    }
-
-    private void disableActivity(ManagedGameActivity activity) {
-        activity.invoker(GameActivityEvents.DISABLE).onDisable();
-        for (ServerPlayerEntity player : this.players) {
-            activity.invoker(GamePlayerEvents.REMOVE).onRemovePlayer(player);
-        }
-    }
-
-    private void destroyActivity(ManagedGameActivity activity, GameCloseReason reason) {
-        activity.invoker(GameActivityEvents.DESTROY).onDestroy(reason);
-        activity.onDestroy();
-
-        GameEvents.DESTROY_ACTIVITY.invoker().onDestroyActivity(this, activity, reason);
-    }
-
-    @Override
     public GameResult screenPlayerJoins(Collection<ServerPlayerEntity> players) {
         if (this.closed) {
             return GameResult.error(GameTexts.Join.gameClosed());
         }
 
-        return this.activityStack.invoker(GamePlayerEvents.SCREEN_JOINS).screenJoins(players);
+        return this.state.invoker(GamePlayerEvents.SCREEN_JOINS).screenJoins(players);
     }
 
     @Override
@@ -225,7 +119,7 @@ public final class ManagedGameSpace implements GameSpace {
         }
 
         PlayerOffer offer = new PlayerOffer(player);
-        PlayerOfferResult result = this.activityStack.invoker(GamePlayerEvents.OFFER).onOfferPlayer(offer);
+        PlayerOfferResult result = this.state.invoker(GamePlayerEvents.OFFER).onOfferPlayer(offer);
 
         PlayerOfferResult.Reject reject = result.asReject();
         if (reject != null) {
@@ -248,8 +142,8 @@ public final class ManagedGameSpace implements GameSpace {
     private void addPlayer(ServerPlayerEntity player, PlayerOfferResult.Accept result) {
         this.playerTeleporter.teleportIn(player, result::applyJoin);
 
-        this.activityStack.propagatingInvoker(GamePlayerEvents.JOIN).onAddPlayer(player);
-        this.activityStack.propagatingInvoker(GamePlayerEvents.ADD).onAddPlayer(player);
+        this.state.propagatingInvoker(GamePlayerEvents.JOIN).onAddPlayer(player);
+        this.state.propagatingInvoker(GamePlayerEvents.ADD).onAddPlayer(player);
 
         this.players.add(player);
         this.manager.addPlayerToGameSpace(this, player);
@@ -272,12 +166,12 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     public boolean removePlayer(ServerPlayerEntity player) {
-        if (!this.players.contains(player)) {
+        if (this.closed || !this.players.contains(player)) {
             return false;
         }
 
-        this.activityStack.invoker(GamePlayerEvents.LEAVE).onRemovePlayer(player);
-        this.activityStack.invoker(GamePlayerEvents.REMOVE).onRemovePlayer(player);
+        this.state.invoker(GamePlayerEvents.LEAVE).onRemovePlayer(player);
+        this.state.invoker(GamePlayerEvents.REMOVE).onRemovePlayer(player);
 
         this.lifecycle.onRemovePlayer(this, player);
 
@@ -293,12 +187,16 @@ public final class ManagedGameSpace implements GameSpace {
 
     @Override
     public GameResult requestStart() {
+        if (this.closed) {
+            return GameResult.error(GameTexts.Start.alreadyStarted());
+        }
+
         GameResult startResult = GameEvents.START_REQUEST.invoker().onRequestStart(this, null);
         if (startResult != null) {
             return startResult;
         }
 
-        startResult = this.activityStack.invoker(GameActivityEvents.REQUEST_START).onRequestStart();
+        startResult = this.state.invoker(GameActivityEvents.REQUEST_START).onRequestStart();
         if (startResult != null) {
             return startResult;
         } else {
@@ -311,12 +209,7 @@ public final class ManagedGameSpace implements GameSpace {
         this.close(GameCloseReason.ERRORED);
     }
 
-    /**
-     * Closes this {@link GameSpace} with the given reason.
-     * All associated {@link GameActivity} instances are closed and all players will be removed.
-     *
-     * @param reason the reason for this game closing
-     */
+    @Override
     public void close(GameCloseReason reason) {
         if (this.closed) {
             return;
@@ -330,15 +223,7 @@ public final class ManagedGameSpace implements GameSpace {
         this.lifecycle.onClosing(this, reason);
 
         try {
-            ManagedGameActivity topActivity = this.activityStack.peek();
-            if (topActivity != null) {
-                this.disableActivity(topActivity);
-            }
-
-            ManagedGameActivity activity;
-            while ((activity = this.activityStack.pop()) != null) {
-                this.destroyActivity(activity, reason);
-            }
+            this.state.closeActivity(reason);
 
             for (ServerPlayerEntity player : players) {
                 this.lifecycle.onRemovePlayer(this, player);
@@ -394,7 +279,7 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     public GameBehavior getBehavior() {
-        return this.activityStack;
+        return this.state;
     }
 
     public IsolatingPlayerTeleporter getPlayerTeleporter() {

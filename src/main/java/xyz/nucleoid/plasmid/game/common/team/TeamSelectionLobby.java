@@ -15,7 +15,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.activity.GameActivity;
+import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.util.ColoredBlocks;
 import xyz.nucleoid.stimuli.event.item.ItemUseEvent;

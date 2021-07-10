@@ -66,16 +66,6 @@ public final class GameSpaceManager {
         }
     }
 
-    public static void unloadWorld(ServerWorld world) {
-        GameSpaceManager instance = GameSpaceManager.instance;
-        if (instance != null) {
-            ManagedGameSpace gameSpace = instance.byWorld(world);
-            if (gameSpace != null) {
-                gameSpace.close(GameCloseReason.GARBAGE_COLLECTED);
-            }
-        }
-    }
-
     public static GameSpaceManager get() {
         return Preconditions.checkNotNull(instance, "GameSpaceManager not yet initialized");
     }

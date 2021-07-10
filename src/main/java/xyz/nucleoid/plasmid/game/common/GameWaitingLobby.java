@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
-import xyz.nucleoid.plasmid.game.activity.GameActivity;
+import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
 import xyz.nucleoid.plasmid.game.common.widget.BossBarWidget;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;

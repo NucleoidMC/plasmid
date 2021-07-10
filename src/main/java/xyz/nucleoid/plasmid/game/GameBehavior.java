@@ -2,9 +2,10 @@ package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.NotNull;
-import xyz.nucleoid.plasmid.game.activity.GameActivity;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
+
+import java.util.Collections;
 
 /**
  * Represents the logic that describes how a {@link GameSpace} or {@link GameActivity} interacts with the world.
@@ -18,6 +19,32 @@ import xyz.nucleoid.stimuli.event.StimulusEvent;
  * @see GameActivity
  */
 public interface GameBehavior {
+    GameBehavior EMPTY = new GameBehavior() {
+        @Override
+        @NotNull
+        public <T> T invoker(StimulusEvent<T> event) {
+            return event.emptyInvoker();
+        }
+
+        @Override
+        @NotNull
+        public <T> T propagatingInvoker(StimulusEvent<T> event) {
+            return event.emptyInvoker();
+        }
+
+        @Override
+        @NotNull
+        public <T> Iterable<T> getInvokers(StimulusEvent<T> event) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        @NotNull
+        public ActionResult testRule(GameRuleType rule) {
+            return ActionResult.PASS;
+        }
+    };
+
     @NotNull
     <T> T invoker(StimulusEvent<T> event);
 

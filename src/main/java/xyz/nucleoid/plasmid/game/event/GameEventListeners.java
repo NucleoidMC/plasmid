@@ -101,11 +101,11 @@ public final class GameEventListeners implements EventRegistrar {
             GameEventExceptionHandler exceptionHandler = GameEventListeners.this.exceptionHandler;
 
             this.invoker = this.createInvoker(throwable -> {
-                exceptionHandler.handleException(this.event, throwable);
+                exceptionHandler.handleException(event, throwable);
             });
 
             this.propagatingInvoker = this.createInvoker(throwable -> {
-                exceptionHandler.handleException(this.event, throwable);
+                exceptionHandler.handleException(event, throwable);
 
                 Throwables.throwIfUnchecked(throwable);
                 throw new RuntimeException(throwable);

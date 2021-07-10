@@ -9,7 +9,6 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import java.util.Random;
 
 public final class RandomGame {
-    // TODO: make sure these implementations attribute source correctly
     public static GameOpenProcedure open(GameOpenContext<RandomGameConfig> context) {
         RandomGameConfig config = context.getConfig();
 

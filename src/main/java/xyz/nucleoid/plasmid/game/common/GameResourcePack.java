@@ -2,7 +2,7 @@ package xyz.nucleoid.plasmid.game.common;
 
 import joptsimple.internal.Strings;
 import net.minecraft.server.MinecraftServer;
-import xyz.nucleoid.plasmid.game.activity.GameActivity;
+import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 
 // TODO: prevent resource-pack soft-lock

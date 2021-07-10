@@ -5,12 +5,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
-import xyz.nucleoid.plasmid.game.activity.GameActivity;
-import xyz.nucleoid.plasmid.game.activity.GameActivitySource;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
 /**
  * Represents an instance of a game, and the "space" within which it occurs.
@@ -29,8 +28,15 @@ public interface GameSpace {
      */
     MinecraftServer getServer();
 
-    // TODO: should this be here?
-    GameActivitySource activitySource(GameConfig<?> config);
+    void setActivity(GameConfig<?> config, Consumer<GameActivity> builder);
+
+    /**
+     * Closes this {@link GameSpace} with the given reason.
+     * The associated {@link GameActivity} is closed and all players will be removed.
+     *
+     * @param reason the reason for this game closing
+     */
+    void close(GameCloseReason reason);
 
     ServerWorld addWorld(RuntimeWorldConfig worldConfig);
 

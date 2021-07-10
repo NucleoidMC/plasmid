@@ -1,8 +1,6 @@
-package xyz.nucleoid.plasmid.game.activity;
+package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.util.ActionResult;
-import xyz.nucleoid.plasmid.game.GameBehavior;
-import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
@@ -17,9 +15,6 @@ public interface GameActivity extends GameBehavior {
      * @return the game config that created this activity
      */
     GameConfig<?> getGameConfig();
-
-    // TODO: should this exist here? name?
-    GameActivitySource getSource();
 
     /**
      * Sets a rule on this {@link GameActivity} that will be enforced while this activity is enabled.

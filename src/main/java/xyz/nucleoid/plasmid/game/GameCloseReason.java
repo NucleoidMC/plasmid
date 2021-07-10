@@ -1,7 +1,5 @@
 package xyz.nucleoid.plasmid.game;
 
-import xyz.nucleoid.plasmid.game.activity.GameActivity;
-
 /**
  * Represents a reason for a game to close.
  * 

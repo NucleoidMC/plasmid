@@ -6,7 +6,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
@@ -107,10 +106,6 @@ public final class Plasmid implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             GameSpaceManager.closeServer();
             GamePortalManager.INSTANCE.close(server);
-        });
-
-        ServerWorldEvents.UNLOAD.register((server, world) -> {
-            GameSpaceManager.unloadWorld(world);
         });
     }
 }

@@ -8,6 +8,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 
 final class GameSpaceIdManager {
@@ -47,7 +48,7 @@ final class GameSpaceIdManager {
     }
 
     private Identifier generateRandomId(Identifier configId) {
-        var random = RandomStringUtils.randomAlphabetic(4);
+        var random = RandomStringUtils.randomAlphabetic(4).toLowerCase(Locale.ROOT);
         return new Identifier(configId.getNamespace(), configId.getPath() + "/" + random);
     }
 

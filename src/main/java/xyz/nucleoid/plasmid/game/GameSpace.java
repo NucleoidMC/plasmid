@@ -44,6 +44,7 @@ public interface GameSpace {
      * @param config the game config which created this activity
      * @param builder a builder to set up a new activity's listeners and rules
      */
+    // TODO: passing the config is not ideal
     void setActivity(GameConfig<?> config, Consumer<GameActivity> builder);
 
     /**

@@ -7,7 +7,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.PersistentState;
@@ -76,15 +75,15 @@ public final class MapWorkspaceManager extends PersistentState {
     }
 
     public MapWorkspace open(Identifier identifier, RuntimeWorldConfig config) {
-        MapWorkspace existingWorkspace = this.workspacesById.get(identifier);
+        var existingWorkspace = this.workspacesById.get(identifier);
         if (existingWorkspace != null) {
             return existingWorkspace;
         }
 
-        RuntimeWorldHandle worldHandle = this.getOrCreateDimension(identifier, config);
+        var worldHandle = this.getOrCreateDimension(identifier, config);
         worldHandle.setTickWhenEmpty(false);
 
-        MapWorkspace workspace = new MapWorkspace(worldHandle, identifier, DEFAULT_BOUNDS);
+        var workspace = new MapWorkspace(worldHandle, identifier, DEFAULT_BOUNDS);
         this.workspacesById.put(identifier, workspace);
         this.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
         this.editorManager.addWorkspace(workspace);
@@ -94,11 +93,11 @@ public final class MapWorkspaceManager extends PersistentState {
 
     public boolean delete(MapWorkspace workspace) {
         if (this.workspacesById.remove(workspace.getIdentifier(), workspace)) {
-            ServerWorld world = workspace.getWorld();
+            var world = workspace.getWorld();
             this.workspacesByDimension.remove(world.getRegistryKey());
 
-            for (ServerPlayerEntity player : new ArrayList<>(world.getPlayers())) {
-                ReturnPosition returnPosition = WorkspaceTraveler.getLeaveReturn(player);
+            for (var player : new ArrayList<>(world.getPlayers())) {
+                var returnPosition = WorkspaceTraveler.getLeaveReturn(player);
                 if (returnPosition != null) {
                     returnPosition.applyTo(player);
                 }
@@ -137,16 +136,16 @@ public final class MapWorkspaceManager extends PersistentState {
     }
 
     private static MapWorkspaceManager readNbt(MinecraftServer server, NbtCompound nbt) {
-        MapWorkspaceManager manager = new MapWorkspaceManager(server);
+        var manager = new MapWorkspaceManager(server);
 
-        for (String key : nbt.getKeys()) {
-            Identifier identifier = new Identifier(key);
-            NbtCompound root = nbt.getCompound(key);
+        for (var key : nbt.getKeys()) {
+            var identifier = new Identifier(key);
+            var root = nbt.getCompound(key);
 
-            RuntimeWorldHandle worldHandle = manager.getOrCreateDimension(identifier, manager.createDefaultConfig());
+            var worldHandle = manager.getOrCreateDimension(identifier, manager.createDefaultConfig());
             worldHandle.setTickWhenEmpty(false);
 
-            MapWorkspace workspace = MapWorkspace.deserialize(worldHandle, root);
+            var workspace = MapWorkspace.deserialize(worldHandle, root);
             manager.workspacesById.put(identifier, workspace);
             manager.workspacesByDimension.put(worldHandle.asWorld().getRegistryKey(), workspace);
             manager.editorManager.addWorkspace(workspace);
@@ -157,7 +156,7 @@ public final class MapWorkspaceManager extends PersistentState {
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
-        for (Map.Entry<Identifier, MapWorkspace> entry : this.workspacesById.entrySet()) {
+        for (var entry : this.workspacesById.entrySet()) {
             String key = entry.getKey().toString();
             nbt.put(key, entry.getValue().serialize(new NbtCompound()));
         }
@@ -170,13 +169,13 @@ public final class MapWorkspaceManager extends PersistentState {
     }
 
     private RuntimeWorldHandle getOrCreateDimension(Identifier identifier, RuntimeWorldConfig config) {
-        Identifier dimensionId = new Identifier(identifier.getNamespace(), "workspace_" + identifier.getPath());
+        var dimensionId = new Identifier(identifier.getNamespace(), "workspace_" + identifier.getPath());
         return Fantasy.get(this.server).getOrOpenPersistentWorld(dimensionId, config);
     }
 
     private RuntimeWorldConfig createDefaultConfig() {
-        DynamicRegistryManager registries = this.server.getRegistryManager();
-        VoidChunkGenerator generator = new VoidChunkGenerator(registries.get(Registry.BIOME_KEY));
+        var registries = this.server.getRegistryManager();
+        var generator = new VoidChunkGenerator(registries.get(Registry.BIOME_KEY));
 
         return new RuntimeWorldConfig()
                 .setDimensionType(DimensionType.OVERWORLD_REGISTRY_KEY)

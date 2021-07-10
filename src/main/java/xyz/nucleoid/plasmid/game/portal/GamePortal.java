@@ -8,7 +8,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.GameOpenException;
-import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
@@ -50,8 +49,8 @@ public final class GamePortal {
     }
 
     public void requestJoin(ServerPlayerEntity player) {
-        PartyManager partyManager = PartyManager.get(player.server);
-        Collection<ServerPlayerEntity> players = partyManager.getPartyMembers(player);
+        var partyManager = PartyManager.get(player.server);
+        var players = partyManager.getPartyMembers(player);
 
         this.requestJoinAll(player, players)
                 .thenAcceptAsync(results -> {
@@ -67,18 +66,18 @@ public final class GamePortal {
     }
 
     private JoinResults tryJoinAll(Collection<ServerPlayerEntity> players, GameSpace gameSpace) {
-        JoinResults results = new JoinResults();
+        var results = new JoinResults();
 
-        GameResult screenResult = gameSpace.screenPlayerJoins(players);
+        var screenResult = gameSpace.screenPlayerJoins(players);
         if (screenResult.isError()) {
-            results.globalError = screenResult.getError();
+            results.globalError = screenResult.error();
             return results;
         }
 
-        for (ServerPlayerEntity player : players) {
-            GameResult result = gameSpace.offerPlayer(player);
+        for (var player : players) {
+            var result = gameSpace.offerPlayer(player);
             if (result.isError()) {
-                results.playerErrors.put(player, result.getError());
+                results.playerErrors.put(player, result.error());
             }
         }
 
@@ -86,7 +85,7 @@ public final class GamePortal {
     }
 
     private JoinResults handleJoinException(Throwable throwable) {
-        JoinResults results = new JoinResults();
+        var results = new JoinResults();
         results.globalError = this.getFeedbackForException(throwable);
         return results;
     }
@@ -100,7 +99,7 @@ public final class GamePortal {
                     false
             );
 
-            for (Map.Entry<ServerPlayerEntity, Text> entry : results.playerErrors.entrySet()) {
+            for (var entry : results.playerErrors.entrySet()) {
                 Text error = entry.getValue().shallowCopy().formatted(Formatting.RED);
                 entry.getKey().sendMessage(error, false);
             }
@@ -108,7 +107,7 @@ public final class GamePortal {
     }
 
     private Text getFeedbackForException(Throwable throwable) {
-        GameOpenException gameOpenException = GameOpenException.unwrap(throwable);
+        var gameOpenException = GameOpenException.unwrap(throwable);
         if (gameOpenException != null) {
             return gameOpenException.getReason().shallowCopy();
         } else {
@@ -134,7 +133,7 @@ public final class GamePortal {
     }
 
     public void invalidate() {
-        for (GamePortalInterface itf : this.interfaces) {
+        for (var itf : this.interfaces) {
             itf.invalidatePortal();
         }
         this.interfaces.clear();
@@ -143,18 +142,18 @@ public final class GamePortal {
     void updateDisplay() {
         this.flipDisplay();
 
-        GamePortalDisplay display = this.currentDisplay;
+        var display = this.currentDisplay;
         this.backend.populateDisplay(display);
 
         if (!display.equals(this.lastDisplay)) {
-            for (GamePortalInterface itf : this.interfaces) {
+            for (var itf : this.interfaces) {
                 itf.setDisplay(display);
             }
         }
     }
 
     void flipDisplay() {
-        GamePortalDisplay swap = this.currentDisplay;
+        var swap = this.currentDisplay;
         this.currentDisplay = this.lastDisplay;
         this.lastDisplay = swap;
 

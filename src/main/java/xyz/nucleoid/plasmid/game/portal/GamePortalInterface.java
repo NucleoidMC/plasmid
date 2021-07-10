@@ -20,7 +20,7 @@ public interface GamePortalInterface {
     void setDisplay(GamePortalDisplay display);
 
     default void serializePortal(NbtCompound root) {
-        GamePortal connection = this.getPortal();
+        var connection = this.getPortal();
         if (connection != null) {
             root.putString(NBT_KEY, connection.getId().toString());
         }
@@ -35,7 +35,7 @@ public interface GamePortalInterface {
     }
 
     default void tryConnectTo(Identifier portalId) {
-        GamePortal portal = GamePortalManager.INSTANCE.byId(portalId);
+        var portal = GamePortalManager.INSTANCE.byId(portalId);
         if (portal == null) {
             Plasmid.LOGGER.warn("Loaded channel endpoint with invalid portal id: '{}'", portalId);
             return;
@@ -45,7 +45,7 @@ public interface GamePortalInterface {
     }
 
     default void invalidatePortal() {
-        GamePortal portal = this.getPortal();
+        var portal = this.getPortal();
         if (portal != null) {
             portal.removeInterface(this);
             this.setPortal(null);

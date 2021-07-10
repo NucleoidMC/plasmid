@@ -28,7 +28,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.isolation.PlayerManagerAccess;
 import xyz.nucleoid.plasmid.game.player.isolation.PlayerResetter;
 
@@ -65,7 +64,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
 
     @Inject(method = "remove", at = @At("RETURN"))
     private void removePlayer(ServerPlayerEntity player, CallbackInfo ci) {
-        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(player);
+        var gameSpace = GameSpaceManager.get().byPlayer(player);
         if (gameSpace != null) {
             gameSpace.removePlayer(player);
         }
@@ -85,7 +84,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             BlockPos spawnPos, float spawnAngle, boolean spawnSet, ServerWorld spawnWorld, Optional<Vec3d> respawnPoint,
             ServerWorld respawnWorld, ServerPlayerEntity respawnedPlayer
     ) {
-        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(oldPlayer);
+        var gameSpace = GameSpaceManager.get().byPlayer(oldPlayer);
 
         if (gameSpace != null) {
             gameSpace.removePlayer(oldPlayer);
@@ -106,7 +105,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
 
     @Override
     public void plasmid$loadIntoPlayer(ServerPlayerEntity player) {
-        NbtCompound userData = this.getUserData();
+        var userData = this.getUserData();
         if (userData == null) {
             userData = this.server.getSaveProperties().getPlayerData();
         }
@@ -119,9 +118,9 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             playerData = this.saveHandler.loadPlayerData(player);
         }
 
-        RegistryKey<World> dimension = playerData != null ? this.getDimensionFromData(playerData) : null;
+        var dimension = playerData != null ? this.getDimensionFromData(playerData) : null;
 
-        ServerWorld world = this.server.getWorld(dimension);
+        var world = this.server.getWorld(dimension);
         if (world == null) {
             world = this.server.getOverworld();
         }
@@ -149,14 +148,14 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     @Override
     public PlayerResetter plasmid$getPlayerResetter() {
         if (this.playerResetter == null) {
-            ServerWorld overworld = this.server.getOverworld();
-            GameProfile profile = new GameProfile(Util.NIL_UUID, "null");
+            var overworld = this.server.getOverworld();
+            var profile = new GameProfile(Util.NIL_UUID, "null");
 
-            ServerPlayerEntity player = new ServerPlayerEntity(this.server, overworld, profile);
+            var player = new ServerPlayerEntity(this.server, overworld, profile);
             this.statisticsMap.remove(Util.NIL_UUID);
             this.advancementTrackers.remove(Util.NIL_UUID);
 
-            NbtCompound tag = new NbtCompound();
+            var tag = new NbtCompound();
             player.writeNbt(tag);
             tag.remove("UUID");
             tag.remove("Pos");

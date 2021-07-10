@@ -58,20 +58,12 @@ public final class MenuPortalConfig implements GamePortalConfig {
         return CODEC;
     }
 
-    public static class Entry {
+    public record Entry(Identifier game, ItemStack icon) {
         public static final Codec<Entry> CODEC = RecordCodecBuilder.create(instance -> {
             return instance.group(
                     Identifier.CODEC.fieldOf("game").forGetter(entry -> entry.game),
                     MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Blocks.WHITE_WOOL)).forGetter(entry -> entry.icon)
             ).apply(instance, Entry::new);
         });
-
-        public final Identifier game;
-        public final ItemStack icon;
-
-        Entry(Identifier game, ItemStack icon) {
-            this.game = game;
-            this.icon = icon;
-        }
     }
 }

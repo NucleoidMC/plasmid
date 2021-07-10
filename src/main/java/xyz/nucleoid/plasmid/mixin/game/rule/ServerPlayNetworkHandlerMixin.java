@@ -1,7 +1,5 @@
 package xyz.nucleoid.plasmid.mixin.game.rule;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
@@ -20,7 +18,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 
 @Mixin(ServerPlayNetworkHandler.class)
@@ -48,10 +45,10 @@ public abstract class ServerPlayNetworkHandlerMixin {
 
         // we're in a vehicle and the player tried to change their position!
 
-        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(this.player);
+        var gameSpace = GameSpaceManager.get().byPlayer(this.player);
         if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.DISMOUNT_VEHICLE) == ActionResult.FAIL) {
-            // the player is probably desynchronized: update them with the vehicle passengers
-            Entity vehicle = this.player.getVehicle();
+            /* the player is probably desynchronized: update them with the vehicle passengers */
+            var vehicle = this.player.getVehicle();
             this.sendPacket(new EntityPassengersSetS2CPacket(vehicle));
         }
     }
@@ -66,7 +63,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
             )
     )
     private void onClickSlot(ClickSlotC2SPacket packet, CallbackInfo ci) {
-        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(this.player);
+        var gameSpace = GameSpaceManager.get().byPlayer(this.player);
 
         if (gameSpace != null) {
             if (packet.getSlot() < 0 || packet.getSlot() >= this.player.getInventory().size()) return;
@@ -75,10 +72,10 @@ public abstract class ServerPlayNetworkHandlerMixin {
 
             boolean isArmor = (packet.getSlot() >= 5 && packet.getSlot() <= 8) && screenHandler instanceof PlayerScreenHandler;
             boolean denyModifyInventory = gameSpace.getBehavior().testRule(GameRuleType.MODIFY_INVENTORY) == ActionResult.FAIL;
-            ActionResult modifyArmor = gameSpace.getBehavior().testRule(GameRuleType.MODIFY_ARMOR);
+            var modifyArmor = gameSpace.getBehavior().testRule(GameRuleType.MODIFY_ARMOR);
             if ((denyModifyInventory && (!isArmor || modifyArmor != ActionResult.SUCCESS))
                     || (isArmor && modifyArmor == ActionResult.FAIL)) {
-                ItemStack stack = this.player.getInventory().getStack(packet.getSlot());
+                var stack = this.player.getInventory().getStack(packet.getSlot());
 
                 if (!packet.getStack().isEmpty()) {
                     // this.player.playSound didn't appear to work, but a packet did.

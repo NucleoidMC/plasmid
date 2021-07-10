@@ -8,16 +8,16 @@ import org.jetbrains.annotations.Nullable;
 public interface WorkspaceTraveler {
     @Nullable
     static ReturnPosition getReturnFor(ServerPlayerEntity player, RegistryKey<World> dimension) {
-        if (player instanceof WorkspaceTraveler) {
-            return ((WorkspaceTraveler) player).getReturnFor(dimension);
+        if (player instanceof WorkspaceTraveler traveler) {
+            return traveler.getReturnFor(dimension);
         }
         return null;
     }
 
     @Nullable
     static ReturnPosition getLeaveReturn(ServerPlayerEntity player) {
-        if (player instanceof WorkspaceTraveler) {
-            return ((WorkspaceTraveler) player).getLeaveReturn();
+        if (player instanceof WorkspaceTraveler traveler) {
+            return traveler.getLeaveReturn();
         }
         return null;
     }

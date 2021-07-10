@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.util;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
-import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
@@ -37,9 +36,9 @@ public final class Scheduler {
      * @param task the action to perform
      */
     public <T> CompletableFuture<T> submit(Function<MinecraftServer, T> task, int delay) {
-        CompletableFuture<T> future = new CompletableFuture<>();
+        var future = new CompletableFuture<T>();
         this.submit(server -> {
-            T result = task.apply(server);
+            var result = task.apply(server);
             future.complete(result);
         }, delay);
         return future;
@@ -96,28 +95,14 @@ public final class Scheduler {
         int time = server.getTicks();
         this.currentTick = time;
 
-        Iterator<Task> iterator = this.taskQueue.iterator();
-        while (iterator.hasNext()) {
-            Task task = iterator.next();
-            if (task.tryRun(server, time)) {
-                iterator.remove();
-            }
-        }
+        this.taskQueue.removeIf(task -> task.tryRun(server, time));
     }
 
     private interface Task {
         boolean tryRun(MinecraftServer server, int time);
     }
 
-    private static class OneshotTask implements Task {
-        private final Consumer<MinecraftServer> action;
-        private final int time;
-
-        OneshotTask(Consumer<MinecraftServer> action, int time) {
-            this.action = action;
-            this.time = time;
-        }
-
+    private record OneshotTask(Consumer<MinecraftServer> action, int time) implements Task {
         @Override
         public boolean tryRun(MinecraftServer server, int time) {
             if (time >= this.time) {

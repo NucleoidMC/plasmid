@@ -6,27 +6,18 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.dynamic.RegistryOps;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.dimension.DimensionOptions;
 import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.gen.chunk.ChunkGenerator;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.command.argument.ChunkGeneratorArgument;
@@ -35,17 +26,13 @@ import xyz.nucleoid.plasmid.command.argument.MapWorkspaceArgument;
 import xyz.nucleoid.plasmid.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.map.template.MapTemplatePlacer;
 import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
-import xyz.nucleoid.plasmid.map.template.TemplateRegion;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
-import xyz.nucleoid.plasmid.map.workspace.ReturnPosition;
 import xyz.nucleoid.plasmid.map.workspace.WorkspaceTraveler;
 import xyz.nucleoid.plasmid.mixin.MinecraftServerAccessor;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -131,13 +118,13 @@ public final class MapManageCommand {
     // @formatter:on
 
     private static int openWorkspace(CommandContext<ServerCommandSource> context, RuntimeWorldConfig worldConfig) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        Identifier givenIdentifier = IdentifierArgumentType.getIdentifier(context, "workspace");
+        var givenIdentifier = IdentifierArgumentType.getIdentifier(context, "workspace");
 
         Identifier identifier;
         if (givenIdentifier.getNamespace().equals("minecraft")) {
-            String sourceName = context.getSource().getName()
+            var sourceName = context.getSource().getName()
                     .toLowerCase(Locale.ROOT)
                     .replaceAll("\\s", "_");
             identifier = new Identifier(sourceName, givenIdentifier.getPath());
@@ -145,7 +132,7 @@ public final class MapManageCommand {
             identifier = givenIdentifier;
         }
 
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
+        var workspaceManager = MapWorkspaceManager.get(source.getServer());
         if (workspaceManager.byId(identifier) != null) {
             throw MAP_ALREADY_EXISTS.create(identifier);
         }
@@ -174,8 +161,8 @@ public final class MapManageCommand {
     }
 
     private static int openWorkspaceLikeDimension(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        DimensionOptions dimension = DimensionOptionsArgument.get(context, "dimension");
-        RuntimeWorldConfig worldConfig = new RuntimeWorldConfig()
+        var dimension = DimensionOptionsArgument.get(context, "dimension");
+        var worldConfig = new RuntimeWorldConfig()
                 .setDimensionType(dimension.getDimensionType())
                 .setGenerator(dimension.getChunkGenerator());
 
@@ -183,36 +170,36 @@ public final class MapManageCommand {
     }
 
     private static int openWorkspaceByGenerator(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Codec<? extends ChunkGenerator> generatorCodec = ChunkGeneratorArgument.get(context, "generator");
-        NbtCompound config = NbtCompoundArgumentType.getNbtCompound(context, "config");
+        var generatorCodec = ChunkGeneratorArgument.get(context, "generator");
+        var config = NbtCompoundArgumentType.getNbtCompound(context, "config");
 
-        MinecraftServer server = context.getSource().getServer();
-        RegistryOps<NbtElement> ops = RegistryOps.of(
+        var server = context.getSource().getServer();
+        var ops = RegistryOps.of(
                 NbtOps.INSTANCE,
                 ((MinecraftServerAccessor) server).getServerResourceManager().getResourceManager(),
                 server.getRegistryManager()
         );
 
-        DataResult<? extends ChunkGenerator> result = generatorCodec.parse(ops, config);
+        var result = generatorCodec.parse(ops, config);
 
-        Optional<?> error = result.error();
+        var error = result.error();
         if (error.isPresent()) {
             throw INVALID_GENERATOR_CONFIG.create(error.get());
         }
 
-        ChunkGenerator chunkGenerator = result.result().get();
+        var chunkGenerator = result.result().get();
 
-        RuntimeWorldConfig worldConfig = new RuntimeWorldConfig()
+        var worldConfig = new RuntimeWorldConfig()
                 .setDimensionType(DimensionType.OVERWORLD_REGISTRY_KEY)
                 .setGenerator(chunkGenerator);
         return MapManageCommand.openWorkspace(context, worldConfig);
     }
 
     private static int setWorkspaceOrigin(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
-        BlockPos origin = BlockPosArgumentType.getBlockPos(context, "origin");
+        var workspace = MapWorkspaceArgument.get(context, "workspace");
+        var origin = BlockPosArgumentType.getBlockPos(context, "origin");
 
         workspace.setOrigin(origin);
 
@@ -222,10 +209,10 @@ public final class MapManageCommand {
     }
 
     private static int getWorkspaceBounds(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
-        BlockBounds bounds = workspace.getBounds();
+        var workspace = MapWorkspaceArgument.get(context, "workspace");
+        var bounds = workspace.getBounds();
 
         source.sendFeedback(new TranslatableText("text.plasmid.map.bounds.get", getClickablePosText(bounds.getMin()), getClickablePosText(bounds.getMax())), false);
 
@@ -233,11 +220,11 @@ public final class MapManageCommand {
     }
 
     private static int setWorkspaceBounds(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
-        BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
-        BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
+        var workspace = MapWorkspaceArgument.get(context, "workspace");
+        var min = BlockPosArgumentType.getBlockPos(context, "min");
+        var max = BlockPosArgumentType.getBlockPos(context, "max");
 
         workspace.setBounds(new BlockBounds(min, max));
 
@@ -247,14 +234,14 @@ public final class MapManageCommand {
     }
 
     private static int joinWorkspace(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
+        var source = context.getSource();
+        var player = source.getPlayer();
 
-        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
+        var workspace = MapWorkspaceArgument.get(context, "workspace");
 
-        ServerWorld workspaceWorld = workspace.getWorld();
+        var workspaceWorld = workspace.getWorld();
 
-        ReturnPosition returnPosition = WorkspaceTraveler.getReturnFor(player, workspaceWorld.getRegistryKey());
+        var returnPosition = WorkspaceTraveler.getReturnFor(player, workspaceWorld.getRegistryKey());
         if (returnPosition != null) {
             returnPosition.applyTo(player);
         } else {
@@ -277,22 +264,22 @@ public final class MapManageCommand {
     }
 
     private static int leaveMap(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
+        var source = context.getSource();
+        var player = source.getPlayer();
 
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
-        MapWorkspace workspace = workspaceManager.byDimension(player.world.getRegistryKey());
+        var workspaceManager = MapWorkspaceManager.get(source.getServer());
+        var workspace = workspaceManager.byDimension(player.world.getRegistryKey());
 
         if (workspace == null) {
             throw MAP_NOT_HERE.create();
         }
 
-        ReturnPosition returnPosition = WorkspaceTraveler.getLeaveReturn(player);
+        var returnPosition = WorkspaceTraveler.getLeaveReturn(player);
         if (returnPosition != null) {
             returnPosition.applyTo(player);
         } else {
-            ServerWorld overworld = source.getServer().getOverworld();
-            BlockPos spawnPos = overworld.getSpawnPos();
+            var overworld = source.getServer().getOverworld();
+            var spawnPos = overworld.getSpawnPos();
             player.teleport(overworld, spawnPos.getX(), spawnPos.getY(), spawnPos.getZ(), 0.0F, 0.0F);
         }
 
@@ -305,13 +292,13 @@ public final class MapManageCommand {
     }
 
     private static int exportMap(CommandContext<ServerCommandSource> context, boolean includeEntities) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace");
+        var workspace = MapWorkspaceArgument.get(context, "workspace");
 
-        MapTemplate template = workspace.compile(includeEntities);
+        var template = workspace.compile(includeEntities);
 
-        BlockBounds bounds = template.getBounds();
+        var bounds = template.getBounds();
         if (bounds.getMin().getY() < 0 || bounds.getMax().getY() > 255) {
             source.sendFeedback(
                     new TranslatableText("text.plasmid.map.export.vertical_bounds_warning.line.1").append("\n")
@@ -322,7 +309,7 @@ public final class MapManageCommand {
             );
         }
 
-        CompletableFuture<Void> future = MapTemplateSerializer.INSTANCE.saveToExport(template, workspace.getIdentifier());
+        var future = MapTemplateSerializer.INSTANCE.saveToExport(template, workspace.getIdentifier());
 
         future.handle((v, throwable) -> {
             if (throwable == null) {
@@ -338,15 +325,15 @@ public final class MapManageCommand {
     }
 
     private static int deleteWorkspace(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        MapWorkspace workspace = MapWorkspaceArgument.get(context, "workspace_once");
-        MapWorkspace workspaceAgain = MapWorkspaceArgument.get(context, "workspace_again");
+        var workspace = MapWorkspaceArgument.get(context, "workspace_once");
+        var workspaceAgain = MapWorkspaceArgument.get(context, "workspace_again");
         if (workspace != workspaceAgain) {
             throw MAP_MISMATCH.create();
         }
 
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
+        var workspaceManager = MapWorkspaceManager.get(source.getServer());
 
         MutableText message;
         if (workspaceManager.delete(workspace)) {
@@ -361,35 +348,35 @@ public final class MapManageCommand {
     }
 
     private static int importWorkspace(CommandContext<ServerCommandSource> context, BlockPos origin) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        Identifier location = IdentifierArgumentType.getIdentifier(context, "location");
-        Identifier toWorkspaceId = IdentifierArgumentType.getIdentifier(context, "to_workspace");
+        var location = IdentifierArgumentType.getIdentifier(context, "location");
+        var toWorkspaceId = IdentifierArgumentType.getIdentifier(context, "to_workspace");
 
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
+        var workspaceManager = MapWorkspaceManager.get(source.getServer());
         if (workspaceManager.byId(toWorkspaceId) != null) {
             throw MAP_ALREADY_EXISTS.create(toWorkspaceId);
         }
 
-        CompletableFuture<MapTemplate> future = tryLoadTemplateForImport(location);
+        var future = tryLoadTemplateForImport(location);
 
         future.thenAcceptAsync(template -> {
             if (template != null) {
                 source.sendFeedback(new TranslatableText("text.plasmid.map.import.importing"), false);
 
-                MapWorkspace workspace = workspaceManager.open(toWorkspaceId);
+                var workspace = workspaceManager.open(toWorkspaceId);
 
                 workspace.setBounds(template.getBounds().offset(origin));
                 workspace.setOrigin(origin);
 
-                for (TemplateRegion region : template.getMetadata().getRegions()) {
+                for (var region : template.getMetadata().getRegions()) {
                     workspace.addRegion(region.getMarker(), region.getBounds().offset(origin), region.getData());
                 }
 
                 workspace.setData(template.getMetadata().getData());
 
                 try {
-                    MapTemplatePlacer placer = new MapTemplatePlacer(template);
+                    var placer = new MapTemplatePlacer(template);
                     placer.placeAt(workspace.getWorld(), origin);
                     source.sendFeedback(new TranslatableText("text.plasmid.map.import.success", toWorkspaceId), false);
                 } catch (Exception e) {
@@ -419,8 +406,8 @@ public final class MapManageCommand {
     }
 
     protected static Text getClickablePosText(BlockPos pos) {
-        String linkCommand = "/tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ();
-        Style linkStyle = Style.EMPTY
+        var linkCommand = "/tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ();
+        var linkStyle = Style.EMPTY
                 .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, linkCommand))
                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("chat.coordinates.tooltip")))
                 .withFormatting(Formatting.GREEN);

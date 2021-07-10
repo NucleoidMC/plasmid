@@ -43,7 +43,7 @@ public final class PlayerRef {
         return this.getEntity(server) != null;
     }
 
-    public UUID getId() {
+    public UUID id() {
         return this.id;
     }
 

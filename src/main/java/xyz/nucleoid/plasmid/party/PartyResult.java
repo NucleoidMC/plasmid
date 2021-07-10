@@ -28,12 +28,12 @@ public final class PartyResult {
     }
 
     @Nullable
-    public Party getParty() {
+    public Party party() {
         return this.party;
     }
 
     @Nullable
-    public PartyError getError() {
+    public PartyError error() {
         return this.error;
     }
 }

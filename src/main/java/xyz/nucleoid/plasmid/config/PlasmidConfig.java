@@ -2,11 +2,9 @@ package xyz.nucleoid.plasmid.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import joptsimple.internal.Strings;
@@ -16,14 +14,11 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 public final class PlasmidConfig {
     private static final Path PATH = Paths.get("config/plasmid.json");
@@ -74,9 +69,9 @@ public final class PlasmidConfig {
     }
 
     private static PlasmidConfig loadConfig() {
-        try (InputStream input = Files.newInputStream(PATH)) {
-            JsonElement json = JSON_PARSER.parse(new InputStreamReader(input));
-            DataResult<PlasmidConfig> result = CODEC.decode(JsonOps.INSTANCE, json).map(Pair::getFirst);
+        try (var input = Files.newInputStream(PATH)) {
+            var json = JSON_PARSER.parse(new InputStreamReader(input));
+            var result = CODEC.decode(JsonOps.INSTANCE, json).map(Pair::getFirst);
             return result.result().orElseGet(PlasmidConfig::new);
         } catch (IOException e) {
             Plasmid.LOGGER.warn("Failed to load plasmid config", e);
@@ -85,11 +80,11 @@ public final class PlasmidConfig {
     }
 
     private static PlasmidConfig createDefaultConfig() {
-        PlasmidConfig config = new PlasmidConfig();
-        try (OutputStream output = Files.newOutputStream(PATH)) {
-            Optional<JsonElement> result = CODEC.encodeStart(JsonOps.INSTANCE, config).result();
+        var config = new PlasmidConfig();
+        try (var output = Files.newOutputStream(PATH)) {
+            var result = CODEC.encodeStart(JsonOps.INSTANCE, config).result();
             if (result.isPresent()) {
-                JsonElement json = result.get();
+                var json = result.get();
                 IOUtils.write(GSON.toJson(json), output, StandardCharsets.UTF_8);
             }
         } catch (IOException e) {

@@ -33,8 +33,8 @@ public final class ShopUi implements NamedScreenHandlerFactory {
 
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
-        ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-        ShopInventory inventory = new ShopInventory(serverPlayer, this.builder);
+        var serverPlayer = (ServerPlayerEntity) player;
+        var inventory = new ShopInventory(serverPlayer, this.builder);
         return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X5, syncId, playerInventory, inventory, 5) {
             @Override
             public ItemStack transferSlot(PlayerEntity player, int invSlot) {

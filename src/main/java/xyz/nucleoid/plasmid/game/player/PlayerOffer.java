@@ -17,17 +17,12 @@ import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
  * @see GameSpace
  * @see GamePlayerEvents#OFFER
  */
-public final class PlayerOffer {
-    private final ServerPlayerEntity player;
-
-    public PlayerOffer(ServerPlayerEntity player) {
-        this.player = player;
-    }
-
+public record PlayerOffer(ServerPlayerEntity player) {
     /**
      * @return the player that is requesting access to this {@link GameSpace}.
      */
-    public ServerPlayerEntity getPlayer() {
+    @Override
+    public ServerPlayerEntity player() {
         return this.player;
     }
 

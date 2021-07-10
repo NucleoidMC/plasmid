@@ -16,10 +16,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.visitor.NbtTextFormatter;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
@@ -32,12 +29,9 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
 import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 import xyz.nucleoid.plasmid.map.workspace.WorkspaceRegion;
-import xyz.nucleoid.plasmid.map.workspace.editor.WorkspaceEditor;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -197,13 +191,13 @@ public final class MapMetadataCommand {
     }
 
     private static int addRegion(CommandContext<ServerCommandSource> context, NbtCompound data) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        String marker = StringArgumentType.getString(context, "marker");
-        BlockPos min = BlockPosArgumentType.getBlockPos(context, "min");
-        BlockPos max = BlockPosArgumentType.getBlockPos(context, "max");
+        var marker = StringArgumentType.getString(context, "marker");
+        var min = BlockPosArgumentType.getBlockPos(context, "min");
+        var max = BlockPosArgumentType.getBlockPos(context, "max");
 
-        MapWorkspace map = getWorkspaceForSource(source);
+        var map = getWorkspaceForSource(source);
         map.addRegion(marker, new BlockBounds(min, max), data);
         source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.region.add.success", marker)), false);
 
@@ -211,19 +205,19 @@ public final class MapMetadataCommand {
     }
 
     private static int renameRegions(CommandContext<ServerCommandSource> context, RegionPredicate predicate) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        BlockPos pos = source.getPlayer().getBlockPos();
+        var source = context.getSource();
+        var pos = source.getPlayer().getBlockPos();
 
-        String oldMarker = StringArgumentType.getString(context, "old");
-        String newMarker = StringArgumentType.getString(context, "new");
+        var oldMarker = StringArgumentType.getString(context, "old");
+        var newMarker = StringArgumentType.getString(context, "new");
 
-        MapWorkspace map = getWorkspaceForSource(source);
+        var map = getWorkspaceForSource(source);
 
-        List<WorkspaceRegion> regions = map.getRegions().stream()
+        var regions = map.getRegions().stream()
                 .filter(region -> predicate.test(region, oldMarker, pos))
                 .collect(Collectors.toList());
 
-        for (WorkspaceRegion region : regions) {
+        for (var region : regions) {
             map.removeRegion(region);
             map.addRegion(newMarker, region.bounds, region.data);
         }
@@ -234,20 +228,20 @@ public final class MapMetadataCommand {
     }
 
     private static int getRegionBounds(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        MapWorkspace map = getWorkspaceForSource(source);
+        var source = context.getSource();
+        var map = getWorkspaceForSource(source);
 
-        String marker = StringArgumentType.getString(context, "marker");
+        var marker = StringArgumentType.getString(context, "marker");
 
-        List<WorkspaceRegion> regions = map.getRegions().stream()
+        var regions = map.getRegions().stream()
                 .filter(region -> region.marker.equals(marker))
                 .collect(Collectors.toList());
 
         source.sendFeedback(new TranslatableText("text.plasmid.map.region.bounds.get.header", regions.size()).formatted(Formatting.BOLD), false);
 
-        for (WorkspaceRegion region : regions) {
-            Text minText = MapManageCommand.getClickablePosText(region.bounds.getMin());
-            Text maxText = MapManageCommand.getClickablePosText(region.bounds.getMax());
+        for (var region : regions) {
+            var minText = MapManageCommand.getClickablePosText(region.bounds.getMin());
+            var maxText = MapManageCommand.getClickablePosText(region.bounds.getMax());
 
             source.sendFeedback(new TranslatableText("text.plasmid.entry", new TranslatableText("text.plasmid.map.region.bounds.get", minText, maxText)), false);
         }
@@ -264,19 +258,19 @@ public final class MapMetadataCommand {
     }
 
     private static boolean executeRegionDataMerge(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region) {
-        NbtCompound data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
+        var data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
         map.replaceRegion(region, region.withData(region.data.copy().copyFrom(data)));
         return true;
     }
 
     private static boolean executeRegionDataSet(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region) {
-        NbtCompound data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
+        var data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
         map.replaceRegion(region, region.withData(data));
         return true;
     }
 
     private static boolean executeRegionDataRemove(CommandContext<ServerCommandSource> context, MapWorkspace map, WorkspaceRegion region) {
-        NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
+        var path = NbtPathArgumentType.getNbtPath(context, "path");
         return path.remove(region.data) > 0;
     }
 
@@ -289,14 +283,14 @@ public final class MapMetadataCommand {
     }
 
     private static int removeRegion(CommandContext<ServerCommandSource> context, BlockPos pos) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        MapWorkspace map = getWorkspaceForSource(source);
+        var source = context.getSource();
+        var map = getWorkspaceForSource(source);
 
-        List<WorkspaceRegion> regions = map.getRegions().stream()
+        var regions = map.getRegions().stream()
                 .filter(region -> region.bounds.contains(pos))
                 .collect(Collectors.toList());
 
-        for (WorkspaceRegion region : regions) {
+        for (var region : regions) {
             map.removeRegion(region);
         }
 
@@ -310,23 +304,23 @@ public final class MapMetadataCommand {
     }
 
     private static int commitRegion(CommandContext<ServerCommandSource> context, NbtCompound data) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
+        var source = context.getSource();
+        var player = source.getPlayer();
 
-        String marker = StringArgumentType.getString(context, "marker");
+        var marker = StringArgumentType.getString(context, "marker");
 
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
-        WorkspaceEditor editor = workspaceManager.getEditorFor(player);
+        var workspaceManager = MapWorkspaceManager.get(source.getServer());
+        var editor = workspaceManager.getEditorFor(player);
         if (editor != null) {
-            BlockBounds region = editor.takeTracedRegion();
+            var region = editor.takeTracedRegion();
             if (region == null) {
                 throw NO_REGION_READY.create();
             }
 
-            BlockPos min = region.getMin();
-            BlockPos max = region.getMax();
+            var min = region.getMin();
+            var max = region.getMax();
 
-            MapWorkspace workspace = getWorkspaceForSource(source);
+            var workspace = getWorkspaceForSource(source);
             workspace.addRegion(marker, new BlockBounds(min, max), data);
             source.sendFeedback(new TranslatableText("text.plasmid.map.region.add.success.excited", marker), false);
         }
@@ -335,10 +329,10 @@ public final class MapMetadataCommand {
     }
 
     private static int addEntities(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerWorld world = source.getWorld();
+        var source = context.getSource();
+        var world = source.getWorld();
 
-        MapWorkspace map = getWorkspaceForSource(source);
+        var map = getWorkspaceForSource(source);
 
         long result = EntityArgumentType.getEntities(context, "entities").stream()
                 .filter(entity -> entity.getEntityWorld().equals(world) && !(entity instanceof PlayerEntity)
@@ -357,10 +351,10 @@ public final class MapMetadataCommand {
     }
 
     private static int removeEntities(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerWorld world = source.getWorld();
+        var source = context.getSource();
+        var world = source.getWorld();
 
-        MapWorkspace map = getWorkspaceForSource(source);
+        var map = getWorkspaceForSource(source);
 
         long result = EntityArgumentType.getEntities(context, "entities").stream()
                 .filter(entity -> entity.getEntityWorld().equals(world) && !(entity instanceof PlayerEntity))
@@ -378,10 +372,10 @@ public final class MapMetadataCommand {
     }
 
     private static int addEntityType(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        MapWorkspace map = getWorkspaceForSource(source);
-        Pair<Identifier, EntityType<?>> type = getEntityType(context);
+        var map = getWorkspaceForSource(source);
+        var type = getEntityType(context);
 
         if (!map.addEntityType(type.getRight())) {
             source.sendError(new TranslatableText("text.plasmid.map.region.entity.filter.type.add.already_present", type.getLeft(), map.getIdentifier()));
@@ -392,10 +386,10 @@ public final class MapMetadataCommand {
     }
 
     private static int removeEntityType(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        MapWorkspace map = getWorkspaceForSource(source);
-        Pair<Identifier, EntityType<?>> type = getEntityType(context);
+        var map = getWorkspaceForSource(source);
+        var type = getEntityType(context);
 
         if (!map.removeEntityType(type.getRight())) {
             source.sendError(new TranslatableText("text.plasmid.map.region.entity.filter.type.remove.not_present", type.getLeft(), map.getIdentifier()));
@@ -406,41 +400,40 @@ public final class MapMetadataCommand {
     }
 
     private static int executeDataMerge(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        MapWorkspace map = getWorkspaceForSource(context.getSource());
-        NbtCompound data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
-        NbtCompound originalData = map.getData();
+        var source = context.getSource();
+        var map = getWorkspaceForSource(context.getSource());
+        var data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
+        var originalData = map.getData();
         map.setData(originalData.copy().copyFrom(data));
         source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.data.merge.success")), false);
         return Command.SINGLE_SUCCESS;
     }
 
     private static int executeDataMergeAt(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        MapWorkspace map = getWorkspaceForSource(context.getSource());
+        var source = context.getSource();
+        var map = getWorkspaceForSource(context.getSource());
 
-        NbtCompound sourceData = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
-        NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
+        var sourceData = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
+        var path = NbtPathArgumentType.getNbtPath(context, "path");
 
-        List<NbtElement> sourceTags = path.getOrInit(sourceData, NbtCompound::new);
-        List<NbtElement> mergeIntoTags = path.get(map.getData());
+        var sourceElements = path.getOrInit(sourceData, NbtCompound::new);
+        var mergeIntoElements = path.get(map.getData());
 
         int mergeCount = 0;
 
-        for (NbtElement mergeIntoTag : mergeIntoTags) {
-            if (!(mergeIntoTag instanceof NbtCompound)) {
+        for (var mergeIntoTag : mergeIntoElements) {
+            if (!(mergeIntoTag instanceof NbtCompound mergedCompound)) {
                 throw MODIFY_EXPECTED_OBJECT_EXCEPTION.create(mergeIntoTag);
             }
 
-            NbtCompound mergedCompound = (NbtCompound) mergeIntoTag;
-            NbtCompound previousCompound = mergedCompound.copy();
+            var previousCompound = mergedCompound.copy();
 
-            for (NbtElement sourceTag : sourceTags) {
-                if (!(sourceTag instanceof NbtCompound)) {
-                    throw MODIFY_EXPECTED_OBJECT_EXCEPTION.create(sourceTag);
+            for (var sourceElement : sourceElements) {
+                if (!(sourceElement instanceof NbtCompound sourceCompound)) {
+                    throw MODIFY_EXPECTED_OBJECT_EXCEPTION.create(sourceElement);
                 }
 
-                mergedCompound.copyFrom((NbtCompound) sourceTag);
+                mergedCompound.copyFrom(sourceCompound);
             }
 
             if (!previousCompound.equals(mergedCompound)) {
@@ -459,8 +452,8 @@ public final class MapMetadataCommand {
     }
 
     private static int executeDataGet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        MapWorkspace map = getWorkspaceForSource(context.getSource());
+        var source = context.getSource();
+        var map = getWorkspaceForSource(context.getSource());
         source.sendFeedback(new TranslatableText("text.plasmid.map.data.get",
                         getMapPrefix(map), NBT_FORMATTER.apply(map.getData())),
                 false);
@@ -468,9 +461,9 @@ public final class MapMetadataCommand {
     }
 
     private static int executeDataGetAt(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        MapWorkspace map = getWorkspaceForSource(context.getSource());
-        NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
+        var source = context.getSource();
+        var map = getWorkspaceForSource(context.getSource());
+        var path = NbtPathArgumentType.getNbtPath(context, "path");
         source.sendFeedback(new TranslatableText("text.plasmid.map.data.get.at",
                         map.getIdentifier().toString(), path.toString(),
                         NBT_FORMATTER.apply(getTagAt(map.getData(), path))),
@@ -479,8 +472,8 @@ public final class MapMetadataCommand {
     }
 
     private static int executeDataRemove(CommandContext<ServerCommandSource> context, @Nullable NbtPathArgumentType.NbtPath path) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        MapWorkspace map = getWorkspaceForSource(context.getSource());
+        var source = context.getSource();
+        var map = getWorkspaceForSource(context.getSource());
         if (path == null) {
             map.setData(new NbtCompound());
             source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.data.remove.success")),
@@ -499,21 +492,21 @@ public final class MapMetadataCommand {
     }
 
     private static int executeDataSet(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        MapWorkspace map = getWorkspaceForSource(context.getSource());
-        NbtCompound data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
+        var source = context.getSource();
+        var map = getWorkspaceForSource(context.getSource());
+        var data = NbtCompoundArgumentType.getNbtCompound(context, "nbt");
         map.setData(data);
         source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.data.set.success")), false);
         return Command.SINGLE_SUCCESS;
     }
 
     private static int executeDataSetAt(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        MapWorkspace map = getWorkspaceForSource(context.getSource());
-        NbtPathArgumentType.NbtPath path = NbtPathArgumentType.getNbtPath(context, "path");
-        NbtElement tag = NbtElementArgumentType.getNbtElement(context, "nbt");
-        NbtCompound data = map.getData().copy();
-        if (path.put(data, tag::copy) == 0) {
+        var source = context.getSource();
+        var map = getWorkspaceForSource(context.getSource());
+        var path = NbtPathArgumentType.getNbtPath(context, "path");
+        var element = NbtElementArgumentType.getNbtElement(context, "nbt");
+        var data = map.getData().copy();
+        if (path.put(data, element::copy) == 0) {
             throw MERGE_FAILED_EXCEPTION.create();
         } else {
             map.setData(data);
@@ -526,8 +519,8 @@ public final class MapMetadataCommand {
 
     private static NbtElement getTagAt(NbtCompound data, NbtPathArgumentType.NbtPath path) throws CommandSyntaxException {
         Collection<NbtElement> collection = path.get(data);
-        Iterator<NbtElement> iterator = collection.iterator();
-        NbtElement tag = iterator.next();
+        var iterator = collection.iterator();
+        var tag = iterator.next();
         if (iterator.hasNext()) {
             throw GET_MULTIPLE_EXCEPTION.create();
         } else {
@@ -537,7 +530,7 @@ public final class MapMetadataCommand {
 
     private static Pair<Identifier, EntityType<?>> getEntityType(CommandContext<ServerCommandSource> context) throws
             CommandSyntaxException {
-        Identifier id = IdentifierArgumentType.getIdentifier(context, "entity_type");
+        var id = IdentifierArgumentType.getIdentifier(context, "entity_type");
         return new Pair<>(id, Registry.ENTITY_TYPE.getOrEmpty(id).orElseThrow(() -> ENTITY_TYPE_NOT_FOUND.create(id)));
     }
 
@@ -547,7 +540,7 @@ public final class MapMetadataCommand {
 
     private static SuggestionProvider<ServerCommandSource> regionSuggestions() {
         return (context, builder) -> {
-            MapWorkspace map = getWorkspaceForSource(context.getSource());
+            var map = getWorkspaceForSource(context.getSource());
             return CommandSource.suggestMatching(
                     map.getRegions().stream().map(region -> region.marker),
                     builder
@@ -557,8 +550,8 @@ public final class MapMetadataCommand {
 
     private static SuggestionProvider<ServerCommandSource> localRegionSuggestions() {
         return (context, builder) -> {
-            MapWorkspace map = getWorkspaceForSource(context.getSource());
-            BlockPos sourcePos = context.getSource().getPlayer().getBlockPos();
+            var map = getWorkspaceForSource(context.getSource());
+            var sourcePos = context.getSource().getPlayer().getBlockPos();
             return CommandSource.suggestMatching(
                     map.getRegions().stream().filter(region -> region.bounds.contains(sourcePos))
                             .map(region -> region.marker),
@@ -568,8 +561,8 @@ public final class MapMetadataCommand {
     }
 
     private static @NotNull MapWorkspace getWorkspaceForSource(ServerCommandSource source) throws CommandSyntaxException {
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
-        MapWorkspace workspace = workspaceManager.byDimension(source.getWorld().getRegistryKey());
+        var workspaceManager = MapWorkspaceManager.get(source.getServer());
+        var workspace = workspaceManager.byDimension(source.getWorld().getRegistryKey());
         if (workspace == null) {
             throw MAP_NOT_HERE.create();
         }
@@ -579,18 +572,18 @@ public final class MapMetadataCommand {
 
     private static Command<ServerCommandSource> executeInRegions(String message, RegionExecutor executor) {
         return context -> {
-            ServerCommandSource source = context.getSource();
-            BlockPos pos = source.getPlayer().getBlockPos();
+            var source = context.getSource();
+            var pos = source.getPlayer().getBlockPos();
 
-            String marker = StringArgumentType.getString(context, "marker");
+            var marker = StringArgumentType.getString(context, "marker");
 
-            MapWorkspace map = getWorkspaceForSource(context.getSource());
-            List<WorkspaceRegion> regions = map.getRegions().stream()
+            var map = getWorkspaceForSource(context.getSource());
+            var regions = map.getRegions().stream()
                     .filter(region -> region.bounds.contains(pos) && region.marker.equals(marker))
                     .collect(Collectors.toList());
 
             int count = 0;
-            for (WorkspaceRegion region : regions) {
+            for (var region : regions) {
                 if (executor.execute(context, map, region)) { count++; }
             }
 
@@ -606,7 +599,7 @@ public final class MapMetadataCommand {
     }
 
     private static Text withMapPrefix(MapWorkspace map, @Nullable Text text) {
-        MutableText prefix = new LiteralText("")
+        var prefix = new LiteralText("")
                 .append(new LiteralText("[").formatted(Formatting.GRAY))
                 .append(new LiteralText(map.getIdentifier().toString()).formatted(Formatting.GOLD))
                 .append(new LiteralText("] ").formatted(Formatting.GRAY));

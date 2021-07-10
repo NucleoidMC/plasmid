@@ -1,6 +1,5 @@
 package xyz.nucleoid.plasmid.map;
 
-import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import xyz.nucleoid.plasmid.util.BlockBounds;
@@ -19,17 +18,17 @@ public final class MapTickets implements AutoCloseable {
     }
 
     public static MapTickets acquire(ServerWorld world, BlockBounds bounds) {
-        ChunkPos minChunk = new ChunkPos(bounds.getMin());
-        ChunkPos maxChunk = new ChunkPos(bounds.getMax());
+        var minChunk = new ChunkPos(bounds.getMin());
+        var maxChunk = new ChunkPos(bounds.getMax());
 
-        MapTickets tickets = new MapTickets(world, minChunk, maxChunk);
+        var tickets = new MapTickets(world, minChunk, maxChunk);
         tickets.acquire();
 
         return tickets;
     }
 
     private void acquire() {
-        ServerChunkManager chunkManager = this.world.getChunkManager();
+        var chunkManager = this.world.getChunkManager();
         this.stream().forEach(ticketPos -> {
             chunkManager.setChunkForced(ticketPos, true);
         });
@@ -37,7 +36,7 @@ public final class MapTickets implements AutoCloseable {
 
     @Override
     public void close() {
-        ServerChunkManager chunkManager = this.world.getChunkManager();
+        var chunkManager = this.world.getChunkManager();
         this.stream().forEach(ticketPos -> {
             chunkManager.setChunkForced(ticketPos, false);
         });

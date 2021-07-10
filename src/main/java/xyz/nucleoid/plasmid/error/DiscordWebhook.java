@@ -40,13 +40,13 @@ final class DiscordWebhook {
     public void post(Message message) {
         EXECUTOR.execute(() -> {
             try {
-                HttpsURLConnection connection = (HttpsURLConnection) new URL(this.url).openConnection();
+                var connection = (HttpsURLConnection) new URL(this.url).openConnection();
                 connection.setDoOutput(true);
                 connection.setRequestMethod("POST");
                 connection.setRequestProperty("Content-Type", CONTENT_TYPE);
                 connection.setRequestProperty("User-Agent", "plasmid");
 
-                try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8))) {
+                try (var writer = new PrintWriter(new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8))) {
                     message.writeTo(writer);
                 }
 
@@ -75,10 +75,10 @@ final class DiscordWebhook {
         void writeTo(PrintWriter writer) {
             writer.println("--" + BOUNDARY);
 
-            JsonObject payload = new JsonObject();
+            var payload = new JsonObject();
             payload.addProperty("content", this.content);
 
-            JsonObject allowedMentions = new JsonObject();
+            var allowedMentions = new JsonObject();
             allowedMentions.add("parse", new JsonArray());
             payload.add("allowed_mentions", allowedMentions);
 
@@ -87,7 +87,7 @@ final class DiscordWebhook {
             writer.println();
             writer.println(GSON.toJson(payload));
 
-            for (File file : this.files) {
+            for (var file : this.files) {
                 writer.println("--" + BOUNDARY);
                 writer.println("Content-Disposition: form-data; name=\"file\"; filename=\"" + file.name + "\"");
                 writer.println();
@@ -98,13 +98,6 @@ final class DiscordWebhook {
         }
     }
 
-    static class File {
-        private final String name;
-        private final String content;
-
-        File(String name, String content) {
-            this.name = name;
-            this.content = content;
-        }
+    record File(String name, String content) {
     }
 }

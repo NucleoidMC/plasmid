@@ -14,7 +14,7 @@ public final class ShopBuilder {
     }
 
     public ShopBuilder add(ShopEntry entry) {
-        List<ShopEntry> row = this.getOrCreateRow(this.currentRow);
+        var row = this.getOrCreateRow(this.currentRow);
         if (row.size() >= ShopInventory.WIDTH) {
             row = this.getOrCreateRow(++this.currentRow);
         }
@@ -30,9 +30,9 @@ public final class ShopBuilder {
     }
 
     private List<ShopEntry> getOrCreateRow(int index) {
-        List<List<ShopEntry>> lines = this.rows;
+        var lines = this.rows;
         if (lines.size() <= index) {
-            List<ShopEntry> line = new ArrayList<>();
+            var line = new ArrayList<ShopEntry>();
             lines.add(line);
             return line;
         }

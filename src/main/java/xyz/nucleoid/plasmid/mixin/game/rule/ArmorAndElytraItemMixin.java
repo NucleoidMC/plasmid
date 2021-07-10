@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 
 @Mixin({ ArmorItem.class, ElytraItem.class })
@@ -26,9 +25,9 @@ public class ArmorAndElytraItemMixin {
             return;
         }
 
-        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(user);
+        var gameSpace = GameSpaceManager.get().byPlayer(user);
         if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.MODIFY_ARMOR) == ActionResult.FAIL) {
-            ItemStack stack = user.getStackInHand(hand);
+            var stack = user.getStackInHand(hand);
             ci.setReturnValue(TypedActionResult.fail(stack));
 
             user.playSound(SoundEvents.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0F, 1.0F);

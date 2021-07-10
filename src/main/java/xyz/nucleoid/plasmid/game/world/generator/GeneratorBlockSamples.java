@@ -11,7 +11,7 @@ public final class GeneratorBlockSamples {
     public static VerticalBlockSample heightmap(int minY, int maxY, BlockState block) {
         int height = maxY - minY + 1;
 
-        BlockState[] sample = new BlockState[height];
+        var sample = new BlockState[height];
         Arrays.fill(sample, block);
 
         return new VerticalBlockSample(minY, sample);

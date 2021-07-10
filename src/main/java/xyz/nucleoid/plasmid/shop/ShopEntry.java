@@ -7,7 +7,6 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -33,10 +32,10 @@ public final class ShopEntry {
     }
 
     public static ShopEntry buyItem(ItemStack stack) {
-        ItemStack icon = stack.copy();
+        var icon = stack.copy();
 
-        MutableText count = new LiteralText(stack.getCount() + "x ");
-        Text name = icon.getName().shallowCopy().formatted(Formatting.BOLD);
+        var count = new LiteralText(stack.getCount() + "x ");
+        var name = icon.getName().shallowCopy().formatted(Formatting.BOLD);
         icon.setCustomName(count.append(name));
 
         return new ShopEntry(icon).onBuy(player -> {
@@ -70,17 +69,17 @@ public final class ShopEntry {
     }
 
     ItemStack createIcon(ServerPlayerEntity player) {
-        ItemStack icon = this.icon.build();
+        var icon = this.icon.build();
 
         if (this.cost != null) {
             boolean canBuy = this.cost.tryTake(player, true);
 
-            Style style = Style.EMPTY.withItalic(false).withColor(canBuy ? Formatting.BLUE : Formatting.RED);
+            var style = Style.EMPTY.withItalic(false).withColor(canBuy ? Formatting.BLUE : Formatting.RED);
 
-            Text costText = this.cost.getDisplay();
+            var costText = this.cost.getDisplay();
             costText = new LiteralText(" (").append(costText).append(")").setStyle(costText.getStyle());
 
-            Text name = icon.getName().shallowCopy().setStyle(style).append(costText);
+            var name = icon.getName().shallowCopy().setStyle(style).append(costText);
             icon.setCustomName(name);
         }
 

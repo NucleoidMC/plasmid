@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -47,7 +46,7 @@ public final class GameSpaceManager {
     }
 
     public static void openServer(MinecraftServer server) {
-        GameSpaceManager instance = GameSpaceManager.instance;
+        var instance = GameSpaceManager.instance;
         if (instance != null) {
             instance.close();
         }
@@ -59,7 +58,7 @@ public final class GameSpaceManager {
     }
 
     public static void closeServer() {
-        GameSpaceManager instance = GameSpaceManager.instance;
+        var instance = GameSpaceManager.instance;
         if (instance != null) {
             instance.close();
             GameSpaceManager.instance = null;
@@ -71,7 +70,7 @@ public final class GameSpaceManager {
     }
 
     public CompletableFuture<ManagedGameSpace> open(GameConfig<?> config) {
-        CompletableFuture<ManagedGameSpace> future = CompletableFuture.supplyAsync(
+        var future = CompletableFuture.supplyAsync(
                 () -> config.openProcedure(this.server),
                 Util.getMainWorkerExecutor()
         ).thenApplyAsync(
@@ -81,7 +80,7 @@ public final class GameSpaceManager {
 
         future.exceptionally(throwable -> {
             if (GameOpenException.unwrap(throwable) == null) {
-                try (ErrorReporter reporter = ErrorReporter.open(config)) {
+                try (var reporter = ErrorReporter.open(config)) {
                     reporter.report(throwable, "Opening game");
                 }
             }
@@ -92,9 +91,9 @@ public final class GameSpaceManager {
     }
 
     private ManagedGameSpace addGameSpace(GameConfig<?> config, GameOpenProcedure procedure) {
-        Identifier id = this.ids.acquire(config);
+        var id = this.ids.acquire(config);
 
-        ManagedGameSpace gameSpace = new ManagedGameSpace(this.server, this, config, id);
+        var gameSpace = new ManagedGameSpace(this.server, this, config, id);
         procedure.apply(gameSpace);
 
         this.gameSpaces.add(gameSpace);
@@ -161,7 +160,7 @@ public final class GameSpaceManager {
         var gameSpaces = Lists.newArrayList(this.gameSpaces);
         this.gameSpaces.clear();
 
-        for (ManagedGameSpace gameSpace : gameSpaces) {
+        for (var gameSpace : gameSpaces) {
             gameSpace.close(GameCloseReason.CANCELED);
         }
 
@@ -173,7 +172,7 @@ public final class GameSpaceManager {
     final class ListenerSelector implements EventListenerSelector {
         @Override
         public <T> Iterator<T> selectListeners(MinecraftServer server, StimulusEvent<T> event, EventSource source) {
-            ManagedGameSpace gameSpace = this.getGameSpaceFor(source);
+            var gameSpace = this.getGameSpaceFor(source);
             if (gameSpace != null) {
                 return gameSpace.getBehavior().getInvokers(event).iterator();
             }
@@ -183,9 +182,9 @@ public final class GameSpaceManager {
 
         @Nullable
         private ManagedGameSpace getGameSpaceFor(EventSource source) {
-            Entity entity = source.getEntity();
+            var entity = source.getEntity();
             if (entity instanceof ServerPlayerEntity) {
-                ManagedGameSpace gameSpace = GameSpaceManager.this.playerToGameSpace.get(entity.getUuid());
+                var gameSpace = GameSpaceManager.this.playerToGameSpace.get(entity.getUuid());
                 if (gameSpace != null) {
                     return gameSpace;
                 }

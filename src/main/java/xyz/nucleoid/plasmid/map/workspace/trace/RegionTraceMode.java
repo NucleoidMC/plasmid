@@ -25,10 +25,10 @@ public enum RegionTraceMode {
             return player.getBlockPos();
         }
 
-        HitResult traceResult = player.raycast(64.0, 1.0F, true);
+        var traceResult = player.raycast(64.0, 1.0F, true);
         if (traceResult.getType() == HitResult.Type.BLOCK) {
-            BlockHitResult blockResult = (BlockHitResult) traceResult;
-            BlockPos pos = blockResult.getBlockPos();
+            var blockResult = (BlockHitResult) traceResult;
+            var pos = blockResult.getBlockPos();
 
             if (this == OFFSET) {
                 pos = pos.offset(blockResult.getSide());
@@ -41,7 +41,7 @@ public enum RegionTraceMode {
     }
 
     public RegionTraceMode next() {
-        RegionTraceMode[] modes = values();
+        var modes = values();
         return modes[(this.ordinal() + 1) % modes.length];
     }
 

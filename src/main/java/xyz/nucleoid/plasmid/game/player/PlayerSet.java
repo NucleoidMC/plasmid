@@ -77,7 +77,7 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
      * @return {@code true} if this {@link PlayerRef} is contained within this {@link PlayerSet}
      */
     default boolean contains(PlayerRef ref) {
-        return this.contains(ref.getId());
+        return this.contains(ref.id());
     }
 
     /**
@@ -139,14 +139,14 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
 
     @Override
     default void sendPacket(Packet<?> packet) {
-        for (ServerPlayerEntity player : this) {
+        for (var player : this) {
             player.networkHandler.sendPacket(packet);
         }
     }
 
     @Override
     default void sendMessage(Text message) {
-        for (ServerPlayerEntity player : this) {
+        for (var player : this) {
             player.sendMessage(message, false);
         }
     }
@@ -166,7 +166,7 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
 
     @Override
     default void sendActionBar(Text message) {
-        for (ServerPlayerEntity player : this) {
+        for (var player : this) {
             player.sendMessage(message, true);
         }
     }
@@ -184,14 +184,14 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
 
     @Override
     default void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        for (ServerPlayerEntity player : this) {
+        for (var player : this) {
             player.playSound(sound, category, volume, pitch);
         }
     }
 
     @Override
     default void addStatusEffect(StatusEffectInstance effect) {
-        for (ServerPlayerEntity player : this) {
+        for (var player : this) {
             player.addStatusEffect(effect);
         }
     }

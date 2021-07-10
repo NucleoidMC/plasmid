@@ -14,25 +14,25 @@ public final class GameLifecycle {
     }
 
     public void onAddPlayer(GameSpace gameSpace, ServerPlayerEntity player) {
-        for (Listeners listener : this.listeners) {
+        for (var listener : this.listeners) {
             listener.onAddPlayer(gameSpace, player);
         }
     }
 
     public void onRemovePlayer(GameSpace gameSpace, ServerPlayerEntity player) {
-        for (Listeners listener : this.listeners) {
+        for (var listener : this.listeners) {
             listener.onRemovePlayer(gameSpace, player);
         }
     }
 
     public void onClosing(GameSpace gameSpace, GameCloseReason reason) {
-        for (Listeners listener : this.listeners) {
+        for (var listener : this.listeners) {
             listener.onClosing(gameSpace, reason);
         }
     }
 
     public void onClosed(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
-        for (Listeners listener : this.listeners) {
+        for (var listener : this.listeners) {
             listener.onClosed(gameSpace, players, reason);
         }
     }

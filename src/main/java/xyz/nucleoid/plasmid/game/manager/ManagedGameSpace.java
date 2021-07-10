@@ -5,13 +5,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
-import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
@@ -25,7 +21,6 @@ import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
 import xyz.nucleoid.plasmid.game.world.GameSpaceWorlds;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 
 public final class ManagedGameSpace implements GameSpace {
@@ -64,7 +59,7 @@ public final class ManagedGameSpace implements GameSpace {
     public void setActivity(GameConfig<?> config, Consumer<GameActivity> builder) {
         try {
             this.state.setActivity(() -> {
-                ManagedGameActivity activity = new ManagedGameActivity(this, config);
+                var activity = new ManagedGameActivity(this, config);
                 builder.accept(activity);
                 return activity;
             });
@@ -76,7 +71,7 @@ public final class ManagedGameSpace implements GameSpace {
     @Override
     public ServerWorld addWorld(RuntimeWorldConfig worldConfig) {
         // TODO: 1.17: set default game rules on the config!
-        RuntimeWorldHandle worldHandle = this.worlds.add(worldConfig);
+        var worldHandle = this.worlds.add(worldConfig);
         this.manager.addDimensionToGameSpace(this, worldHandle.asWorld().getRegistryKey());
 
         return worldHandle.asWorld();
@@ -84,7 +79,7 @@ public final class ManagedGameSpace implements GameSpace {
 
     @Override
     public void removeWorld(ServerWorld world) {
-        RegistryKey<World> dimension = world.getRegistryKey();
+        var dimension = world.getRegistryKey();
         if (this.worlds.remove(dimension)) {
             this.manager.removeDimensionFromGameSpace(this, dimension);
         }
@@ -109,15 +104,15 @@ public final class ManagedGameSpace implements GameSpace {
             return GameResult.error(GameTexts.Join.inOtherGame());
         }
 
-        PlayerOffer offer = new PlayerOffer(player);
-        PlayerOfferResult result = this.state.invoker(GamePlayerEvents.OFFER).onOfferPlayer(offer);
+        var offer = new PlayerOffer(player);
+        var result = this.state.invoker(GamePlayerEvents.OFFER).onOfferPlayer(offer);
 
-        PlayerOfferResult.Reject reject = result.asReject();
+        var reject = result.asReject();
         if (reject != null) {
-            return GameResult.error(reject.getReason());
+            return GameResult.error(reject.reason());
         }
 
-        PlayerOfferResult.Accept accept = result.asAccept();
+        var accept = result.asAccept();
         if (accept != null) {
             try {
                 this.addPlayer(player, accept);
@@ -141,7 +136,7 @@ public final class ManagedGameSpace implements GameSpace {
 
         this.lifecycle.onAddPlayer(this, player);
 
-        MutableText joinMessage = GameTexts.Join.success(player)
+        var joinMessage = GameTexts.Join.success(player)
                 .formatted(Formatting.YELLOW);
         this.getPlayers().sendMessage(joinMessage);
     }
@@ -182,7 +177,7 @@ public final class ManagedGameSpace implements GameSpace {
             return GameResult.error(GameTexts.Start.alreadyStarted());
         }
 
-        GameResult startResult = GameEvents.START_REQUEST.invoker().onRequestStart(this, null);
+        var startResult = GameEvents.START_REQUEST.invoker().onRequestStart(this, null);
         if (startResult != null) {
             return startResult;
         }
@@ -208,7 +203,7 @@ public final class ManagedGameSpace implements GameSpace {
 
         this.closed = true;
 
-        List<ServerPlayerEntity> players = Lists.newArrayList(this.players);
+        var players = Lists.newArrayList(this.players);
 
         GameEvents.CLOSING.invoker().onGameSpaceClosing(this, reason);
         this.lifecycle.onClosing(this, reason);
@@ -216,18 +211,18 @@ public final class ManagedGameSpace implements GameSpace {
         try {
             this.state.closeActivity(reason);
 
-            for (ServerPlayerEntity player : players) {
+            for (var player : players) {
                 this.lifecycle.onRemovePlayer(this, player);
 
                 this.playerTeleporter.teleportOut(player);
             }
         } finally {
-            Collection<RegistryKey<World>> dimensions = this.worlds.close();
-            for (RegistryKey<World> dimension : dimensions) {
+            var dimensions = this.worlds.close();
+            for (var dimension : dimensions) {
                 this.manager.removeDimensionFromGameSpace(this, dimension);
             }
 
-            for (ServerPlayerEntity player : players) {
+            for (var player : players) {
                 this.manager.removePlayerFromGameSpace(this, player);
             }
 

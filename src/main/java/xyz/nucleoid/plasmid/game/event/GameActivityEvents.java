@@ -9,7 +9,7 @@ import xyz.nucleoid.stimuli.event.StimulusEvent;
 public final class GameActivityEvents {
     public static final StimulusEvent<Enable> ENABLE = StimulusEvent.create(Enable.class, ctx -> () -> {
         try {
-            for (Enable listener : ctx.getListeners()) {
+            for (var listener : ctx.getListeners()) {
                 listener.onEnable();
             }
         } catch (Throwable throwable) {
@@ -19,7 +19,7 @@ public final class GameActivityEvents {
 
     public static final StimulusEvent<Disable> DISABLE = StimulusEvent.create(Disable.class, ctx -> () -> {
         try {
-            for (Disable listener : ctx.getListeners()) {
+            for (var listener : ctx.getListeners()) {
                 listener.onDisable();
             }
         } catch (Throwable throwable) {
@@ -29,7 +29,7 @@ public final class GameActivityEvents {
 
     public static final StimulusEvent<Create> CREATE = StimulusEvent.create(Create.class, ctx -> () -> {
         try {
-            for (Create listener : ctx.getListeners()) {
+            for (var listener : ctx.getListeners()) {
                 listener.onCreate();
             }
         } catch (Throwable throwable) {
@@ -39,7 +39,7 @@ public final class GameActivityEvents {
 
     public static final StimulusEvent<Destroy> DESTROY = StimulusEvent.create(Destroy.class, ctx -> reason -> {
         try {
-            for (Destroy listener : ctx.getListeners()) {
+            for (var listener : ctx.getListeners()) {
                 listener.onDestroy(reason);
             }
         } catch (Throwable throwable) {
@@ -49,7 +49,7 @@ public final class GameActivityEvents {
 
     public static final StimulusEvent<Tick> TICK = StimulusEvent.create(Tick.class, ctx -> () -> {
         try {
-            for (Tick listener : ctx.getListeners()) {
+            for (var listener : ctx.getListeners()) {
                 listener.onTick();
             }
         } catch (Throwable throwable) {
@@ -59,8 +59,8 @@ public final class GameActivityEvents {
 
     public static final StimulusEvent<RequestStart> REQUEST_START = StimulusEvent.create(RequestStart.class, ctx -> () -> {
         try {
-            for (RequestStart listener : ctx.getListeners()) {
-                GameResult result = listener.onRequestStart();
+            for (var listener : ctx.getListeners()) {
+                var result = listener.onRequestStart();
                 if (result != null) {
                     return result;
                 }

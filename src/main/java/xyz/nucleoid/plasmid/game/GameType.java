@@ -45,7 +45,7 @@ public final class GameType<C> {
      * @see com.mojang.serialization.codecs.RecordCodecBuilder
      */
     public static <C> GameType<C> register(Identifier identifier, Codec<C> configCodec, Open<C> open) {
-        GameType<C> type = new GameType<>(identifier, configCodec, open);
+        var type = new GameType<C>(identifier, configCodec, open);
         REGISTRY.register(identifier, type);
         return type;
     }

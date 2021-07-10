@@ -26,8 +26,8 @@ public class GameOpenException extends RuntimeException {
     public static GameOpenException unwrap(Throwable throwable) {
         if (throwable instanceof CompletionException) {
             return unwrap(throwable.getCause());
-        } else if (throwable instanceof GameOpenException) {
-            return (GameOpenException) throwable;
+        } else if (throwable instanceof GameOpenException unwrap) {
+            return unwrap;
         }
         return null;
     }

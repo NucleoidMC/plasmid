@@ -1,8 +1,6 @@
 package xyz.nucleoid.plasmid.game.common;
 
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
@@ -10,10 +8,10 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
-import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
 import xyz.nucleoid.plasmid.game.common.widget.BossBarWidget;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
@@ -21,7 +19,6 @@ import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
-import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 
 import java.util.Collection;
@@ -64,10 +61,10 @@ public final class GameWaitingLobby {
      * @param playerConfig the config that this waiting lobby should respect regarding player counts and countdowns
      */
     public static void applyTo(GameActivity activity, PlayerConfig playerConfig) {
-        GlobalWidgets widgets = GlobalWidgets.addTo(activity);
-        BossBarWidget bar = widgets.addBossBar(WAITING_TITLE);
+        var widgets = GlobalWidgets.addTo(activity);
+        var bar = widgets.addBossBar(WAITING_TITLE);
 
-        GameWaitingLobby lobby = new GameWaitingLobby(activity.getGameSpace(), playerConfig, bar);
+        var lobby = new GameWaitingLobby(activity.getGameSpace(), playerConfig, bar);
 
         activity.deny(GameRuleType.PVP).deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER)
                 .deny(GameRuleType.CRAFTING).deny(GameRuleType.PORTALS).deny(GameRuleType.THROW_ITEMS)
@@ -96,9 +93,9 @@ public final class GameWaitingLobby {
         if (this.countdownStart != -1 && time >= this.countdownStart + this.countdownDuration) {
             this.started = true;
 
-            GameResult startResult = this.gameSpace.requestStart();
+            var startResult = this.gameSpace.requestStart();
             if (startResult.isError()) {
-                MutableText message = new TranslatableText("text.plasmid.game.waiting_lobby.bar.cancel").append(startResult.getError());
+                MutableText message = new TranslatableText("text.plasmid.game.waiting_lobby.bar.cancel").append(startResult.error());
                 this.gameSpace.getPlayers().sendMessage(message.formatted(Formatting.RED));
                 this.started = false;
                 this.startRequested = false;
@@ -109,7 +106,7 @@ public final class GameWaitingLobby {
 
     @Nullable
     private GameResult requestStart() {
-        if (this.gameSpace.getPlayerCount() < this.playerConfig.getMinPlayers()) {
+        if (this.gameSpace.getPlayerCount() < this.playerConfig.minPlayers()) {
             return GameResult.error(GameTexts.Start.notEnoughPlayers());
         }
 
@@ -125,7 +122,7 @@ public final class GameWaitingLobby {
 
     private GameResult screenJoins(Collection<ServerPlayerEntity> players) {
         int newPlayerCount = this.gameSpace.getPlayerCount() + players.size();
-        if (newPlayerCount > this.playerConfig.getMaxPlayers()) {
+        if (newPlayerCount > this.playerConfig.maxPlayers()) {
             return GameResult.error(GameTexts.Join.gameFull());
         }
 
@@ -174,16 +171,16 @@ public final class GameWaitingLobby {
     }
 
     private long getTargetCountdownDuration() {
-        PlayerConfig.Countdown countdown = this.playerConfig.getCountdown();
+        var countdown = this.playerConfig.countdown();
         if (this.startRequested) {
             return START_REQUESTED_COUNTDOWN;
         }
 
-        if (this.gameSpace.getPlayerCount() >= this.playerConfig.getMinPlayers()) {
+        if (this.gameSpace.getPlayerCount() >= this.playerConfig.minPlayers()) {
             if (this.isFull()) {
-                return countdown.getFullSeconds() * 20L;
+                return countdown.fullSeconds() * 20L;
             } else if (this.isReady()) {
-                return countdown.getReadySeconds() * 20L;
+                return countdown.readySeconds() * 20L;
             }
         }
 
@@ -210,7 +207,7 @@ public final class GameWaitingLobby {
             long remainingSeconds = this.getRemainingTicks(time) / 20;
 
             if (remainingSeconds <= 3) {
-                PlayerSet players = this.gameSpace.getPlayers();
+                var players = this.gameSpace.getPlayers();
 
                 float pitch = remainingSeconds == 0 ? 1.5F : 1.0F;
                 players.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, pitch);
@@ -223,23 +220,23 @@ public final class GameWaitingLobby {
     }
 
     private boolean isReady() {
-        return this.gameSpace.getPlayerCount() >= this.playerConfig.getThresholdPlayers();
+        return this.gameSpace.getPlayerCount() >= this.playerConfig.thresholdPlayers();
     }
 
     private boolean isFull() {
         int playerCount = this.gameSpace.getPlayerCount();
-        if (playerCount >= this.playerConfig.getMaxPlayers()) {
+        if (playerCount >= this.playerConfig.maxPlayers()) {
             return true;
         }
 
         // if all players on the server are in this lobby
-        MinecraftServer server = this.gameSpace.getServer();
+        var server = this.gameSpace.getServer();
         if (playerCount >= server.getCurrentPlayerCount()) {
             return true;
         }
 
         // if there are no players outside of a game on the server
-        for (ServerWorld world : server.getWorlds()) {
+        for (var world : server.getWorlds()) {
             if (!world.getPlayers().isEmpty() && !GameSpaceManager.get().hasGame(world)) {
                 return false;
             }

@@ -4,7 +4,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.plasmid.event.GameEvents;
-import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameBehavior;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameSpace;
@@ -25,15 +24,15 @@ final class GameActivityState implements GameBehavior {
     }
 
     void setActivity(Supplier<ManagedGameActivity> factory) {
-        GameSpace gameSpace = this.gameSpace;
+        var gameSpace = this.gameSpace;
 
-        ManagedGameActivity closedActivity = this.activity;
+        var closedActivity = this.activity;
         if (closedActivity != null) {
             disableActivity(gameSpace, closedActivity);
             destroyActivity(gameSpace, closedActivity, GameCloseReason.SWAPPED);
         }
 
-        ManagedGameActivity activity = factory.get();
+        var activity = factory.get();
         this.activity = activity;
 
         createActivity(gameSpace, activity);
@@ -41,14 +40,14 @@ final class GameActivityState implements GameBehavior {
     }
 
     boolean closeActivity(GameCloseReason reason) {
-        ManagedGameActivity activity = this.activity;
+        var activity = this.activity;
         if (activity == null) {
             return false;
         }
 
         this.activity = null;
 
-        GameSpace gameSpace = this.gameSpace;
+        var gameSpace = this.gameSpace;
         disableActivity(gameSpace, activity);
         destroyActivity(gameSpace, activity, reason);
 
@@ -86,28 +85,28 @@ final class GameActivityState implements GameBehavior {
     @Override
     @NotNull
     public <T> T invoker(StimulusEvent<T> event) {
-        GameActivity activity = this.activity;
+        var activity = this.activity;
         return activity != null ? activity.invoker(event) : event.emptyInvoker();
     }
 
     @Override
     @NotNull
     public <T> T propagatingInvoker(StimulusEvent<T> event) {
-        GameActivity activity = this.activity;
+        var activity = this.activity;
         return activity != null ? activity.propagatingInvoker(event) : event.emptyInvoker();
     }
 
     @Override
     @NotNull
     public <T> Iterable<T> getInvokers(StimulusEvent<T> event) {
-        GameActivity activity = this.activity;
+        var activity = this.activity;
         return activity != null ? activity.getInvokers(event) : Collections.emptyList();
     }
 
     @Override
     @NotNull
     public ActionResult testRule(GameRuleType rule) {
-        GameActivity activity = this.activity;
+        var activity = this.activity;
         return activity != null ? activity.testRule(rule) : ActionResult.PASS;
     }
 }

@@ -7,13 +7,11 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.*;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.Tag;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 public final class ItemStackBuilder {
@@ -32,17 +30,17 @@ public final class ItemStackBuilder {
     }
 
     public static ItemStackBuilder firework(int color, int flight, FireworkItem.Type type) {
-        ItemStack rocket = new ItemStack(Items.FIREWORK_ROCKET, 1);
+        var rocket = new ItemStack(Items.FIREWORK_ROCKET, 1);
 
-        ItemStack star = new ItemStack(Items.FIREWORK_STAR);
-        NbtCompound explosion = star.getOrCreateSubTag("Explosion");
+        var star = new ItemStack(Items.FIREWORK_STAR);
+        var explosion = star.getOrCreateSubTag("Explosion");
 
         explosion.putIntArray("Colors", new int[] { color });
         explosion.putByte("Type", (byte) type.getId());
 
-        NbtCompound fireworks = rocket.getOrCreateSubTag("Fireworks");
+        var fireworks = rocket.getOrCreateSubTag("Fireworks");
 
-        NbtList explosions = new NbtList();
+        var explosions = new NbtList();
         explosions.add(explosion);
         fireworks.put("Explosions", explosions);
 
@@ -62,12 +60,12 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder addCanDestroy(Block block) {
-        Identifier blockId = Registry.BLOCK.getId(block);
+        var blockId = Registry.BLOCK.getId(block);
         return this.addCanDestroy(blockId.toString());
     }
 
     public ItemStackBuilder addCanDestroy(Tag<Block> block) {
-        Identifier tagId = BlockTags.getTagGroup().getUncheckedTagId(block);
+        var tagId = BlockTags.getTagGroup().getUncheckedTagId(block);
         if (tagId == null) {
             throw new IllegalArgumentException("tag " + block + " does not exist!");
         }
@@ -76,12 +74,12 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder addCanPlaceOn(Block block) {
-        Identifier blockId = Registry.BLOCK.getId(block);
+        var blockId = Registry.BLOCK.getId(block);
         return this.addCanPlaceOn(blockId.toString());
     }
 
     public ItemStackBuilder addCanPlaceOn(Tag<Block> block) {
-        Identifier tagId = BlockTags.getTagGroup().getUncheckedTagId(block);
+        var tagId = BlockTags.getTagGroup().getUncheckedTagId(block);
         if (tagId == null) {
             throw new IllegalArgumentException("tag " + block + " does not exist!");
         }
@@ -98,7 +96,7 @@ public final class ItemStackBuilder {
     }
 
     private ItemStackBuilder addPredicate(String key, String predicate) {
-        NbtCompound tag = this.stack.getOrCreateTag();
+        var tag = this.stack.getOrCreateTag();
 
         NbtList predicateList;
 
@@ -115,15 +113,15 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder setUnbreakable() {
-        NbtCompound tag = this.stack.getOrCreateTag();
+        var tag = this.stack.getOrCreateTag();
         tag.putBoolean("Unbreakable", true);
         return this;
     }
 
     public ItemStackBuilder setDyeColor(int color) {
-        Item item = this.stack.getItem();
-        if (item instanceof DyeableItem) {
-            ((DyeableItem) item).setColor(this.stack, color);
+        var item = this.stack.getItem();
+        if (item instanceof DyeableItem dyeable) {
+            dyeable.setColor(this.stack, color);
         }
         return this;
     }
@@ -134,7 +132,7 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder addLore(Text text) {
-        NbtCompound display = this.stack.getOrCreateSubTag("display");
+        var display = this.stack.getOrCreateSubTag("display");
 
         NbtList loreList;
         if (display.contains("Lore", 9)) {

@@ -4,8 +4,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
@@ -19,7 +17,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 import xyz.nucleoid.plasmid.map.template.MapTemplate;
-import xyz.nucleoid.plasmid.map.template.MapTemplateMetadata;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.*;
@@ -71,10 +68,10 @@ public final class MapWorkspace {
 
     public void addRegion(String marker, BlockBounds bounds, NbtCompound tag) {
         int runtimeId = this.nextRegionId();
-        WorkspaceRegion region = new WorkspaceRegion(runtimeId, marker, bounds, tag);
+        var region = new WorkspaceRegion(runtimeId, marker, bounds, tag);
         this.regions.put(runtimeId, region);
 
-        for (WorkspaceListener listener : this.listeners) {
+        for (var listener : this.listeners) {
             listener.onAddRegion(region);
         }
     }
@@ -85,7 +82,7 @@ public final class MapWorkspace {
         }
 
         if (this.regions.replace(from.runtimeId, from, to)) {
-            for (WorkspaceListener listener : this.listeners) {
+            for (var listener : this.listeners) {
                 listener.onUpdateRegion(from, to);
             }
             return true;
@@ -96,7 +93,7 @@ public final class MapWorkspace {
 
     public boolean removeRegion(WorkspaceRegion region) {
         if (this.regions.remove(region.runtimeId, region)) {
-            for (WorkspaceListener listener : this.listeners) {
+            for (var listener : this.listeners) {
                 listener.onRemoveRegion(region);
             }
             return true;
@@ -112,7 +109,7 @@ public final class MapWorkspace {
     public void setBounds(BlockBounds bounds) {
         this.bounds = bounds;
 
-        for (WorkspaceListener listener : this.listeners) {
+        for (var listener : this.listeners) {
             listener.onSetBounds(bounds);
         }
     }
@@ -120,7 +117,7 @@ public final class MapWorkspace {
     public void setOrigin(BlockPos origin) {
         this.origin = origin;
 
-        for (WorkspaceListener listener : this.listeners) {
+        for (var listener : this.listeners) {
             listener.onSetOrigin(origin);
         }
     }
@@ -186,22 +183,22 @@ public final class MapWorkspace {
         root.putIntArray("origin", new int[] { this.origin.getX(), this.origin.getY(), this.origin.getZ() });
 
         // Regions
-        NbtList regionList = new NbtList();
-        for (WorkspaceRegion region : this.regions.values()) {
+        var regionList = new NbtList();
+        for (var region : this.regions.values()) {
             regionList.add(region.serialize(new NbtCompound()));
         }
         root.put("regions", regionList);
 
         // Entities
-        NbtCompound entitiesTag = new NbtCompound();
-        NbtList entityList = new NbtList();
+        var entitiesTag = new NbtCompound();
+        var entityList = new NbtList();
         for (UUID uuid : this.entitiesToInclude) {
             entityList.add(NbtHelper.fromUuid(uuid));
         }
         entitiesTag.put("uuids", entityList);
 
-        NbtList entityTypeList = new NbtList();
-        for (EntityType<?> type : this.entityTypesToInclude) {
+        var entityTypeList = new NbtList();
+        for (var type : this.entityTypesToInclude) {
             entityTypeList.add(NbtString.of(Registry.ENTITY_TYPE.getId(type).toString()));
         }
         entitiesTag.put("types", entityTypeList);
@@ -214,28 +211,28 @@ public final class MapWorkspace {
     }
 
     public static MapWorkspace deserialize(RuntimeWorldHandle worldHandle, NbtCompound root) {
-        Identifier identifier = new Identifier(root.getString("identifier"));
-        BlockBounds bounds = BlockBounds.deserialize(root);
+        var identifier = new Identifier(root.getString("identifier"));
+        var bounds = BlockBounds.deserialize(root);
 
-        MapWorkspace map = new MapWorkspace(worldHandle, identifier, bounds);
+        var map = new MapWorkspace(worldHandle, identifier, bounds);
 
         if (root.contains("origin", NbtType.INT_ARRAY)) {
-            int[] origin = root.getIntArray("origin");
+            var origin = root.getIntArray("origin");
             map.setOrigin(new BlockPos(origin[0], origin[1], origin[2]));
         } else {
             map.setOrigin(bounds.getMin());
         }
 
         // Regions
-        NbtList regionList = root.getList("regions", NbtType.COMPOUND);
+        var regionList = root.getList("regions", NbtType.COMPOUND);
         for (int i = 0; i < regionList.size(); i++) {
-            NbtCompound regionRoot = regionList.getCompound(i);
+            var regionRoot = regionList.getCompound(i);
             int runtimeId = map.nextRegionId();
             map.regions.put(runtimeId, WorkspaceRegion.deserialize(runtimeId, regionRoot));
         }
 
         // Entities
-        NbtCompound entitiesTag = root.getCompound("entities");
+        var entitiesTag = root.getCompound("entities");
         entitiesTag.getList("uuids", NbtType.INT_ARRAY).stream()
                 .map(NbtHelper::toUuid)
                 .forEach(map.entitiesToInclude::add);
@@ -261,12 +258,12 @@ public final class MapWorkspace {
      * @return The compiled map.
      */
     public MapTemplate compile(boolean includeEntities) {
-        MapTemplate map = MapTemplate.createEmpty();
+        var map = MapTemplate.createEmpty();
         map.setBounds(this.globalToLocal(this.bounds));
 
         this.writeMetadataToTemplate(map);
 
-        ServerWorld world = this.worldHandle.asWorld();
+        var world = this.worldHandle.asWorld();
 
         this.writeBlocksToTemplate(map, world);
 
@@ -278,11 +275,10 @@ public final class MapWorkspace {
     }
 
     private void writeMetadataToTemplate(MapTemplate map) {
-        MapTemplateMetadata metadata = map.getMetadata();
-
+        var metadata = map.getMetadata();
         metadata.setData(this.getData().copy());
 
-        for (WorkspaceRegion region : this.regions.values()) {
+        for (var region : this.regions.values()) {
             metadata.addRegion(
                     region.marker,
                     this.globalToLocal(region.bounds),
@@ -292,17 +288,17 @@ public final class MapWorkspace {
     }
 
     private void writeBlocksToTemplate(MapTemplate map, ServerWorld world) {
-        for (BlockPos pos : this.bounds) {
-            BlockPos localPos = this.globalToLocal(pos);
+        for (var pos : this.bounds) {
+            var localPos = this.globalToLocal(pos);
 
-            BlockState state = world.getBlockState(pos);
+            var state = world.getBlockState(pos);
             if (state.isAir()) {
                 continue;
             }
 
             map.setBlockState(localPos, state);
 
-            BlockEntity entity = world.getBlockEntity(pos);
+            var entity = world.getBlockEntity(pos);
             if (entity != null) {
                 map.setBlockEntity(localPos, entity);
             }
@@ -310,14 +306,14 @@ public final class MapWorkspace {
     }
 
     private void writeEntitiesToTemplate(MapTemplate map, ServerWorld world) {
-        List<Entity> entities = world.getEntitiesByClass(Entity.class, this.bounds.toBox(), entity -> {
+        var entities = world.getEntitiesByClass(Entity.class, this.bounds.toBox(), entity -> {
             if (entity.isRemoved()) {
                 return false;
             }
             return this.containsEntity(entity.getUuid()) || this.hasEntityType(entity.getType());
         });
 
-        for (Entity entity : entities) {
+        for (var entity : entities) {
             map.addEntity(entity, this.globalToLocal(entity.getPos()));
         }
     }
@@ -327,7 +323,7 @@ public final class MapWorkspace {
     }
 
     private Vec3d globalToLocal(Vec3d pos) {
-        BlockPos origin = this.origin;
+        var origin = this.origin;
         return pos.subtract(origin.getX(), origin.getY(), origin.getZ());
     }
 

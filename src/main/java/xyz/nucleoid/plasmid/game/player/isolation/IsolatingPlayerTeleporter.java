@@ -1,14 +1,10 @@
 package xyz.nucleoid.plasmid.game.player.isolation;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.WorldProperties;
 import net.minecraft.world.biome.source.BiomeAccess;
 import xyz.nucleoid.plasmid.game.GameSpace;
 
@@ -73,8 +69,8 @@ public final class IsolatingPlayerTeleporter {
     }
 
     private void teleport(ServerPlayerEntity player, Function<ServerPlayerEntity, ServerWorld> recreate, boolean in) {
-        PlayerManager playerManager = this.server.getPlayerManager();
-        PlayerManagerAccess playerManagerAccess = (PlayerManagerAccess) playerManager;
+        var playerManager = this.server.getPlayerManager();
+        var playerManagerAccess = (PlayerManagerAccess) playerManager;
 
         player.detach();
         player.setCameraEntity(player);
@@ -91,7 +87,7 @@ public final class IsolatingPlayerTeleporter {
 
         playerManagerAccess.plasmid$getPlayerResetter().apply(player);
 
-        ServerWorld world = recreate.apply(player);
+        var world = recreate.apply(player);
         if (!in) {
             playerManagerAccess.plasmid$loadIntoPlayer(player);
         }
@@ -99,9 +95,9 @@ public final class IsolatingPlayerTeleporter {
         player.setWorld(world);
         player.interactionManager.setWorld(world);
 
-        WorldProperties worldProperties = world.getLevelProperties();
+        var worldProperties = world.getLevelProperties();
 
-        ServerPlayNetworkHandler networkHandler = player.networkHandler;
+        var networkHandler = player.networkHandler;
         networkHandler.sendPacket(new PlayerRespawnS2CPacket(
                 world.getDimension(), world.getRegistryKey(),
                 BiomeAccess.hashSeed(world.getSeed()),
@@ -129,7 +125,7 @@ public final class IsolatingPlayerTeleporter {
         // we just sent the full inventory, so we can consider the ScreenHandler as up-to-date
         ((ScreenHandlerAccess) player.playerScreenHandler).plasmid$resetTrackedState();
 
-        for (StatusEffectInstance effect : player.getStatusEffects()) {
+        for (var effect : player.getStatusEffects()) {
             networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getId(), effect));
         }
     }

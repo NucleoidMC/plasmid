@@ -1,6 +1,5 @@
 package xyz.nucleoid.plasmid.game.common;
 
-import com.google.common.collect.Multimap;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -9,7 +8,6 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ToolItem;
-import net.minecraft.item.ToolMaterial;
 
 import java.util.UUID;
 
@@ -32,14 +30,14 @@ public final class OldCombat {
     private static final int SWORD_BASE_DAMAGE = 3;
 
     public static ItemStack applyTo(ItemStack stack) {
-        Item item = stack.getItem();
+        var item = stack.getItem();
         if (!(item instanceof ToolItem)) {
             return stack;
         }
 
-        ToolMaterial material = ((ToolItem) item).getMaterial();
+        var material = ((ToolItem) item).getMaterial();
 
-        Multimap<EntityAttribute, EntityAttributeModifier> defaultModifiers = item.getAttributeModifiers(EquipmentSlot.MAINHAND);
+        var defaultModifiers = item.getAttributeModifiers(EquipmentSlot.MAINHAND);
 
         if (defaultModifiers.containsKey(SPEED_ATTRIBUTE)) {
             EntityAttributeModifier modifier = createSpeedModifier();

@@ -19,7 +19,7 @@ public final class TeamChat {
     }
 
     public static void applyTo(GameActivity activity) {
-        TeamChat teamChat = new TeamChat(activity.getGameSpace());
+        var teamChat = new TeamChat(activity.getGameSpace());
         activity.listen(PlayerChatEvent.EVENT, teamChat::onSendMessage);
     }
 
@@ -37,18 +37,18 @@ public final class TeamChat {
             return false;
         }
 
-        if (player instanceof HasChatChannel) {
-            return ((HasChatChannel) player).getChatChannel() == ChatChannel.TEAM;
+        if (player instanceof HasChatChannel hasChannel) {
+            return hasChannel.getChatChannel() == ChatChannel.TEAM;
         } else {
             return false;
         }
     }
 
     private void sendTeamChat(ServerPlayerEntity sender, Text message) {
-        Team team = (Team) sender.getScoreboardTeam();
-        Text teamMessage = new TranslatableText("text.plasmid.chat.team", message);
+        var team = (Team) sender.getScoreboardTeam();
+        var teamMessage = new TranslatableText("text.plasmid.chat.team", message);
 
-        for (ServerPlayerEntity player : this.gameSpace.getPlayers()) {
+        for (var player : this.gameSpace.getPlayers()) {
             if (player == sender || player.getScoreboardTeam() == team) {
                 player.sendSystemMessage(teamMessage, sender.getUuid());
             }

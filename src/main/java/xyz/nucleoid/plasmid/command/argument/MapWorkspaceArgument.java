@@ -21,8 +21,8 @@ public final class MapWorkspaceArgument {
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((context, builder) -> {
-                    ServerCommandSource source = context.getSource();
-                    MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
+                    var source = context.getSource();
+                    var workspaceManager = MapWorkspaceManager.get(source.getServer());
 
                     return CommandSource.suggestIdentifiers(
                             workspaceManager.getWorkspaceIds().stream(),
@@ -32,12 +32,12 @@ public final class MapWorkspaceArgument {
     }
 
     public static MapWorkspace get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
-        Identifier identifier = IdentifierArgumentType.getIdentifier(context, name);
+        var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
-        ServerCommandSource source = context.getSource();
-        MapWorkspaceManager workspaceManager = MapWorkspaceManager.get(source.getServer());
+        var source = context.getSource();
+        var workspaceManager = MapWorkspaceManager.get(source.getServer());
 
-        MapWorkspace workspace = workspaceManager.byId(identifier);
+        var workspace = workspaceManager.byId(identifier);
         if (workspace == null) {
             throw WORKSPACE_NOT_FOUND.create(identifier);
         }

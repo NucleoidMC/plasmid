@@ -30,7 +30,7 @@ public final class PartyManager {
     }
 
     public PartyResult invitePlayer(PlayerRef owner, PlayerRef player) {
-        Party party = this.getOrCreateOwnParty(owner);
+        var party = this.getOrCreateOwnParty(owner);
         if (party != null) {
             if (party.invite(player)) {
                 return PartyResult.ok(party);
@@ -47,7 +47,7 @@ public final class PartyManager {
             return PartyResult.err(PartyError.CANNOT_REMOVE_SELF);
         }
 
-        Party party = this.getOwnParty(owner);
+        var party = this.getOwnParty(owner);
         if (party == null) {
             return PartyResult.err(PartyError.DOES_NOT_EXIST);
         }
@@ -65,7 +65,7 @@ public final class PartyManager {
             return PartyResult.err(PartyError.ALREADY_IN_PARTY);
         }
 
-        Party party = this.getOwnParty(owner);
+        var party = this.getOwnParty(owner);
         if (party == null) {
             return PartyResult.err(PartyError.DOES_NOT_EXIST);
         }
@@ -79,7 +79,7 @@ public final class PartyManager {
     }
 
     public PartyResult leaveParty(PlayerRef player) {
-        Party party = this.getParty(player);
+        var party = this.getParty(player);
         if (party == null) {
             return PartyResult.err(PartyError.DOES_NOT_EXIST);
         }
@@ -100,7 +100,7 @@ public final class PartyManager {
     }
 
     public PartyResult transferParty(PlayerRef from, PlayerRef to) {
-        Party party = this.getOwnParty(from);
+        var party = this.getOwnParty(from);
         if (party == null) {
             return PartyResult.err(PartyError.DOES_NOT_EXIST);
         }
@@ -114,7 +114,7 @@ public final class PartyManager {
     }
 
     public PartyResult disbandParty(PlayerRef owner) {
-        Party party = this.getOwnParty(owner);
+        var party = this.getOwnParty(owner);
         if (party != null) {
             for (PlayerRef member : party.getMembers()) {
                 this.playerToParty.remove(member, party);
@@ -132,7 +132,7 @@ public final class PartyManager {
 
     @Nullable
     public Party getOwnParty(PlayerRef owner) {
-        Party party = this.playerToParty.get(owner);
+        var party = this.playerToParty.get(owner);
         if (party != null && party.isOwner(owner)) {
             return party;
         }
@@ -140,7 +140,7 @@ public final class PartyManager {
     }
 
     private Party getOrCreateOwnParty(PlayerRef owner) {
-        Party party = this.playerToParty.computeIfAbsent(owner, o -> new Party(this.server, o));
+        var party = this.playerToParty.computeIfAbsent(owner, o -> new Party(this.server, o));
         if (party.isOwner(owner)) {
             return party;
         }
@@ -148,7 +148,7 @@ public final class PartyManager {
     }
 
     public Collection<ServerPlayerEntity> getPartyMembers(ServerPlayerEntity player) {
-        Party party = this.getOwnParty(PlayerRef.of(player));
+        var party = this.getOwnParty(PlayerRef.of(player));
         if (party != null) {
             return Lists.newArrayList(party.getMemberPlayers());
         } else {

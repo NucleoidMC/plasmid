@@ -26,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.BlockBounds;
 
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -96,13 +95,13 @@ public final class MapTemplate {
     }
 
     public void setBlockState(BlockPos pos, BlockState state) {
-        MapChunk chunk = this.getOrCreateChunk(chunkPos(pos));
+        var chunk = this.getOrCreateChunk(chunkPos(pos));
         chunk.set(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15, state);
 
         this.generatedBounds = null;
 
         if (state.hasBlockEntity()) {
-            NbtCompound tag = new NbtCompound();
+            var tag = new NbtCompound();
             tag.putString("id", "DUMMY");
             tag.putInt("x", pos.getX());
             tag.putInt("y", pos.getY());
@@ -132,7 +131,7 @@ public final class MapTemplate {
     }
 
     public BlockState getBlockState(BlockPos pos) {
-        MapChunk chunk = this.chunks.get(chunkPos(pos));
+        var chunk = this.chunks.get(chunkPos(pos));
         if (chunk != null) {
             return chunk.get(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15);
         }
@@ -141,13 +140,13 @@ public final class MapTemplate {
 
     @Nullable
     public NbtCompound getBlockEntityTag(BlockPos localPos) {
-        NbtCompound tag = this.blockEntities.get(localPos.asLong());
+        var tag = this.blockEntities.get(localPos.asLong());
         return tag != null ? tag.copy() : null;
     }
 
     @Nullable
     public NbtCompound getBlockEntityTag(BlockPos localPos, BlockPos worldPos) {
-        NbtCompound tag = this.getBlockEntityTag(localPos);
+        var tag = this.getBlockEntityTag(localPos);
         if (tag != null) {
             tag.putInt("x", worldPos.getX());
             tag.putInt("y", worldPos.getY());
@@ -182,24 +181,24 @@ public final class MapTemplate {
      * @return The stream of entities.
      */
     public Stream<MapEntity> getEntitiesInChunk(int chunkX, int chunkY, int chunkZ) {
-        MapChunk chunk = this.chunks.get(chunkPos(chunkX, chunkY, chunkZ));
+        var chunk = this.chunks.get(chunkPos(chunkX, chunkY, chunkZ));
         return chunk != null ? chunk.getEntities().stream() : Stream.empty();
     }
 
     // TODO: store / lookup more efficiently?
     public int getTopY(int x, int z, Heightmap.Type heightmap, HeightLimitView heightLimit) {
-        Predicate<BlockState> predicate = heightmap.getBlockPredicate();
+        var predicate = heightmap.getBlockPredicate();
 
         int maxY = heightLimit.getTopY();
         int minY = heightLimit.getBottomY();
 
-        BlockBounds bounds = this.getBoundsOrNull();
+        var bounds = this.getBoundsOrNull();
         if (bounds != null) {
             maxY = bounds.getMax().getY();
             minY = bounds.getMin().getY();
         }
 
-        BlockPos.Mutable mutablePos = new BlockPos.Mutable(x, 0, z);
+        var mutablePos = new BlockPos.Mutable(x, 0, z);
         for (int y = maxY; y >= minY; y--) {
             mutablePos.setY(y);
 
@@ -223,7 +222,7 @@ public final class MapTemplate {
 
     @NotNull
     MapChunk getOrCreateChunk(long pos) {
-        MapChunk chunk = this.chunks.get(pos);
+        var chunk = this.chunks.get(pos);
         if (chunk == null) {
             this.chunks.put(pos, chunk = new MapChunk(ChunkSectionPos.from(pos)));
         }
@@ -241,12 +240,12 @@ public final class MapTemplate {
     }
 
     public BlockBounds getBounds() {
-        BlockBounds bounds = this.bounds;
+        var bounds = this.bounds;
         if (bounds != null) {
             return bounds;
         }
 
-        BlockBounds generatedBounds = this.generatedBounds;
+        var generatedBounds = this.generatedBounds;
         if (generatedBounds == null) {
             this.generatedBounds = generatedBounds = this.computeBounds();
         }
@@ -256,7 +255,7 @@ public final class MapTemplate {
 
     @Nullable
     private BlockBounds getBoundsOrNull() {
-        BlockBounds bounds = this.bounds;
+        var bounds = this.bounds;
         return bounds != null ? bounds : this.generatedBounds;
     }
 
@@ -268,7 +267,7 @@ public final class MapTemplate {
         int maxChunkY = Integer.MIN_VALUE;
         int maxChunkZ = Integer.MIN_VALUE;
 
-        for (Long2ObjectMap.Entry<MapChunk> entry : Long2ObjectMaps.fastIterable(this.chunks)) {
+        for (var entry : Long2ObjectMaps.fastIterable(this.chunks)) {
             long chunkPos = entry.getLongKey();
             int chunkX = ChunkSectionPos.unpackX(chunkPos);
             int chunkY = ChunkSectionPos.unpackY(chunkPos);
@@ -322,17 +321,17 @@ public final class MapTemplate {
     }
 
     public MapTemplate transformed(MapTransform transform) {
-        MapTemplate result = MapTemplate.createEmpty();
+        var result = MapTemplate.createEmpty();
 
-        BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+        var mutablePos = new BlockPos.Mutable();
 
         for (MapChunk chunk : this.chunks.values()) {
-            BlockPos minChunkPos = chunk.getPos().getMinPos();
+            var minChunkPos = chunk.getPos().getMinPos();
 
             for (int chunkZ = 0; chunkZ < 16; chunkZ++) {
                 for (int chunkY = 0; chunkY < 16; chunkY++) {
                     for (int chunkX = 0; chunkX < 16; chunkX++) {
-                        BlockState state = chunk.get(chunkX, chunkY, chunkZ);
+                        var state = chunk.get(chunkX, chunkY, chunkZ);
                         if (!state.isAir()) {
                             state = transform.transformedBlock(state);
 
@@ -343,16 +342,16 @@ public final class MapTemplate {
                 }
             }
 
-            for (MapEntity entity : chunk.getEntities()) {
+            for (var entity : chunk.getEntities()) {
                 result.addEntity(entity.transformed(transform));
             }
         }
 
-        for (Long2ObjectMap.Entry<NbtCompound> blockEntity : Long2ObjectMaps.fastIterable(this.blockEntities)) {
+        for (var blockEntity : Long2ObjectMaps.fastIterable(this.blockEntities)) {
             mutablePos.set(blockEntity.getLongKey());
             transform.transformPoint(mutablePos);
 
-            NbtCompound tag = blockEntity.getValue().copy();
+            var tag = blockEntity.getValue().copy();
             result.setBlockEntityTag(mutablePos, tag);
         }
 
@@ -360,7 +359,7 @@ public final class MapTemplate {
 
         result.metadata.data = this.metadata.data.copy();
 
-        for (TemplateRegion sourceRegion : this.metadata.regions) {
+        for (var sourceRegion : this.metadata.regions) {
             result.metadata.regions.add(new TemplateRegion(
                     sourceRegion.getMarker(),
                     transform.transformedBounds(sourceRegion.getBounds()),
@@ -380,7 +379,7 @@ public final class MapTemplate {
      * @return the merged template
      */
     public static MapTemplate merged(MapTemplate primary, MapTemplate secondary) {
-        MapTemplate result = MapTemplate.createEmpty();
+        var result = MapTemplate.createEmpty();
         secondary.mergeInto(result);
         primary.mergeInto(result);
         return result;
@@ -391,15 +390,15 @@ public final class MapTemplate {
     }
 
     public void mergeInto(MapTemplate other) {
-        for (Long2ObjectMap.Entry<MapChunk> entry : Long2ObjectMaps.fastIterable(this.chunks)) {
+        for (var entry : Long2ObjectMaps.fastIterable(this.chunks)) {
             long chunkPos = entry.getLongKey();
-            MapChunk chunk = entry.getValue();
-            MapChunk otherChunk = other.getOrCreateChunk(chunkPos);
+            var chunk = entry.getValue();
+            var otherChunk = other.getOrCreateChunk(chunkPos);
 
             for (int chunkZ = 0; chunkZ < 16; chunkZ++) {
                 for (int chunkY = 0; chunkY < 16; chunkY++) {
                     for (int chunkX = 0; chunkX < 16; chunkX++) {
-                        BlockState state = chunk.get(chunkX, chunkY, chunkZ);
+                        var state = chunk.get(chunkX, chunkY, chunkZ);
                         if (!state.isAir()) {
                             otherChunk.set(chunkX, chunkY, chunkZ, state);
                         }
@@ -407,14 +406,14 @@ public final class MapTemplate {
                 }
             }
 
-            for (MapEntity entity : chunk.getEntities()) {
+            for (var entity : chunk.getEntities()) {
                 otherChunk.addEntity(entity);
             }
         }
 
         other.metadata.data.copyFrom(this.metadata.data);
 
-        for (TemplateRegion region : this.metadata.regions) {
+        for (var region : this.metadata.regions) {
             other.metadata.addRegion(region.copy());
         }
 

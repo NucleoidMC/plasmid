@@ -1,7 +1,6 @@
 package xyz.nucleoid.plasmid.game.common;
 
 import joptsimple.internal.Strings;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
@@ -54,9 +53,9 @@ public final class GameResourcePack {
      * @param activity the activity to add to
      */
     public void applyTo(GameActivity activity) {
-        MinecraftServer server = activity.getGameSpace().getServer();
-        String serverUrl = server.getResourcePackUrl();
-        String serverHash = server.getResourcePackHash();
+        var server = activity.getGameSpace().getServer();
+        var serverUrl = server.getResourcePackUrl();
+        var serverHash = server.getResourcePackHash();
 
         activity.listen(GamePlayerEvents.ADD, player -> {
             player.sendResourcePackUrl(this.url, this.hash, this.required, this.prompt);

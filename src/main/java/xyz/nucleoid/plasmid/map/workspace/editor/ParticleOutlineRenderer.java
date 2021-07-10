@@ -3,22 +3,20 @@ package xyz.nucleoid.plasmid.map.workspace.editor;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 
 public final class ParticleOutlineRenderer {
     public static void render(ServerPlayerEntity player, BlockPos min, BlockPos max, float red, float green, float blue) {
-        DustParticleEffect effect = new DustParticleEffect(new Vec3f(red, green, blue), 2.0F);
+        var effect = new DustParticleEffect(new Vec3f(red, green, blue), 2.0F);
 
-        Edge[] edges = edges(min, max);
+        var edges = edges(min, max);
 
         int maxInterval = 5;
         int maxCount = 20;
 
-        for (Edge edge : edges) {
+        for (var edge : edges) {
             int length = edge.length();
 
             int interval = 1;
@@ -38,15 +36,15 @@ public final class ParticleOutlineRenderer {
     }
 
     private static void spawnParticleIfVisible(ServerPlayerEntity player, ParticleEffect effect, double x, double y, double z) {
-        ServerWorld world = player.getServerWorld();
+        var world = player.getServerWorld();
 
-        Vec3d delta = player.getPos().subtract(x, y, z);
+        var delta = player.getPos().subtract(x, y, z);
         double length2 = delta.lengthSquared();
         if (length2 > 256 * 256) {
             return;
         }
 
-        Vec3d rotation = player.getRotationVec(1.0F);
+        var rotation = player.getRotationVec(1.0F);
         double dot = (delta.multiply(1.0 / Math.sqrt(length2))).dotProduct(rotation);
         if (dot > 0.0) {
             return;
@@ -90,19 +88,7 @@ public final class ParticleOutlineRenderer {
         };
     }
 
-    private static class Edge {
-        final int startX, startY, startZ;
-        final int endX, endY, endZ;
-
-        Edge(int startX, int startY, int startZ, int endX, int endY, int endZ) {
-            this.startX = startX;
-            this.startY = startY;
-            this.startZ = startZ;
-            this.endX = endX;
-            this.endY = endY;
-            this.endZ = endZ;
-        }
-
+    private record Edge(int startX, int startY, int startZ, int endX, int endY, int endZ) {
         double projX(double m) {
             return this.startX + (this.endX - this.startX) * m;
         }

@@ -6,36 +6,30 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.MessageType;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.command.argument.GameConfigArgument;
 import xyz.nucleoid.plasmid.command.argument.GameSpaceArgument;
-import xyz.nucleoid.plasmid.game.*;
+import xyz.nucleoid.plasmid.game.GameCloseReason;
+import xyz.nucleoid.plasmid.game.GameOpenException;
+import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
-import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
 import java.util.Comparator;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -114,31 +108,31 @@ public final class GameCommand {
     // @formatter:on
 
     private static int openGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Pair<Identifier, GameConfig<?>> game = GameConfigArgument.get(context, "game_config");
+        var game = GameConfigArgument.get(context, "game_config");
         return openGame(context, game.getSecond());
     }
 
     private static int openAnonymousGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        NbtCompound configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
-        DataResult<GameConfig<?>> result = GameConfig.CODEC.parse(NbtOps.INSTANCE, configNbt);
+        var configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
+        var result = GameConfig.CODEC.parse(NbtOps.INSTANCE, configNbt);
         if (result.error().isPresent()) {
             throw MALFORMED_CONFIG.create(result.error().get());
         }
 
-        GameConfig<?> game = result.result().get();
+        var game = result.result().get();
         return openGame(context, game);
     }
 
     private static int openGame(CommandContext<ServerCommandSource> context, GameConfig<?> config) {
-        ServerCommandSource source = context.getSource();
-        MinecraftServer server = source.getServer();
+        var source = context.getSource();
+        var server = source.getServer();
 
-        Entity entity = source.getEntity();
-        ServerPlayerEntity player = entity instanceof ServerPlayerEntity ? (ServerPlayerEntity) entity : null;
+        var entity = source.getEntity();
+        var player = entity instanceof ServerPlayerEntity ? (ServerPlayerEntity) entity : null;
 
         server.submit(() -> {
             if (player != null) {
-                ManagedGameSpace currentGameSpace = GameSpaceManager.get().byPlayer(player);
+                var currentGameSpace = GameSpaceManager.get().byPlayer(player);
                 if (currentGameSpace != null) {
                     currentGameSpace.kickPlayer(player);
                 }
@@ -162,16 +156,16 @@ public final class GameCommand {
     }
 
     private static void onOpenSuccess(ServerCommandSource source, GameSpace gameSpace) {
-        PlayerManager players = source.getServer().getPlayerManager();
+        var players = source.getServer().getPlayerManager();
 
-        Text message = GameTexts.Broadcast.gameOpened(source, gameSpace);
+        var message = GameTexts.Broadcast.gameOpened(source, gameSpace);
         players.broadcastChatMessage(message, MessageType.SYSTEM, Util.NIL_UUID);
     }
 
     private static void onOpenError(ServerCommandSource source, Throwable throwable) {
         Plasmid.LOGGER.error("Failed to start game", throwable);
 
-        GameOpenException gameOpenException = GameOpenException.unwrap(throwable);
+        var gameOpenException = GameOpenException.unwrap(throwable);
 
         MutableText message;
         if (gameOpenException != null) {
@@ -180,19 +174,19 @@ public final class GameCommand {
             message = GameTexts.Broadcast.gameOpenError();
         }
 
-        PlayerManager players = source.getServer().getPlayerManager();
+        var players = source.getServer().getPlayerManager();
         players.broadcastChatMessage(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);
     }
 
     private static int proposeGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameSpace gameSpace = GameSpaceArgument.get(context, "game_space");
+        var gameSpace = GameSpaceArgument.get(context, "game_space");
         return proposeGame(context.getSource(), gameSpace);
     }
 
     private static int proposeCurrentGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
+        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
@@ -201,9 +195,9 @@ public final class GameCommand {
     }
 
     private static int proposeGame(ServerCommandSource source, GameSpace gameSpace) {
-        Text message = GameTexts.Broadcast.propose(source, gameSpace);
+        var message = GameTexts.Broadcast.propose(source, gameSpace);
 
-        PlayerManager playerManager = source.getServer().getPlayerManager();
+        var playerManager = source.getServer().getPlayerManager();
         playerManager.broadcastChatMessage(message, MessageType.SYSTEM, Util.NIL_UUID);
 
         return Command.SINGLE_SUCCESS;
@@ -211,14 +205,14 @@ public final class GameCommand {
 
     // TODO: display gui with all relevant games?
     private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameSpace gameSpace = getJoinableGameSpace();
+        var gameSpace = getJoinableGameSpace();
         tryJoinGame(context.getSource().getPlayer(), gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int joinQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameSpace gameSpace = GameSpaceArgument.get(context, "game_space");
+        var gameSpace = GameSpaceArgument.get(context, "game_space");
         tryJoinGame(context.getSource().getPlayer(), gameSpace);
 
         return Command.SINGLE_SUCCESS;
@@ -227,7 +221,7 @@ public final class GameCommand {
     private static int joinAllGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         GameSpace gameSpace = null;
 
-        Entity entity = context.getSource().getEntity();
+        var entity = context.getSource().getEntity();
         if (entity instanceof ServerPlayerEntity) {
             gameSpace = GameSpaceManager.get().byPlayer((PlayerEntity) entity);
         }
@@ -242,33 +236,33 @@ public final class GameCommand {
     }
 
     private static int joinAllQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameSpace gameSpace = GameSpaceArgument.get(context, "game_space");
+        var gameSpace = GameSpaceArgument.get(context, "game_space");
         joinAllPlayersToGame(context, gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static void joinAllPlayersToGame(CommandContext<ServerCommandSource> context, GameSpace gameSpace) {
-        PlayerManager playerManager = context.getSource().getServer().getPlayerManager();
+        var playerManager = context.getSource().getServer().getPlayerManager();
 
-        List<ServerPlayerEntity> players = playerManager.getPlayerList().stream()
+        var players = playerManager.getPlayerList().stream()
                 .filter(player -> !GameSpaceManager.get().inGame(player))
                 .collect(Collectors.toList());
 
-        GameResult screen = gameSpace.screenPlayerJoins(players);
+        var screen = gameSpace.screenPlayerJoins(players);
         if (screen.isOk()) {
-            for (ServerPlayerEntity player : players) {
+            for (var player : players) {
                 gameSpace.offerPlayer(player);
             }
         } else {
-            context.getSource().sendError(screen.getError().shallowCopy().formatted(Formatting.RED));
+            context.getSource().sendError(screen.error().shallowCopy().formatted(Formatting.RED));
         }
     }
 
     private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
-        GameResult result = gameSpace.offerPlayer(player);
+        var result = gameSpace.offerPlayer(player);
         if (result.isError()) {
-            Text error = result.getError();
+            var error = result.error();
             player.sendMessage(error.shallowCopy().formatted(Formatting.RED), false);
         }
     }
@@ -280,24 +274,24 @@ public final class GameCommand {
     }
 
     private static int locatePlayer(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerPlayerEntity player = EntityArgumentType.getPlayer(context, "player");
+        var player = EntityArgumentType.getPlayer(context, "player");
 
-        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(player);
+        var gameSpace = GameSpaceManager.get().byPlayer(player);
         if (gameSpace == null) {
             throw PLAYER_NOT_IN_GAME.create(player.getEntityName());
         }
 
-        MutableText message = GameTexts.Command.located(player, gameSpace);
+        var message = GameTexts.Command.located(player, gameSpace);
         context.getSource().sendFeedback(message, false);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int leaveGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ServerPlayerEntity player = source.getPlayer();
+        var source = context.getSource();
+        var player = source.getPlayer();
 
-        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(player);
+        var gameSpace = GameSpaceManager.get().byPlayer(player);
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
@@ -310,19 +304,19 @@ public final class GameCommand {
     }
 
     private static int startGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
 
-        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
+        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
 
         source.getServer().submit(() -> {
-            GameResult startResult = gameSpace.requestStart();
+            var startResult = gameSpace.requestStart();
 
             Text message;
             if (startResult.isError()) {
-                Text error = startResult.getError();
+                Text error = startResult.error();
                 message = error.shallowCopy().formatted(Formatting.RED);
             } else {
                 message = new TranslatableText("text.plasmid.game.started.player", source.getDisplayName())
@@ -336,13 +330,13 @@ public final class GameCommand {
     }
 
     private static int stopGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
+        var source = context.getSource();
+        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
 
-        PlayerSet playerSet = gameSpace.getPlayers();
+        var playerSet = gameSpace.getPlayers();
 
         if (playerSet.size() <= 1) {
             stopGameConfirmed(context);
@@ -357,24 +351,24 @@ public final class GameCommand {
     }
 
     private static int stopGameConfirmed(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
-        ManagedGameSpace gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
+        var source = context.getSource();
+        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
 
         source.getServer().submit(() -> {
-            PlayerSet playerSet = gameSpace.getPlayers().copy(source.getServer());
+            var playerSet = gameSpace.getPlayers().copy(source.getServer());
 
             try {
                 gameSpace.close(GameCloseReason.CANCELED);
 
-                MutableText message = new TranslatableText("text.plasmid.game.stopped.player", source.getDisplayName());
+                var message = new TranslatableText("text.plasmid.game.stopped.player", source.getDisplayName());
                 playerSet.sendMessage(message.formatted(Formatting.GRAY));
             } catch (Throwable throwable) {
                 Plasmid.LOGGER.error("Failed to stop game", throwable);
 
-                MutableText message = new TranslatableText("text.plasmid.game.stopped.error");
+                var message = new TranslatableText("text.plasmid.game.stopped.error");
                 playerSet.sendMessage(message.formatted(Formatting.RED));
             }
         });
@@ -383,21 +377,21 @@ public final class GameCommand {
     }
 
     private static int listGames(CommandContext<ServerCommandSource> context) {
-        ServerCommandSource source = context.getSource();
+        var source = context.getSource();
         source.sendFeedback(new TranslatableText("text.plasmid.game.list").formatted(Formatting.BOLD), false);
 
-        for (Identifier id : GameConfigs.getKeys()) {
+        for (var id : GameConfigs.getKeys()) {
             String command = "/game open " + id;
 
-            ClickEvent linkClick = new ClickEvent(ClickEvent.Action.RUN_COMMAND, command);
-            HoverEvent linkHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(command));
-            Style linkStyle = Style.EMPTY
+            var linkClick = new ClickEvent(ClickEvent.Action.RUN_COMMAND, command);
+            var linkHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(command));
+            var linkStyle = Style.EMPTY
                     .withFormatting(Formatting.UNDERLINE)
                     .withColor(Formatting.BLUE)
                     .withClickEvent(linkClick)
                     .withHoverEvent(linkHover);
 
-            MutableText link = GameConfigs.get(id).getName().shallowCopy().setStyle(linkStyle);
+            var link = GameConfigs.get(id).getName().shallowCopy().setStyle(linkStyle);
             source.sendFeedback(new TranslatableText("text.plasmid.entry", link), false);
         }
 

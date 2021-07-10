@@ -23,13 +23,13 @@ public final class GameSpaceWorlds implements Iterable<ServerWorld> {
     }
 
     public RuntimeWorldHandle add(RuntimeWorldConfig worldConfig) {
-        RuntimeWorldHandle worldHandle = Fantasy.get(this.server).openTemporaryWorld(worldConfig);
+        var worldHandle = Fantasy.get(this.server).openTemporaryWorld(worldConfig);
         this.worlds.put(worldHandle.asWorld().getRegistryKey(), worldHandle);
         return worldHandle;
     }
 
     public boolean remove(RegistryKey<World> dimension) {
-        RuntimeWorldHandle worldHandle = this.worlds.remove(dimension);
+        var worldHandle = this.worlds.remove(dimension);
         if (worldHandle != null) {
             worldHandle.delete();
             return true;
@@ -39,7 +39,7 @@ public final class GameSpaceWorlds implements Iterable<ServerWorld> {
     }
 
     public Collection<RegistryKey<World>> close() {
-        List<RegistryKey<World>> worldKeys = new ArrayList<>(this.worlds.keySet());
+        var worldKeys = new ArrayList<RegistryKey<World>>(this.worlds.keySet());
 
         this.worlds.values().forEach(RuntimeWorldHandle::delete);
         this.worlds.clear();

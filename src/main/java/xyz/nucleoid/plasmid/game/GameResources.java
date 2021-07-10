@@ -15,7 +15,7 @@ public final class GameResources implements AutoCloseable {
 
     @Override
     public synchronized void close() {
-        for (AutoCloseable resource : this.resources) {
+        for (var resource : this.resources) {
             try {
                 resource.close();
             } catch (Exception e) {

@@ -1,14 +1,13 @@
 package xyz.nucleoid.plasmid.map.template;
 
 import com.google.common.base.Strings;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
@@ -41,7 +40,7 @@ public final class MapTemplateSerializer {
     }
 
     public void register() {
-        ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
+        var serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
 
         serverData.registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
@@ -57,7 +56,7 @@ public final class MapTemplateSerializer {
     }
 
     public MapTemplate loadFromResource(Identifier identifier) throws IOException {
-        Identifier path = getResourcePathFor(identifier);
+        var path = getResourcePathFor(identifier);
 
         try (Resource resource = this.resourceManager.getResource(path)) {
             return this.loadFrom(resource.getInputStream());
@@ -65,22 +64,22 @@ public final class MapTemplateSerializer {
     }
 
     public MapTemplate loadFromExport(Identifier location) throws IOException {
-        Path path = getExportPathFor(location);
+        var path = getExportPathFor(location);
         if (!Files.exists(path)) {
             throw new IOException("Export does not exist for " + location + "!");
         }
 
-        try (InputStream input = Files.newInputStream(path)) {
+        try (var input = Files.newInputStream(path)) {
             return this.loadFrom(input);
         }
     }
 
     public CompletableFuture<Void> saveToExport(MapTemplate template, Identifier identifier) {
         return CompletableFuture.supplyAsync(() -> {
-            Path path = getExportPathFor(identifier);
+            var path = getExportPathFor(identifier);
             try {
                 Files.createDirectories(path.getParent());
-                try (OutputStream output = Files.newOutputStream(path)) {
+                try (var output = Files.newOutputStream(path)) {
                     this.saveTo(template, output);
                     return null;
                 }
@@ -91,45 +90,45 @@ public final class MapTemplateSerializer {
     }
 
     public MapTemplate loadFrom(InputStream input) throws IOException {
-        MapTemplate template = MapTemplate.createEmpty();
+        var template = MapTemplate.createEmpty();
         this.load(template, NbtIo.readCompressed(input));
         return template;
     }
 
     public void saveTo(MapTemplate template, OutputStream output) throws IOException {
-        NbtCompound root = this.save(template);
+        var root = this.save(template);
         NbtIo.writeCompressed(root, output);
     }
 
     private void load(MapTemplate template, NbtCompound root) {
-        NbtList chunkList = root.getList("chunks", NbtType.COMPOUND);
+        var chunkList = root.getList("chunks", NbtType.COMPOUND);
         for (int i = 0; i < chunkList.size(); i++) {
-            NbtCompound chunkRoot = chunkList.getCompound(i);
+            var chunkRoot = chunkList.getCompound(i);
 
-            int[] posArray = chunkRoot.getIntArray("pos");
+            var posArray = chunkRoot.getIntArray("pos");
             if (posArray.length != 3) {
                 Plasmid.LOGGER.warn("Invalid chunk pos key: {}", posArray);
                 continue;
             }
 
             long pos = MapTemplate.chunkPos(posArray[0], posArray[1], posArray[2]);
-            MapChunk chunk = MapChunk.deserialize(ChunkSectionPos.from(pos), chunkRoot);
+            var chunk = MapChunk.deserialize(ChunkSectionPos.from(pos), chunkRoot);
 
             template.chunks.put(pos, chunk);
         }
 
-        MapTemplateMetadata metadata = template.metadata;
+        var metadata = template.metadata;
 
-        NbtList regionList = root.getList("regions", NbtType.COMPOUND);
+        var regionList = root.getList("regions", NbtType.COMPOUND);
         for (int i = 0; i < regionList.size(); i++) {
-            NbtCompound regionRoot = regionList.getCompound(i);
+            var regionRoot = regionList.getCompound(i);
             metadata.regions.add(TemplateRegion.deserialize(regionRoot));
         }
 
-        NbtList blockEntityList = root.getList("block_entities", NbtType.COMPOUND);
+        var blockEntityList = root.getList("block_entities", NbtType.COMPOUND);
         for (int i = 0; i < blockEntityList.size(); i++) {
-            NbtCompound blockEntity = blockEntityList.getCompound(i);
-            BlockPos pos = new BlockPos(
+            var blockEntity = blockEntityList.getCompound(i);
+            var pos = new BlockPos(
                     blockEntity.getInt("x"),
                     blockEntity.getInt("y"),
                     blockEntity.getInt("z")
@@ -140,22 +139,22 @@ public final class MapTemplateSerializer {
         template.bounds = BlockBounds.deserialize(root.getCompound("bounds"));
         metadata.data = root.getCompound("data");
 
-        String biomeId = root.getString("biome");
+        var biomeId = root.getString("biome");
         if (!Strings.isNullOrEmpty(biomeId)) {
             template.biome = RegistryKey.of(Registry.BIOME_KEY, new Identifier(biomeId));
         }
     }
 
     private NbtCompound save(MapTemplate template) {
-        NbtCompound root = new NbtCompound();
+        var root = new NbtCompound();
 
-        NbtList chunkList = new NbtList();
+        var chunkList = new NbtList();
 
-        for (Long2ObjectMap.Entry<MapChunk> entry : Long2ObjectMaps.fastIterable(template.chunks)) {
-            ChunkSectionPos pos = ChunkSectionPos.from(entry.getLongKey());
-            MapChunk chunk = entry.getValue();
+        for (var entry : Long2ObjectMaps.fastIterable(template.chunks)) {
+            var pos = ChunkSectionPos.from(entry.getLongKey());
+            var chunk = entry.getValue();
 
-            NbtCompound chunkRoot = new NbtCompound();
+            var chunkRoot = new NbtCompound();
 
             chunkRoot.putIntArray("pos", new int[] { pos.getX(), pos.getY(), pos.getZ() });
             chunk.serialize(chunkRoot);
@@ -165,7 +164,7 @@ public final class MapTemplateSerializer {
 
         root.put("chunks", chunkList);
 
-        NbtList blockEntityList = new NbtList();
+        var blockEntityList = new NbtList();
         blockEntityList.addAll(template.blockEntities.values());
         root.put("block_entities", blockEntityList);
 
@@ -175,10 +174,10 @@ public final class MapTemplateSerializer {
             root.putString("biome", template.biome.getValue().toString());
         }
 
-        MapTemplateMetadata metadata = template.metadata;
+        var metadata = template.metadata;
 
-        NbtList regionList = new NbtList();
-        for (TemplateRegion region : metadata.regions) {
+        var regionList = new NbtList();
+        for (var region : metadata.regions) {
             regionList.add(region.serialize(new NbtCompound()));
         }
         root.put("regions", regionList);

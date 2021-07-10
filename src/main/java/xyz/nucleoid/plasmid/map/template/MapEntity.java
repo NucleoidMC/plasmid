@@ -29,11 +29,11 @@ public final class MapEntity {
     }
 
     public NbtCompound createEntityTag(BlockPos origin) {
-        NbtCompound tag = this.tag.copy();
+        var tag = this.tag.copy();
 
-        Vec3d chunkLocalPos = listToPos(this.tag.getList("Pos", NbtType.DOUBLE));
+        var chunkLocalPos = listToPos(this.tag.getList("Pos", NbtType.DOUBLE));
 
-        Vec3d worldPosition = this.position.add(origin.getX(), origin.getY(), origin.getZ());
+        var worldPosition = this.position.add(origin.getX(), origin.getY(), origin.getZ());
         tag.put("Pos", posToList(worldPosition));
 
         if (tag.contains("TileX", NbtType.INT)) {
@@ -46,7 +46,7 @@ public final class MapEntity {
     }
 
     public void createEntities(World world, BlockPos origin, Consumer<Entity> consumer) {
-        NbtCompound tag = this.createEntityTag(origin);
+        var tag = this.createEntityTag(origin);
         EntityType.loadEntityWithPassengers(tag, world, entity -> {
             consumer.accept(entity);
             return entity;
@@ -55,7 +55,7 @@ public final class MapEntity {
 
     @Nullable
     public static MapEntity fromEntity(Entity entity, Vec3d position) {
-        NbtCompound tag = new NbtCompound();
+        var tag = new NbtCompound();
         if (!entity.saveNbt(tag)) {
             return null;
         }
@@ -88,23 +88,23 @@ public final class MapEntity {
     }
 
     MapEntity transformed(MapTransform transform) {
-        Vec3d resultPosition = transform.transformedPoint(this.position);
-        NbtCompound resultTag = this.tag.copy();
+        var resultPosition = transform.transformedPoint(this.position);
+        var resultTag = this.tag.copy();
 
-        BlockPos minChunkPos = getMinChunkPosFor(this.position);
-        BlockPos minResultChunkPos = getMinChunkPosFor(resultPosition);
+        var minChunkPos = getMinChunkPosFor(this.position);
+        var minResultChunkPos = getMinChunkPosFor(resultPosition);
 
         resultTag.put("Pos", posToList(resultPosition.subtract(minResultChunkPos.getX(), minResultChunkPos.getY(), minResultChunkPos.getZ())));
 
         // AbstractDecorationEntity has special position handling with an attachment position.
         if (resultTag.contains("TileX", NbtType.INT)) {
-            BlockPos attachedPos = new BlockPos(
+            var attachedPos = new BlockPos(
                     resultTag.getInt("TileX") + minChunkPos.getX(),
                     resultTag.getInt("TileY") + minChunkPos.getY(),
                     resultTag.getInt("TileZ") + minChunkPos.getZ()
             );
 
-            BlockPos localAttachedPos = transform.transformedPoint(attachedPos)
+            var localAttachedPos = transform.transformedPoint(attachedPos)
                     .subtract(minResultChunkPos);
             resultTag.putInt("TileX", localAttachedPos.getX());
             resultTag.putInt("TileY", localAttachedPos.getY());
@@ -123,7 +123,7 @@ public final class MapEntity {
     }
 
     private static NbtList posToList(Vec3d pos) {
-        NbtList list = new NbtList();
+        var list = new NbtList();
         list.add(NbtDouble.of(pos.x));
         list.add(NbtDouble.of(pos.y));
         list.add(NbtDouble.of(pos.z));

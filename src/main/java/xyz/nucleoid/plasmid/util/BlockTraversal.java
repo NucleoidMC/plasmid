@@ -9,7 +9,6 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -70,13 +69,13 @@ public final class BlockTraversal {
      * @param visitor the visitor to call with each traversed position
      */
     public void accept(BlockPos origin, Visitor visitor) {
-        State state = new State(this.order);
+        var state = new State(this.order);
         state.enqueue(origin, origin, 0);
 
-        BlockPos.Mutable pos = new BlockPos.Mutable();
-        BlockPos.Mutable fromPos = new BlockPos.Mutable();
+        var pos = new BlockPos.Mutable();
+        var fromPos = new BlockPos.Mutable();
 
-        Vec3i[] offsets = this.connectivity.offsets;
+        var offsets = this.connectivity.offsets;
 
         while (!state.isComplete()) {
             pos.set(state.dequeuePos());
@@ -87,7 +86,7 @@ public final class BlockTraversal {
                 int nextDepth = depth + 1;
                 fromPos.set(pos);
 
-                for (Vec3i offset : offsets) {
+                for (var offset : offsets) {
                     pos.set(fromPos, offset.getX(), offset.getY(), offset.getZ());
                     state.enqueue(pos, fromPos, nextDepth);
                 }
@@ -153,13 +152,13 @@ public final class BlockTraversal {
         }
 
         static Connectivity create(Consumer<Consumer<Vec3i>> generator) {
-            List<Vec3i> offsets = new ArrayList<>();
+            var offsets = new ArrayList<Vec3i>();
             generator.accept(offsets::add);
             return new Connectivity(offsets.toArray(new Vec3i[0]));
         }
 
         private static void six(Consumer<Vec3i> consumer) {
-            for (Direction direction : Direction.values()) {
+            for (var direction : Direction.values()) {
                 consumer.accept(direction.getVector());
             }
         }

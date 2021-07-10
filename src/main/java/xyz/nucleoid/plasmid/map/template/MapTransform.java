@@ -27,7 +27,7 @@ public interface MapTransform {
         return new MapTransform() {
             @Override
             public BlockPos.Mutable transformPoint(BlockPos.Mutable mutablePos) {
-                BlockPos result = this.transformedPoint(mutablePos);
+                var result = this.transformedPoint(mutablePos);
                 mutablePos.set(result);
                 return mutablePos;
             }
@@ -52,7 +52,7 @@ public interface MapTransform {
     BlockPos.Mutable transformPoint(BlockPos.Mutable mutablePos);
 
     default BlockPos transformedPoint(BlockPos pos) {
-        BlockPos.Mutable mutablePos = new BlockPos.Mutable(pos.getX(), pos.getY(), pos.getZ());
+        var mutablePos = new BlockPos.Mutable(pos.getX(), pos.getY(), pos.getZ());
         this.transformPoint(mutablePos);
         return mutablePos;
     }

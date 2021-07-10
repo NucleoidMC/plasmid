@@ -53,7 +53,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @return the created {@link SidebarWidget}
      */
     public SidebarWidget addSidebar(Text title) {
-        return this.addWidget(new SidebarWidget(this.gameSpace, title));
+        return this.addWidget(new SidebarWidget(title));
     }
 
     /**

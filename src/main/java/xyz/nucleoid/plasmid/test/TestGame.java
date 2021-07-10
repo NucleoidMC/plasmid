@@ -1,6 +1,8 @@
 package xyz.nucleoid.plasmid.test;
 
 import net.minecraft.block.Blocks;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Style;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Unit;
@@ -53,14 +55,14 @@ public final class TestGame {
             activity.listen(GameActivityEvents.TICK, () -> {
                 long time = gameSpace.getTime();
                 if (time % 20 == 0) {
-                    sidebar.set(content -> {
-                        content.writeLine("Hello World! " + (time / 20) + "s");
-                        content.writeLine("");
-                        content.writeTranslated("text.plasmid.game.started.player", "test");
+                    sidebar.set(b -> {
+                        b.add(new LiteralText("Hello World! " + (time / 20) + "s").setStyle(Style.EMPTY.withColor(0xFF0000)));
+                        b.add(new LiteralText(""));
+                        b.add(new TranslatableText("text.plasmid.game.started.player", "test"));
                     });
                 }
 
-                if (time > 100) {
+                if (time > 500) {
                     gameSpace.close(GameCloseReason.FINISHED);
                 }
             });

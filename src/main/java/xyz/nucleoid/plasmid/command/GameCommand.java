@@ -13,7 +13,9 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.*;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 import xyz.nucleoid.plasmid.Plasmid;
@@ -256,7 +258,7 @@ public final class GameCommand {
                 gameSpace.offerPlayer(player);
             }
         } else {
-            context.getSource().sendError(screen.error().shallowCopy().formatted(Formatting.RED));
+            context.getSource().sendError(screen.errorCopy().formatted(Formatting.RED));
         }
     }
 
@@ -317,12 +319,10 @@ public final class GameCommand {
             var startResult = gameSpace.requestStart();
 
             Text message;
-            if (startResult.isError()) {
-                Text error = startResult.error();
-                message = error.shallowCopy().formatted(Formatting.RED);
+            if (startResult.isOk()) {
+                message = GameTexts.Start.startedBy(source).formatted(Formatting.GRAY);
             } else {
-                message = new TranslatableText("text.plasmid.game.started.player", source.getDisplayName())
-                        .formatted(Formatting.GRAY);
+                message = startResult.errorCopy().formatted(Formatting.RED);
             }
 
             gameSpace.getPlayers().sendMessage(message);
@@ -344,7 +344,7 @@ public final class GameCommand {
             stopGameConfirmed(context);
         } else {
             source.sendFeedback(
-                    new TranslatableText("text.plasmid.game.stop.confirm").formatted(Formatting.GOLD),
+                    GameTexts.Stop.confirmStop().formatted(Formatting.GOLD),
                     false
             );
         }
@@ -365,13 +365,12 @@ public final class GameCommand {
             try {
                 gameSpace.close(GameCloseReason.CANCELED);
 
-                var message = new TranslatableText("text.plasmid.game.stopped.player", source.getDisplayName());
+                var message = GameTexts.Stop.stoppedBy(source);
                 playerSet.sendMessage(message.formatted(Formatting.GRAY));
             } catch (Throwable throwable) {
                 Plasmid.LOGGER.error("Failed to stop game", throwable);
 
-                var message = new TranslatableText("text.plasmid.game.stopped.error");
-                playerSet.sendMessage(message.formatted(Formatting.RED));
+                playerSet.sendMessage(GameTexts.Stop.genericError().formatted(Formatting.RED));
             }
         });
 
@@ -380,21 +379,15 @@ public final class GameCommand {
 
     private static int listGames(CommandContext<ServerCommandSource> context) {
         var source = context.getSource();
-        source.sendFeedback(new TranslatableText("text.plasmid.game.list").formatted(Formatting.BOLD), false);
+        source.sendFeedback(GameTexts.Command.gameList().formatted(Formatting.BOLD), false);
 
         for (var id : GameConfigs.getKeys()) {
             String command = "/game open " + id;
 
-            var linkClick = new ClickEvent(ClickEvent.Action.RUN_COMMAND, command);
-            var linkHover = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new LiteralText(command));
-            var linkStyle = Style.EMPTY
-                    .withFormatting(Formatting.UNDERLINE)
-                    .withColor(Formatting.BLUE)
-                    .withClickEvent(linkClick)
-                    .withHoverEvent(linkHover);
+            var link = GameConfigs.get(id).getName().shallowCopy()
+                    .setStyle(GameTexts.commandLinkStyle(command));
 
-            var link = GameConfigs.get(id).getName().shallowCopy().setStyle(linkStyle);
-            source.sendFeedback(new TranslatableText("text.plasmid.entry", link), false);
+            source.sendFeedback(GameTexts.Command.listEntry(link), false);
         }
 
         return Command.SINGLE_SUCCESS;

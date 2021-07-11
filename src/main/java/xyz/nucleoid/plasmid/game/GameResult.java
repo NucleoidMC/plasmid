@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,5 +58,18 @@ public final class GameResult {
     @Nullable
     public Text error() {
         return this.error;
+    }
+
+    /**
+     * Returns the error result of this {@link GameResult} as a copied {@link MutableText}.
+     *
+     * <p>If no error occurred, null is returned.
+     *
+     * @return the error of this {@link GameResult}, or null if one does not exist
+     */
+    @Nullable
+    public MutableText errorCopy() {
+        var error = this.error;
+        return error != null ? error.shallowCopy() : null;
     }
 }

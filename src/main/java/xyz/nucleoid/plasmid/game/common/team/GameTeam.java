@@ -19,7 +19,7 @@ public final class GameTeam {
     public static final Codec<GameTeam> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
                 Codec.STRING.fieldOf("key").forGetter(GameTeam::key),
-                Codec.either(MoreCodecs.TEXT, Codec.STRING).fieldOf("display").forGetter((team) -> Either.left(team.display)),
+                MoreCodecs.TEXT.fieldOf("display").forGetter(GameTeam::display),
                 Codec.either(MoreCodecs.DYE_COLOR, TeamColorData.CODEC).fieldOf("color").forGetter((team) -> Either.right(new TeamColorData(team.color, team.dyeColor, team.blockDyeColor, team.fireworkColor, team.formatting)))
 
         ).apply(instance, GameTeam::new);
@@ -33,7 +33,15 @@ public final class GameTeam {
     private final Formatting formatting;
     private final DyeColor blockDyeColor;
 
-    public GameTeam(String key, Either<MutableText, String> display, Either<DyeColor, TeamColorData> color) {
+    public GameTeam(String key, MutableText display, DyeColor color) {
+        this(key, display, Either.left(color));
+    }
+
+    public GameTeam(String key, MutableText display, TeamColorData color) {
+        this(key, display, Either.right(color));
+    }
+
+    public GameTeam(String key, MutableText display, Either<DyeColor, TeamColorData> color) {
         this.key = key;
 
         if (color.left().isPresent()) {
@@ -52,7 +60,7 @@ public final class GameTeam {
             this.fireworkColor = colorData.fireworkColor;
         }
 
-        this.display = display.left().isPresent() ? display.left().get() : new TranslatableText(display.right().get()).setStyle(Style.EMPTY.withColor(this.color()));
+        this.display = display.styled((style) -> style.getColor() == null ? style.withColor(this.color) : style);
     }
 
     private static Formatting formatByDye(DyeColor dye) {

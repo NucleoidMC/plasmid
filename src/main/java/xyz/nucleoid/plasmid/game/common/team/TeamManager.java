@@ -25,7 +25,7 @@ import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
 import java.util.*;
 
 /**
- * Simple, gameSpace specific team manager class
+ * Simple, {@link GameActivity} specific team manager class
  */
 @SuppressWarnings({ "unused" })
 public final class TeamManager {
@@ -321,7 +321,8 @@ public final class TeamManager {
     }
 
     /**
-     * Pre-registers team, allowing methods like {@link TeamManager#getSmallestTeam()} to work correctly
+     * Registers a team.
+     * Unregistered teams won't work
      *
      * @param team targeted team
      * @return true if team is registered for the first time

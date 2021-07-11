@@ -41,7 +41,9 @@ public class GameStatisticBundle {
         JsonObject obj = new JsonObject();
         JsonObject players = new JsonObject();
         for (Map.Entry<UUID, StatisticMap> entry : this.players.entrySet()) {
-            players.add(entry.getKey().toString(), entry.getValue().encodeBundle());
+            if (!entry.getValue().isEmpty()) {
+                players.add(entry.getKey().toString(), entry.getValue().encodeBundle());
+            }
         }
 
         obj.add("players", players);

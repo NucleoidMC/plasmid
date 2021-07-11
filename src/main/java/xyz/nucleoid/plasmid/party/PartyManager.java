@@ -7,15 +7,13 @@ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.command.*;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 
 import java.util.Collection;
 import java.util.Collections;
 
-// TODO: does not handle players leaving the server!
-// TODO: also split party handling into its own mod
+// TODO: split party handling into its own mod
 public final class PartyManager {
     private static PartyManager instance;
 
@@ -44,6 +42,34 @@ public final class PartyManager {
             instance = new PartyManager(server);
         }
         return instance;
+    }
+
+    public void onPlayerLogOut(ServerPlayerEntity player) {
+        var ref = PlayerRef.of(player);
+
+        var party = this.playerToParty.remove(ref);
+        if (party == null) {
+            return;
+        }
+
+        if (party.remove(ref)) {
+            this.onPartyOwnerLogOut(player, party);
+
+            party.getMemberPlayers().sendMessage(PartyTexts.leftGame(player));
+        }
+    }
+
+    private void onPartyOwnerLogOut(ServerPlayerEntity player, Party party) {
+        var members = party.getMembers();
+
+        if (!members.isEmpty()) {
+            var nextMember = members.get(0);
+            party.setOwner(nextMember);
+
+            nextMember.ifOnline(this.server, nextPlayer -> {
+                nextPlayer.sendMessage(PartyTexts.transferredReceiver(player), false);
+            });
+        }
     }
 
     public PartyResult invitePlayer(PlayerRef owner, PlayerRef player) {
@@ -133,13 +159,17 @@ public final class PartyManager {
     public PartyResult disbandParty(PlayerRef owner) {
         var party = this.getOwnParty(owner);
         if (party != null) {
-            for (PlayerRef member : party.getMembers()) {
-                this.playerToParty.remove(member, party);
-            }
-            return PartyResult.ok(party);
+            return this.disbandParty(party);
+        } else {
+            return PartyResult.err(PartyError.DOES_NOT_EXIST);
         }
+    }
 
-        return PartyResult.err(PartyError.DOES_NOT_EXIST);
+    public PartyResult disbandParty(Party party) {
+        for (PlayerRef member : party.getMembers()) {
+            this.playerToParty.remove(member, party);
+        }
+        return PartyResult.ok(party);
     }
 
     @Nullable

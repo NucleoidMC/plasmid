@@ -125,6 +125,7 @@
   "text.plasmid.party.leave.success": "%s has left the party!",
   "text.plasmid.party.transferred.receiver": "%s's party has been transferred to you",
   "text.plasmid.party.transferred.sender": "Your party has been transferred to %s",
+  "text.plasmid.party.left_game": "%s left the game and has been removed from the party!",
   "text.plasmid.random.empty_composite_game_config": "Composite game config is empty",
   "text.plasmid.shop.cost.diamonds": "%s diamonds",
   "text.plasmid.shop.cost.emeralds": "%s emeralds",

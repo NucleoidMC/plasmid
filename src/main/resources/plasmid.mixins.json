@@ -19,6 +19,7 @@
     "game.space.PlayerManagerMixin",
     "game.space.ScreenHandlerMixin",
     "game.space.ServerPlayerEntityMixin",
+    "party.PlayerManagerMixin",
     "storage.ServerWorldMixin"
   ],
   "injectors": {

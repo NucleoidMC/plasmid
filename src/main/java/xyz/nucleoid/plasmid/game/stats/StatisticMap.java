@@ -22,16 +22,9 @@ public class StatisticMap {
         this.values.put(key, (Integer) this.values.getOrDefault(key, 0) + amount);
     }
 
-    public double getDouble(StatisticKey<Double> key) {
-        return (double) this.values.getOrDefault(key, 0.0);
-    }
-
-    public float getFloat(StatisticKey<Float> key) {
-        return (float) this.values.getOrDefault(key, 0.0f);
-    }
-
-    public int getInt(StatisticKey<Integer> key) {
-        return (int) this.values.getOrDefault(key, 0);
+    @SuppressWarnings("unchecked")
+    public <T extends Number> T get(StatisticKey<T> key, T defaultValue) {
+        return (T) this.values.getOrDefault(key, defaultValue);
     }
 
     public void set(StatisticKey<Double> key, double value) {

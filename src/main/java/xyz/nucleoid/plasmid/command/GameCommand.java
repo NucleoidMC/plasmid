@@ -27,6 +27,7 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
 import java.util.Comparator;
@@ -260,12 +261,12 @@ public final class GameCommand {
     }
 
     private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
-        // TODO: does not handle parties
-        var result = gameSpace.offerPlayer(player);
-        if (result.isError()) {
-            var error = result.error();
-            player.sendMessage(error.shallowCopy().formatted(Formatting.RED), false);
-        }
+        player.server.submit(() -> {
+            var joiner = new GamePlayerJoiner(gameSpace);
+
+            var results = joiner.tryJoin(player);
+            results.sendErrorsTo(player);
+        });
     }
 
     private static GameSpace getJoinableGameSpace() throws CommandSyntaxException {

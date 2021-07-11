@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.command;
+package xyz.nucleoid.plasmid.party;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -10,8 +10,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
-import xyz.nucleoid.plasmid.party.PartyError;
-import xyz.nucleoid.plasmid.party.PartyManager;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 
 import static net.minecraft.server.command.CommandManager.argument;

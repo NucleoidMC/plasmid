@@ -2,12 +2,15 @@ package xyz.nucleoid.plasmid.event;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
+
+import java.util.Set;
 
 /**
  * Events for games being opened and closed/finishing.
@@ -46,6 +49,12 @@ public final class GameEvents {
     public static final Event<GameSpaceClosing> CLOSING = EventFactory.createArrayBacked(GameSpaceClosing.class, listeners -> (gameSpace, reason) -> {
         for (var listener : listeners) {
             listener.onGameSpaceClosing(gameSpace, reason);
+        }
+    });
+
+    public static final Event<CollectPlayersForJoin> COLLECT_PLAYERS_FOR_JOIN = EventFactory.createArrayBacked(CollectPlayersForJoin.class, listeners -> (gameSpace, player, additional) -> {
+        for (var listener : listeners) {
+            listener.collectPlayersForJoin(gameSpace, player, additional);
         }
     });
 
@@ -91,5 +100,17 @@ public final class GameEvents {
 
     public interface GameSpaceClosing {
         void onGameSpaceClosing(GameSpace gameSpace, GameCloseReason reason);
+    }
+
+    public interface CollectPlayersForJoin {
+        /**
+         * Called when a {@link ServerPlayerEntity} tries to join a {@link GameSpace}. This event is responsible for
+         * collecting any additional players who should attempt to join along with the initial player.
+         *
+         * @param gameSpace the {@link GameSpace} being joined
+         * @param player the initial player who tried to join a {@link GameSpace}
+         * @param additional a set of additional players who should join the game
+         */
+        void collectPlayersForJoin(GameSpace gameSpace, ServerPlayerEntity player, Set<ServerPlayerEntity> additional);
     }
 }

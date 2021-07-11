@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.item;
+package xyz.nucleoid.plasmid.map.creation.item;
 
 import eu.pb4.polymer.item.VirtualItem;
 import net.minecraft.entity.LivingEntity;
@@ -11,7 +11,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspaceManager;
 
 public final class IncludeEntityItem extends Item implements VirtualItem {
     public IncludeEntityItem(Settings settings) {

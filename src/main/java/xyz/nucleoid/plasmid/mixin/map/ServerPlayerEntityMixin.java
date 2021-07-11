@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.mixin.game.map;
+package xyz.nucleoid.plasmid.mixin.map;
 
 import com.mojang.authlib.GameProfile;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -23,9 +23,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
-import xyz.nucleoid.plasmid.map.workspace.ReturnPosition;
-import xyz.nucleoid.plasmid.map.workspace.WorkspaceTraveler;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.creation.workspace.ReturnPosition;
+import xyz.nucleoid.plasmid.map.creation.workspace.WorkspaceTraveler;
 
 import java.util.Map;
 

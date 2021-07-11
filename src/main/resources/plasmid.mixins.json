@@ -6,8 +6,8 @@
   "mixins": [
     "MinecraftServerAccessor",
     "chat.ServerPlayerEntityMixin",
-    "game.map.ServerPlayerEntityMixin",
-    "game.map.ServerWorldMixin",
+    "map.ServerPlayerEntityMixin",
+    "map.ServerWorldMixin",
     "game.portal.EntityMixin",
     "game.portal.SignBlockEntityMixin",
     "game.rule.ArmorAndElytraItemMixin",

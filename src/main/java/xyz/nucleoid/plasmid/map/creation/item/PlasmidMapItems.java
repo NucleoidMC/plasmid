@@ -1,11 +1,11 @@
-package xyz.nucleoid.plasmid.item;
+package xyz.nucleoid.plasmid.map.creation.item;
 
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import xyz.nucleoid.plasmid.Plasmid;
 
-public final class PlasmidItems {
+public final class PlasmidMapItems {
     public static final Item ADD_REGION = register("add_region", new AddRegionItem(new Item.Settings()));
     public static final Item INCLUDE_ENTITY = register("include_entity", new IncludeEntityItem(new Item.Settings()));
 

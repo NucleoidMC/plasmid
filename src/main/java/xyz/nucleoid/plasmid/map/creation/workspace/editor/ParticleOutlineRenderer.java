@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.map.workspace.editor;
+package xyz.nucleoid.plasmid.map.creation.workspace.editor;
 
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleEffect;

@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.mixin.game.map;
+package xyz.nucleoid.plasmid.mixin.map;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspaceManager;
 
 @Mixin(ServerWorld.class)
 public class ServerWorldMixin {

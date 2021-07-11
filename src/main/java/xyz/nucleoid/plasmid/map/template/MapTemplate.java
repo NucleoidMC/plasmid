@@ -24,7 +24,7 @@ import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
 
 import java.util.stream.Stream;
 
@@ -194,8 +194,8 @@ public final class MapTemplate {
 
         var bounds = this.getBoundsOrNull();
         if (bounds != null) {
-            maxY = bounds.getMax().getY();
-            minY = bounds.getMin().getY();
+            maxY = bounds.max().getY();
+            minY = bounds.min().getY();
         }
 
         var mutablePos = new BlockPos.Mutable(x, 0, z);
@@ -282,9 +282,9 @@ public final class MapTemplate {
             if (chunkZ > maxChunkZ) maxChunkZ = chunkZ;
         }
 
-        return new BlockBounds(
-                new BlockPos(minChunkX << 4, minChunkY << 4, minChunkZ << 4),
-                new BlockPos((maxChunkX << 4) + 15, (maxChunkY << 4) + 15, (maxChunkZ << 4) + 15)
+        return BlockBounds.of(
+                minChunkX << 4, minChunkY << 4, minChunkZ << 4,
+                (maxChunkX << 4) + 15, (maxChunkY << 4) + 15, (maxChunkZ << 4) + 15
         );
     }
 

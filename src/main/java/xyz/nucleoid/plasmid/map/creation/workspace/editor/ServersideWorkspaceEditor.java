@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.map.workspace.editor;
+package xyz.nucleoid.plasmid.map.creation.workspace.editor;
 
 import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -11,11 +11,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
-import xyz.nucleoid.plasmid.map.workspace.WorkspaceRegion;
-import xyz.nucleoid.plasmid.map.workspace.trace.PartialRegion;
-import xyz.nucleoid.plasmid.map.workspace.trace.RegionTraceMode;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspace;
+import xyz.nucleoid.plasmid.map.creation.workspace.WorkspaceRegion;
+import xyz.nucleoid.plasmid.map.creation.workspace.trace.PartialRegion;
+import xyz.nucleoid.plasmid.map.creation.workspace.trace.RegionTraceMode;
 
 public final class ServersideWorkspaceEditor implements WorkspaceEditor {
     private static final int PARTICLE_INTERVAL = 10;
@@ -105,7 +105,7 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
     public void addRegion(WorkspaceRegion region) {
         int markerEntityId = this.nextMarkerId();
 
-        var markerPos = region.bounds.getCenter();
+        var markerPos = region.bounds.center();
 
         var markerEntity = this.markerEntity;
         markerEntity.setId(markerEntityId);
@@ -148,12 +148,12 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
     private void renderWorkspaceBounds() {
         var workspace = this.workspace;
         var bounds = workspace.getBounds();
-        ParticleOutlineRenderer.render(this.player, bounds.getMin(), bounds.getMax(), 1.0F, 0.0F, 0.0F);
+        ParticleOutlineRenderer.render(this.player, bounds.min(), bounds.max(), 1.0F, 0.0F, 0.0F);
 
         for (var region : workspace.getRegions()) {
             var regionBounds = region.bounds;
-            var min = regionBounds.getMin();
-            var max = regionBounds.getMax();
+            var min = regionBounds.min();
+            var max = regionBounds.max();
             double distance = this.player.squaredDistanceTo(
                     (min.getX() + max.getX()) / 2.0,
                     (min.getY() + max.getY()) / 2.0,
@@ -177,7 +177,7 @@ public final class ServersideWorkspaceEditor implements WorkspaceEditor {
         if (tracing != null) {
             ParticleOutlineRenderer.render(this.player, tracing.getMin(), tracing.getMax(), 0.0F, 0.8F, 0.0F);
         } else if (traced != null) {
-            ParticleOutlineRenderer.render(this.player, traced.getMin(), traced.getMax(), 0.1F, 1.0F, 0.1F);
+            ParticleOutlineRenderer.render(this.player, traced.min(), traced.max(), 0.1F, 1.0F, 0.1F);
         }
     }
 

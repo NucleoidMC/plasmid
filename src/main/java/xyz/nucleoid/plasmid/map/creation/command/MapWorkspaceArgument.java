@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.command.argument;
+package xyz.nucleoid.plasmid.map.creation.command;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -10,8 +10,8 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspace;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspaceManager;
 
 public final class MapWorkspaceArgument {
     public static final DynamicCommandExceptionType WORKSPACE_NOT_FOUND = new DynamicCommandExceptionType(arg ->

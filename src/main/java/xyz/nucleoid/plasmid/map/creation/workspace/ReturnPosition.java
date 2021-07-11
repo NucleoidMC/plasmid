@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.map.workspace;
+package xyz.nucleoid.plasmid.map.creation.workspace;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;

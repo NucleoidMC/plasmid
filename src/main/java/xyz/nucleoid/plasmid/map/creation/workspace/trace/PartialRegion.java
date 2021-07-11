@@ -1,7 +1,7 @@
-package xyz.nucleoid.plasmid.map.workspace.trace;
+package xyz.nucleoid.plasmid.map.creation.workspace.trace;
 
 import net.minecraft.util.math.BlockPos;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
 
 public class PartialRegion {
     private final BlockPos origin;
@@ -30,6 +30,6 @@ public class PartialRegion {
     }
 
     public BlockBounds asComplete() {
-        return new BlockBounds(this.origin, this.target);
+        return BlockBounds.of(this.origin, this.target);
     }
 }

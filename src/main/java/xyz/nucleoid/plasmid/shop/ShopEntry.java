@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 
 public final class ShopEntry {
     private final ItemStackBuilder icon;
-    private Cost cost = Cost.no();
+    private Cost cost;
     private Consumer<ServerPlayerEntity> buyAction;
 
     private ShopEntry(ItemStack icon) {

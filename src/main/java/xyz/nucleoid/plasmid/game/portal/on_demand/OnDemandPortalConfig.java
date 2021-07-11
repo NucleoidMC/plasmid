@@ -4,9 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
+import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.GamePortalConfig;
-import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
 
 public record OnDemandPortalConfig(Identifier gameId, CustomValuesConfig custom) implements GamePortalConfig {
     public static final Codec<OnDemandPortalConfig> CODEC = RecordCodecBuilder.create(instance -> {

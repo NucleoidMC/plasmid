@@ -9,7 +9,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.LightType;
 import net.minecraft.world.chunk.WorldChunk;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
 
 public final class MapTemplatePlacer {
     private final MapTemplate template;

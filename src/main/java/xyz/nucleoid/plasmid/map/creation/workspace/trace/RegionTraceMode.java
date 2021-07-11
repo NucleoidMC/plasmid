@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.map.workspace.trace;
+package xyz.nucleoid.plasmid.map.creation.workspace.trace;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;

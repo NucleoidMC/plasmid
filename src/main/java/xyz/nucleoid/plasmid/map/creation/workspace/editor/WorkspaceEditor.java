@@ -1,9 +1,9 @@
-package xyz.nucleoid.plasmid.map.workspace.editor;
+package xyz.nucleoid.plasmid.map.creation.workspace.editor;
 
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.map.workspace.WorkspaceRegion;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
+import xyz.nucleoid.plasmid.map.creation.workspace.WorkspaceRegion;
 
 public interface WorkspaceEditor {
     default void addRegion(WorkspaceRegion region) {

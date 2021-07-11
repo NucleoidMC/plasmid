@@ -159,17 +159,17 @@ public final class PartyManager {
     public PartyResult disbandParty(PlayerRef owner) {
         var party = this.getOwnParty(owner);
         if (party != null) {
-            return this.disbandParty(party);
+            this.disbandParty(party);
+            return PartyResult.ok(party);
         } else {
             return PartyResult.err(PartyError.DOES_NOT_EXIST);
         }
     }
 
-    public PartyResult disbandParty(Party party) {
+    public void disbandParty(Party party) {
         for (PlayerRef member : party.getMembers()) {
             this.playerToParty.remove(member, party);
         }
-        return PartyResult.ok(party);
     }
 
     @Nullable

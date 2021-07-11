@@ -1,7 +1,7 @@
-package xyz.nucleoid.plasmid.map.workspace;
+package xyz.nucleoid.plasmid.map.creation.workspace;
 
 import net.minecraft.util.math.BlockPos;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
 
 public interface WorkspaceListener {
     default void onSetBounds(BlockBounds bounds) {

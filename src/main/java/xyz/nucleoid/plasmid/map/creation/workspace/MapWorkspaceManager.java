@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.map.workspace;
+package xyz.nucleoid.plasmid.map.creation.workspace;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -18,9 +18,9 @@ import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
-import xyz.nucleoid.plasmid.map.workspace.editor.WorkspaceEditor;
-import xyz.nucleoid.plasmid.map.workspace.editor.WorkspaceEditorManager;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
+import xyz.nucleoid.plasmid.map.creation.workspace.editor.WorkspaceEditor;
+import xyz.nucleoid.plasmid.map.creation.workspace.editor.WorkspaceEditorManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +30,7 @@ import java.util.Set;
 public final class MapWorkspaceManager extends PersistentState {
     public static final String KEY = Plasmid.ID + ":map_workspaces";
 
-    private static final BlockBounds DEFAULT_BOUNDS = new BlockBounds(-16, 64, -16, 16, 96, 16);
+    private static final BlockBounds DEFAULT_BOUNDS = BlockBounds.of(-16, 64, -16, 16, 96, 16);
 
     private final MinecraftServer server;
 

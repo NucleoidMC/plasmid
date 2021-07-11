@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.command.argument;
+package xyz.nucleoid.plasmid.map.creation.command;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;

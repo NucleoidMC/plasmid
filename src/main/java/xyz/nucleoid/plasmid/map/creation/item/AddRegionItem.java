@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.item;
+package xyz.nucleoid.plasmid.map.creation.item;
 
 import eu.pb4.polymer.item.VirtualItem;
 import net.minecraft.entity.player.PlayerEntity;
@@ -9,7 +9,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspaceManager;
 
 public final class AddRegionItem extends Item implements VirtualItem {
     public AddRegionItem(Item.Settings settings) {

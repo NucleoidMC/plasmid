@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.map.workspace.editor;
+package xyz.nucleoid.plasmid.map.creation.workspace.editor;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -8,10 +8,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
-import xyz.nucleoid.plasmid.map.workspace.WorkspaceListener;
-import xyz.nucleoid.plasmid.map.workspace.WorkspaceRegion;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspace;
+import xyz.nucleoid.plasmid.map.creation.workspace.WorkspaceListener;
+import xyz.nucleoid.plasmid.map.creation.workspace.WorkspaceRegion;
 
 import java.util.Map;
 import java.util.UUID;

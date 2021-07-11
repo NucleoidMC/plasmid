@@ -2,7 +2,7 @@ package xyz.nucleoid.plasmid.map.template;
 
 import net.minecraft.nbt.NbtCompound;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.map.workspace;
+package xyz.nucleoid.plasmid.map.creation.workspace;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -16,8 +16,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import xyz.nucleoid.fantasy.RuntimeWorldHandle;
+import xyz.nucleoid.plasmid.map.BlockBounds;
 import xyz.nucleoid.plasmid.map.template.MapTemplate;
-import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.util.*;
 
@@ -220,7 +220,7 @@ public final class MapWorkspace {
             var origin = root.getIntArray("origin");
             map.setOrigin(new BlockPos(origin[0], origin[1], origin[2]));
         } else {
-            map.setOrigin(bounds.getMin());
+            map.setOrigin(bounds.min());
         }
 
         // Regions
@@ -306,7 +306,7 @@ public final class MapWorkspace {
     }
 
     private void writeEntitiesToTemplate(MapTemplate map, ServerWorld world) {
-        var entities = world.getEntitiesByClass(Entity.class, this.bounds.toBox(), entity -> {
+        var entities = world.getEntitiesByClass(Entity.class, this.bounds.asBox(), entity -> {
             if (entity.isRemoved()) {
                 return false;
             }
@@ -328,7 +328,7 @@ public final class MapWorkspace {
     }
 
     private BlockBounds globalToLocal(BlockBounds bounds) {
-        return new BlockBounds(this.globalToLocal(bounds.getMin()), this.globalToLocal(bounds.getMax()));
+        return BlockBounds.of(this.globalToLocal(bounds.min()), this.globalToLocal(bounds.max()));
     }
 
     public ServerWorld getWorld() {

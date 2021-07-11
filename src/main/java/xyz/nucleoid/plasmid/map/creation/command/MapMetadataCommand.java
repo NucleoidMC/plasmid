@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.command;
+package xyz.nucleoid.plasmid.map.creation.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -26,10 +26,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspace;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
-import xyz.nucleoid.plasmid.map.workspace.WorkspaceRegion;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspace;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.creation.workspace.WorkspaceRegion;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -198,7 +198,7 @@ public final class MapMetadataCommand {
         var max = BlockPosArgumentType.getBlockPos(context, "max");
 
         var map = getWorkspaceForSource(source);
-        map.addRegion(marker, new BlockBounds(min, max), data);
+        map.addRegion(marker, BlockBounds.of(min, max), data);
         source.sendFeedback(withMapPrefix(map, new TranslatableText("text.plasmid.map.region.add.success", marker)), false);
 
         return Command.SINGLE_SUCCESS;
@@ -240,8 +240,8 @@ public final class MapMetadataCommand {
         source.sendFeedback(new TranslatableText("text.plasmid.map.region.bounds.get.header", regions.size()).formatted(Formatting.BOLD), false);
 
         for (var region : regions) {
-            var minText = MapManageCommand.getClickablePosText(region.bounds.getMin());
-            var maxText = MapManageCommand.getClickablePosText(region.bounds.getMax());
+            var minText = MapManageCommand.getClickablePosText(region.bounds.min());
+            var maxText = MapManageCommand.getClickablePosText(region.bounds.max());
 
             source.sendFeedback(new TranslatableText("text.plasmid.entry", new TranslatableText("text.plasmid.map.region.bounds.get", minText, maxText)), false);
         }
@@ -317,11 +317,11 @@ public final class MapMetadataCommand {
                 throw NO_REGION_READY.create();
             }
 
-            var min = region.getMin();
-            var max = region.getMax();
+            var min = region.min();
+            var max = region.max();
 
             var workspace = getWorkspaceForSource(source);
-            workspace.addRegion(marker, new BlockBounds(min, max), data);
+            workspace.addRegion(marker, BlockBounds.of(min, max), data);
             source.sendFeedback(new TranslatableText("text.plasmid.map.region.add.success.excited", marker), false);
         }
 

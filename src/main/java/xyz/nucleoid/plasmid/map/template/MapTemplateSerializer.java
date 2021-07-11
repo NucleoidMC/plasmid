@@ -18,7 +18,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
 
 import java.io.IOException;
 import java.io.InputStream;

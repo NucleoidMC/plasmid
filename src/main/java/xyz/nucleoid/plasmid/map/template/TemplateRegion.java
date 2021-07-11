@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.map.template;
 
 import net.minecraft.nbt.NbtCompound;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
 
 public final class TemplateRegion {
     private final String marker;

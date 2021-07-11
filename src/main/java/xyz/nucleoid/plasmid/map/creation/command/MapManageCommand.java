@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.command;
+package xyz.nucleoid.plasmid.map.creation.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -20,16 +20,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.dimension.DimensionType;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.command.argument.ChunkGeneratorArgument;
-import xyz.nucleoid.plasmid.command.argument.DimensionOptionsArgument;
-import xyz.nucleoid.plasmid.command.argument.MapWorkspaceArgument;
+import xyz.nucleoid.plasmid.map.BlockBounds;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspaceManager;
+import xyz.nucleoid.plasmid.map.creation.workspace.WorkspaceTraveler;
 import xyz.nucleoid.plasmid.map.template.MapTemplate;
 import xyz.nucleoid.plasmid.map.template.MapTemplatePlacer;
 import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
-import xyz.nucleoid.plasmid.map.workspace.WorkspaceTraveler;
 import xyz.nucleoid.plasmid.mixin.MinecraftServerAccessor;
-import xyz.nucleoid.plasmid.util.BlockBounds;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -214,7 +211,7 @@ public final class MapManageCommand {
         var workspace = MapWorkspaceArgument.get(context, "workspace");
         var bounds = workspace.getBounds();
 
-        source.sendFeedback(new TranslatableText("text.plasmid.map.bounds.get", getClickablePosText(bounds.getMin()), getClickablePosText(bounds.getMax())), false);
+        source.sendFeedback(new TranslatableText("text.plasmid.map.bounds.get", getClickablePosText(bounds.min()), getClickablePosText(bounds.max())), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -226,7 +223,7 @@ public final class MapManageCommand {
         var min = BlockPosArgumentType.getBlockPos(context, "min");
         var max = BlockPosArgumentType.getBlockPos(context, "max");
 
-        workspace.setBounds(new BlockBounds(min, max));
+        workspace.setBounds(BlockBounds.of(min, max));
 
         source.sendFeedback(new TranslatableText("text.plasmid.map.bounds.set"), false);
 
@@ -299,7 +296,7 @@ public final class MapManageCommand {
         var template = workspace.compile(includeEntities);
 
         var bounds = template.getBounds();
-        if (bounds.getMin().getY() < 0 || bounds.getMax().getY() > 255) {
+        if (bounds.min().getY() < 0 || bounds.max().getY() > 255) {
             source.sendFeedback(
                     new TranslatableText("text.plasmid.map.export.vertical_bounds_warning.line.1").append("\n")
                             .append(new TranslatableText("text.plasmid.map.export.vertical_bounds_warning.line.2")).append("\n")

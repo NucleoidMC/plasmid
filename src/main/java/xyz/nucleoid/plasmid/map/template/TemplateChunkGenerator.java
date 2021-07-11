@@ -20,7 +20,7 @@ import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 import xyz.nucleoid.plasmid.game.world.generator.GeneratorBlockSamples;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -37,7 +37,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
         this.template = template;
         this.worldBounds = template.getBounds();
 
-        if (this.worldBounds.getMin().getY() < 0 || this.worldBounds.getMax().getY() > 255) {
+        if (this.worldBounds.min().getY() < 0 || this.worldBounds.max().getY() > 255) {
             throw new IllegalArgumentException("map template does not fit in world height range [0; 256]");
         }
     }
@@ -58,7 +58,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     public CompletableFuture<Chunk> populateNoise(Executor executor, StructureAccessor accessor, Chunk chunk) {
         var chunkPos = chunk.getPos();
 
-        var chunkBounds = BlockBounds.of(chunkPos);
+        var chunkBounds = BlockBounds.ofChunk(chunk);
         if (!this.worldBounds.intersects(chunkBounds)) {
             return CompletableFuture.completedFuture(chunk);
         }
@@ -70,8 +70,8 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
             int minWorldX = chunkPos.getStartX();
             int minWorldZ = chunkPos.getStartZ();
 
-            int minSectionY = this.worldBounds.getMin().getY() >> 4;
-            int maxSectionY = this.worldBounds.getMax().getY() >> 4;
+            int minSectionY = this.worldBounds.min().getY() >> 4;
+            int maxSectionY = this.worldBounds.max().getY() >> 4;
 
             for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
                 long sectionPos = ChunkSectionPos.asLong(chunkPos.x, sectionY, chunkPos.z);
@@ -133,15 +133,15 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     public void populateEntities(ChunkRegion region) {
         var chunkPos = region.getCenterPos();
 
-        var chunkBounds = BlockBounds.of(chunkPos);
+        var chunkBounds = BlockBounds.ofChunk(chunkPos, region);
         if (!this.worldBounds.intersects(chunkBounds)) {
             return;
         }
 
         var protoChunk = (ProtoChunk) region.getChunk(chunkPos.x, chunkPos.z);
 
-        int minSectionY = this.worldBounds.getMin().getY() >> 4;
-        int maxSectionY = this.worldBounds.getMax().getY() >> 4;
+        int minSectionY = this.worldBounds.min().getY() >> 4;
+        int maxSectionY = this.worldBounds.max().getY() >> 4;
 
         for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
             this.template.getEntitiesInChunk(chunkPos.x, sectionY, chunkPos.z).forEach(entity -> {
@@ -164,8 +164,8 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
         if (this.worldBounds.contains(x, z)) {
             var mutablePos = new BlockPos.Mutable(x, 0, z);
 
-            int minY = this.worldBounds.getMin().getY();
-            int maxY = this.worldBounds.getMax().getY();
+            int minY = this.worldBounds.min().getY();
+            int maxY = this.worldBounds.max().getY();
 
             var column = new BlockState[maxY - minY + 1];
             for (int y = maxY; y >= minY; y--) {

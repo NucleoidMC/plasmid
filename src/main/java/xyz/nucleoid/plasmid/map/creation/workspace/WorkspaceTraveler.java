@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.map.workspace;
+package xyz.nucleoid.plasmid.map.creation.workspace;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.registry.RegistryKey;

@@ -6,7 +6,7 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import xyz.nucleoid.plasmid.util.BlockBounds;
+import xyz.nucleoid.plasmid.map.BlockBounds;
 
 public interface MapTransform {
     static MapTransform translation(int x, int y, int z) {
@@ -60,9 +60,9 @@ public interface MapTransform {
     Vec3d transformedPoint(Vec3d pos);
 
     default BlockBounds transformedBounds(BlockBounds bounds) {
-        return new BlockBounds(
-                this.transformedPoint(bounds.getMin()),
-                this.transformedPoint(bounds.getMax())
+        return BlockBounds.of(
+                this.transformedPoint(bounds.min()),
+                this.transformedPoint(bounds.max())
         );
     }
 

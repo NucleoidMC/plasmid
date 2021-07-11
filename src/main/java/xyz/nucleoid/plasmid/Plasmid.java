@@ -15,7 +15,10 @@ import net.minecraft.util.Unit;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import xyz.nucleoid.plasmid.command.*;
+import xyz.nucleoid.plasmid.command.ChatCommand;
+import xyz.nucleoid.plasmid.command.GameCommand;
+import xyz.nucleoid.plasmid.command.GamePortalCommand;
+import xyz.nucleoid.plasmid.command.ShoutCommand;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
@@ -29,9 +32,11 @@ import xyz.nucleoid.plasmid.game.portal.menu.MenuPortalConfig;
 import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandPortalConfig;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
-import xyz.nucleoid.plasmid.item.PlasmidItems;
+import xyz.nucleoid.plasmid.map.creation.command.MapManageCommand;
+import xyz.nucleoid.plasmid.map.creation.command.MapMetadataCommand;
+import xyz.nucleoid.plasmid.map.creation.item.PlasmidMapItems;
+import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspaceManager;
 import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
-import xyz.nucleoid.plasmid.map.workspace.MapWorkspaceManager;
 import xyz.nucleoid.plasmid.party.PartyManager;
 import xyz.nucleoid.plasmid.test.TestGame;
 
@@ -41,7 +46,7 @@ public final class Plasmid implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Reflection.initialize(PlasmidItems.class);
+        Reflection.initialize(PlasmidMapItems.class);
 
         Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "void"), VoidChunkGenerator.CODEC);
         Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);

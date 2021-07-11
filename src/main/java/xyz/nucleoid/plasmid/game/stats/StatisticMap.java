@@ -22,6 +22,30 @@ public class StatisticMap {
         this.values.put(key, (Integer) this.values.getOrDefault(key, 0) + amount);
     }
 
+    public double getDouble(StatisticKey<Double> key) {
+        return (double) this.values.getOrDefault(key, 0.0);
+    }
+
+    public float getFloat(StatisticKey<Float> key) {
+        return (float) this.values.getOrDefault(key, 0.0f);
+    }
+
+    public int getInt(StatisticKey<Integer> key) {
+        return (int) this.values.getOrDefault(key, 0);
+    }
+
+    public void set(StatisticKey<Double> key, double value) {
+        this.values.put(key, value);
+    }
+
+    public void set(StatisticKey<Float> key, float value) {
+        this.values.put(key, value);
+    }
+
+    public void set(StatisticKey<Integer> key, int value) {
+        this.values.put(key, value);
+    }
+
     /**
      * Write this bundle to a new {@link JsonObject} ready to be sent to a backend
      *

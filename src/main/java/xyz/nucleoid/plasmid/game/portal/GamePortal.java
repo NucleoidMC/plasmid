@@ -1,20 +1,12 @@
 package xyz.nucleoid.plasmid.game.portal;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.game.GameOpenException;
-import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
-import xyz.nucleoid.plasmid.party.PartyManager;
+import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -49,70 +41,14 @@ public final class GamePortal {
     }
 
     public void requestJoin(ServerPlayerEntity player) {
-        var partyManager = PartyManager.get(player.server);
-        var players = partyManager.getPartyMembers(player);
-
-        this.requestJoinAll(player, players)
-                .thenAcceptAsync(results -> {
-                    this.handleJoinResults(player, results);
-                }, player.server);
-    }
-
-    private CompletableFuture<JoinResults> requestJoinAll(ServerPlayerEntity primaryPlayer, Collection<ServerPlayerEntity> players) {
-        return CompletableFuture.supplyAsync(() -> this.backend.requestJoin(primaryPlayer))
+        CompletableFuture.supplyAsync(() -> this.backend.requestJoin(player))
                 .thenCompose(Function.identity())
-                .thenApplyAsync(gameSpace -> this.tryJoinAll(players, gameSpace), this.server)
-                .exceptionally(this::handleJoinException);
-    }
+                .thenAcceptAsync(gameSpace -> {
+                    var joiner = new GamePlayerJoiner(gameSpace);
 
-    private JoinResults tryJoinAll(Collection<ServerPlayerEntity> players, GameSpace gameSpace) {
-        var results = new JoinResults();
-
-        var screenResult = gameSpace.screenPlayerJoins(players);
-        if (screenResult.isError()) {
-            results.globalError = screenResult.error();
-            return results;
-        }
-
-        for (var player : players) {
-            var result = gameSpace.offerPlayer(player);
-            if (result.isError()) {
-                results.playerErrors.put(player, result.error());
-            }
-        }
-
-        return results;
-    }
-
-    private JoinResults handleJoinException(Throwable throwable) {
-        var results = new JoinResults();
-        results.globalError = this.getFeedbackForException(throwable);
-        return results;
-    }
-
-    private void handleJoinResults(ServerPlayerEntity player, JoinResults results) {
-        if (results.globalError != null) {
-            player.sendMessage(results.globalError.shallowCopy().formatted(Formatting.RED), false);
-        } else if (!results.playerErrors.isEmpty()) {
-            player.sendMessage(
-                    GameTexts.Join.partyJoinError(results.playerErrors.size()).formatted(Formatting.RED),
-                    false
-            );
-
-            for (var entry : results.playerErrors.entrySet()) {
-                Text error = entry.getValue().shallowCopy().formatted(Formatting.RED);
-                entry.getKey().sendMessage(error, false);
-            }
-        }
-    }
-
-    private Text getFeedbackForException(Throwable throwable) {
-        var gameOpenException = GameOpenException.unwrap(throwable);
-        if (gameOpenException != null) {
-            return gameOpenException.getReason().shallowCopy();
-        } else {
-            return GameTexts.Join.unexpectedError();
-        }
+                    var results = joiner.tryJoin(player);
+                    results.sendErrorsTo(player);
+                }, this.server);
     }
 
     public boolean addInterface(GamePortalInterface itf) {
@@ -158,10 +94,5 @@ public final class GamePortal {
         this.lastDisplay = swap;
 
         this.currentDisplay.clear();
-    }
-
-    static class JoinResults {
-        Text globalError;
-        final Map<ServerPlayerEntity, Text> playerErrors = new Object2ObjectOpenHashMap<>();
     }
 }

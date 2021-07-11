@@ -98,6 +98,7 @@ public interface GameSpace {
      * @return a {@link GameResult} describing whether this group can join this game, or an error if not
      * @see GamePlayerEvents#SCREEN_JOINS
      * @see GameSpace#offerPlayer(ServerPlayerEntity)
+     * @see xyz.nucleoid.plasmid.game.player.GamePlayerJoiner
      */
     GameResult screenPlayerJoins(Collection<ServerPlayerEntity> players);
 
@@ -110,6 +111,7 @@ public interface GameSpace {
      * @param player the player trying to join
      * @return a {@link GameResult} describing whether this player joined the game, or an error if not
      * @see GamePlayerEvents#OFFER
+     * @see xyz.nucleoid.plasmid.game.player.GamePlayerJoiner
      */
     GameResult offerPlayer(ServerPlayerEntity player);
 

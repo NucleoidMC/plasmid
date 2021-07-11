@@ -3,9 +3,12 @@ package xyz.nucleoid.plasmid.party;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.command.*;
+import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 
 import java.util.Collection;
@@ -21,6 +24,19 @@ public final class PartyManager {
 
     private PartyManager(MinecraftServer server) {
         this.server = server;
+    }
+
+    public static void initialize() {
+        GameEvents.COLLECT_PLAYERS_FOR_JOIN.register((gameSpace, player, additional) -> {
+            var partyManager = PartyManager.get(player.server);
+
+            var members = partyManager.getPartyMembers(player);
+            additional.addAll(members);
+        });
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+            PartyCommand.register(dispatcher);
+        });
     }
 
     public static PartyManager get(MinecraftServer server) {

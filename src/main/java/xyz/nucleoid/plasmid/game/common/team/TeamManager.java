@@ -56,11 +56,23 @@ public final class TeamManager {
             for (Team vanillaTeam : this.teamToVanillaTeam.values()) {
                 player.networkHandler.sendPacket(TeamS2CPacket.updateTeam(vanillaTeam, true));
             }
+
+            PlayerRef ref = PlayerRef.of(player);
+            GameTeam team = this.playerRefToTeam.get(ref);
+            if (team != null) {
+                this.teamToPlayerSet.computeIfAbsent(team, (t) -> new MutablePlayerSet(this.server)).add(ref);
+            }
         });
 
         activity.listen(GamePlayerEvents.REMOVE, (player) -> {
             for (Team vanillaTeam : this.teamToVanillaTeam.values()) {
                 player.networkHandler.sendPacket(TeamS2CPacket.updateRemovedTeam(vanillaTeam));
+            }
+
+            PlayerRef ref = PlayerRef.of(player);
+            GameTeam team = this.playerRefToTeam.get(ref);
+            if (team != null) {
+                this.teamToPlayerSet.computeIfAbsent(team, (t) -> new MutablePlayerSet(this.server)).remove(ref);
             }
         });
 

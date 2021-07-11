@@ -260,6 +260,7 @@ public final class GameCommand {
     }
 
     private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
+        // TODO: does not handle parties
         var result = gameSpace.offerPlayer(player);
         if (result.isError()) {
             var error = result.error();

@@ -9,6 +9,7 @@ import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -133,7 +134,7 @@ public interface GameSpace extends AutoCloseable {
     GameStatisticBundle getStatistics(String namespace);
 
     /**
-     * @return All created {@link GameStatisticBundle}s in this {@link GameSpace} that are not {@link GameStatisticBundle#isEmpty() empty}.
+     * @param consumer Will be called for every non-empty {@link GameStatisticBundle} in this {@link GameSpace}
      */
-    Map<String, GameStatisticBundle> getAllStatistics();
+    void visitAllStatistics(BiConsumer<String, GameStatisticBundle> consumer);
 }

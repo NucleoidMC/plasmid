@@ -35,13 +35,13 @@ import xyz.nucleoid.plasmid.game.rule.RuleResult;
 import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -440,17 +440,11 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     @Override
-    public Map<String, GameStatisticBundle> getAllStatistics() {
-        // Remove all empty bundles before continuing.
-        List<String> toRemove = new ArrayList<>();
-        for (Object2ObjectMap.Entry<String, GameStatisticBundle> entry : this.statistics.object2ObjectEntrySet()) {
-            if (entry.getValue().isEmpty()) {
-                toRemove.add(entry.getKey());
+    public void visitAllStatistics(BiConsumer<String, GameStatisticBundle> consumer) {
+        for (Map.Entry<String, GameStatisticBundle> entry : this.statistics.entrySet()) {
+            if (!entry.getValue().isEmpty()) {
+                consumer.accept(entry.getKey(), entry.getValue());
             }
         }
-        for (String bundle : toRemove) {
-            this.statistics.remove(bundle);
-        }
-        return this.statistics;
     }
 }

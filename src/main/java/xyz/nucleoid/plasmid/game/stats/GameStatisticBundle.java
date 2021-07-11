@@ -16,19 +16,19 @@ public class GameStatisticBundle {
     private final Object2ObjectMap<UUID, StatisticMap> players = new Object2ObjectOpenHashMap<>();
     private final StatisticMap global = new StatisticMap();
 
-    public StatisticMap getPlayer(PlayerRef player) {
-        return this.getPlayer(player.getId());
+    public StatisticMap forPlayer(PlayerRef player) {
+        return this.forPlayer(player.getId());
     }
 
-    public StatisticMap getPlayer(ServerPlayerEntity player) {
-        return this.getPlayer(player.getUuid());
+    public StatisticMap forPlayer(ServerPlayerEntity player) {
+        return this.forPlayer(player.getUuid());
     }
 
-    public StatisticMap getPlayer(UUID uuid) {
+    public StatisticMap forPlayer(UUID uuid) {
         return this.players.computeIfAbsent(uuid, __ -> new StatisticMap());
     }
 
-    public StatisticMap getGlobal() {
+    public StatisticMap global() {
         return this.global;
     }
 

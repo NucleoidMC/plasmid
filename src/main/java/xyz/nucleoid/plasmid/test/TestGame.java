@@ -72,7 +72,7 @@ public final class TestGame {
 
                     GameStatisticBundle statistics = game.getSpace().getStatistics("plasmid-test-game");
                     for (ServerPlayerEntity player : game.getSpace().getPlayers()) {
-                        statistics.getPlayer(player).increment(TEST_KEY, 2.5);
+                        statistics.forPlayer(player).increment(TEST_KEY, 2.5);
                     }
                 }
             });

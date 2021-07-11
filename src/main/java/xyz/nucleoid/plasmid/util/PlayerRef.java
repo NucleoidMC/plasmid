@@ -12,17 +12,19 @@ import java.util.function.Consumer;
 
 public final class PlayerRef {
     private final UUID id;
+    private final String name;
 
-    private PlayerRef(UUID id) {
+    private PlayerRef(UUID id, String name) {
         this.id = id;
+        this.name = name;
     }
 
     public static PlayerRef of(PlayerEntity player) {
-        return new PlayerRef(player.getUuid());
+        return new PlayerRef(player.getUuid(), player.getEntityName());
     }
 
     public static PlayerRef of(GameProfile profile) {
-        return new PlayerRef(profile.getId());
+        return new PlayerRef(profile.getId(), profile.getName());
     }
 
     public static PlayerRef ofUnchecked(UUID id) {
@@ -51,6 +53,10 @@ public final class PlayerRef {
         return this.id;
     }
 
+    public String name() {
+        return this.name;
+    }
+
     public void ifOnline(ServerWorld world, Consumer<ServerPlayerEntity> consumer) {
         ServerPlayerEntity player = this.getEntity(world);
         if (player != null) {
@@ -64,6 +70,8 @@ public final class PlayerRef {
             consumer.accept(player);
         }
     }
+
+
 
     @Override
     public boolean equals(Object obj) {

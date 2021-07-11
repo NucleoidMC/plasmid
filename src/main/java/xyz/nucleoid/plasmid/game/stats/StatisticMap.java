@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 /**
  * Stores a mapping of {@link StatisticKey} to their corresponding values
  */
-public class StatisticBundle {
+public class StatisticMap {
     private final Object2ObjectMap<StatisticKey<?>, Number> values = new Object2ObjectOpenHashMap<>();
 
     public void increment(StatisticKey<Double> key, double amount) {

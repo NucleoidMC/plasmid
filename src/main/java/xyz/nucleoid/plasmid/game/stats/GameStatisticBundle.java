@@ -10,37 +10,37 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Wrapper containing a map players' {@link StatisticBundle}s
+ * Wrapper containing a map players' {@link StatisticMap}s
  */
 public class GameStatisticBundle {
-    private final Object2ObjectMap<UUID, StatisticBundle> players = new Object2ObjectOpenHashMap<>();
-    private final StatisticBundle global = new StatisticBundle();
+    private final Object2ObjectMap<UUID, StatisticMap> players = new Object2ObjectOpenHashMap<>();
+    private final StatisticMap global = new StatisticMap();
 
-    public StatisticBundle getPlayer(PlayerRef player) {
+    public StatisticMap getPlayer(PlayerRef player) {
         return this.getPlayer(player.getId());
     }
 
-    public StatisticBundle getPlayer(ServerPlayerEntity player) {
+    public StatisticMap getPlayer(ServerPlayerEntity player) {
         return this.getPlayer(player.getUuid());
     }
 
-    public StatisticBundle getPlayer(UUID uuid) {
-        return this.players.computeIfAbsent(uuid, __ -> new StatisticBundle());
+    public StatisticMap getPlayer(UUID uuid) {
+        return this.players.computeIfAbsent(uuid, __ -> new StatisticMap());
     }
 
-    public StatisticBundle getGlobal() {
+    public StatisticMap getGlobal() {
         return this.global;
     }
 
     public boolean isEmpty() {
         return this.global.isEmpty()
-                && (this.players.isEmpty() || this.players.values().stream().allMatch(StatisticBundle::isEmpty));
+                && (this.players.isEmpty() || this.players.values().stream().allMatch(StatisticMap::isEmpty));
     }
 
     public JsonObject encodeBundle() {
         JsonObject obj = new JsonObject();
         JsonObject players = new JsonObject();
-        for (Map.Entry<UUID, StatisticBundle> entry : this.players.entrySet()) {
+        for (Map.Entry<UUID, StatisticMap> entry : this.players.entrySet()) {
             players.add(entry.getKey().toString(), entry.getValue().encodeBundle());
         }
 

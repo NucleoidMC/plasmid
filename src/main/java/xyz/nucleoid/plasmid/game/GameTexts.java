@@ -57,6 +57,14 @@ public final class GameTexts {
             return new TranslatableText("text.plasmid.game.locate.located", player.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
         }
+
+        public static MutableText gameList() {
+            return new TranslatableText("text.plasmid.game.list");
+        }
+
+        public static MutableText listEntry(Text entry) {
+            return new TranslatableText("text.plasmid.entry", entry);
+        }
     }
 
     public static final class Start {
@@ -70,6 +78,24 @@ public final class GameTexts {
 
         public static MutableText notEnoughPlayers() {
             return new TranslatableText("text.plasmid.game.start_result.not_enough_players");
+        }
+
+        public static MutableText startedBy(ServerCommandSource source) {
+            return new TranslatableText("text.plasmid.game.started.player", source.getDisplayName());
+        }
+    }
+
+    public static final class Stop {
+        public static MutableText stoppedBy(ServerCommandSource source) {
+            return new TranslatableText("text.plasmid.game.stopped.player", source.getDisplayName());
+        }
+
+        public static MutableText confirmStop() {
+            return new TranslatableText("text.plasmid.game.stop.confirm");
+        }
+
+        public static MutableText genericError() {
+            return new TranslatableText("text.plasmid.game.stopped.error");
         }
     }
 

@@ -25,10 +25,7 @@ public class GameStatisticBundle {
     }
 
     public StatisticBundle getPlayer(UUID uuid) {
-        if (!this.players.containsKey(uuid)) {
-            this.players.put(uuid, new StatisticBundle());
-        }
-        return this.players.getOrDefault(uuid, new StatisticBundle());
+        return this.players.computeIfAbsent(uuid, __ -> new StatisticBundle());
     }
 
     public StatisticBundle getGlobal() {

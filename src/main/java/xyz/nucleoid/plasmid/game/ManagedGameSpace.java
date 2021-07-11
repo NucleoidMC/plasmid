@@ -436,10 +436,7 @@ public final class ManagedGameSpace implements GameSpace {
 
     @Override
     public GameStatisticBundle getStatistics(String namespace) {
-        if (!this.statistics.containsKey(namespace)) {
-            this.statistics.put(namespace, new GameStatisticBundle());
-        }
-        return this.statistics.get(namespace);
+        return this.statistics.computeIfAbsent(namespace, __ -> new GameStatisticBundle());
     }
 
     @Override

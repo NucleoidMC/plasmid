@@ -5,14 +5,14 @@ import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.error.ErrorReporter;
+import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameResources;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameEventExceptionHandler;
 import xyz.nucleoid.plasmid.game.event.GameEventListeners;
-import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.game.rule.GameRuleMap;
+import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.Collections;

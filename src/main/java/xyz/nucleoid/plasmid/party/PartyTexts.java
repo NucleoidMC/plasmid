@@ -60,12 +60,10 @@ public final class PartyTexts {
 
     public static MutableText inviteNotificationLink(ServerPlayerEntity owner, ServerPlayerEntity player) {
         return new TranslatableText("text.plasmid.party.invited.receiver.click")
-                .setStyle(
-                        GameTexts.commandLinkStyle(
-                                "/party accept " + owner.getGameProfile().getName(),
-                                new TranslatableText("text.plasmid.party.invited.receiver.hover", player.getDisplayName())
-                        )
-                );
+                .setStyle(GameTexts.commandLinkStyle(
+                        "/party accept " + owner.getGameProfile().getName(),
+                        new TranslatableText("text.plasmid.party.invited.receiver.hover", player.getDisplayName())
+                ));
     }
 
     public static MutableText leftGame(ServerPlayerEntity player) {

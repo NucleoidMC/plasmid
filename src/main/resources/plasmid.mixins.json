@@ -4,10 +4,7 @@
   "package": "xyz.nucleoid.plasmid.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "MinecraftServerAccessor",
     "chat.ServerPlayerEntityMixin",
-    "game.map.ServerPlayerEntityMixin",
-    "game.map.ServerWorldMixin",
     "game.portal.EntityMixin",
     "game.portal.SignBlockEntityMixin",
     "game.rule.ArmorAndElytraItemMixin",

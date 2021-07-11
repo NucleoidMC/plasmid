@@ -52,7 +52,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
 
         var ui = ShopUi.create(player, this.name, builder -> {
             for (var entry : this.games) {
-                var uiEntry = ShopEntry.ofIcon(entry.icon).noCost()
+                var uiEntry = ShopEntry.ofIcon(entry.icon)
                         .withName(entry.game.getName())
                         .onBuy(p -> {
                             entry.game.getOrOpen(player.server).handle((gameSpace, throwable) -> {

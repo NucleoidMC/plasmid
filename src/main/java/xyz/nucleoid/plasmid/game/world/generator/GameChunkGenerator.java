@@ -19,6 +19,7 @@ import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
+import xyz.nucleoid.fantasy.util.VoidChunkGenerator;
 
 import java.util.Collections;
 import java.util.Optional;

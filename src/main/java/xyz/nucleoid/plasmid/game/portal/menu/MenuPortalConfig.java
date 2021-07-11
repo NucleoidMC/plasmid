@@ -10,9 +10,9 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.codecs.MoreCodecs;
+import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.GamePortalConfig;
-import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
 
 import java.util.List;
 import java.util.Optional;

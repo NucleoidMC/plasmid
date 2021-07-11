@@ -25,6 +25,10 @@ public final class PlayerRef {
         return new PlayerRef(profile.getId());
     }
 
+    public static PlayerRef ofUnchecked(UUID id) {
+        return new PlayerRef(id);
+    }
+
     @Nullable
     public ServerPlayerEntity getEntity(ServerWorld world) {
         return this.getEntity(world.getServer());

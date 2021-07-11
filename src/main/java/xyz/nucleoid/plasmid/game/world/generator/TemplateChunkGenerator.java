@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.map.template;
+package xyz.nucleoid.plasmid.game.world.generator;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.server.MinecraftServer;
@@ -18,9 +18,9 @@ import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
-import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
-import xyz.nucleoid.plasmid.game.world.generator.GeneratorBlockSamples;
-import xyz.nucleoid.plasmid.map.BlockBounds;
+import xyz.nucleoid.map_templates.BlockBounds;
+import xyz.nucleoid.map_templates.MapChunk;
+import xyz.nucleoid.map_templates.MapTemplate;
 
 import java.util.Collections;
 import java.util.Optional;

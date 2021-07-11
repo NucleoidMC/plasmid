@@ -10,6 +10,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import xyz.nucleoid.map_templates.BlockBounds;
+import xyz.nucleoid.map_templates.MapTemplate;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
@@ -17,8 +19,7 @@ import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
-import xyz.nucleoid.plasmid.map.BlockBounds;
-import xyz.nucleoid.plasmid.map.template.MapTemplate;
+import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 public final class TestGame {
@@ -26,7 +27,7 @@ public final class TestGame {
         var template = TestGame.generateMapTemplate();
 
         var worldConfig = new RuntimeWorldConfig()
-                .setGenerator(template.asChunkGenerator(context.server()))
+                .setGenerator(new TemplateChunkGenerator(context.server(), template))
                 .setTimeOfDay(6000)
                 .setGameRule(GameRules.KEEP_INVENTORY, true);
 

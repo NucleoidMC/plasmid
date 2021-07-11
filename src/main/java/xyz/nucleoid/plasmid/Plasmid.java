@@ -1,6 +1,5 @@
 package xyz.nucleoid.plasmid;
 
-import com.google.common.reflect.Reflection;
 import com.mojang.serialization.Codec;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
@@ -31,12 +30,6 @@ import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
 import xyz.nucleoid.plasmid.game.portal.menu.MenuPortalConfig;
 import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandPortalConfig;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
-import xyz.nucleoid.plasmid.game.world.generator.VoidChunkGenerator;
-import xyz.nucleoid.plasmid.map.creation.command.MapManageCommand;
-import xyz.nucleoid.plasmid.map.creation.command.MapMetadataCommand;
-import xyz.nucleoid.plasmid.map.creation.item.PlasmidMapItems;
-import xyz.nucleoid.plasmid.map.creation.workspace.MapWorkspaceManager;
-import xyz.nucleoid.plasmid.map.template.MapTemplateSerializer;
 import xyz.nucleoid.plasmid.party.PartyManager;
 import xyz.nucleoid.plasmid.test.TestGame;
 
@@ -46,15 +39,10 @@ public final class Plasmid implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Reflection.initialize(PlasmidMapItems.class);
-
-        Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "void"), VoidChunkGenerator.CODEC);
         Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
 
         GameConfigs.register();
         GamePortalManager.register();
-
-        MapTemplateSerializer.INSTANCE.register();
 
         GamePortalConfig.register(new Identifier(ID, "on_demand"), OnDemandPortalConfig.CODEC);
         GamePortalConfig.register(new Identifier(ID, "menu"), MenuPortalConfig.CODEC);
@@ -69,8 +57,6 @@ public final class Plasmid implements ModInitializer {
         PartyManager.initialize();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-            MapManageCommand.register(dispatcher);
-            MapMetadataCommand.register(dispatcher);
             GameCommand.register(dispatcher);
             GamePortalCommand.register(dispatcher);
             ChatCommand.register(dispatcher);
@@ -103,8 +89,6 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerTickEvents.START_SERVER_TICK.register(server -> {
-            MapWorkspaceManager.get(server).tick();
-
             GamePortalManager.INSTANCE.tick();
         });
 

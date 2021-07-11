@@ -4,6 +4,7 @@
   "package": "xyz.nucleoid.plasmid.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "chat.PlayerEntityMixin",
     "chat.ServerPlayerEntityMixin",
     "game.portal.EntityMixin",
     "game.portal.SignBlockEntityMixin",

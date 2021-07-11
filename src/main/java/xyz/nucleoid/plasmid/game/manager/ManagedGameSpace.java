@@ -72,7 +72,6 @@ public final class ManagedGameSpace implements GameSpace {
 
     @Override
     public ServerWorld addWorld(RuntimeWorldConfig worldConfig) {
-        // TODO: 1.17: set default game rules on the config!
         var worldHandle = this.worlds.add(worldConfig);
         this.manager.addDimensionToGameSpace(this, worldHandle.asWorld().getRegistryKey());
 

@@ -58,6 +58,16 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
         public Iterator<ServerPlayerEntity> iterator() {
             return Collections.emptyIterator();
         }
+
+        @Override
+        public Iterable<UUID> uuids() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Iterable<PlayerRef> playerRefs() {
+            return Collections.emptyList();
+        }
     };
 
     /**
@@ -136,6 +146,10 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
     default Stream<ServerPlayerEntity> stream() {
         return StreamSupport.stream(this.spliterator(), false);
     }
+
+    Iterable<UUID> uuids();
+
+    Iterable<PlayerRef> playerRefs();
 
     @Override
     default void sendPacket(Packet<?> packet) {

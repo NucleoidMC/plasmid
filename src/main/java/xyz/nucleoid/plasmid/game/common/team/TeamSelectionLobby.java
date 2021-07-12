@@ -86,7 +86,7 @@ public final class TeamSelectionLobby {
             var name = new TranslatableText("text.plasmid.team_selection.request_team", team.display())
                     .formatted(Formatting.BOLD, team.formatting());
 
-            var stack = new ItemStack(ColoredBlocks.wool(team.dye()));
+            var stack = new ItemStack(ColoredBlocks.wool(team.blockDyeColor()));
             stack.setCustomName(name);
 
             stack.getOrCreateTag().putString(TEAM_KEY, team.key());

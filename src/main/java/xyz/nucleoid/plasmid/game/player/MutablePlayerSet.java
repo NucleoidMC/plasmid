@@ -1,7 +1,6 @@
 package xyz.nucleoid.plasmid.game.player;
 
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -41,6 +40,10 @@ public final class MutablePlayerSet implements PlayerSet {
         return this.players.remove(ref.id());
     }
 
+    public boolean remove(UUID id) {
+        return this.players.remove(id);
+    }
+
     @Nullable
     @Override
     public ServerPlayerEntity getEntity(UUID id) {
@@ -75,22 +78,5 @@ public final class MutablePlayerSet implements PlayerSet {
     @Override
     public int size() {
         return this.players.size();
-    }
-
-    @Override
-    public MutablePlayerSet copy(MinecraftServer server) {
-        var copy = new MutablePlayerSet(server);
-        copy.players.addAll(this.players);
-        return copy;
-    }
-
-    @Override
-    public Iterable<UUID> uuids() {
-        return this.players;
-    }
-
-    @Override
-    public Iterable<PlayerRef> playerRefs() {
-        return Iterables.transform(this.players, PlayerRef::ofUnchecked);
     }
 }

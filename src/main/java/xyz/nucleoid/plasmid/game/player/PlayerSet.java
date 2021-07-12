@@ -11,11 +11,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -31,44 +29,11 @@ import java.util.stream.StreamSupport;
  * @see MutablePlayerSet
  */
 public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
-    PlayerSet EMPTY = new PlayerSet() {
-        @Override
-        public boolean contains(UUID id) {
-            return false;
-        }
+    PlayerSet EMPTY = EmptyPlayerSet.INSTANCE;
 
-        @Override
-        @Nullable
-        public ServerPlayerEntity getEntity(UUID id) {
-            return null;
-        }
-
-        @Override
-        public int size() {
-            return 0;
-        }
-
-        @Override
-        public MutablePlayerSet copy(MinecraftServer server) {
-            return new MutablePlayerSet(server);
-        }
-
-        @NotNull
-        @Override
-        public Iterator<ServerPlayerEntity> iterator() {
-            return Collections.emptyIterator();
-        }
-
-        @Override
-        public Iterable<UUID> uuids() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public Iterable<PlayerRef> playerRefs() {
-            return Collections.emptyList();
-        }
-    };
+    static PlayerSet ofServer(MinecraftServer server) {
+        return new ServerPlayerSet(server.getPlayerManager());
+    }
 
     /**
      * Queries whether this {@link PlayerSet} contains the given player {@link UUID}.
@@ -132,7 +97,11 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
      * @param server the {@link MinecraftServer} instance that these players exist within
      * @return a mutable copy of this {@link PlayerSet}
      */
-    MutablePlayerSet copy(MinecraftServer server);
+    default MutablePlayerSet copy(MinecraftServer server) {
+        var copy = new MutablePlayerSet(server);
+        this.forEach(copy::add);
+        return copy;
+    }
 
     /**
      * @return an iterator over the online {@link ServerPlayerEntity} within this {@link PlayerSet}
@@ -146,10 +115,6 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
     default Stream<ServerPlayerEntity> stream() {
         return StreamSupport.stream(this.spliterator(), false);
     }
-
-    Iterable<UUID> uuids();
-
-    Iterable<PlayerRef> playerRefs();
 
     @Override
     default void sendPacket(Packet<?> packet) {

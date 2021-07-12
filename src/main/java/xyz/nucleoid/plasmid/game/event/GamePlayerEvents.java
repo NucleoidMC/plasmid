@@ -145,6 +145,22 @@ public final class GamePlayerEvents {
         }
     });
 
+    /**
+     * Called when display name of {@link ServerPlayerEntity} is created.
+     * Can be used to manipulate it in game.
+     */
+    public static final StimulusEvent<Name> DISPLAY_NAME = StimulusEvent.create(Name.class, ctx -> (player, current, vanillaText) -> {
+        try {
+            for (var listener : ctx.getListeners()) {
+                current = listener.onDisplayNameCreation(player, current, vanillaText);
+            }
+            return current;
+        } catch (Throwable throwable) {
+            ctx.handleException(throwable);
+            return vanillaText;
+        }
+    });
+
     public interface Add {
         void onAddPlayer(ServerPlayerEntity player);
     }
@@ -159,5 +175,9 @@ public final class GamePlayerEvents {
 
     public interface Offer {
         PlayerOfferResult onOfferPlayer(PlayerOffer offer);
+    }
+
+    public interface Name {
+        Text onDisplayNameCreation(ServerPlayerEntity player, Text currentText, Text vanillaText);
     }
 }

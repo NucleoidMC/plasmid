@@ -138,7 +138,7 @@ public final class GameTeam {
                     Codec.STRING.fieldOf("dye").forGetter((t) -> t.dyeColor.toString()),
                     MoreCodecs.DYE_COLOR.fieldOf("block_dye").forGetter((t) -> t.blockDyeColor),
                     Codec.STRING.fieldOf("firework").forGetter((t) -> t.fireworkColor.toString()),
-                    MoreCodecs.FORMATTING.fieldOf("formatting").forGetter((t) -> t.formatting)
+                    MoreCodecs.FORMATTING.optionalFieldOf("formatting", Formatting.RESET).forGetter((t) -> t.formatting)
             ).apply(instance, TeamColorData::new);
         });
 

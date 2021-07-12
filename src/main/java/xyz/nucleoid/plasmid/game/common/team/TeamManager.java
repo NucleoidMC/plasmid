@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game.common.team;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.network.Packet;
+import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.network.packet.s2c.play.TeamS2CPacket;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.Scoreboard;
@@ -19,10 +20,12 @@ import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
+import xyz.nucleoid.plasmid.mixin.chat.PlayerListS2CPacketEntryAccessor;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Simple, {@link GameActivity} specific team manager class
@@ -62,21 +65,19 @@ public final class TeamManager {
                 if (this.gameSpace != null) {
                     Packet<?> packet = TeamS2CPacket.changePlayerTeam(vanilla, player.getGameProfile().getName(), TeamS2CPacket.Operation.ADD);
                     this.gameSpace.getPlayers().sendPacket(packet);
+                    this.sendNameUpdate(player, team, this.gameSpace.getPlayers()::sendPacket);
                 }
             }
 
-            for (TeamData data : this.teams.values()) {
-                player.networkHandler.sendPacket(TeamS2CPacket.updateTeam(data.vanillaTeam, true));
+            for (var data : this.teams.entrySet()) {
+                player.networkHandler.sendPacket(TeamS2CPacket.updateTeam(data.getValue().vanillaTeam, true));
+                for (ServerPlayerEntity teamMember : data.getValue().activePlayers) {
+                    this.sendNameUpdate(teamMember, team, player.networkHandler::sendPacket);
+                }
             }
         });
 
         activity.listen(GamePlayerEvents.REMOVE, (player) -> {
-            if (!player.isDisconnected()) {
-                for (TeamData data : this.teams.values()) {
-                    player.networkHandler.sendPacket(TeamS2CPacket.updateRemovedTeam(data.vanillaTeam));
-                }
-            }
-
             GameTeam team = this.uuidToTeam.get(player.getUuid());
             if (team != null) {
                 TeamData data = this.teams.get(team);
@@ -87,6 +88,16 @@ public final class TeamManager {
                 if (this.gameSpace != null) {
                     Packet<?> packet = TeamS2CPacket.changePlayerTeam(vanilla, player.getGameProfile().getName(), TeamS2CPacket.Operation.REMOVE);
                     this.gameSpace.getPlayers().sendPacket(packet);
+                    this.sendNameUpdate(player, null, this.gameSpace.getPlayers()::sendPacket);
+                }
+            }
+
+            if (!player.isDisconnected()) {
+                for (var data : this.teams.entrySet()) {
+                    player.networkHandler.sendPacket(TeamS2CPacket.updateRemovedTeam(data.getValue().vanillaTeam));
+                    for (ServerPlayerEntity teamMember : data.getValue().activePlayers) {
+                        this.sendNameUpdate(teamMember, null, player.networkHandler::sendPacket);
+                    }
                 }
             }
         });
@@ -133,6 +144,7 @@ public final class TeamManager {
                     if (this.gameSpace != null) {
                         Packet<?> packet = TeamS2CPacket.changePlayerTeam(vanilla, player.getGameProfile().getName(), TeamS2CPacket.Operation.ADD);
                         this.gameSpace.getPlayers().sendPacket(packet);
+                        this.sendNameUpdate(player, team, this.gameSpace.getPlayers()::sendPacket);
                     }
                 }
             }
@@ -172,6 +184,7 @@ public final class TeamManager {
                     if (this.gameSpace != null) {
                         Packet<?> packet = TeamS2CPacket.changePlayerTeam(vanilla, player.getGameProfile().getName(), TeamS2CPacket.Operation.REMOVE);
                         this.gameSpace.getPlayers().sendPacket(packet);
+                        this.sendNameUpdate(player, null, this.gameSpace.getPlayers()::sendPacket);
                     }
                 }
             }
@@ -270,29 +283,20 @@ public final class TeamManager {
     }
 
     public Text getPrefix(GameTeam team) {
-        return this.teams.get(team).vanillaTeam.getPrefix();
+        return this.teams.get(team).prefix;
     }
 
     public void setPrefix(GameTeam team, Text value) {
-        this.teams.get(team).vanillaTeam.setPrefix(value);
-        this.sendUpdates(team);
-    }
-
-    public Text getDisplayName(GameTeam team) {
-        return this.teams.get(team).vanillaTeam.getDisplayName();
-    }
-
-    public void setDisplayName(GameTeam team, Text value) {
-        this.teams.get(team).vanillaTeam.setDisplayName(value);
+        this.teams.get(team).prefix = value;
         this.sendUpdates(team);
     }
 
     public Text getSuffix(GameTeam team) {
-        return this.teams.get(team).vanillaTeam.getSuffix();
+        return this.teams.get(team).suffix;
     }
 
     public void setSuffix(GameTeam team, Text value) {
-        this.teams.get(team).vanillaTeam.setSuffix(value);
+        this.teams.get(team).suffix = value;
         this.sendUpdates(team);
     }
 
@@ -342,11 +346,28 @@ public final class TeamManager {
         }
     }
 
+    private void sendNameUpdate(ServerPlayerEntity player, @Nullable GameTeam team, Consumer<Packet<?>> receiver) {
+        PlayerListS2CPacket packet = new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_DISPLAY_NAME, player);
+
+        if (team != null) {
+            PlayerListS2CPacket.Entry entry = packet.getEntries().get(0);
+            Text name = player.getPlayerListName();
+            if (name == null) {
+                name = player.getName();
+            }
+            ((PlayerListS2CPacketEntryAccessor) packet.getEntries().get(0)).setDisplayName(this.formatPlayerName(player, name));
+        }
+
+        receiver.accept(packet);
+    }
+
     private class TeamData {
         boolean friendlyFire = false;
         Team vanillaTeam;
         MutablePlayerSet activePlayers;
         Set<PlayerRef> players;
+        Text prefix = LiteralText.EMPTY;
+        Text suffix = LiteralText.EMPTY;
 
         TeamData(GameTeam team) {
             this.vanillaTeam = new Team(TeamManager.this.scoreboard, team.key());

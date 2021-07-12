@@ -7,9 +7,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
-import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameActivity;
-import xyz.nucleoid.plasmid.util.PlayerRef;
 import xyz.nucleoid.stimuli.event.player.PlayerChatEvent;
 
 public final class TeamChat {

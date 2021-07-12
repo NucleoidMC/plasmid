@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "chat.PlayerEntityMixin",
+    "chat.PlayerListS2CPacketEntryAccessor",
     "chat.ServerPlayerEntityMixin",
     "game.portal.EntityMixin",
     "game.portal.SignBlockEntityMixin",

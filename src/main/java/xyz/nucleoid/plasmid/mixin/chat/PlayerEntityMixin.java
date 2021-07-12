@@ -17,7 +17,11 @@ public class PlayerEntityMixin {
     private void callDisplayNameEvent(CallbackInfoReturnable<Text> cir) {
         if (((Object) this) instanceof ServerPlayerEntity player) {
             try (var invokers = Stimuli.select().forEntityAt(player, player.getBlockPos())) {
-                cir.setReturnValue(invokers.get(GamePlayerEvents.DISPLAY_NAME).onDisplayNameCreation(player, cir.getReturnValue(), cir.getReturnValue()));
+                Text vanilla = cir.getReturnValue();
+                Text output = invokers.get(GamePlayerEvents.DISPLAY_NAME).onDisplayNameCreation(player, vanilla, vanilla);
+                if (!vanilla.equals(output)) {
+                    cir.setReturnValue(output);
+                }
             }
         }
     }

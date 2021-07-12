@@ -25,7 +25,7 @@ public final class TeamChat {
     }
 
     private ActionResult onSendMessage(ServerPlayerEntity sender, Text message) {
-        var team = this.manager.getTeamOf(PlayerRef.of(sender));
+        var team = this.manager.getTeamOf(sender);
 
         if (team != null && sender instanceof HasChatChannel hasChannel && hasChannel.getChatChannel() == ChatChannel.TEAM) {
             var teamMessage = new TranslatableText("text.plasmid.chat.team", message);

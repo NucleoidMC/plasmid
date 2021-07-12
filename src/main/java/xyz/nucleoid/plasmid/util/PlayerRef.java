@@ -13,7 +13,9 @@ import java.util.function.Consumer;
 public final class PlayerRef {
     private final UUID id;
 
-    private PlayerRef(UUID id) { this.id = id; }
+    private PlayerRef(UUID id) {
+        this.id = id;
+    }
 
     public static PlayerRef of(PlayerEntity player) {
         return new PlayerRef(player.getUuid());
@@ -62,8 +64,6 @@ public final class PlayerRef {
             consumer.accept(player);
         }
     }
-
-
 
     @Override
     public boolean equals(Object obj) {

@@ -8,50 +8,34 @@ import net.minecraft.util.ActionResult;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
 import xyz.nucleoid.plasmid.game.GameActivity;
-import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.stimuli.event.player.PlayerChatEvent;
 
 public final class TeamChat {
-    private final GameSpace gameSpace;
+    private final TeamManager manager;
 
-    private TeamChat(GameSpace gameSpace) {
-        this.gameSpace = gameSpace;
+    private TeamChat(TeamManager manager) {
+        this.manager = manager;
     }
 
-    public static void applyTo(GameActivity activity) {
-        var teamChat = new TeamChat(activity.getGameSpace());
+    public static void applyTo(GameActivity activity, TeamManager manager) {
+        var teamChat = new TeamChat(manager);
         activity.listen(PlayerChatEvent.EVENT, teamChat::onSendMessage);
     }
 
     private ActionResult onSendMessage(ServerPlayerEntity sender, Text message) {
-        if (this.shouldUseTeamChat(sender)) {
-            this.sendTeamChat(sender, message);
+        var team = this.manager.getTeamOf(sender);
+
+        if (team != null && sender instanceof HasChatChannel hasChannel && hasChannel.getChatChannel() == ChatChannel.TEAM) {
+            var teamMessage = new TranslatableText("text.plasmid.chat.team", message);
+
+            for (var player : this.manager.getPlayers(team)) {
+                player.sendSystemMessage(teamMessage, sender.getUuid());
+            }
+
             return ActionResult.FAIL;
         }
 
         return ActionResult.PASS;
     }
 
-    private boolean shouldUseTeamChat(ServerPlayerEntity player) {
-        if (player.getScoreboardTeam() == null) {
-            return false;
-        }
-
-        if (player instanceof HasChatChannel hasChannel) {
-            return hasChannel.getChatChannel() == ChatChannel.TEAM;
-        } else {
-            return false;
-        }
-    }
-
-    private void sendTeamChat(ServerPlayerEntity sender, Text message) {
-        var team = (Team) sender.getScoreboardTeam();
-        var teamMessage = new TranslatableText("text.plasmid.chat.team", message);
-
-        for (var player : this.gameSpace.getPlayers()) {
-            if (player == sender || player.getScoreboardTeam() == team) {
-                player.sendSystemMessage(teamMessage, sender.getUuid());
-            }
-        }
-    }
 }

@@ -187,9 +187,9 @@ public final class Plasmid implements ModInitializer {
         // For games to debug their statistic collection without needing to setup a backend
         if (Boolean.getBoolean("plasmid.debug_statistics")) {
             GameEvents.CLOSING.register((gameSpace, reason) -> {
-                for (Map.Entry<String, GameStatisticBundle> entry : gameSpace.getAllStatistics().entrySet()) {
-                    LOGGER.info(entry.getValue().encodeBundle());
-                }
+                gameSpace.visitAllStatistics((name, bundle) -> {
+                    LOGGER.info(bundle.encodeBundle());
+                });
             });
         }
     }

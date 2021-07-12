@@ -82,7 +82,7 @@ public class StatisticKey<T extends Number> {
 
         @Override
         public String asString() {
-            return null;
+            return this.name;
         }
     }
 

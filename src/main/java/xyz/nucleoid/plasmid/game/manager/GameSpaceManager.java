@@ -57,12 +57,15 @@ public final class GameSpaceManager {
         GameSpaceManager.instance = instance;
     }
 
-    public static void closeServer() {
+    public static void startClosing() {
         var instance = GameSpaceManager.instance;
         if (instance != null) {
             instance.close();
-            GameSpaceManager.instance = null;
         }
+    }
+
+    public static void closeServer() {
+        GameSpaceManager.instance = null;
     }
 
     public static GameSpaceManager get() {

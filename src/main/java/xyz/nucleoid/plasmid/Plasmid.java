@@ -98,8 +98,12 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            GameSpaceManager.closeServer();
+            GameSpaceManager.startClosing();
             GamePortalManager.INSTANCE.close(server);
+        });
+
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            GameSpaceManager.closeServer();
         });
     }
 }

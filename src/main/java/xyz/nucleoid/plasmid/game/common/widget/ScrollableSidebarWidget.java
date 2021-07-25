@@ -10,30 +10,32 @@ import java.util.function.Function;
  * An implementation of {@link GameWidget} which provides a sidebar through the use of the vanilla scoreboard which
  * displays at the right side of players' screens.
  *
+ * This sidebar will scroll if it contains more than 14 elements
+ *
  * @see xyz.nucleoid.plasmid.game.common.GlobalWidgets
  */
-public final class SidebarWidget extends Sidebar implements GameWidget {
+public final class ScrollableSidebarWidget extends Sidebar implements GameWidget {
     private final Function<ServerPlayerEntity, Boolean> playerChecker;
 
-    public SidebarWidget() {
+    public ScrollableSidebarWidget() {
         super(Priority.MEDIUM);
-        this.playerChecker = SidebarWidget::alwaysTrue;
+        this.playerChecker = ScrollableSidebarWidget::alwaysTrue;
         this.show();
     }
 
-    public SidebarWidget(Function<ServerPlayerEntity, Boolean> playerChecker) {
+    public ScrollableSidebarWidget(Function<ServerPlayerEntity, Boolean> playerChecker) {
         super(Priority.MEDIUM);
         this.playerChecker = playerChecker;
         this.show();
     }
 
-    public SidebarWidget(Text title) {
+    public ScrollableSidebarWidget(Text title) {
         super(title, Priority.MEDIUM);
-        this.playerChecker = SidebarWidget::alwaysTrue;
+        this.playerChecker = ScrollableSidebarWidget::alwaysTrue;
         this.show();
     }
 
-    public SidebarWidget(Text title, Function<ServerPlayerEntity, Boolean> playerChecker) {
+    public ScrollableSidebarWidget(Text title, Function<ServerPlayerEntity, Boolean> playerChecker) {
         super(title, Priority.MEDIUM);
         this.playerChecker = playerChecker;
 
@@ -53,7 +55,7 @@ public final class SidebarWidget extends Sidebar implements GameWidget {
         this.players.clear();
     }
 
-    private static boolean alwaysTrue(ServerPlayerEntity player) {
+    private static Boolean alwaysTrue(ServerPlayerEntity player) {
         return true;
     }
 }

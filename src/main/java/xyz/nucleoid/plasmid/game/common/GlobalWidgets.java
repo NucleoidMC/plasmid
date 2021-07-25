@@ -7,12 +7,14 @@ import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.common.widget.BossBarWidget;
 import xyz.nucleoid.plasmid.game.common.widget.GameWidget;
+import xyz.nucleoid.plasmid.game.common.widget.ScrollableSidebarWidget;
 import xyz.nucleoid.plasmid.game.common.widget.SidebarWidget;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Utilities for applying various {@link GameWidget} implementations for all players within a {@link GameSpace}.
@@ -54,6 +56,74 @@ public final class GlobalWidgets implements AutoCloseable {
      */
     public SidebarWidget addSidebar(Text title) {
         return this.addWidget(new SidebarWidget(title));
+    }
+
+    /**
+     * Adds a sidebar for all players associated with this {@link GlobalWidgets} instance.
+     *
+     * @return the created {@link SidebarWidget}
+     */
+    public SidebarWidget addSidebar() {
+        return this.addWidget(new SidebarWidget());
+    }
+
+    /**
+     * Adds a sidebar for selected players associated with this {@link GlobalWidgets} instance.
+     *
+     * @param playerChecker function returning true for players that can see this sidebar
+     * @return the created {@link SidebarWidget}
+     */
+    public SidebarWidget addSidebar(Text title, Function<ServerPlayerEntity, Boolean> playerChecker) {
+        return this.addWidget(new SidebarWidget(title, playerChecker));
+    }
+
+    /**
+     * Adds a sidebar for selected players associated with this {@link GlobalWidgets} instance.
+     *
+     * @param playerChecker function returning true for players that can see this sidebar
+     * @return the created {@link SidebarWidget}
+     */
+    public SidebarWidget addSidebar(Function<ServerPlayerEntity, Boolean> playerChecker) {
+        return this.addWidget(new SidebarWidget(playerChecker));
+    }
+
+    /**
+     * Adds a scrollable sidebar for all players associated with this {@link GlobalWidgets} instance.
+     *
+     * @param title the title for the sidebar
+     * @return the created {@link SidebarWidget}
+     */
+    public ScrollableSidebarWidget addScrollableSidebar(Text title) {
+        return this.addWidget(new ScrollableSidebarWidget(title));
+    }
+
+    /**
+     * Adds a scrollable sidebar for all players associated with this {@link GlobalWidgets} instance.
+     *
+     * @return the created {@link SidebarWidget}
+     */
+    public ScrollableSidebarWidget addScrollableSidebar() {
+        return this.addWidget(new ScrollableSidebarWidget());
+    }
+
+    /**
+     * Adds a scrollable sidebar for selected players associated with this {@link GlobalWidgets} instance.
+     *
+     * @param playerChecker function returning true for players that can see this sidebar
+     * @return the created {@link SidebarWidget}
+     */
+    public ScrollableSidebarWidget addScrollableSidebar(Text title, Function<ServerPlayerEntity, Boolean> playerChecker) {
+        return this.addWidget(new ScrollableSidebarWidget(title, playerChecker));
+    }
+
+    /**
+     * Adds a scrollable sidebar for selected players associated with this {@link GlobalWidgets} instance.
+     *
+     * @param playerChecker function returning true for players that can see this sidebar
+     * @return the created {@link SidebarWidget}
+     */
+    public ScrollableSidebarWidget addScrollableSidebar(Function<ServerPlayerEntity, Boolean> playerChecker) {
+        return this.addWidget(new ScrollableSidebarWidget(playerChecker));
     }
 
     /**

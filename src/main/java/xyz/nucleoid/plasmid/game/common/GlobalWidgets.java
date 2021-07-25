@@ -93,8 +93,8 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param title the title for the sidebar
      * @return the created {@link SidebarWidget}
      */
-    public ScrollableSidebarWidget addScrollableSidebar(Text title) {
-        return this.addWidget(new ScrollableSidebarWidget(title));
+    public ScrollableSidebarWidget addScrollableSidebar(Text title, int ticksPerLine) {
+        return this.addWidget(new ScrollableSidebarWidget(title, ticksPerLine));
     }
 
     /**
@@ -102,8 +102,8 @@ public final class GlobalWidgets implements AutoCloseable {
      *
      * @return the created {@link SidebarWidget}
      */
-    public ScrollableSidebarWidget addScrollableSidebar() {
-        return this.addWidget(new ScrollableSidebarWidget());
+    public ScrollableSidebarWidget addScrollableSidebar(int ticksPerLine) {
+        return this.addWidget(new ScrollableSidebarWidget(ticksPerLine));
     }
 
     /**
@@ -112,8 +112,8 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param playerChecker function returning true for players that can see this sidebar
      * @return the created {@link SidebarWidget}
      */
-    public ScrollableSidebarWidget addScrollableSidebar(Text title, Function<ServerPlayerEntity, Boolean> playerChecker) {
-        return this.addWidget(new ScrollableSidebarWidget(title, playerChecker));
+    public ScrollableSidebarWidget addScrollableSidebar(Text title, int ticksPerLine, Function<ServerPlayerEntity, Boolean> playerChecker) {
+        return this.addWidget(new ScrollableSidebarWidget(title, ticksPerLine, playerChecker));
     }
 
     /**
@@ -122,8 +122,8 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param playerChecker function returning true for players that can see this sidebar
      * @return the created {@link SidebarWidget}
      */
-    public ScrollableSidebarWidget addScrollableSidebar(Function<ServerPlayerEntity, Boolean> playerChecker) {
-        return this.addWidget(new ScrollableSidebarWidget(playerChecker));
+    public ScrollableSidebarWidget addScrollableSidebar(int ticksPerLine, Function<ServerPlayerEntity, Boolean> playerChecker) {
+        return this.addWidget(new ScrollableSidebarWidget(ticksPerLine, playerChecker));
     }
 
     /**

@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.common.widget;
 
+import eu.pb4.sidebars.api.ScrollableSidebar;
 import eu.pb4.sidebars.api.Sidebar;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -14,29 +15,29 @@ import java.util.function.Function;
  *
  * @see xyz.nucleoid.plasmid.game.common.GlobalWidgets
  */
-public final class ScrollableSidebarWidget extends Sidebar implements GameWidget {
+public final class ScrollableSidebarWidget extends ScrollableSidebar implements GameWidget {
     private final Function<ServerPlayerEntity, Boolean> playerChecker;
 
-    public ScrollableSidebarWidget() {
-        super(Priority.MEDIUM);
+    public ScrollableSidebarWidget(int ticksPerLine) {
+        super(Priority.MEDIUM, ticksPerLine);
         this.playerChecker = ScrollableSidebarWidget::alwaysTrue;
         this.show();
     }
 
-    public ScrollableSidebarWidget(Function<ServerPlayerEntity, Boolean> playerChecker) {
-        super(Priority.MEDIUM);
+    public ScrollableSidebarWidget(int ticksPerLine, Function<ServerPlayerEntity, Boolean> playerChecker) {
+        super(Priority.MEDIUM, ticksPerLine);
         this.playerChecker = playerChecker;
         this.show();
     }
 
-    public ScrollableSidebarWidget(Text title) {
-        super(title, Priority.MEDIUM);
+    public ScrollableSidebarWidget(Text title, int ticksPerLine) {
+        super(title, Priority.MEDIUM, ticksPerLine);
         this.playerChecker = ScrollableSidebarWidget::alwaysTrue;
         this.show();
     }
 
-    public ScrollableSidebarWidget(Text title, Function<ServerPlayerEntity, Boolean> playerChecker) {
-        super(title, Priority.MEDIUM);
+    public ScrollableSidebarWidget(Text title, int ticksPerLine, Function<ServerPlayerEntity, Boolean> playerChecker) {
+        super(title, Priority.MEDIUM, ticksPerLine);
         this.playerChecker = playerChecker;
 
         this.show();

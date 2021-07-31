@@ -50,10 +50,10 @@ dependencies {
   modImplementation include('xyz.nucleoid:more-codecs:0.1.5')
   modImplementation include('xyz.nucleoid:stimuli:0.2.4+1.17.1')
   modImplementation include('xyz.nucleoid:map-templates:0.1.0+1.17.1')
-  modImplementation include('eu.pb4:polymer:0.1.0-pre9+1.17.1')
-  modImplementation include('eu.pb4:hologram-api:0.1.2+1.17.1')
+  modImplementation include('eu.pb4:polymer:0.1.0-rc.2+1.17.1')
+  modImplementation include('eu.pb4:hologram-api:0.2.0+1.17.1')
   modImplementation include('eu.pb4:sgui:1.0.0-rc3-1.17.1')
-  modImplementation include('eu.pb4:sidebar-api:0.1.0-rc2+1.17')
+  modImplementation include('eu.pb4:sidebar-api:0.1.0-rc.3+1.17.1')
 
   modRuntime("supercoder79:databreaker:0.2.7") {
     exclude module: "fabric-loader"

@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.game.common.widget;
 
-import eu.pb4.sidebars.api.Sidebar;
+import eu.pb4.sidebars.api.ScrollableSidebar;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
@@ -10,31 +10,33 @@ import java.util.function.Predicate;
  * An implementation of {@link GameWidget} which provides a sidebar through the use of the vanilla scoreboard which
  * displays at the right side of players' screens.
  *
+ * This sidebar will scroll if it contains more than 14 elements
+ *
  * @see xyz.nucleoid.plasmid.game.common.GlobalWidgets
  */
-public final class SidebarWidget extends Sidebar implements GameWidget {
+public final class ScrollableSidebarWidget extends ScrollableSidebar implements GameWidget {
     private final Predicate<ServerPlayerEntity> playerChecker;
 
-    public SidebarWidget() {
-        super(Priority.MEDIUM);
-        this.playerChecker = SidebarWidget::alwaysTrue;
+    public ScrollableSidebarWidget(int ticksPerLine) {
+        super(Priority.MEDIUM, ticksPerLine);
+        this.playerChecker = ScrollableSidebarWidget::alwaysTrue;
         this.show();
     }
 
-    public SidebarWidget(Predicate<ServerPlayerEntity> playerChecker) {
-        super(Priority.MEDIUM);
+    public ScrollableSidebarWidget(int ticksPerLine, Predicate<ServerPlayerEntity> playerChecker) {
+        super(Priority.MEDIUM, ticksPerLine);
         this.playerChecker = playerChecker;
         this.show();
     }
 
-    public SidebarWidget(Text title) {
-        super(title, Priority.MEDIUM);
-        this.playerChecker = SidebarWidget::alwaysTrue;
+    public ScrollableSidebarWidget(Text title, int ticksPerLine) {
+        super(title, Priority.MEDIUM, ticksPerLine);
+        this.playerChecker = ScrollableSidebarWidget::alwaysTrue;
         this.show();
     }
 
-    public SidebarWidget(Text title, Predicate<ServerPlayerEntity> playerChecker) {
-        super(title, Priority.MEDIUM);
+    public ScrollableSidebarWidget(Text title, int ticksPerLine, Predicate<ServerPlayerEntity> playerChecker) {
+        super(title, Priority.MEDIUM, ticksPerLine);
         this.playerChecker = playerChecker;
 
         this.show();
@@ -53,7 +55,7 @@ public final class SidebarWidget extends Sidebar implements GameWidget {
         this.players.clear();
     }
 
-    private static boolean alwaysTrue(ServerPlayerEntity player) {
+    private static Boolean alwaysTrue(ServerPlayerEntity player) {
         return true;
     }
 }

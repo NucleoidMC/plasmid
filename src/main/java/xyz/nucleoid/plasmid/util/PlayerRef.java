@@ -10,13 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public final class PlayerRef {
-    private final UUID id;
-
-    private PlayerRef(UUID id) {
-        this.id = id;
-    }
-
+public record PlayerRef(UUID id) {
     public static PlayerRef of(PlayerEntity player) {
         return new PlayerRef(player.getUuid());
     }
@@ -47,10 +41,6 @@ public final class PlayerRef {
         return this.getEntity(server) != null;
     }
 
-    public UUID id() {
-        return this.id;
-    }
-
     public void ifOnline(ServerWorld world, Consumer<ServerPlayerEntity> consumer) {
         ServerPlayerEntity player = this.getEntity(world);
         if (player != null) {
@@ -63,21 +53,5 @@ public final class PlayerRef {
         if (player != null) {
             consumer.accept(player);
         }
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-
-        if (obj instanceof PlayerRef) {
-            return ((PlayerRef) obj).id.equals(this.id);
-        }
-
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return this.id.hashCode();
     }
 }

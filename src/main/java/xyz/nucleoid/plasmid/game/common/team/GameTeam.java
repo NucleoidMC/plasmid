@@ -23,7 +23,7 @@ public final record GameTeam(String key, Text display, Colors colors) {
     public static final Codec<GameTeam> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
                 Codec.STRING.fieldOf("key").forGetter(GameTeam::key),
-                MoreCodecs.TEXT.fieldOf("display").forGetter(t -> t.display.shallowCopy()),
+                MoreCodecs.TEXT.fieldOf("display").forGetter(GameTeam::display),
                 Colors.CODEC.fieldOf("color").forGetter(GameTeam::colors)
         ).apply(instance, GameTeam::new);
     });

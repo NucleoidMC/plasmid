@@ -1,6 +1,5 @@
 package xyz.nucleoid.plasmid.game.common.team;
 
-import net.minecraft.scoreboard.Team;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -23,12 +22,12 @@ public final class TeamChat {
     }
 
     private ActionResult onSendMessage(ServerPlayerEntity sender, Text message) {
-        var team = this.manager.getTeamOf(sender);
+        var team = this.manager.teamFor(sender);
 
         if (team != null && sender instanceof HasChatChannel hasChannel && hasChannel.getChatChannel() == ChatChannel.TEAM) {
             var teamMessage = new TranslatableText("text.plasmid.chat.team", message);
 
-            for (var player : this.manager.getPlayers(team)) {
+            for (var player : this.manager.playersIn(team)) {
                 player.sendSystemMessage(teamMessage, sender.getUuid());
             }
 

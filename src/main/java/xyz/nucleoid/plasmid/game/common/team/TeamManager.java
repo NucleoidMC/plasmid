@@ -53,9 +53,9 @@ public final class TeamManager {
      * @param activity the activity to apply teams to
      * @return the constructed {@link TeamManager}
      */
-    public static TeamManager applyTo(GameActivity activity) {
+    public static TeamManager addTo(GameActivity activity) {
         var manager = new TeamManager(activity.getGameSpace());
-        manager.applySelfTo(activity);
+        manager.applyTo(activity);
         return manager;
     }
 
@@ -64,7 +64,7 @@ public final class TeamManager {
      *
      * @param activity the activity to add to
      */
-    public void applySelfTo(GameActivity activity) {
+    public void applyTo(GameActivity activity) {
         activity.listen(GamePlayerEvents.ADD, this::onAddPlayer);
         activity.listen(GamePlayerEvents.REMOVE, this::onRemovePlayer);
         activity.listen(PlayerDamageEvent.EVENT, this::onDamagePlayer);

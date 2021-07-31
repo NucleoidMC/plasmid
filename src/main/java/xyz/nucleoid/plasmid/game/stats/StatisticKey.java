@@ -89,6 +89,8 @@ public class StatisticKey<T extends Number> {
     public enum StorageType implements StringIdentifiable {
         TOTAL("total"),
         ROLLING_AVERAGE("rolling_average"),
+        MIN("min"),
+        MAX("max"),
         ;
         private final String name;
 

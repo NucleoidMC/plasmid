@@ -25,7 +25,8 @@ public final class StatisticKeys {
     // Misc;
     public static final StatisticKey<Integer> BLOCKS_BROKEN = StatisticKey.intKey(id("blocks_broken"), StatisticKey.StorageType.TOTAL);
     public static final StatisticKey<Integer> POINTS = StatisticKey.intKey(id("points"), StatisticKey.StorageType.TOTAL);
-    public static final StatisticKey<Integer> TIME_SURVIVED = StatisticKey.intKey(id("time_survived"), StatisticKey.StorageType.TOTAL);
+    public static final StatisticKey<Integer> MIN_TIME_SURVIVED = StatisticKey.intKey(id("time_survived"), StatisticKey.StorageType.MIN);
+    public static final StatisticKey<Integer> MAX_TIME_SURVIVED = StatisticKey.intKey(id("time_survived"), StatisticKey.StorageType.MAX);
     public static final StatisticKey<Integer> RANKING = StatisticKey.intKey(id("ranking"), StatisticKey.StorageType.TOTAL);
 
     private static Identifier id(String path) {

@@ -4,7 +4,7 @@ import eu.pb4.sidebars.api.Sidebar;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * An implementation of {@link GameWidget} which provides a sidebar through the use of the vanilla scoreboard which
@@ -13,7 +13,7 @@ import java.util.function.Function;
  * @see xyz.nucleoid.plasmid.game.common.GlobalWidgets
  */
 public final class SidebarWidget extends Sidebar implements GameWidget {
-    private final Function<ServerPlayerEntity, Boolean> playerChecker;
+    private final Predicate<ServerPlayerEntity> playerChecker;
 
     public SidebarWidget() {
         super(Priority.MEDIUM);
@@ -21,7 +21,7 @@ public final class SidebarWidget extends Sidebar implements GameWidget {
         this.show();
     }
 
-    public SidebarWidget(Function<ServerPlayerEntity, Boolean> playerChecker) {
+    public SidebarWidget(Predicate<ServerPlayerEntity> playerChecker) {
         super(Priority.MEDIUM);
         this.playerChecker = playerChecker;
         this.show();
@@ -33,7 +33,7 @@ public final class SidebarWidget extends Sidebar implements GameWidget {
         this.show();
     }
 
-    public SidebarWidget(Text title, Function<ServerPlayerEntity, Boolean> playerChecker) {
+    public SidebarWidget(Text title, Predicate<ServerPlayerEntity> playerChecker) {
         super(title, Priority.MEDIUM);
         this.playerChecker = playerChecker;
 
@@ -42,7 +42,7 @@ public final class SidebarWidget extends Sidebar implements GameWidget {
 
     @Override
     public void addPlayer(ServerPlayerEntity player) {
-        if (this.playerChecker.apply(player)) {
+        if (this.playerChecker.test(player)) {
             super.addPlayer(player);
         }
     }

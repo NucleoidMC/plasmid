@@ -1,11 +1,10 @@
 package xyz.nucleoid.plasmid.game.common.widget;
 
 import eu.pb4.sidebars.api.ScrollableSidebar;
-import eu.pb4.sidebars.api.Sidebar;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * An implementation of {@link GameWidget} which provides a sidebar through the use of the vanilla scoreboard which
@@ -16,7 +15,7 @@ import java.util.function.Function;
  * @see xyz.nucleoid.plasmid.game.common.GlobalWidgets
  */
 public final class ScrollableSidebarWidget extends ScrollableSidebar implements GameWidget {
-    private final Function<ServerPlayerEntity, Boolean> playerChecker;
+    private final Predicate<ServerPlayerEntity> playerChecker;
 
     public ScrollableSidebarWidget(int ticksPerLine) {
         super(Priority.MEDIUM, ticksPerLine);
@@ -24,7 +23,7 @@ public final class ScrollableSidebarWidget extends ScrollableSidebar implements 
         this.show();
     }
 
-    public ScrollableSidebarWidget(int ticksPerLine, Function<ServerPlayerEntity, Boolean> playerChecker) {
+    public ScrollableSidebarWidget(int ticksPerLine, Predicate<ServerPlayerEntity> playerChecker) {
         super(Priority.MEDIUM, ticksPerLine);
         this.playerChecker = playerChecker;
         this.show();
@@ -36,7 +35,7 @@ public final class ScrollableSidebarWidget extends ScrollableSidebar implements 
         this.show();
     }
 
-    public ScrollableSidebarWidget(Text title, int ticksPerLine, Function<ServerPlayerEntity, Boolean> playerChecker) {
+    public ScrollableSidebarWidget(Text title, int ticksPerLine, Predicate<ServerPlayerEntity> playerChecker) {
         super(title, Priority.MEDIUM, ticksPerLine);
         this.playerChecker = playerChecker;
 
@@ -45,7 +44,7 @@ public final class ScrollableSidebarWidget extends ScrollableSidebar implements 
 
     @Override
     public void addPlayer(ServerPlayerEntity player) {
-        if (this.playerChecker.apply(player)) {
+        if (this.playerChecker.test(player)) {
             super.addPlayer(player);
         }
     }

@@ -14,7 +14,7 @@ import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Utilities for applying various {@link GameWidget} implementations for all players within a {@link GameSpace}.
@@ -73,7 +73,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param playerChecker function returning true for players that can see this sidebar
      * @return the created {@link SidebarWidget}
      */
-    public SidebarWidget addSidebar(Text title, Function<ServerPlayerEntity, Boolean> playerChecker) {
+    public SidebarWidget addSidebar(Text title, Predicate<ServerPlayerEntity> playerChecker) {
         return this.addWidget(new SidebarWidget(title, playerChecker));
     }
 
@@ -83,7 +83,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param playerChecker function returning true for players that can see this sidebar
      * @return the created {@link SidebarWidget}
      */
-    public SidebarWidget addSidebar(Function<ServerPlayerEntity, Boolean> playerChecker) {
+    public SidebarWidget addSidebar(Predicate<ServerPlayerEntity> playerChecker) {
         return this.addWidget(new SidebarWidget(playerChecker));
     }
 
@@ -112,7 +112,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param playerChecker function returning true for players that can see this sidebar
      * @return the created {@link SidebarWidget}
      */
-    public ScrollableSidebarWidget addScrollableSidebar(Text title, int ticksPerLine, Function<ServerPlayerEntity, Boolean> playerChecker) {
+    public ScrollableSidebarWidget addScrollableSidebar(Text title, int ticksPerLine, Predicate<ServerPlayerEntity> playerChecker) {
         return this.addWidget(new ScrollableSidebarWidget(title, ticksPerLine, playerChecker));
     }
 
@@ -122,7 +122,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param playerChecker function returning true for players that can see this sidebar
      * @return the created {@link SidebarWidget}
      */
-    public ScrollableSidebarWidget addScrollableSidebar(int ticksPerLine, Function<ServerPlayerEntity, Boolean> playerChecker) {
+    public ScrollableSidebarWidget addScrollableSidebar(int ticksPerLine, Predicate<ServerPlayerEntity> playerChecker) {
         return this.addWidget(new ScrollableSidebarWidget(ticksPerLine, playerChecker));
     }
 

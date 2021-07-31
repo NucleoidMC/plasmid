@@ -87,13 +87,12 @@ public final class IsolatingPlayerTeleporter {
 
         playerManagerAccess.plasmid$getPlayerResetter().apply(player);
 
-        var world = recreate.apply(player);
         if (!in) {
             playerManagerAccess.plasmid$loadIntoPlayer(player);
         }
 
+        var world = recreate.apply(player);
         player.setWorld(world);
-        player.interactionManager.setWorld(world);
 
         var worldProperties = world.getLevelProperties();
 

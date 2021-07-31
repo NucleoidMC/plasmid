@@ -33,7 +33,7 @@ public record GameOpenContext<C>(MinecraftServer server, GameConfig<C> game) {
      * @see GameActivity#setRule(GameRuleType, ActionResult)
      */
     public GameOpenProcedure open(Consumer<GameActivity> setup) {
-        return gameSpace -> gameSpace.setActivity(this.game, setup);
+        return gameSpace -> gameSpace.setActivity(setup);
     }
 
     /**

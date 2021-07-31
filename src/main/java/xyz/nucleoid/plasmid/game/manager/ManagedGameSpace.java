@@ -57,10 +57,10 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     @Override
-    public void setActivity(GameConfig<?> config, Consumer<GameActivity> builder) {
+    public void setActivity(Consumer<GameActivity> builder) {
         try {
             this.state.setActivity(() -> {
-                var activity = new ManagedGameActivity(this, config);
+                var activity = new ManagedGameActivity(this);
                 builder.accept(activity);
                 return activity;
             });

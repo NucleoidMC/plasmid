@@ -41,11 +41,9 @@ public interface GameSpace {
      * <li>{@link GamePlayerEvents#ADD} for every player in this {@link GameSpace}</li>
      * <li>{@link GameActivityEvents#ENABLE}</li>
      *
-     * @param config the game config which created this activity
      * @param builder a builder to set up a new activity's listeners and rules
      */
-    // TODO: passing the config is not ideal
-    void setActivity(GameConfig<?> config, Consumer<GameActivity> builder);
+    void setActivity(Consumer<GameActivity> builder);
 
     /**
      * Closes this {@link GameSpace} with the given reason.

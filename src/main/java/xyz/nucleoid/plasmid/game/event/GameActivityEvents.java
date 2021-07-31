@@ -6,7 +6,6 @@ import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.function.Consumer;
@@ -16,7 +15,7 @@ import java.util.function.Consumer;
  */
 public final class GameActivityEvents {
     /**
-     * Called when a {@link GameActivity} is set on a {@link GameSpace} through {@link GameSpace#setActivity(GameConfig, Consumer)}.
+     * Called when a {@link GameActivity} is set on a {@link GameSpace} through {@link GameSpace#setActivity(Consumer)}.
      * <p>
      * This event should be used for any start logic needed to be done by a game.
      * <p>

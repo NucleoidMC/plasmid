@@ -154,7 +154,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     @Override
     public int getHeight(int x, int z, Heightmap.Type heightmap, HeightLimitView world) {
         if (this.worldBounds.contains(x, z)) {
-            return this.template.getTopY(x, z, heightmap, world);
+            return this.template.getTopY(x, z, heightmap);
         }
         return 0;
     }

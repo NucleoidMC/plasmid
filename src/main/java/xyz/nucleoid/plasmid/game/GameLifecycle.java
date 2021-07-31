@@ -5,7 +5,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: replace with normal events?
 public final class GameLifecycle {
     private final List<Listeners> listeners = new ArrayList<>();
 

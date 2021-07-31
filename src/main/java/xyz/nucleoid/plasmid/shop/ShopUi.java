@@ -20,7 +20,7 @@ public final class ShopUi {
 
         ScreenHandlerType<?> type = selectScreenType(shop.rows.size());
 
-        var gui = new SimpleGui(type, player, true);
+        var gui = new SimpleGui(type, player, false);
         gui.setTitle(title);
 
         List<List<ShopEntry>> rows = shop.rows;

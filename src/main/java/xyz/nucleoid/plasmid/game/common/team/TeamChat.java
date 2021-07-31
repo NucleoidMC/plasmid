@@ -16,7 +16,7 @@ public final class TeamChat {
         this.manager = manager;
     }
 
-    public static void applyTo(GameActivity activity, TeamManager manager) {
+    public static void addTo(GameActivity activity, TeamManager manager) {
         var teamChat = new TeamChat(manager);
         activity.listen(PlayerChatEvent.EVENT, teamChat::onSendMessage);
     }

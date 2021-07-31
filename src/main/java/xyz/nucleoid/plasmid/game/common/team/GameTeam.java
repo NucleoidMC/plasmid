@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.FireworkItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
@@ -18,19 +19,19 @@ import java.util.function.Function;
 /**
  * A simple representation of a team type, containing a name and color.
  */
-public final record GameTeam(String key, MutableText display, Colors colors) {
+public final record GameTeam(String key, Text display, Colors colors) {
     public static final Codec<GameTeam> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
                 Codec.STRING.fieldOf("key").forGetter(GameTeam::key),
-                MoreCodecs.TEXT.fieldOf("display").forGetter(GameTeam::display),
+                MoreCodecs.TEXT.fieldOf("display").forGetter(t -> t.display.shallowCopy()),
                 Colors.CODEC.fieldOf("color").forGetter(GameTeam::colors)
         ).apply(instance, GameTeam::new);
     });
 
-    public GameTeam(String key, MutableText display, Colors colors) {
+    public GameTeam(String key, Text display, Colors colors) {
         this.key = key;
         this.colors = colors;
-        this.display = display.styled(style -> style.getColor() == null ? style.withColor(colors.color()) : style);
+        this.display = display.shallowCopy().styled(style -> style.getColor() == null ? style.withColor(colors.color()) : style);
     }
 
     public GameTeam(String key, MutableText display, DyeColor color) {

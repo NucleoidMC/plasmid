@@ -23,8 +23,6 @@ import xyz.nucleoid.stimuli.event.world.NetherPortalOpenEvent;
 
 import java.util.ArrayList;
 
-// TODO: re-evaluate all the rules we have + add more
-// TODO: name this differently? confusion with vanilla
 public final class GameRuleType {
     public static final GameRuleType BREAK_BLOCKS = GameRuleType.create()
             .enforces(BlockBreakEvent.EVENT, result -> (player, world, pos) -> result);

@@ -8,7 +8,6 @@ import xyz.nucleoid.plasmid.error.ErrorReporter;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameResources;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameEventExceptionHandler;
 import xyz.nucleoid.plasmid.game.event.GameEventListeners;
 import xyz.nucleoid.plasmid.game.rule.GameRuleMap;
@@ -19,7 +18,6 @@ import java.util.Collections;
 
 public final class ManagedGameActivity implements GameActivity {
     private final ManagedGameSpace space;
-    private final GameConfig<?> config;
 
     private final ErrorReporter errorReporter;
 
@@ -27,11 +25,10 @@ public final class ManagedGameActivity implements GameActivity {
     private final GameRuleMap rules = new GameRuleMap();
     private final GameResources resources = new GameResources();
 
-    ManagedGameActivity(ManagedGameSpace space, GameConfig<?> config) {
+    ManagedGameActivity(ManagedGameSpace space) {
         this.space = space;
-        this.config = config;
 
-        this.errorReporter = ErrorReporter.open(config);
+        this.errorReporter = ErrorReporter.open(space.getSourceConfig());
 
         var exceptionHandler = createExceptionHandler(this.errorReporter);
         this.listeners = new GameEventListeners(exceptionHandler);
@@ -52,11 +49,6 @@ public final class ManagedGameActivity implements GameActivity {
     @Override
     public GameSpace getGameSpace() {
         return this.space;
-    }
-
-    @Override
-    public GameConfig<?> getGameConfig() {
-        return this.config;
     }
 
     @Override

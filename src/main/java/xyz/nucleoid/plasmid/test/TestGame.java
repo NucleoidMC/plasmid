@@ -1,10 +1,12 @@
 package xyz.nucleoid.plasmid.test;
 
 import net.minecraft.block.Blocks;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
@@ -12,6 +14,7 @@ import net.minecraft.world.GameRules;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.map_templates.BlockBounds;
 import xyz.nucleoid.map_templates.MapTemplate;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
@@ -19,10 +22,14 @@ import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
+import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
+import xyz.nucleoid.plasmid.game.stats.StatisticKey;
 import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 public final class TestGame {
+    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(new Identifier(Plasmid.ID, "test"), StatisticKey.StorageType.TOTAL);
+
     public static GameOpenProcedure open(GameOpenContext<Unit> context) {
         var template = TestGame.generateMapTemplate();
 
@@ -60,6 +67,11 @@ public final class TestGame {
                         b.add(new LiteralText(""));
                         b.add(new TranslatableText("text.plasmid.game.started.player", "test"));
                     });
+
+                    GameStatisticBundle statistics = activity.getGameSpace().getStatistics("plasmid-test-game");
+                    for (ServerPlayerEntity player : activity.getGameSpace().getPlayers()) {
+                        statistics.forPlayer(player).increment(TEST_KEY, 2.5);
+                    }
                 }
 
                 if (time > 500) {

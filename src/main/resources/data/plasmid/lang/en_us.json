@@ -148,6 +148,5 @@
   "statistic.plasmid.blocks_broken": "Blocks broken",
   "statistic.plasmid.points": "Points",
   "statistic.plasmid.quickest_time": "Quickest Time",
-  "statistic.plasmid.longest_time": "Longest Time",
-  "statistic.plasmid.ranking": "Ranking"
+  "statistic.plasmid.longest_time": "Longest Time"
 }

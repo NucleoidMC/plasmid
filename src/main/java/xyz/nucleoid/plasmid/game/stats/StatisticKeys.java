@@ -25,8 +25,8 @@ public final class StatisticKeys {
     // Misc;
     public static final StatisticKey<Integer> BLOCKS_BROKEN = StatisticKey.intKey(id("blocks_broken"), StatisticKey.StorageType.TOTAL);
     public static final StatisticKey<Integer> POINTS = StatisticKey.intKey(id("points"), StatisticKey.StorageType.TOTAL);
-    public static final StatisticKey<Integer> MIN_TIME_SURVIVED = StatisticKey.intKey(id("time_survived"), StatisticKey.StorageType.MIN);
-    public static final StatisticKey<Integer> MAX_TIME_SURVIVED = StatisticKey.intKey(id("time_survived"), StatisticKey.StorageType.MAX);
+    public static final StatisticKey<Integer> QUICKEST_TIME = StatisticKey.intKey(id("quickest_time"), StatisticKey.StorageType.MIN);
+    public static final StatisticKey<Integer> LONGEST_TIME = StatisticKey.intKey(id("longest_time"), StatisticKey.StorageType.MAX);
 
     private static Identifier id(String path) {
         return new Identifier(Plasmid.ID, path);

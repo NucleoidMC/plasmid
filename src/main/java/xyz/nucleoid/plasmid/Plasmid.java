@@ -18,6 +18,7 @@ import xyz.nucleoid.plasmid.command.ChatCommand;
 import xyz.nucleoid.plasmid.command.GameCommand;
 import xyz.nucleoid.plasmid.command.GamePortalCommand;
 import xyz.nucleoid.plasmid.command.ShoutCommand;
+import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
@@ -105,5 +106,14 @@ public final class Plasmid implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             GameSpaceManager.closeServer();
         });
+
+        // For games to debug their statistic collection without needing to setup a backend
+        if (Boolean.getBoolean("plasmid.debug_statistics")) {
+            GameEvents.CLOSING.register((gameSpace, reason) -> {
+                gameSpace.visitAllStatistics((name, bundle) -> {
+                    LOGGER.info(bundle.encodeBundle());
+                });
+            });
+        }
     }
 }

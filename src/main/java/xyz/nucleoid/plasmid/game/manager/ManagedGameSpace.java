@@ -1,6 +1,8 @@
 package xyz.nucleoid.plasmid.game.manager;
 
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -19,9 +21,11 @@ import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
+import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 import xyz.nucleoid.plasmid.game.world.GameSpaceWorlds;
 
 import java.util.Collection;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class ManagedGameSpace implements GameSpace {
@@ -41,6 +45,8 @@ public final class ManagedGameSpace implements GameSpace {
 
     private final GameActivityState state = new GameActivityState(this);
     private boolean closed;
+
+    private final Object2ObjectMap<String, GameStatisticBundle> statistics = new Object2ObjectOpenHashMap<>();
 
     ManagedGameSpace(MinecraftServer server, GameSpaceManager manager, GameConfig<?> sourceConfig, Identifier id) {
         this.server = server;
@@ -271,5 +277,19 @@ public final class ManagedGameSpace implements GameSpace {
 
     public IsolatingPlayerTeleporter getPlayerTeleporter() {
         return this.playerTeleporter;
+    }
+
+    @Override
+    public GameStatisticBundle getStatistics(String namespace) {
+        return this.statistics.computeIfAbsent(namespace, __ -> new GameStatisticBundle());
+    }
+
+    @Override
+    public void visitAllStatistics(BiConsumer<String, GameStatisticBundle> consumer) {
+        for (var entry : this.statistics.entrySet()) {
+            if (!entry.getValue().isEmpty()) {
+                consumer.accept(entry.getKey(), entry.getValue());
+            }
+        }
     }
 }

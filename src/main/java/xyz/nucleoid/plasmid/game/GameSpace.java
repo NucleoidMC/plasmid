@@ -9,8 +9,10 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
+import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 
 import java.util.Collection;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -167,4 +169,15 @@ public interface GameSpace {
      * @return the number of ticks that have passed since this {@link GameSpace} was created
      */
     long getTime();
+
+    /**
+     * @param namespace The statistic namespace to get a bundle for
+     * @return the {@link GameStatisticBundle} for the given namespace
+     */
+    GameStatisticBundle getStatistics(String namespace);
+
+    /**
+     * @param consumer Will be called for every non-empty {@link GameStatisticBundle} in this {@link GameSpace}
+     */
+    void visitAllStatistics(BiConsumer<String, GameStatisticBundle> consumer);
 }

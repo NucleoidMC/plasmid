@@ -47,6 +47,12 @@ public final class Cost {
                 .display(text);
     }
 
+    public static Cost ofItem(Item item, int count) {
+        return new Cost()
+                .take(item, count)
+                .display(new TranslatableText("text.plasmid.shop.cost.custom", count, item.getName()));
+    }
+
     public static Cost no() {
         return new Cost().display(new TranslatableText("text.plasmid.shop.cost.no"));
     }
@@ -114,6 +120,15 @@ public final class Cost {
                 }
             }
         }
+    }
+
+    public boolean canBuy(ServerPlayerEntity player) {
+        return this.tryTake(player, true);
+    }
+
+    public boolean takeItems(ServerPlayerEntity player) {
+        return this.tryTake(player, false);
+
     }
 
     public interface Take {

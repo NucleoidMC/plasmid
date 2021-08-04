@@ -133,6 +133,7 @@
   "text.plasmid.shop.cost.free": "Free",
   "text.plasmid.shop.cost.gold": "%s gold",
   "text.plasmid.shop.cost.iron": "%s iron",
+  "text.plasmid.shop.cost.custom": "%s %s",
   "text.plasmid.shop.cost.no": "Cannot buy",
   "text.plasmid.team_selection.request_team": "Request %s Team",
   "text.plasmid.team_selection.requested_team": "You have requested to join the %s",

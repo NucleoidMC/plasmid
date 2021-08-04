@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.RandomStringUtils;
+import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 
 import java.util.Collection;
@@ -12,47 +13,48 @@ import java.util.Locale;
 import java.util.Map;
 
 final class GameSpaceIdManager {
-    private final Multimap<GameConfig<?>, Identifier> configToIds = HashMultimap.create();
-    private final Map<Identifier, GameConfig<?>> idToConfig = new Object2ObjectOpenHashMap<>();
+    private final Multimap<GameType<?>, Identifier> typeToIds = HashMultimap.create();
+    private final Map<Identifier, GameType<?>> idToType = new Object2ObjectOpenHashMap<>();
 
     public Identifier acquire(GameConfig<?> config) {
-        var ids = this.configToIds.get(config);
+        GameType<?> type = config.getType();
+        var ids = this.typeToIds.get(type);
 
-        var uniqueId = this.generateUniqueId(config, ids);
+        var uniqueId = this.generateUniqueId(type, ids);
         ids.add(uniqueId);
 
-        this.idToConfig.put(uniqueId, config);
+        this.idToType.put(uniqueId, type);
 
         return uniqueId;
     }
 
     public void release(Identifier id) {
-        var config = this.idToConfig.remove(id);
+        var config = this.idToType.remove(id);
         if (config != null) {
-            this.configToIds.remove(config, id);
+            this.typeToIds.remove(config, id);
         }
     }
 
-    private Identifier generateUniqueId(GameConfig<?> config, Collection<Identifier> ids) {
-        var configId = this.getIdForConfig(config);
+    private Identifier generateUniqueId(GameType<?> type, Collection<Identifier> ids) {
+        var typeId = this.getIdForType(type);
         if (ids.isEmpty()) {
-            return configId;
+            return typeId;
         }
 
         Identifier uniqueId;
         do {
-            uniqueId = this.generateRandomId(configId);
+            uniqueId = this.generateRandomId(typeId);
         } while (ids.contains(uniqueId));
 
         return uniqueId;
     }
 
-    private Identifier generateRandomId(Identifier configId) {
+    private Identifier generateRandomId(Identifier typeId) {
         var random = RandomStringUtils.randomAlphabetic(4).toLowerCase(Locale.ROOT);
-        return new Identifier(configId.getNamespace(), configId.getPath() + "/" + random);
+        return new Identifier(typeId.getNamespace(), typeId.getPath() + "/" + random);
     }
 
-    private Identifier getIdForConfig(GameConfig<?> config) {
-        return config.getType().getIdentifier();
+    private Identifier getIdForType(GameType<?> type) {
+        return type.getIdentifier();
     }
 }

@@ -95,6 +95,7 @@ public final class GameSpaceManager {
 
     private ManagedGameSpace addGameSpace(GameConfig<?> config, GameOpenProcedure procedure) {
         var id = this.ids.acquire(config);
+        Preconditions.checkState(!this.idToGameSpace.containsKey(id), "duplicate GameSpace id acquired");
 
         var gameSpace = new ManagedGameSpace(this.server, this, config, id);
         procedure.apply(gameSpace);
@@ -135,10 +136,9 @@ public final class GameSpaceManager {
     }
 
     void removeGameSpace(ManagedGameSpace gameSpace) {
-        if (this.idToGameSpace.remove(gameSpace.getId(), gameSpace)) {
-            this.gameSpaces.remove(gameSpace);
-            this.ids.release(gameSpace.getId());
-        }
+        this.idToGameSpace.remove(gameSpace.getId(), gameSpace);
+        this.gameSpaces.remove(gameSpace);
+        this.ids.release(gameSpace.getId());
     }
 
     void addDimensionToGameSpace(ManagedGameSpace gameSpace, RegistryKey<World> dimension) {

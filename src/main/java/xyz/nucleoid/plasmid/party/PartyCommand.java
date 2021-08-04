@@ -53,7 +53,7 @@ public final class PartyCommand {
             MutableText message = PartyTexts.invitedSender(player);
             source.sendFeedback(message.formatted(Formatting.GOLD), false);
 
-            var notification = PartyTexts.invitedReceiver(owner, player)
+            var notification = PartyTexts.invitedReceiver(owner)
                     .formatted(Formatting.GOLD);
 
             player.sendMessage(notification, false);

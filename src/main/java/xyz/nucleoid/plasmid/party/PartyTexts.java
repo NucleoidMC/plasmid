@@ -53,16 +53,16 @@ public final class PartyTexts {
         return new TranslatableText("text.plasmid.party.invited.sender", player.getDisplayName());
     }
 
-    public static MutableText invitedReceiver(ServerPlayerEntity owner, ServerPlayerEntity player) {
+    public static MutableText invitedReceiver(ServerPlayerEntity owner) {
         return new TranslatableText("text.plasmid.party.invited.receiver", owner.getDisplayName())
-                .append(PartyTexts.inviteNotificationLink(owner, player));
+                .append(PartyTexts.inviteNotificationLink(owner));
     }
 
-    public static MutableText inviteNotificationLink(ServerPlayerEntity owner, ServerPlayerEntity player) {
+    public static MutableText inviteNotificationLink(ServerPlayerEntity owner) {
         return new TranslatableText("text.plasmid.party.invited.receiver.click")
                 .setStyle(GameTexts.commandLinkStyle(
                         "/party accept " + owner.getGameProfile().getName(),
-                        new TranslatableText("text.plasmid.party.invited.receiver.hover", player.getDisplayName())
+                        new TranslatableText("text.plasmid.party.invited.receiver.hover", owner.getDisplayName())
                 ));
     }
 

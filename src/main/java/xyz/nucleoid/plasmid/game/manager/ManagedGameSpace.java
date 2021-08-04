@@ -146,6 +146,8 @@ public final class ManagedGameSpace implements GameSpace {
         var joinMessage = GameTexts.Join.success(player)
                 .formatted(Formatting.YELLOW);
         this.getPlayers().sendMessage(joinMessage);
+
+        GameEvents.PLAYER_JOIN.invoker().onPlayerJoin(this, player);
     }
 
     @Override
@@ -174,7 +176,7 @@ public final class ManagedGameSpace implements GameSpace {
         if (this.players.isEmpty()) {
             this.close(GameCloseReason.GARBAGE_COLLECTED);
         }
-
+        GameEvents.PLAYER_LEFT.invoker().onPlayerLeft(this, player);
         return true;
     }
 

@@ -47,7 +47,7 @@ public final class GameSpaceWorlds implements Iterable<ServerWorld> {
     }
 
     public Collection<RegistryKey<World>> close() {
-        var worldKeys = new ArrayList<RegistryKey<World>>(this.worlds.keySet());
+        var worldKeys = new ArrayList<>(this.worlds.keySet());
 
         this.worlds.values().forEach(RuntimeWorldHandle::delete);
         this.worlds.clear();

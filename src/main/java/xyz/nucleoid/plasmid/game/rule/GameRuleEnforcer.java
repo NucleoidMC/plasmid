@@ -7,7 +7,8 @@ import xyz.nucleoid.stimuli.event.StimulusEvent;
 public interface GameRuleEnforcer {
     static <T> GameRuleEnforcer singleEvent(StimulusEvent<T> event, ListenerFactory<T> listenerFactory) {
         return (events, result) -> {
-            events.listen(event, listenerFactory.create(result));
+            var listenerResult = result == ActionResult.FAIL ? ActionResult.FAIL : ActionResult.PASS;
+            events.listen(event, listenerFactory.create(listenerResult));
         };
     }
 

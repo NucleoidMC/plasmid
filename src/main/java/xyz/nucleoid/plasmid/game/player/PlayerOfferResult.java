@@ -46,7 +46,7 @@ public interface PlayerOfferResult {
             this.position = position;
         }
 
-        public PlayerOfferResult and(Runnable and) {
+        public PlayerOfferResult.Accept and(Runnable and) {
             this.and.add(and);
             return this;
         }

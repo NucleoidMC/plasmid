@@ -58,6 +58,18 @@ public final class GameEvents {
         }
     });
 
+    public static final Event<PlayerJoin> PLAYER_JOIN = EventFactory.createArrayBacked(PlayerJoin.class, listeners -> (gameSpace, player) -> {
+        for (var listener : listeners) {
+            listener.onPlayerJoin(gameSpace, player);
+        }
+    });
+
+    public static final Event<PlayerLeft> PLAYER_LEFT = EventFactory.createArrayBacked(PlayerLeft.class, listeners -> (gameSpace, player) -> {
+        for (var listener : listeners) {
+            listener.onPlayerLeft(gameSpace, player);
+        }
+    });
+
     public interface GameSpaceOpened {
         /**
          * @param game The game and its configuration
@@ -113,4 +125,22 @@ public final class GameEvents {
          */
         void collectPlayersForJoin(GameSpace gameSpace, ServerPlayerEntity player, Set<ServerPlayerEntity> additional);
     }
+
+
+    public interface PlayerJoin {
+        /**
+         * @param gameSpace The {@link GameSpace} the game is running in.
+         * @param player the initial player who tried to join a {@link GameSpace}
+         */
+        void onPlayerJoin(GameSpace gameSpace, ServerPlayerEntity player);
+    }
+
+    public interface PlayerLeft {
+        /**
+         * @param gameSpace The {@link GameSpace} the game is running in.
+         * @param player the initial player who tried to join a {@link GameSpace}
+         */
+        void onPlayerLeft(GameSpace gameSpace, ServerPlayerEntity player);
+    }
+
 }

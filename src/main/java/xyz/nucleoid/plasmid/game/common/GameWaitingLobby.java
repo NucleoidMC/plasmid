@@ -54,13 +54,19 @@ public final class GameWaitingLobby {
         this.bar = bar;
     }
 
+    // TODO: remove before 0.5
+    @Deprecated
+    public static void applyTo(GameActivity activity, PlayerConfig playerConfig) {
+        addTo(activity, playerConfig);
+    }
+
     /**
      * Applies this waiting lobby implementation to the given {@link GameActivity}.
      *
      * @param activity the activity to apply to
      * @param playerConfig the config that this waiting lobby should respect regarding player counts and countdowns
      */
-    public static void applyTo(GameActivity activity, PlayerConfig playerConfig) {
+    public static void addTo(GameActivity activity, PlayerConfig playerConfig) {
         var widgets = GlobalWidgets.addTo(activity);
         var bar = widgets.addBossBar(WAITING_TITLE);
 

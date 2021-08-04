@@ -10,7 +10,7 @@ import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 public final class GameRuleMap {
     private final Reference2ObjectMap<GameRuleType, ActionResult> rules = new Reference2ObjectOpenHashMap<>();
-    private EventListenerMap listeners = new EventListenerMap();
+    private EventListenerMap listeners = null;
 
     public static GameRuleMap empty() {
         return new GameRuleMap();
@@ -18,7 +18,7 @@ public final class GameRuleMap {
 
     public void set(GameRuleType rule, ActionResult result) {
         if (this.trySet(rule, result)) {
-            this.listeners = this.buildListeners();
+            this.listeners = null;
         }
     }
 
@@ -29,7 +29,7 @@ public final class GameRuleMap {
 
     @Nullable
     public <T> Iterable<T> getInvokersOrNull(StimulusEvent<T> event) {
-        var listeners = this.listeners.get(event);
+        var listeners = this.getListeners().get(event);
         return !listeners.isEmpty() ? listeners : null;
     }
 
@@ -39,6 +39,14 @@ public final class GameRuleMap {
         } else {
             return this.rules.remove(rule) != null;
         }
+    }
+
+    private EventListenerMap getListeners() {
+        var listeners = this.listeners;
+        if (listeners == null) {
+            this.listeners = listeners = this.buildListeners();
+        }
+        return listeners;
     }
 
     private EventListenerMap buildListeners() {

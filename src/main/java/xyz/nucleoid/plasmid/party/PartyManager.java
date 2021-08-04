@@ -53,7 +53,9 @@ public final class PartyManager {
         }
 
         if (party.remove(ref)) {
-            this.onPartyOwnerLogOut(player, party);
+            if (party.isOwner(ref)) {
+                this.onPartyOwnerLogOut(player, party);
+            }
 
             party.getMemberPlayers().sendMessage(PartyTexts.leftGame(player));
         }

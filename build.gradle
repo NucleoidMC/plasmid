@@ -52,7 +52,7 @@ dependencies {
   modImplementation include('xyz.nucleoid:map-templates:0.1.1+1.17.1')
   modImplementation include('eu.pb4:polymer:0.1.0-rc.2+1.17.1')
   modImplementation include('eu.pb4:hologram-api:0.2.0+1.17.1')
-  modImplementation include('eu.pb4:sgui:1.0.0-rc3-1.17.1')
+  modImplementation include('eu.pb4:sgui:1.0.0-rc4+1.17.1')
   modImplementation include('eu.pb4:sidebar-api:0.1.0-rc.3+1.17.1')
 
   modRuntime("supercoder79:databreaker:0.2.7") {

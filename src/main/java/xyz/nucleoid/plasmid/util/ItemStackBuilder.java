@@ -162,6 +162,22 @@ public final class ItemStackBuilder {
         return this;
     }
 
+    public ItemStackBuilder hideFlags() {
+        this.stack.getOrCreateTag().putByte("HideFlags", (byte) 127);
+        return this;
+    }
+
+    public ItemStackBuilder hideFlag(ItemStack.TooltipSection section) {
+        this.stack.getOrCreateTag().putByte("HideFlags", (byte) (this.stack.getOrCreateTag().getByte("HideFlags") | section.getFlag()) );
+        return this;
+    }
+
+    public ItemStackBuilder hideFlags(byte value) {
+        this.stack.getOrCreateTag().putByte("HideFlags", value);
+        return this;
+    }
+
+
     public ItemStack build() {
         return this.stack.copy();
     }

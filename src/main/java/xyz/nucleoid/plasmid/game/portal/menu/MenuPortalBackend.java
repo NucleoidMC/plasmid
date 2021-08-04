@@ -1,5 +1,7 @@
 package xyz.nucleoid.plasmid.game.portal.menu;
 
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import eu.pb4.sgui.api.elements.GuiElementInterface;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -8,8 +10,7 @@ import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.GamePortalDisplay;
 import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandGame;
-import xyz.nucleoid.plasmid.shop.ShopEntry;
-import xyz.nucleoid.plasmid.shop.ShopUi;
+import xyz.nucleoid.plasmid.util.Guis;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,25 +51,25 @@ public final class MenuPortalBackend implements GamePortalBackend {
     public CompletableFuture<GameSpace> requestJoin(ServerPlayerEntity player) {
         var future = new CompletableFuture<GameSpace>();
 
-        var ui = ShopUi.create(player, this.name, builder -> {
-            for (var entry : this.games) {
-                var uiEntry = ShopEntry.ofIcon(entry.icon)
-                        .withName(entry.game.getName())
-                        .onBuy(p -> {
-                            entry.game.getOrOpen(player.server).handle((gameSpace, throwable) -> {
-                                if (throwable == null) {
-                                    future.complete(gameSpace);
-                                } else {
-                                    future.completeExceptionally(throwable);
-                                }
-                                return null;
-                            });
-                        });
+        List<GuiElementInterface> games = new ArrayList<>();
 
-                builder.add(uiEntry);
-            }
-        });
+        for (var entry : this.games) {
+            var uiEntry = GuiElementBuilder.from(entry.icon)
+                    .setName(entry.game.getName().shallowCopy())
+                    .setCallback((x, y, z) -> entry.game.getOrOpen(player.server).handle((gameSpace, throwable) -> {
+                        if (throwable == null) {
+                            future.complete(gameSpace);
+                        } else {
+                            future.completeExceptionally(throwable);
+                        }
+                        return null;
+                    }))
+                    .build();
 
+            games.add(uiEntry);
+        }
+
+        var ui = Guis.createSelectorGui(player, this.name.shallowCopy(), games);
         ui.open();
 
         return future;

@@ -80,7 +80,7 @@ public abstract class EntityMixin implements GamePortalInterface {
         }
 
         var entity = (Entity) (Object) this;
-        var offset = new Vec3d(0.0, DisguiseLibCompatibility.getEntityHeight(entity) + 0.5, 0.0);
+        var offset = new Vec3d(0.0, DisguiseLibCompatibility.getEntityHeight(entity) + 0.2, 0.0);
 
         this.hologram = hologram = Holograms.create(entity, offset, new Text[0]);
         hologram.setAlignment(AbstractHologram.VerticalAlign.TOP);

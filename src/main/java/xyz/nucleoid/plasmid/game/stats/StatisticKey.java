@@ -43,6 +43,14 @@ public class StatisticKey<T extends Number> {
         return obj;
     }
 
+    public String getTranslationKey() {
+        return "statistic." + this.id.getNamespace() + "." + this.id.getPath();
+    }
+
+    public String getTranslationKey(String bundle) {
+        return "statistic." + bundle + "." + this.id.getNamespace() + "." + this.id.getPath();
+    }
+
     private String encodeType() {
         return this.valueType.asString() + "_" + this.storageType.asString();
     }

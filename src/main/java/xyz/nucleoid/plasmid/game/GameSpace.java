@@ -171,6 +171,8 @@ public interface GameSpace {
     long getTime();
 
     /**
+     * Note: bundle namespaces can only contain the characters a-zA-Z0-9_
+     *
      * @param namespace The statistic namespace to get a bundle for
      * @return the {@link GameStatisticBundle} for the given namespace
      */

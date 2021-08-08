@@ -68,7 +68,7 @@ public final class TestGame {
                         b.add(new TranslatableText("text.plasmid.game.started.player", "test"));
                     });
 
-                    GameStatisticBundle statistics = activity.getGameSpace().getStatistics("plasmid-test-game");
+                    GameStatisticBundle statistics = activity.getGameSpace().getStatistics("plasmid_test_game");
                     for (ServerPlayerEntity player : activity.getGameSpace().getPlayers()) {
                         statistics.forPlayer(player).increment(TEST_KEY, 2.5);
                     }

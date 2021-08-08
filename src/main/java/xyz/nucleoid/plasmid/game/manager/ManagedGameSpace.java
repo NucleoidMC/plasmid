@@ -283,6 +283,7 @@ public final class ManagedGameSpace implements GameSpace {
 
     @Override
     public GameStatisticBundle getStatistics(String namespace) {
+        GameStatisticBundle.validateNamespace(namespace); // Will throw an exception if validation fails.
         return this.statistics.computeIfAbsent(namespace, __ -> new GameStatisticBundle());
     }
 

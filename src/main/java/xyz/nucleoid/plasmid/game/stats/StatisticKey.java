@@ -20,7 +20,7 @@ public class StatisticKey<T extends Number> {
     private final ValueType valueType;
     protected final StorageType storageType;
 
-    protected StatisticKey(Identifier id, ValueType valueType, StorageType storageType) {
+    private StatisticKey(Identifier id, ValueType valueType, StorageType storageType) {
         this.valueType = valueType;
         StatisticKey.validateKeyId(id);
         this.id = id;

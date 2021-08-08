@@ -53,4 +53,19 @@ public class GameStatisticBundle {
         }
         return obj;
     }
+
+    public static void validateNamespace(String namespace) {
+        for (char c : namespace.toCharArray()) {
+            if (!validateNamespaceChar(c)) {
+                throw new IllegalArgumentException("Bundle namespaces can only contain [a-zA-Z0-9_]");
+            }
+        }
+    }
+
+    private static boolean validateNamespaceChar(char c) {
+        return (c >= 'a' && c <= 'z') // a-z
+                || (c >= 'A' && c <= 'Z') // A-Z
+                || (c >= '0' && c <= '9') // 0-9
+                || c == '_'; // _
+    }
 }

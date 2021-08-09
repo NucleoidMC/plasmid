@@ -10,9 +10,10 @@ import xyz.nucleoid.plasmid.Plasmid;
  */
 public final class StatisticKeys {
     // Games
-    public static final StatisticKey<Integer> GAMES_PLAYED = StatisticKey.intKey(id("games_played"), StatisticKey.StorageType.TOTAL);
-    public static final StatisticKey<Integer> GAMES_WON = StatisticKey.intKey(id("games_won"), StatisticKey.StorageType.TOTAL);
-    public static final StatisticKey<Integer> GAMES_LOST = StatisticKey.intKey(id("games_lost"), StatisticKey.StorageType.TOTAL);
+    // These are hidden as typically the value for a given game will be 0 or 1
+    public static final StatisticKey<Integer> GAMES_PLAYED = StatisticKey.hiddenIntKey(id("games_played"), StatisticKey.StorageType.TOTAL);
+    public static final StatisticKey<Integer> GAMES_WON = StatisticKey.hiddenIntKey(id("games_won"), StatisticKey.StorageType.TOTAL);
+    public static final StatisticKey<Integer> GAMES_LOST = StatisticKey.hiddenIntKey(id("games_lost"), StatisticKey.StorageType.TOTAL);
 
     // PvP / PvE;
     public static final StatisticKey<Integer> KILLS = StatisticKey.intKey(id("total_kills"), StatisticKey.StorageType.TOTAL);

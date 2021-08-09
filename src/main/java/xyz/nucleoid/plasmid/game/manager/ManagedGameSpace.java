@@ -25,6 +25,7 @@ import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 import xyz.nucleoid.plasmid.game.world.GameSpaceWorlds;
 
 import java.util.Collection;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -34,7 +35,8 @@ public final class ManagedGameSpace implements GameSpace {
     private final MutablePlayerSet players;
 
     private final GameConfig<?> sourceConfig;
-    private final Identifier id;
+    private final UUID id;
+    private final Identifier userId;
 
     private final GameSpaceWorlds worlds;
     private final IsolatingPlayerTeleporter playerTeleporter;
@@ -48,13 +50,14 @@ public final class ManagedGameSpace implements GameSpace {
 
     private final Object2ObjectMap<String, GameStatisticBundle> statistics = new Object2ObjectOpenHashMap<>();
 
-    ManagedGameSpace(MinecraftServer server, GameSpaceManager manager, GameConfig<?> sourceConfig, Identifier id) {
+    ManagedGameSpace(MinecraftServer server, GameSpaceManager manager, GameConfig<?> sourceConfig, UUID id, Identifier userId) {
         this.server = server;
         this.players = new MutablePlayerSet(server);
         this.manager = manager;
 
         this.sourceConfig = sourceConfig;
         this.id = id;
+        this.userId = userId;
 
         this.worlds = new GameSpaceWorlds(server);
         this.playerTeleporter = new IsolatingPlayerTeleporter(server);
@@ -264,8 +267,13 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     @Override
-    public Identifier getId() {
+    public UUID getId() {
         return this.id;
+    }
+
+    @Override
+    public Identifier getUserId() {
+        return this.userId;
     }
 
     @Override
@@ -283,6 +291,7 @@ public final class ManagedGameSpace implements GameSpace {
 
     @Override
     public GameStatisticBundle getStatistics(String namespace) {
+        GameStatisticBundle.validateNamespace(namespace); // Will throw an exception if validation fails.
         return this.statistics.computeIfAbsent(namespace, __ -> new GameStatisticBundle());
     }
 

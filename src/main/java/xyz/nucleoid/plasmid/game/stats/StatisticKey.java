@@ -3,12 +3,12 @@ package xyz.nucleoid.plasmid.game.stats;
 import com.google.gson.JsonObject;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.Util;
 
 /**
  * Type-safe keys for identifying statistics.
  * <p>
- * Ideally should have a corresponding translation key in the form <code>statistic.[bundle namespace].[key namespace].[key path]</code>
- * or <code>statistic.[key namespace].[key path]</code> for future-proofing
+ * Should have a corresponding translation key in the form <code>statistic.[key namespace].[key path]</code>
  * <p>
  * See {@link StatisticKeys} for some general keys for minigames to make use of.
  *
@@ -18,10 +18,12 @@ import net.minecraft.util.StringIdentifiable;
 public class StatisticKey<T extends Number> {
     protected final Identifier id;
     private final ValueType valueType;
+    private final boolean hidden;
     protected final StorageType storageType;
 
-    protected StatisticKey(Identifier id, ValueType valueType, StorageType storageType) {
+    private StatisticKey(Identifier id, ValueType valueType, boolean hidden, StorageType storageType) {
         this.valueType = valueType;
+        this.hidden = hidden;
         StatisticKey.validateKeyId(id);
         this.id = id;
         this.storageType = storageType;
@@ -40,7 +42,16 @@ public class StatisticKey<T extends Number> {
         JsonObject obj = new JsonObject();
         obj.addProperty("type", this.encodeType());
         obj.addProperty("value", value);
+        obj.addProperty("hidden", this.hidden);
         return obj;
+    }
+
+    public String getTranslationKey() {
+        return Util.createTranslationKey("statistic", this.id);
+    }
+
+    public boolean isHidden() {
+        return this.hidden;
     }
 
     private String encodeType() {
@@ -48,15 +59,27 @@ public class StatisticKey<T extends Number> {
     }
 
     public static StatisticKey<Integer> intKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.INT, storageType);
+        return new StatisticKey<>(id, ValueType.INT, false, storageType);
     }
 
     public static StatisticKey<Float> floatKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.FLOAT, storageType);
+        return new StatisticKey<>(id, ValueType.FLOAT, false, storageType);
     }
 
     public static StatisticKey<Double> doubleKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.FLOAT, storageType);
+        return new StatisticKey<>(id, ValueType.FLOAT, false, storageType);
+    }
+
+    public static StatisticKey<Integer> hiddenIntKey(Identifier id, StorageType storageType) {
+        return new StatisticKey<>(id, ValueType.INT, true, storageType);
+    }
+
+    public static StatisticKey<Float> hiddenFloatKey(Identifier id, StorageType storageType) {
+        return new StatisticKey<>(id, ValueType.FLOAT, true, storageType);
+    }
+
+    public static StatisticKey<Double> hiddenDoubleKey(Identifier id, StorageType storageType) {
+        return new StatisticKey<>(id, ValueType.FLOAT, true, storageType);
     }
 
     /**

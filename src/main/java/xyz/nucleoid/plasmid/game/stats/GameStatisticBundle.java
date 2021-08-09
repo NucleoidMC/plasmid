@@ -11,6 +11,8 @@ import java.util.UUID;
 
 /**
  * Wrapper containing a map players' {@link StatisticMap}s
+ * Similarly to {@link StatisticKey}s, {@link GameStatisticBundle}s should provide a translation
+ * key for their namespace in the form <code>statistic.bundle.[namespace]</code>
  */
 public class GameStatisticBundle {
     private final Object2ObjectMap<UUID, StatisticMap> players = new Object2ObjectOpenHashMap<>();
@@ -52,5 +54,24 @@ public class GameStatisticBundle {
             obj.add("global", this.global.encodeBundle());
         }
         return obj;
+    }
+
+    public static void validateNamespace(String namespace) {
+        for (char c : namespace.toCharArray()) {
+            if (!validateNamespaceChar(c)) {
+                throw new IllegalArgumentException("Bundle namespaces can only contain [a-zA-Z0-9_]");
+            }
+        }
+    }
+
+    public static String getTranslationKey(String namespace) {
+        return "statistic.bundle." + namespace;
+    }
+
+    private static boolean validateNamespaceChar(char c) {
+        return (c >= 'a' && c <= 'z') // a-z
+                || (c >= 'A' && c <= 'Z') // A-Z
+                || (c >= '0' && c <= '9') // 0-9
+                || c == '_'; // _
     }
 }

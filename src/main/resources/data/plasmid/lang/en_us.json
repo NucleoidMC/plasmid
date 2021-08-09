@@ -1,7 +1,8 @@
 {
   "game.plasmid.random": "Random Game",
   "game.plasmid.test": "Plasmid Test Game",
-  "statistic.plasmid-test-game.plasmid.test": "Plasmid Test Statistic",
+  "statistic.plasmid.test": "Plasmid Test Statistic",
+  "statistic.bundle.plasmid_test_game": "Plasmid Test Game",
   "item.plasmid.add_region": "Add Region",
   "item.plasmid.add_region.trace_mode.at_feet": "at feet mode",
   "item.plasmid.add_region.trace_mode.changed": "Changed trace mode to: %s",

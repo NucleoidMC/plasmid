@@ -31,11 +31,12 @@ public final class GameSpaceManager {
 
     private final MinecraftServer server;
 
-    private final GameSpaceIdManager ids = new GameSpaceIdManager();
+    private final GameSpaceUserIdManager userIds = new GameSpaceUserIdManager();
 
     private final List<ManagedGameSpace> gameSpaces = new ArrayList<>();
 
-    private final Map<Identifier, ManagedGameSpace> idToGameSpace = new Object2ObjectOpenHashMap<>();
+    private final Map<UUID, ManagedGameSpace> idToGameSpace = new Object2ObjectOpenHashMap<>();
+    private final Map<Identifier, ManagedGameSpace> userIdToGameSpace = new Object2ObjectOpenHashMap<>();
     private final Map<RegistryKey<World>, ManagedGameSpace> dimensionToGameSpace = new Reference2ObjectOpenHashMap<>();
     private final Map<UUID, ManagedGameSpace> playerToGameSpace = new Object2ObjectOpenHashMap<>();
 
@@ -94,14 +95,17 @@ public final class GameSpaceManager {
     }
 
     private ManagedGameSpace addGameSpace(GameConfig<?> config, GameOpenProcedure procedure) {
-        var id = this.ids.acquire(config);
-        Preconditions.checkState(!this.idToGameSpace.containsKey(id), "duplicate GameSpace id acquired");
+        var id = UUID.randomUUID();
 
-        var gameSpace = new ManagedGameSpace(this.server, this, config, id);
+        var userId = this.userIds.acquire(config);
+        Preconditions.checkState(!this.userIdToGameSpace.containsKey(userId), "duplicate GameSpace user id acquired");
+
+        var gameSpace = new ManagedGameSpace(this.server, this, config, id, userId);
         procedure.apply(gameSpace);
 
         this.gameSpaces.add(gameSpace);
         this.idToGameSpace.put(id, gameSpace);
+        this.userIdToGameSpace.put(userId, gameSpace);
 
         GameEvents.OPENED.invoker().onGameSpaceOpened(config, gameSpace);
 
@@ -113,8 +117,13 @@ public final class GameSpaceManager {
     }
 
     @Nullable
-    public ManagedGameSpace byId(Identifier id) {
+    public ManagedGameSpace byId(UUID id) {
         return this.idToGameSpace.get(id);
+    }
+
+    @Nullable
+    public ManagedGameSpace byUserId(Identifier userId) {
+        return this.userIdToGameSpace.get(userId);
     }
 
     @Nullable
@@ -137,8 +146,9 @@ public final class GameSpaceManager {
 
     void removeGameSpace(ManagedGameSpace gameSpace) {
         this.idToGameSpace.remove(gameSpace.getId(), gameSpace);
+        this.userIdToGameSpace.remove(gameSpace.getUserId(), gameSpace);
         this.gameSpaces.remove(gameSpace);
-        this.ids.release(gameSpace.getId());
+        this.userIds.release(gameSpace.getUserId());
     }
 
     void addDimensionToGameSpace(ManagedGameSpace gameSpace, RegistryKey<World> dimension) {
@@ -168,6 +178,7 @@ public final class GameSpaceManager {
         }
 
         this.idToGameSpace.clear();
+        this.userIdToGameSpace.clear();
         this.dimensionToGameSpace.clear();
         this.playerToGameSpace.clear();
     }

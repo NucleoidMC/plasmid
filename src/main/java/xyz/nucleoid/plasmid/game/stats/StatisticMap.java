@@ -3,6 +3,11 @@ package xyz.nucleoid.plasmid.game.stats;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.util.Pair;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Iterator;
+import java.util.function.BiConsumer;
 
 /**
  * Stores a mapping of {@link StatisticKey} to their corresponding values
@@ -53,6 +58,12 @@ public class StatisticMap {
         }
 
         return obj;
+    }
+
+    public void visitAllStatistics(BiConsumer<StatisticKey<?>, Number> visitor) {
+        for (var entry : this.values.object2ObjectEntrySet()) {
+            visitor.accept(entry.getKey(), entry.getValue());
+        }
     }
 
     public boolean isEmpty() {

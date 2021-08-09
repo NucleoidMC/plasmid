@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.stats;
 import com.google.gson.JsonObject;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.Util;
 
 /**
  * Type-safe keys for identifying statistics.
@@ -43,7 +44,7 @@ public class StatisticKey<T extends Number> {
     }
 
     public String getTranslationKey() {
-        return "statistic." + this.id.getNamespace() + "." + this.id.getPath();
+        return Util.createTranslationKey("statistic", this.id);
     }
 
     private String encodeType() {

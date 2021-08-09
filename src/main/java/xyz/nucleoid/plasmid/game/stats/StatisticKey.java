@@ -7,8 +7,7 @@ import net.minecraft.util.StringIdentifiable;
 /**
  * Type-safe keys for identifying statistics.
  * <p>
- * Ideally should have a corresponding translation key in the form <code>statistic.[bundle namespace].[key namespace].[key path]</code>
- * or <code>statistic.[key namespace].[key path]</code> for future-proofing
+ * Should have a corresponding translation key in the form <code>statistic.[key namespace].[key path]</code>
  * <p>
  * See {@link StatisticKeys} for some general keys for minigames to make use of.
  *
@@ -43,30 +42,8 @@ public class StatisticKey<T extends Number> {
         return obj;
     }
 
-    /**
-     * Returns the translation key used to name this {@link StatisticKey} in a generic context.
-     * <p>
-     * Note: When referring to a {@link StatisticKey} in a specific context (eg. inside a {@link GameStatisticBundle})
-     * then you should also check for the existence of the translation key from {@link StatisticKey#getTranslationKey(String)}
-     *
-     * @return A translation key in the form <code>statistic.[key namespace].[key path]</code>
-     * @see StatisticKey#getTranslationKey(String)
-     */
     public String getTranslationKey() {
         return "statistic." + this.id.getNamespace() + "." + this.id.getPath();
-    }
-
-    /**
-     * Returns the translation key used to name this {@link StatisticKey} in a more specific context (eg inside a {@link GameStatisticBundle}.
-     * <p>
-     * Note: The caller should check if the returned translation key exists and if it does not it should fall back to the key from {@link StatisticKey#getTranslationKey()}
-     *
-     * @param bundle The namespace of the bundle this key is in.
-     * @return A translation key in the form <code>statistic.[bundle namespace].[key namespace].[key path]</code>
-     * @see StatisticKey#getTranslationKey()
-     */
-    public String getTranslationKey(String bundle) {
-        return "statistic." + bundle + "." + this.id.getNamespace() + "." + this.id.getPath();
     }
 
     private String encodeType() {

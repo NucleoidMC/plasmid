@@ -3,12 +3,12 @@ package xyz.nucleoid.plasmid.game.stats;
 import com.google.gson.JsonObject;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.Util;
 
 /**
  * Type-safe keys for identifying statistics.
  * <p>
- * Ideally should have a corresponding translation key in the form <code>statistic.[bundle namespace].[key namespace].[key path]</code>
- * or <code>statistic.[key namespace].[key path]</code> for future-proofing
+ * Should have a corresponding translation key in the form <code>statistic.[key namespace].[key path]</code>
  * <p>
  * See {@link StatisticKeys} for some general keys for minigames to make use of.
  *
@@ -20,7 +20,7 @@ public class StatisticKey<T extends Number> {
     private final ValueType valueType;
     protected final StorageType storageType;
 
-    protected StatisticKey(Identifier id, ValueType valueType, StorageType storageType) {
+    private StatisticKey(Identifier id, ValueType valueType, StorageType storageType) {
         this.valueType = valueType;
         StatisticKey.validateKeyId(id);
         this.id = id;
@@ -41,6 +41,10 @@ public class StatisticKey<T extends Number> {
         obj.addProperty("type", this.encodeType());
         obj.addProperty("value", value);
         return obj;
+    }
+
+    public String getTranslationKey() {
+        return Util.createTranslationKey("statistic", this.id);
     }
 
     private String encodeType() {

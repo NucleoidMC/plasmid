@@ -18,10 +18,12 @@ import net.minecraft.util.Util;
 public class StatisticKey<T extends Number> {
     protected final Identifier id;
     private final ValueType valueType;
+    private final boolean hidden;
     protected final StorageType storageType;
 
-    private StatisticKey(Identifier id, ValueType valueType, StorageType storageType) {
+    private StatisticKey(Identifier id, ValueType valueType, boolean hidden, StorageType storageType) {
         this.valueType = valueType;
+        this.hidden = hidden;
         StatisticKey.validateKeyId(id);
         this.id = id;
         this.storageType = storageType;
@@ -40,6 +42,7 @@ public class StatisticKey<T extends Number> {
         JsonObject obj = new JsonObject();
         obj.addProperty("type", this.encodeType());
         obj.addProperty("value", value);
+        obj.addProperty("hidden", this.hidden);
         return obj;
     }
 
@@ -47,20 +50,36 @@ public class StatisticKey<T extends Number> {
         return Util.createTranslationKey("statistic", this.id);
     }
 
+    public boolean isHidden() {
+        return this.hidden;
+    }
+
     private String encodeType() {
         return this.valueType.asString() + "_" + this.storageType.asString();
     }
 
     public static StatisticKey<Integer> intKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.INT, storageType);
+        return new StatisticKey<>(id, ValueType.INT, false, storageType);
     }
 
     public static StatisticKey<Float> floatKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.FLOAT, storageType);
+        return new StatisticKey<>(id, ValueType.FLOAT, false, storageType);
     }
 
     public static StatisticKey<Double> doubleKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.FLOAT, storageType);
+        return new StatisticKey<>(id, ValueType.FLOAT, false, storageType);
+    }
+
+    public static StatisticKey<Integer> hiddenIntKey(Identifier id, StorageType storageType) {
+        return new StatisticKey<>(id, ValueType.INT, true, storageType);
+    }
+
+    public static StatisticKey<Float> hiddenFloatKey(Identifier id, StorageType storageType) {
+        return new StatisticKey<>(id, ValueType.FLOAT, true, storageType);
+    }
+
+    public static StatisticKey<Double> hiddenDoubleKey(Identifier id, StorageType storageType) {
+        return new StatisticKey<>(id, ValueType.FLOAT, true, storageType);
     }
 
     /**

@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 
-final class GameSpaceIdManager {
+final class GameSpaceUserIdManager {
     private final Multimap<GameType<?>, Identifier> typeToIds = HashMultimap.create();
     private final Map<Identifier, GameType<?>> idToType = new Object2ObjectOpenHashMap<>();
 

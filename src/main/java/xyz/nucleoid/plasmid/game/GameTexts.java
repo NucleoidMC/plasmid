@@ -108,7 +108,7 @@ public final class GameTexts {
             var hover = new TranslatableText("text.plasmid.join_link_hover", gameSpace.getSourceConfig().getName());
 
             return new TranslatableText("text.plasmid.game.open.join")
-                    .setStyle(commandLinkStyle("/game join " + gameSpace.getId(), hover));
+                    .setStyle(commandLinkStyle("/game join " + gameSpace.getUserId(), hover));
         }
 
         public static MutableText partyJoinError(int errorCount) {

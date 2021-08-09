@@ -12,6 +12,7 @@ import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 
 import java.util.Collection;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -161,9 +162,17 @@ public interface GameSpace {
     GameConfig<?> getSourceConfig();
 
     /**
-     * @return the unique ID assigned to this {@link GameSpace} instance
+     * @return the globally unique ID for this {@link GameSpace}
      */
-    Identifier getId();
+    UUID getId();
+
+    /**
+     * Returns the ID assigned to this {@link GameSpace} instance that can be referenced by players in commands.
+     * This ID is not guaranteed to be unique over time, but only unique during the existence of this {@link GameSpace}!
+     *
+     * @return the user-referencable ID for this {@link GameSpace}
+     */
+    Identifier getUserId();
 
     /**
      * @return the number of ticks that have passed since this {@link GameSpace} was created

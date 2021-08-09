@@ -23,7 +23,7 @@ public final class GameSpaceArgument {
                     var gameSpaceManager = GameSpaceManager.get();
 
                     return CommandSource.suggestIdentifiers(
-                            gameSpaceManager.getOpenGameSpaces().stream().map(ManagedGameSpace::getId),
+                            gameSpaceManager.getOpenGameSpaces().stream().map(ManagedGameSpace::getUserId),
                             builder
                     );
                 });
@@ -32,7 +32,7 @@ public final class GameSpaceArgument {
     public static GameSpace get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
         var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
-        var gameSpace = GameSpaceManager.get().byId(identifier);
+        var gameSpace = GameSpaceManager.get().byUserId(identifier);
         if (gameSpace == null) {
             throw GAME_NOT_FOUND.create();
         }

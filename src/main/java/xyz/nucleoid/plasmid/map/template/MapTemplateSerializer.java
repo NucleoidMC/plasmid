@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.fabric.api.util.NbtType;
+import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
@@ -145,6 +146,9 @@ public final class MapTemplateSerializer {
 
     private CompoundTag save(MapTemplate template) {
         CompoundTag root = new CompoundTag();
+
+        int worldVersion = SharedConstants.getGameVersion().getWorldVersion();
+        root.putInt("data_version", worldVersion);
 
         ListTag chunkList = new ListTag();
 

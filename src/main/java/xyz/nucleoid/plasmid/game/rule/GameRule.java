@@ -15,6 +15,7 @@ public final class GameRule {
     public static final GameRule INTERACTION = new GameRule(ProtectionRule.INTERACT_BLOCKS);
     public static final GameRule BLOCK_DROPS = new GameRule(ProtectionRule.BLOCK_DROPS);
     public static final GameRule THROW_ITEMS = new GameRule(ProtectionRule.THROW_ITEMS);
+    public static final GameRule PICKUP_ITEMS = new GameRule();
     public static final GameRule UNSTABLE_TNT = new GameRule(ProtectionRule.UNSTABLE_TNT);
     public static final GameRule TEAM_CHAT = new GameRule();
     public static final GameRule DISMOUNT_VEHICLE = new GameRule();

@@ -26,6 +26,7 @@
     "game.map.ServerWorldMixin",
     "game.rule.ArmorAndElytraItemMixin",
     "game.rule.FlowableFluidMixin",
+    "game.rule.ItemEntityMixin",
     "game.rule.PlayerEntityMixin",
     "game.rule.ServerPlayerEntityMixin",
     "game.rule.ServerPlayNetworkHandlerMixin",

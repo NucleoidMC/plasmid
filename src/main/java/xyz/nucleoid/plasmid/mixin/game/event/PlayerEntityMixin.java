@@ -11,10 +11,12 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.event.DropItemListener;
+import xyz.nucleoid.plasmid.game.event.PlayerRegenerateListener;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity {
@@ -45,6 +47,29 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             } catch (Throwable t) {
                 Plasmid.LOGGER.error("An unexpected exception occurred while dispatching drop item event", t);
                 gameSpace.reportError(t, "Dropping item");
+            }
+        }
+    }
+
+    @Redirect(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;heal(F)V"))
+    private void attemptPeacefulRegeneration(PlayerEntity player, float amount) {
+        if (this.world.isClient) {
+            player.heal(amount);
+            return;
+        }
+
+        ServerPlayerEntity serverPlayer = (ServerPlayerEntity) (Object) player;
+
+        ManagedGameSpace gameSpace = ManagedGameSpace.forWorld(serverPlayer.world);
+        if (gameSpace != null && gameSpace.containsPlayer(serverPlayer)) {
+            try {
+                ActionResult result = gameSpace.invoker(PlayerRegenerateListener.EVENT).onRegenerate(serverPlayer, amount);
+                if (result != ActionResult.FAIL) {
+                    serverPlayer.heal(amount);
+                }
+            } catch (Throwable t) {
+                Plasmid.LOGGER.error("An unexpected exception occurred while dispatching player regenerate event", t);
+                gameSpace.reportError(t, "Player regenerating");
             }
         }
     }

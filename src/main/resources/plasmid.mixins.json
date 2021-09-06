@@ -15,6 +15,7 @@
     "game.event.BowItemMixin",
     "game.event.ExplosionMixin",
     "game.event.FarmlandBlockMixin",
+    "game.event.HungerManagerMixin",
     "game.event.LivingEntityMixin",
     "game.event.PlayerEntityMixin",
     "game.event.ProjectileEntityMixin",

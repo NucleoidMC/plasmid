@@ -10,7 +10,7 @@ import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 /**
  * A very simple utility to apply a resource pack for all players within a {@link GameActivity}.
  *
- * @see GameResourcePack#applyTo(GameActivity)
+ * @see GameResourcePack#addTo(GameActivity)
  */
 public final class GameResourcePack {
     private static final String EMPTY_PACK_URL = "https://nucleoid.xyz/resources/empty_resource_pack.zip";
@@ -52,7 +52,7 @@ public final class GameResourcePack {
      *
      * @param activity the activity to add to
      */
-    public void applyTo(GameActivity activity) {
+    public void addTo(GameActivity activity) {
         var server = activity.getGameSpace().getServer();
         var serverUrl = server.getResourcePackUrl();
         var serverHash = server.getResourcePackHash();

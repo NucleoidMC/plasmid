@@ -28,7 +28,7 @@ public final class OnDemandGame {
     public Text getName() {
         var config = GameConfigs.get(this.gameId);
         if (config != null) {
-            return config.getName().shallowCopy().formatted(Formatting.AQUA);
+            return config.name().shallowCopy().formatted(Formatting.AQUA);
         } else {
             return new LiteralText(this.gameId.toString()).formatted(Formatting.RED);
         }

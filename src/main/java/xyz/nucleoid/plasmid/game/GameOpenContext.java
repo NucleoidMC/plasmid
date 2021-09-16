@@ -60,6 +60,6 @@ public record GameOpenContext<C>(MinecraftServer server, GameConfig<C> game) {
      * @return the configuration that this game was opened with
      */
     public C config() {
-        return this.game.getConfig();
+        return this.game.config();
     }
 }

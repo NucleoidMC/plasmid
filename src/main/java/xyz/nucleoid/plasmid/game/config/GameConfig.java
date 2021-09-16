@@ -60,32 +60,32 @@ public final class GameConfig<C> {
      * @return the source location that this config was loaded from, if loaded from a file.
      */
     @Nullable
-    public Identifier getSource() {
+    public Identifier source() {
         return this.source;
     }
 
-    public GameType<C> getType() {
+    public GameType<C> type() {
         return this.type;
     }
 
     /**
      * @return the name for this game config, defaulted to the game type name if none is specified
      */
-    public Text getName() {
+    public Text name() {
         if (this.name != null) {
             return new LiteralText(this.name);
         } else if (this.translation != null) {
             return new TranslatableText(this.translation);
         } else {
-            return this.type.getName();
+            return this.type.name();
         }
     }
 
-    public CustomValuesConfig getCustom() {
+    public CustomValuesConfig custom() {
         return this.custom;
     }
 
-    public C getConfig() {
+    public C config() {
         return this.config;
     }
 
@@ -115,7 +115,7 @@ public final class GameConfig<C> {
                 var translation = this.decodeStringOrNull(ops, input.get("translation"));
                 var custom = this.decodeCustomValues(ops, input.get("custom"));
 
-                var configCodec = type.getConfigCodec();
+                var configCodec = type.configCodec();
                 return this.decodeConfig(ops, input, configCodec).map(config -> {
                     return this.createConfigUnchecked(type, name, translation, custom, config);
                 });
@@ -153,7 +153,7 @@ public final class GameConfig<C> {
         }
 
         private <T, C> RecordBuilder<T> encodeUnchecked(GameConfig<C> game, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-            var codec = game.type.getConfigCodec();
+            var codec = game.type.configCodec();
             if (codec instanceof MapCodecCodec<C> mapCodec) {
                 prefix = mapCodec.codec().encode(game.config, ops, prefix);
             } else {

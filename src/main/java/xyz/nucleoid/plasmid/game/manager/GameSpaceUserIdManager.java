@@ -17,7 +17,7 @@ final class GameSpaceUserIdManager {
     private final Map<Identifier, GameType<?>> idToType = new Object2ObjectOpenHashMap<>();
 
     public Identifier acquire(GameConfig<?> config) {
-        GameType<?> type = config.getType();
+        GameType<?> type = config.type();
         var ids = this.typeToIds.get(type);
 
         var uniqueId = this.generateUniqueId(type, ids);
@@ -55,6 +55,6 @@ final class GameSpaceUserIdManager {
     }
 
     private Identifier getIdForType(GameType<?> type) {
-        return type.getIdentifier();
+        return type.id();
     }
 }

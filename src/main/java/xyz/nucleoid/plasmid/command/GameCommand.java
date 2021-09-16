@@ -384,7 +384,7 @@ public final class GameCommand {
         for (var id : GameConfigs.getKeys()) {
             String command = "/game open " + id;
 
-            var link = GameConfigs.get(id).getName().shallowCopy()
+            var link = GameConfigs.get(id).name().shallowCopy()
                     .setStyle(GameTexts.commandLinkStyle(command));
 
             source.sendFeedback(GameTexts.Command.listEntry(link), false);

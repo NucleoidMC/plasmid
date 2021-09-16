@@ -65,7 +65,7 @@ public final class TeamSelectionLobby {
      * @param teams the teams to allow players to select
      * @return a {@link TeamSelectionLobby} instance which should be used to extract allocated team data
      */
-    public static TeamSelectionLobby applyTo(GameActivity activity, Collection<GameTeam> teams) {
+    public static TeamSelectionLobby addTo(GameActivity activity, Collection<GameTeam> teams) {
         var teamMap = new Object2ObjectOpenHashMap<String, GameTeam>();
         for (GameTeam team : teams) {
             teamMap.put(team.key(), team);

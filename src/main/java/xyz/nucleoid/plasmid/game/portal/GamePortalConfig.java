@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 public interface GamePortalConfig {
     TinyRegistry<Codec<? extends GamePortalConfig>> REGISTRY = TinyRegistry.create();
-    Codec<GamePortalConfig> CODEC = REGISTRY.dispatchStable(GamePortalConfig::getCodec, Function.identity());
+    Codec<GamePortalConfig> CODEC = REGISTRY.dispatchStable(GamePortalConfig::codec, Function.identity());
 
     static void register(Identifier key, Codec<? extends GamePortalConfig> codec) {
         REGISTRY.register(key, codec);
@@ -18,7 +18,7 @@ public interface GamePortalConfig {
 
     GamePortalBackend createBackend(MinecraftServer server, Identifier id);
 
-    CustomValuesConfig getCustom();
+    CustomValuesConfig custom();
 
-    Codec<? extends GamePortalConfig> getCodec();
+    Codec<? extends GamePortalConfig> codec();
 }

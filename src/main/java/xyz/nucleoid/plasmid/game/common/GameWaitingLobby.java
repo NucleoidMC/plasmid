@@ -29,7 +29,7 @@ import java.util.Collection;
  * This implements both control for minimum/maximum players as well as a countdown for game start, and additionally
  * sets some basic rules which prevent players from damaging the map or each other.
  *
- * @see GameWaitingLobby#applyTo(GameActivity, PlayerConfig)
+ * @see GameWaitingLobby#addTo(GameActivity, PlayerConfig)
  * @see PlayerConfig
  * @see xyz.nucleoid.plasmid.game.common.team.TeamSelectionLobby
  */
@@ -52,12 +52,6 @@ public final class GameWaitingLobby {
         this.gameSpace = gameSpace;
         this.playerConfig = playerConfig;
         this.bar = bar;
-    }
-
-    // TODO: remove before 0.5
-    @Deprecated
-    public static void applyTo(GameActivity activity, PlayerConfig playerConfig) {
-        addTo(activity, playerConfig);
     }
 
     /**

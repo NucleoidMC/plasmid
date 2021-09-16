@@ -4,7 +4,6 @@ package xyz.nucleoid.plasmid.game;
  * Represents a reason for a game to close.
  * 
  * <p>To close a game, see {@link GameSpace#close}.
- * <p>To close a {@link GameActivity}, see {@link GameActivity#close(GameCloseReason)}
  * <p>To listen for game closure, see {@link xyz.nucleoid.plasmid.event.GameEvents#CLOSING}.
  */
 public enum GameCloseReason {

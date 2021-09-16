@@ -23,12 +23,12 @@ import java.util.function.Consumer;
 public final class GameType<C> {
     public static final TinyRegistry<GameType<?>> REGISTRY = TinyRegistry.create();
 
-    private final Identifier identifier;
+    private final Identifier id;
     private final Codec<C> configCodec;
     private final Open<C> open;
 
-    private GameType(Identifier identifier, Codec<C> configCodec, Open<C> open) {
-        this.identifier = identifier;
+    private GameType(Identifier id, Codec<C> configCodec, Open<C> open) {
+        this.id = id;
         this.configCodec = configCodec;
         this.open = open;
     }
@@ -54,20 +54,20 @@ public final class GameType<C> {
         return this.open.open(context);
     }
 
-    public Identifier getIdentifier() {
-        return this.identifier;
+    public Identifier id() {
+        return this.id;
     }
 
-    public Codec<C> getConfigCodec() {
+    public Codec<C> configCodec() {
         return this.configCodec;
     }
 
-    public Text getName() {
-        return new TranslatableText(this.getTranslationKey());
+    public Text name() {
+        return new TranslatableText(this.translationKey());
     }
 
-    public String getTranslationKey() {
-        return "game." + this.identifier.getNamespace() + "." + this.identifier.getPath();
+    public String translationKey() {
+        return "game." + this.id.getNamespace() + "." + this.id.getPath();
     }
 
     @Nullable

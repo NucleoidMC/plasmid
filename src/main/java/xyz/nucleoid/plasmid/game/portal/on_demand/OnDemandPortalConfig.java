@@ -22,12 +22,12 @@ public record OnDemandPortalConfig(Identifier gameId, CustomValuesConfig custom)
     }
 
     @Override
-    public CustomValuesConfig getCustom() {
+    public CustomValuesConfig custom() {
         return this.custom;
     }
 
     @Override
-    public Codec<? extends GamePortalConfig> getCodec() {
+    public Codec<? extends GamePortalConfig> codec() {
         return CODEC;
     }
 }

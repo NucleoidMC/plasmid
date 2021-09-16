@@ -1,23 +1,12 @@
 package xyz.nucleoid.plasmid.game.player;
 
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.network.Packet;
-import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket;
-import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket;
-import net.minecraft.network.packet.s2c.play.TitleFadeS2CPacket;
-import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 
 import java.util.Iterator;
 import java.util.UUID;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * Represents a set of {@link ServerPlayerEntity} on a server. These players are not guaranteed to be currently online,
@@ -28,7 +17,7 @@ import java.util.stream.StreamSupport;
  *
  * @see MutablePlayerSet
  */
-public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
+public interface PlayerSet extends PlayerIterable {
     PlayerSet EMPTY = EmptyPlayerSet.INSTANCE;
 
     static PlayerSet ofServer(MinecraftServer server) {
@@ -108,70 +97,4 @@ public interface PlayerSet extends PlayerOps, Iterable<ServerPlayerEntity> {
      */
     @Override
     Iterator<ServerPlayerEntity> iterator();
-
-    /**
-     * @return a stream of online {@link ServerPlayerEntity} within this {@link PlayerSet}
-     */
-    default Stream<ServerPlayerEntity> stream() {
-        return StreamSupport.stream(this.spliterator(), false);
-    }
-
-    @Override
-    default void sendPacket(Packet<?> packet) {
-        for (var player : this) {
-            player.networkHandler.sendPacket(packet);
-        }
-    }
-
-    @Override
-    default void sendMessage(Text message) {
-        for (var player : this) {
-            player.sendMessage(message, false);
-        }
-    }
-
-    @Override
-    default void showTitle(Text title, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-        this.sendPacket(new TitleFadeS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
-        this.sendPacket(new TitleS2CPacket(title));
-    }
-
-    @Override
-    default void showTitle(Text title, Text subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-        this.sendPacket(new TitleFadeS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
-        this.sendPacket(new TitleS2CPacket(title));
-        this.sendPacket(new SubtitleS2CPacket(subtitle));
-    }
-
-    @Override
-    default void sendActionBar(Text message) {
-        for (var player : this) {
-            player.sendMessage(message, true);
-        }
-    }
-
-    @Override
-    default void sendActionBar(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks) {
-        this.sendPacket(new TitleFadeS2CPacket(fadeInTicks, stayTicks, fadeOutTicks));
-        this.sendPacket(new OverlayMessageS2CPacket(message));
-    }
-
-    @Override
-    default void playSound(SoundEvent sound) {
-        this.playSound(sound, SoundCategory.PLAYERS, 1.0F, 1.0F);
-    }
-
-    @Override
-    default void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        for (var player : this) {
-            player.playSound(sound, category, volume, pitch);
-        }
-    }
-
-    @Override
-    default void addStatusEffect(StatusEffectInstance effect) {
-        for (var player : this) {
-            player.addStatusEffect(effect);
-        }
-    }
 }

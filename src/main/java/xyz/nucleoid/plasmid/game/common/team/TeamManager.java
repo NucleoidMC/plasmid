@@ -55,20 +55,11 @@ public final class TeamManager {
      */
     public static TeamManager addTo(GameActivity activity) {
         var manager = new TeamManager(activity.getGameSpace());
-        manager.applyTo(activity);
+        activity.listen(GamePlayerEvents.ADD, manager::onAddPlayer);
+        activity.listen(GamePlayerEvents.REMOVE, manager::onRemovePlayer);
+        activity.listen(PlayerDamageEvent.EVENT, manager::onDamagePlayer);
+        activity.listen(GamePlayerEvents.DISPLAY_NAME, manager::onFormatDisplayName);
         return manager;
-    }
-
-    /**
-     * Applies this {@link TeamManager} to the given {@link GameActivity}.
-     *
-     * @param activity the activity to add to
-     */
-    public void applyTo(GameActivity activity) {
-        activity.listen(GamePlayerEvents.ADD, this::onAddPlayer);
-        activity.listen(GamePlayerEvents.REMOVE, this::onRemovePlayer);
-        activity.listen(PlayerDamageEvent.EVENT, this::onDamagePlayer);
-        activity.listen(GamePlayerEvents.DISPLAY_NAME, this::onFormatDisplayName);
     }
 
     /**

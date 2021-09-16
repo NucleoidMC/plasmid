@@ -17,7 +17,11 @@ import xyz.nucleoid.plasmid.game.portal.GamePortalConfig;
 import java.util.List;
 import java.util.Optional;
 
-public final class MenuPortalConfig implements GamePortalConfig {
+public record MenuPortalConfig(
+        String translation,
+        List<Entry> games,
+        CustomValuesConfig custom
+) implements GamePortalConfig {
     public static final Codec<MenuPortalConfig> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
                 Codec.STRING.optionalFieldOf("translation").forGetter(config -> Optional.ofNullable(config.translation)),
@@ -26,14 +30,8 @@ public final class MenuPortalConfig implements GamePortalConfig {
         ).apply(instance, MenuPortalConfig::new);
     });
 
-    private final String translation;
-    private final List<Entry> games;
-    private final CustomValuesConfig custom;
-
-    MenuPortalConfig(Optional<String> translation, List<Entry> games, CustomValuesConfig custom) {
-        this.translation = translation.orElse(null);
-        this.games = games;
-        this.custom = custom;
+    private MenuPortalConfig(Optional<String> translation, List<Entry> games, CustomValuesConfig custom) {
+        this(translation.orElse(null), games, custom);
     }
 
     @Override
@@ -49,12 +47,7 @@ public final class MenuPortalConfig implements GamePortalConfig {
     }
 
     @Override
-    public CustomValuesConfig getCustom() {
-        return this.custom;
-    }
-
-    @Override
-    public Codec<? extends GamePortalConfig> getCodec() {
+    public Codec<? extends GamePortalConfig> codec() {
         return CODEC;
     }
 

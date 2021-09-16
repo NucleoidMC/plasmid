@@ -27,8 +27,8 @@ public interface ErrorReporter extends AutoCloseable {
     }
 
     static ErrorReporter open(GameConfig<?> game) {
-        var name = game.getName().getString();
-        var source = name + " (" + game.getSource() + ")";
+        var name = game.name().getString();
+        var source = name + " (" + game.source() + ")";
         return ErrorReporter.open(source);
     }
 

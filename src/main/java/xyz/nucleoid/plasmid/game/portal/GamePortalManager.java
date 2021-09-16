@@ -86,7 +86,7 @@ public final class GamePortalManager {
             var config = entry.getValue();
 
             var portal = new GamePortal(server, identifier, config::createBackend);
-            portal.setCustom(config.getCustom());
+            portal.setCustom(config.custom());
 
             this.portals.register(identifier, portal);
         }

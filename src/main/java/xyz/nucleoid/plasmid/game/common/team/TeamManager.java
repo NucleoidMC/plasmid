@@ -7,7 +7,6 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
 import net.minecraft.network.packet.s2c.play.TeamS2CPacket;
-import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -69,8 +68,41 @@ public final class TeamManager {
      * @param team the {@link GameTeam} to add
      * @return {@code true} if team is registered for the first time
      */
-    public boolean addTeam(GameTeam team) {
-        return this.teams.putIfAbsent(team, new Entry(team)) == null;
+    public boolean addTeam(GameTeam team, GameTeamConfig config) {
+        return this.teams.putIfAbsent(team, new Entry(team, config)) == null;
+    }
+
+    /**
+     * Registers a collection of teams to this {@link TeamManager}.
+     * Note that attempting to use an unregistered team will throw an exception!
+     *
+     * @param teams the collection of teams to add
+     */
+    public void addTeams(GameTeamsConfig teams) {
+        teams.map().forEach(this::addTeam);
+    }
+
+    /**
+     * Updates the {@link GameTeamConfig} associated with the given {@link GameTeam}.
+     * These changes will then be synced to players and applied immediately.
+     *
+     * @param team the {@link GameTeam} to modify
+     * @param config the new {@link GameTeamConfig} to apply to this team
+     */
+    public void setTeamConfig(GameTeam team, GameTeamConfig config) {
+        this.teamEntry(team).setConfig(config);
+        this.sendTeamUpdates(team);
+    }
+
+    /**
+     * Gets the associated {@link GameTeamConfig} for the given {@link GameTeam}.
+     * Attempting to access a team that is not registered will throw an exception!
+     *
+     * @param team the team to query
+     * @return the associated {@link GameTeamConfig}
+     */
+    public GameTeamConfig getTeamConfig(GameTeam team) {
+        return this.teamEntry(team).config;
     }
 
     /**
@@ -214,64 +246,16 @@ public final class TeamManager {
         return this.teamEntry(team).allPlayers;
     }
 
-    public boolean setFriendlyFire(GameTeam team, boolean value) {
-        return this.teamEntry(team).friendlyFire = value;
-    }
-
-    public boolean hasFriendlyFire(GameTeam team) {
-        return this.teamEntry(team).friendlyFire;
-    }
-
-    public void setCollisionRule(GameTeam team, AbstractTeam.CollisionRule rule) {
-        this.teamEntry(team).scoreboardTeam.setCollisionRule(rule);
-        this.sendTeamUpdates(team);
-    }
-
-    public AbstractTeam.CollisionRule getCollisionRule(GameTeam team) {
-        return this.teamEntry(team).scoreboardTeam.getCollisionRule();
-    }
-
-    public void setNameTagVisibility(GameTeam team, AbstractTeam.VisibilityRule rule) {
-        this.teamEntry(team).scoreboardTeam.setNameTagVisibilityRule(rule);
-        this.sendTeamUpdates(team);
-    }
-
-    public AbstractTeam.VisibilityRule getNameTagVisibility(GameTeam team) {
-        return this.teamEntry(team).scoreboardTeam.getNameTagVisibilityRule();
-    }
-
     private Text formatPlayerName(ServerPlayerEntity player, Text name) {
         var team = this.teamFor(player);
         if (team != null) {
-            var style = Style.EMPTY.withColor(team.color());
-            var scoreboardTeam = this.teamEntry(team).scoreboardTeam;
-            return new LiteralText("").append(scoreboardTeam.getPrefix()).append(name.shallowCopy().setStyle(style)).append(scoreboardTeam.getSuffix());
+            var config = this.teamEntry(team).config;
+            var style = Style.EMPTY.withFormatting(config.chatFormatting());
+            return new LiteralText("").append(config.prefix())
+                    .append(name.shallowCopy().setStyle(style))
+                    .append(config.suffix());
         }
         return name;
-    }
-
-    public void setPrefix(GameTeam team, Text prefix) {
-        var entry = this.teamEntry(team);
-        entry.prefix = prefix;
-        entry.scoreboardTeam.setPrefix(prefix);
-
-        this.sendTeamUpdates(team);
-    }
-
-    public Text getPrefix(GameTeam team) {
-        return this.teamEntry(team).prefix;
-    }
-
-    public void setSuffix(GameTeam team, Text suffix) {
-        var entry = this.teamEntry(team);
-        entry.suffix = suffix;
-        entry.scoreboardTeam.setSuffix(suffix);
-
-        this.sendTeamUpdates(team);
-    }
-
-    public Text getSuffix(GameTeam team) {
-        return this.teamEntry(team).suffix;
     }
 
     @Nullable
@@ -330,7 +314,7 @@ public final class TeamManager {
             var playerTeam = this.teamFor(player);
             var attackerTeam = this.teamFor(attacker);
 
-            if (playerTeam != null && playerTeam == attackerTeam && !this.teamEntry(playerTeam).friendlyFire) {
+            if (playerTeam != null && playerTeam == attackerTeam && !this.teamEntry(playerTeam).config.friendlyFire()) {
                 return ActionResult.FAIL;
             }
         }
@@ -413,17 +397,21 @@ public final class TeamManager {
         final Set<PlayerRef> allPlayers;
         final MutablePlayerSet onlinePlayers;
         final Team scoreboardTeam;
+        GameTeamConfig config;
 
-        boolean friendlyFire = false;
-        Text prefix = LiteralText.EMPTY;
-        Text suffix = LiteralText.EMPTY;
-
-        Entry(GameTeam team) {
+        Entry(GameTeam team, GameTeamConfig config) {
             this.allPlayers = new ObjectOpenHashSet<>();
             this.onlinePlayers = new MutablePlayerSet(TeamManager.this.gameSpace.getServer());
 
-            this.scoreboardTeam = new Team(TeamManager.this.scoreboard, team.key());
-            this.scoreboardTeam.setColor(team.formatting());
+            this.scoreboardTeam = new Team(TeamManager.this.scoreboard, team.id());
+            config.applyToScoreboard(this.scoreboardTeam);
+
+            this.config = config;
+        }
+
+        public void setConfig(GameTeamConfig config) {
+            this.config = config;
+            config.applyToScoreboard(this.scoreboardTeam);
         }
     }
 }

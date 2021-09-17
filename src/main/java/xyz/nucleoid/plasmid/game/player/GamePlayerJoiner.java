@@ -46,14 +46,14 @@ public final class GamePlayerJoiner {
     private Results tryJoinAll(Collection<ServerPlayerEntity> players, GameSpace gameSpace) {
         var results = new Results();
 
-        var screenResult = gameSpace.screenPlayerJoins(players);
+        var screenResult = gameSpace.getPlayers().screenJoins(players);
         if (screenResult.isError()) {
             results.globalError = screenResult.error();
             return results;
         }
 
         for (var player : players) {
-            var result = gameSpace.offerPlayer(player);
+            var result = gameSpace.getPlayers().offer(player);
             if (result.isError()) {
                 results.playerErrors.put(player, result.error());
             }

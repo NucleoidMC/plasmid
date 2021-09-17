@@ -67,7 +67,7 @@ public final class OnDemandGame {
         if (future != null) {
             var game = future.getNow(null);
             if (game != null) {
-                return game.getPlayerCount();
+                return game.getPlayers().size();
             }
         }
         return 0;

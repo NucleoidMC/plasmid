@@ -66,7 +66,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     private void removePlayer(ServerPlayerEntity player, CallbackInfo ci) {
         var gameSpace = GameSpaceManager.get().byPlayer(player);
         if (gameSpace != null) {
-            gameSpace.removePlayer(player);
+            gameSpace.getPlayers().remove(player);
         }
     }
 
@@ -87,7 +87,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         var gameSpace = GameSpaceManager.get().byPlayer(oldPlayer);
 
         if (gameSpace != null) {
-            gameSpace.removePlayer(oldPlayer);
+            gameSpace.getPlayers().remove(oldPlayer);
 
             this.plasmid$loadIntoPlayer(respawnedPlayer);
             respawnedPlayer.setWorld(respawnWorld);

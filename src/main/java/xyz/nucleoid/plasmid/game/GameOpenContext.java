@@ -51,7 +51,7 @@ public record GameOpenContext<C>(MinecraftServer server, GameConfig<C> game) {
      */
     public GameOpenProcedure openWithWorld(RuntimeWorldConfig worldConfig, BiConsumer<GameActivity, ServerWorld> setup) {
         return this.open(activity -> {
-            ServerWorld world = activity.getGameSpace().addWorld(worldConfig);
+            ServerWorld world = activity.getGameSpace().getWorlds().add(worldConfig);
             setup.accept(activity, world);
         });
     }

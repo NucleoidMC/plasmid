@@ -3,21 +3,18 @@ package xyz.nucleoid.plasmid.game.manager;
 import com.google.common.collect.Lists;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
-import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.World;
+import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
-import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
-import xyz.nucleoid.plasmid.game.player.PlayerSet;
-import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
-import xyz.nucleoid.plasmid.game.world.GameSpaceWorlds;
 
 import java.util.Collection;
 import java.util.function.Consumer;
@@ -25,12 +22,11 @@ import java.util.function.Consumer;
 public final class ManagedGameSpace implements GameSpace {
     private final MinecraftServer server;
     private final GameSpaceManager manager;
-    private final MutablePlayerSet players;
 
     private final GameSpaceMetadata metadata;
 
-    private final GameSpaceWorlds worlds;
-    private final IsolatingPlayerTeleporter playerTeleporter;
+    private final ManagedGameSpacePlayers players;
+    private final ManagedGameSpaceWorlds worlds;
 
     private final GameLifecycle lifecycle = new GameLifecycle();
 
@@ -43,13 +39,12 @@ public final class ManagedGameSpace implements GameSpace {
 
     ManagedGameSpace(MinecraftServer server, GameSpaceManager manager, GameSpaceMetadata metadata) {
         this.server = server;
-        this.players = new MutablePlayerSet(server);
         this.manager = manager;
 
         this.metadata = metadata;
 
-        this.worlds = new GameSpaceWorlds(server);
-        this.playerTeleporter = new IsolatingPlayerTeleporter(server);
+        this.players = new ManagedGameSpacePlayers(this);
+        this.worlds = new ManagedGameSpaceWorlds(this);
 
         this.openTime = server.getOverworld().getTime();
     }
@@ -71,110 +66,6 @@ public final class ManagedGameSpace implements GameSpace {
             Plasmid.LOGGER.error("An unexpected error occurred while setting game activity", throwable);
             this.closeWithError("An unexpected error occurred while setting game activity");
         }
-    }
-
-    @Override
-    public ServerWorld addWorld(RuntimeWorldConfig worldConfig) {
-        var worldHandle = this.worlds.add(worldConfig);
-        this.manager.addDimensionToGameSpace(this, worldHandle.asWorld().getRegistryKey());
-
-        return worldHandle.asWorld();
-    }
-
-    @Override
-    public void removeWorld(ServerWorld world) {
-        var dimension = world.getRegistryKey();
-        if (this.worlds.remove(dimension)) {
-            this.manager.removeDimensionFromGameSpace(this, dimension);
-        }
-    }
-
-    @Override
-    public GameResult screenPlayerJoins(Collection<ServerPlayerEntity> players) {
-        if (this.closed) {
-            return GameResult.error(GameTexts.Join.gameClosed());
-        }
-
-        return this.state.invoker(GamePlayerEvents.SCREEN_JOINS).screenJoins(players);
-    }
-
-    @Override
-    public GameResult offerPlayer(ServerPlayerEntity player) {
-        if (this.closed) {
-            return GameResult.error(GameTexts.Join.gameClosed());
-        } else if (this.players.contains(player)) {
-            return GameResult.error(GameTexts.Join.alreadyJoined());
-        } else if (this.manager.inGame(player)) {
-            return GameResult.error(GameTexts.Join.inOtherGame());
-        }
-
-        var offer = new PlayerOffer(player);
-        var result = this.state.invoker(GamePlayerEvents.OFFER).onOfferPlayer(offer);
-
-        var reject = result.asReject();
-        if (reject != null) {
-            return GameResult.error(reject.reason());
-        }
-
-        var accept = result.asAccept();
-        if (accept != null) {
-            try {
-                this.addPlayer(player, accept);
-                return GameResult.ok();
-            } catch (Throwable throwable) {
-                return GameResult.error(GameTexts.Join.unexpectedError());
-            }
-        } else {
-            return GameResult.error(GameTexts.Join.genericError());
-        }
-    }
-
-    private void addPlayer(ServerPlayerEntity player, PlayerOfferResult.Accept result) {
-        this.playerTeleporter.teleportIn(player, result::applyJoin);
-
-        this.state.propagatingInvoker(GamePlayerEvents.JOIN).onAddPlayer(player);
-        this.state.propagatingInvoker(GamePlayerEvents.ADD).onAddPlayer(player);
-
-        this.players.add(player);
-        this.manager.addPlayerToGameSpace(this, player);
-
-        this.lifecycle.onAddPlayer(this, player);
-
-        var joinMessage = GameTexts.Join.success(player)
-                .formatted(Formatting.YELLOW);
-        this.getPlayers().sendMessage(joinMessage);
-
-        GameEvents.PLAYER_JOIN.invoker().onPlayerJoin(this, player);
-    }
-
-    @Override
-    public boolean kickPlayer(ServerPlayerEntity player) {
-        if (this.removePlayer(player)) {
-            this.playerTeleporter.teleportOut(player);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean removePlayer(ServerPlayerEntity player) {
-        if (this.closed || !this.players.contains(player)) {
-            return false;
-        }
-
-        this.state.invoker(GamePlayerEvents.LEAVE).onRemovePlayer(player);
-        this.state.invoker(GamePlayerEvents.REMOVE).onRemovePlayer(player);
-
-        this.lifecycle.onRemovePlayer(this, player);
-
-        this.players.remove(player);
-        this.manager.removePlayerFromGameSpace(this, player);
-
-        if (this.players.isEmpty()) {
-            this.close(GameCloseReason.GARBAGE_COLLECTED);
-        }
-        GameEvents.PLAYER_LEFT.invoker().onPlayerLeft(this, player);
-        return true;
     }
 
     @Override
@@ -220,19 +111,19 @@ public final class ManagedGameSpace implements GameSpace {
             for (var player : players) {
                 this.lifecycle.onRemovePlayer(this, player);
 
-                this.playerTeleporter.teleportOut(player);
+                this.players.teleporter.teleportOut(player);
             }
         } finally {
-            var dimensions = this.worlds.close();
-            for (var dimension : dimensions) {
-                this.manager.removeDimensionFromGameSpace(this, dimension);
-            }
-
-            for (var player : players) {
+            for (var player : this.players) {
                 this.manager.removePlayerFromGameSpace(this, player);
             }
 
+            for (var world : this.worlds) {
+                this.manager.removeDimensionFromGameSpace(this, world.getRegistryKey());
+            }
+
             this.players.clear();
+            this.worlds.clear();
 
             this.manager.removeGameSpace(this);
 
@@ -241,8 +132,13 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     @Override
-    public PlayerSet getPlayers() {
+    public ManagedGameSpacePlayers getPlayers() {
         return this.players;
+    }
+
+    @Override
+    public ManagedGameSpaceWorlds getWorlds() {
+        return this.worlds;
     }
 
     @Override
@@ -269,7 +165,54 @@ public final class ManagedGameSpace implements GameSpace {
         return this.state;
     }
 
-    public IsolatingPlayerTeleporter getPlayerTeleporter() {
-        return this.playerTeleporter;
+    GameResult screenJoins(Collection<ServerPlayerEntity> players) {
+        if (this.closed) {
+            return GameResult.error(GameTexts.Join.gameClosed());
+        }
+
+        return this.state.invoker(GamePlayerEvents.SCREEN_JOINS).screenJoins(players);
+    }
+
+    PlayerOfferResult offerPlayer(PlayerOffer offer) {
+        if (this.closed) {
+            return offer.reject(GameTexts.Join.gameClosed());
+        } else if (this.manager.inGame(offer.player())) {
+            return offer.reject(GameTexts.Join.inOtherGame());
+        }
+
+        return this.state.invoker(GamePlayerEvents.OFFER).onOfferPlayer(offer);
+    }
+
+    void onAddPlayer(ServerPlayerEntity player) {
+        this.state.propagatingInvoker(GamePlayerEvents.JOIN).onAddPlayer(player);
+        this.state.propagatingInvoker(GamePlayerEvents.ADD).onAddPlayer(player);
+
+        this.manager.addPlayerToGameSpace(this, player);
+
+        this.lifecycle.onAddPlayer(this, player);
+
+        var joinMessage = GameTexts.Join.success(player)
+                .formatted(Formatting.YELLOW);
+        this.players.sendMessage(joinMessage);
+
+        GameEvents.PLAYER_JOIN.invoker().onPlayerJoin(this, player);
+    }
+
+    void onPlayerRemove(ServerPlayerEntity player) {
+        this.state.invoker(GamePlayerEvents.LEAVE).onRemovePlayer(player);
+        this.state.invoker(GamePlayerEvents.REMOVE).onRemovePlayer(player);
+
+        this.lifecycle.onRemovePlayer(this, player);
+        GameEvents.PLAYER_LEFT.invoker().onPlayerLeft(this, player);
+
+        this.manager.removePlayerFromGameSpace(this, player);
+    }
+
+    void onAddWorld(RuntimeWorldHandle worldHandle) {
+        this.manager.addDimensionToGameSpace(this, worldHandle.asWorld().getRegistryKey());
+    }
+
+    void onRemoveWorld(RegistryKey<World> dimension) {
+        this.manager.removeDimensionFromGameSpace(this, dimension);
     }
 }

@@ -7,8 +7,8 @@ import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
+import xyz.nucleoid.plasmid.game.world.GameSpaceWorlds;
 
-import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
@@ -49,6 +49,16 @@ public interface GameSpace {
     void setActivity(Consumer<GameActivity> builder);
 
     /**
+     * Submits a request to the currently active {@link GameActivity} for this game to be started.
+     * What a start request means is dependent on the game implementation, and a game does not necessarily need to
+     * respond to this event unless they wish to respond to the {@code /game start} command.
+     *
+     * @return a {@link GameResult} describing whether this game was successfully started, or an error if not
+     * @see GameActivityEvents#REQUEST_START
+     */
+    GameResult requestStart();
+
+    /**
      * Closes this {@link GameSpace} with the given reason.
      * The associated {@link GameActivity} is closed and all players will be removed.
      * <p>
@@ -62,104 +72,32 @@ public interface GameSpace {
     void close(GameCloseReason reason);
 
     /**
-     * Creates and adds a temporary world to be associated with this {@link GameSpace}.
-     * When the game is closed, the world will be deleted.
-     *
-     * @param worldConfig a config describing how the new world should be created
-     * @return the created world instance
-     * @see RuntimeWorldConfig
-     */
-    ServerWorld addWorld(RuntimeWorldConfig worldConfig);
-
-    /**
-     * Removes and deletes a temporary world that is associated with this {@link GameSpace}.
-     * The passed world must have been created through {@link GameSpace#addWorld(RuntimeWorldConfig)}.
-     *
-     * @param world the world instance to delete
-     * @see GameSpace#addWorld(RuntimeWorldConfig)
-     */
-    void removeWorld(ServerWorld world);
-
-    /**
-     * Submits a request to the currently active {@link GameActivity} for this game to be started.
-     * What a start request means is dependent on the game implementation, and a game does not necessarily need to
-     * respond to this event unless they wish to respond to the {@code /game start} command.
-     *
-     * @return a {@link GameResult} describing whether this game was successfully started, or an error if not
-     * @see GameActivityEvents#REQUEST_START
-     */
-    GameResult requestStart();
-
-    /**
-     * Screens a group of players and returns whether the collective group should be allowed into the game.
-     * <p>
-     * This logic is controlled through the active {@link GameActivity} through {@link GamePlayerEvents#SCREEN_JOINS}.
-     *
-     * @param players the group of players trying to join
-     * @return a {@link GameResult} describing whether this group can join this game, or an error if not
-     * @see GamePlayerEvents#SCREEN_JOINS
-     * @see GameSpace#offerPlayer(ServerPlayerEntity)
-     * @see xyz.nucleoid.plasmid.game.player.GamePlayerJoiner
-     */
-    GameResult screenPlayerJoins(Collection<ServerPlayerEntity> players);
-
-    /**
-     * Offers an individual player to join this game. If accepted, they will be teleported into the game, and if not
-     * an error {@link GameResult} will be returned.
-     * <p>
-     * This logic is controlled through the active {@link GameActivity} through {@link GamePlayerEvents#OFFER}.
-     *
-     * @param player the player trying to join
-     * @return a {@link GameResult} describing whether this player joined the game, or an error if not
-     * @see GamePlayerEvents#OFFER
-     * @see xyz.nucleoid.plasmid.game.player.GamePlayerJoiner
-     */
-    GameResult offerPlayer(ServerPlayerEntity player);
-
-    /**
-     * Attempts to remove the given {@link ServerPlayerEntity} from this {@link GameSpace}.
-     * When a player is removed, they will be teleported back to their former location prior to joining.
-     *
-     * @param player {@link ServerPlayerEntity} to remove from this {@link GameSpace}
-     * @return whether the {@link ServerPlayerEntity} was successfully removed
-     */
-    boolean kickPlayer(ServerPlayerEntity player);
-
-    /**
      * Returns all {@link ServerPlayerEntity}s in this {@link GameSpace}.
      *
-     * <p>{@link GameSpace#containsPlayer(ServerPlayerEntity)} can be used to check if a {@link ServerPlayerEntity} is in this {@link GameSpace} instead.
+     * <p>{@link GameSpacePlayers#contains(ServerPlayerEntity)} can be used to check if a {@link ServerPlayerEntity} is in this {@link GameSpace} instead.
      *
      * @return a {@link PlayerSet} that contains all {@link ServerPlayerEntity}s in this {@link GameSpace}
      */
-    PlayerSet getPlayers();
+    GameSpacePlayers getPlayers();
 
     /**
-     * @return the number of players in this {@link GameSpace}.
-     */
-    default int getPlayerCount() {
-        return this.getPlayers().size();
-    }
-
-    /**
-     * Returns whether this {@link GameSpace} contains the given {@link ServerPlayerEntity}.
+     * Returns the manager for all attached {@link ServerWorld} instances to this {@link GameSpace}.
+     * <p>
+     * {@link GameSpaceWorlds#add(RuntimeWorldConfig)} can be used to attach a {@link GameSpace}.
      *
-     * @param player {@link ServerPlayerEntity} to check existence of
-     * @return whether the given {@link ServerPlayerEntity} exists in this {@link GameSpace}
+     * @return the {@link ServerWorld} manager for this {@link GameSpace}
      */
-    default boolean containsPlayer(ServerPlayerEntity player) {
-        return this.getPlayers().contains(player);
-    }
-
-    /**
-     * @return the lifecycle manager for this {@link GameSpace}
-     */
-    GameLifecycle getLifecycle();
+    GameSpaceWorlds getWorlds();
 
     /**
      * @return the number of ticks that have passed since this {@link GameSpace} was created
      */
     long getTime();
+
+    /**
+     * @return the lifecycle manager for this {@link GameSpace}
+     */
+    GameLifecycle getLifecycle();
 
     /**
      * @return the statistics manager for this {@link GameSpace}

@@ -44,8 +44,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
         if (playerGameSpace != null && targetGameSpace == null) {
             var self = (ServerPlayerEntity) (Object) this;
-            playerGameSpace.removePlayer(self);
-            playerGameSpace.getPlayerTeleporter().teleportOutTo(self, targetWorld);
+            playerGameSpace.getPlayers().remove(self);
+            playerGameSpace.getPlayers().getTeleporter().teleportOutTo(self, targetWorld);
             return true;
         } else {
             return false;

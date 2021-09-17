@@ -28,7 +28,6 @@ import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
@@ -137,7 +136,7 @@ public final class GameCommand {
             if (player != null) {
                 var currentGameSpace = GameSpaceManager.get().byPlayer(player);
                 if (currentGameSpace != null) {
-                    currentGameSpace.kickPlayer(player);
+                    currentGameSpace.getPlayers().kick(player);
                 }
             }
 
@@ -252,10 +251,10 @@ public final class GameCommand {
                 .filter(player -> !GameSpaceManager.get().inGame(player))
                 .collect(Collectors.toList());
 
-        var screen = gameSpace.screenPlayerJoins(players);
+        var screen = gameSpace.getPlayers().screenJoins(players);
         if (screen.isOk()) {
             for (var player : players) {
-                gameSpace.offerPlayer(player);
+                gameSpace.getPlayers().offer(player);
             }
         } else {
             context.getSource().sendError(screen.errorCopy().formatted(Formatting.RED));
@@ -273,7 +272,7 @@ public final class GameCommand {
 
     private static GameSpace getJoinableGameSpace() throws CommandSyntaxException {
         return GameSpaceManager.get().getOpenGameSpaces().stream()
-                .max(Comparator.comparingInt(ManagedGameSpace::getPlayerCount))
+                .max(Comparator.comparingInt(space -> space.getPlayers().size()))
                 .orElseThrow(NO_GAME_OPEN::create);
     }
 
@@ -301,7 +300,7 @@ public final class GameCommand {
         }
 
         Scheduler.INSTANCE.submit(server -> {
-            gameSpace.kickPlayer(player);
+            gameSpace.getPlayers().kick(player);
         });
 
         return Command.SINGLE_SUCCESS;

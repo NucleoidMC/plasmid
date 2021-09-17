@@ -106,7 +106,7 @@ public final class GameWaitingLobby {
 
     @Nullable
     private GameResult requestStart() {
-        if (this.gameSpace.getPlayerCount() < this.playerConfig.minPlayers()) {
+        if (this.gameSpace.getPlayers().size() < this.playerConfig.minPlayers()) {
             return GameResult.error(GameTexts.Start.notEnoughPlayers());
         }
 
@@ -121,7 +121,7 @@ public final class GameWaitingLobby {
     }
 
     private GameResult screenJoins(Collection<ServerPlayerEntity> players) {
-        int newPlayerCount = this.gameSpace.getPlayerCount() + players.size();
+        int newPlayerCount = this.gameSpace.getPlayers().size() + players.size();
         if (newPlayerCount > this.playerConfig.maxPlayers()) {
             return GameResult.error(GameTexts.Join.gameFull());
         }
@@ -176,7 +176,7 @@ public final class GameWaitingLobby {
             return START_REQUESTED_COUNTDOWN;
         }
 
-        if (this.gameSpace.getPlayerCount() >= this.playerConfig.minPlayers()) {
+        if (this.gameSpace.getPlayers().size() >= this.playerConfig.minPlayers()) {
             if (this.isFull()) {
                 return countdown.fullSeconds() * 20L;
             } else if (this.isReady()) {
@@ -220,11 +220,11 @@ public final class GameWaitingLobby {
     }
 
     private boolean isReady() {
-        return this.gameSpace.getPlayerCount() >= this.playerConfig.thresholdPlayers();
+        return this.gameSpace.getPlayers().size() >= this.playerConfig.thresholdPlayers();
     }
 
     private boolean isFull() {
-        int playerCount = this.gameSpace.getPlayerCount();
+        int playerCount = this.gameSpace.getPlayers().size();
         if (playerCount >= this.playerConfig.maxPlayers()) {
             return true;
         }

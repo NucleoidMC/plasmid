@@ -2,50 +2,30 @@ package xyz.nucleoid.plasmid.game.config;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
+import fr.catcore.server.translations.api.ServerTranslations;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.game.GameType;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public final class GameConfig<C> {
-    public static final Codec<GameConfig<?>> CODEC = new ConfigCodec(null).codec();
-
-    @Nullable
-    private final Identifier source;
-
-    private final GameType<C> type;
-    @Nullable
-    private final String name;
-    @Nullable
-    private final String translation;
-
-    private final CustomValuesConfig custom;
-
-    private final C config;
-
-    private GameConfig(
-            @Nullable Identifier source,
-            GameType<C> type,
-            @Nullable String name,
-            @Nullable String translation,
-            CustomValuesConfig custom,
-            C config
-    ) {
-        this.source = source;
-        this.type = type;
-        this.name = name;
-        this.translation = translation;
-        this.custom = custom;
-        this.config = config;
-    }
+public record GameConfig<C>(
+        @Nullable Identifier source,
+        GameType<C> type,
+        @Nullable Text name,
+        CustomValuesConfig custom,
+        C config
+) {
+    public static final Codec<GameConfig<?>> CODEC = codecFrom(null);
 
     public static Codec<GameConfig<?>> codecFrom(Identifier source) {
         return new ConfigCodec(source).codec();
@@ -59,40 +39,47 @@ public final class GameConfig<C> {
     /**
      * @return the source location that this config was loaded from, if loaded from a file.
      */
+    @Override
     @Nullable
     public Identifier source() {
         return this.source;
     }
 
-    public GameType<C> type() {
-        return this.type;
-    }
-
     /**
      * @return the name for this game config, defaulted to the game type name if none is specified
      */
+    @Override
     public Text name() {
-        if (this.name != null) {
-            return new LiteralText(this.name);
-        } else if (this.translation != null) {
-            return new TranslatableText(this.translation);
-        } else {
-            return this.type.name();
+        var name = this.name;
+        if (name != null) {
+            return name;
         }
+
+        var translationKey = this.translationKey();
+        if (translationKey != null && hasTranslationFor(translationKey)) {
+            return new TranslatableText(translationKey);
+        }
+
+        return this.type.name();
     }
 
-    public CustomValuesConfig custom() {
-        return this.custom;
+    private static boolean hasTranslationFor(String translationKey) {
+        return ServerTranslations.INSTANCE.getDefaultLanguage().local().contains(translationKey);
     }
 
-    public C config() {
-        return this.config;
+    @Nullable
+    public String translationKey() {
+        if (this.source != null) {
+            return Util.createTranslationKey("game", this.source);
+        } else {
+            return null;
+        }
     }
 
     static final class ConfigCodec extends MapCodec<GameConfig<?>> {
         private final Identifier source;
 
-        ConfigCodec(Identifier source) {
+        ConfigCodec(@Nullable Identifier source) {
             this.source = source;
         }
 
@@ -101,7 +88,6 @@ public final class GameConfig<C> {
             return Stream.of(
                     ops.createString("type"),
                     ops.createString("name"),
-                    ops.createString("translation"),
                     ops.createString("config")
             );
         }
@@ -111,27 +97,15 @@ public final class GameConfig<C> {
             var typeResult = GameType.REGISTRY.decode(ops, input.get("type")).map(Pair::getFirst);
 
             return typeResult.flatMap(type -> {
-                var name = this.decodeStringOrNull(ops, input.get("name"));
-                var translation = this.decodeStringOrNull(ops, input.get("translation"));
-                var custom = this.decodeCustomValues(ops, input.get("custom"));
+                var name = tryDecode(MoreCodecs.TEXT, ops, input.get("name")).orElse(null);
+                var custom = tryDecode(CustomValuesConfig.CODEC, ops, input.get("custom"))
+                        .orElse(CustomValuesConfig.empty());
 
                 var configCodec = type.configCodec();
                 return this.decodeConfig(ops, input, configCodec).map(config -> {
-                    return this.createConfigUnchecked(type, name, translation, custom, config);
+                    return this.createConfigUnchecked(type, name, custom, config);
                 });
             });
-        }
-
-        private <T> String decodeStringOrNull(DynamicOps<T> ops, T input) {
-            return Codec.STRING.decode(ops, input)
-                    .result().map(Pair::getFirst)
-                    .orElse(null);
-        }
-
-        private <T> CustomValuesConfig decodeCustomValues(DynamicOps<T> ops, T input) {
-            return CustomValuesConfig.CODEC.decode(ops, input)
-                    .result().map(Pair::getFirst)
-                    .orElse(CustomValuesConfig.empty());
         }
 
         private <T> DataResult<?> decodeConfig(DynamicOps<T> ops, MapLike<T> input, Codec<?> configCodec) {
@@ -142,9 +116,13 @@ public final class GameConfig<C> {
             }
         }
 
+        private static <T, A> Optional<A> tryDecode(Codec<A> codec, DynamicOps<T> ops, T input) {
+            return codec.decode(ops, input).result().map(Pair::getFirst);
+        }
+
         @SuppressWarnings("unchecked")
-        private <C> GameConfig<C> createConfigUnchecked(GameType<C> type, String name, String translation, CustomValuesConfig custom, Object config) {
-            return new GameConfig<>(this.source, type, name, translation, custom, (C) config);
+        private <C> GameConfig<C> createConfigUnchecked(GameType<C> type, @Nullable Text name, CustomValuesConfig custom, Object config) {
+            return new GameConfig<>(this.source, type, name, custom, (C) config);
         }
 
         @Override
@@ -163,11 +141,7 @@ public final class GameConfig<C> {
             prefix.add("type", GameType.REGISTRY.encodeStart(ops, game.type));
 
             if (game.name != null) {
-                prefix.add("name", Codec.STRING.encodeStart(ops, game.name));
-            }
-
-            if (game.translation != null) {
-                prefix.add("translation", Codec.STRING.encodeStart(ops, game.translation));
+                prefix.add("name", MoreCodecs.TEXT.encodeStart(ops, game.name));
             }
 
             if (!game.custom.isEmpty()) {

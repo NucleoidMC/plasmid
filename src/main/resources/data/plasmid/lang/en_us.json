@@ -1,6 +1,6 @@
 {
-  "game.plasmid.random": "Random Game",
-  "game.plasmid.test": "Plasmid Test Game",
+  "gameType.plasmid.random": "Random Game",
+  "gameType.plasmid.test": "Plasmid Test Game",
   "statistic.plasmid.test": "Plasmid Test Statistic",
   "statistic.bundle.plasmid_test_game": "Plasmid Test Game",
   "item.plasmid.add_region": "Add Region",

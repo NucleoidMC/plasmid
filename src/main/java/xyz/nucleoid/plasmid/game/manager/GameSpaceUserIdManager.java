@@ -37,14 +37,11 @@ final class GameSpaceUserIdManager {
 
     private Identifier generateUniqueId(GameType<?> type, Collection<Identifier> ids) {
         var typeId = this.getIdForType(type);
-        if (ids.isEmpty()) {
-            return typeId;
-        }
 
-        Identifier uniqueId;
-        do {
+        Identifier uniqueId = typeId;
+        while (ids.contains(uniqueId)) {
             uniqueId = this.generateRandomId(typeId);
-        } while (ids.contains(uniqueId));
+        }
 
         return uniqueId;
     }

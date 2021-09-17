@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
@@ -67,7 +68,7 @@ public final class GameType<C> {
     }
 
     public String translationKey() {
-        return "game." + this.id.getNamespace() + "." + this.id.getPath();
+        return Util.createTranslationKey("gameType", this.id);
     }
 
     @Nullable

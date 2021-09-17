@@ -1,6 +1,6 @@
 {
-    "game.plasmid.random": "Juhuslik mäng",
-    "game.plasmid.test": "Plasmidi testmäng",
+    "gameType.plasmid.random": "Juhuslik mäng",
+    "gameType.plasmid.test": "Plasmidi testmäng",
     "text.plasmid.portal.portal_not_found": "Seda kanalit ei leitud!",
     "text.plasmid.join_link_hover": "Liitu kanaliga %s",
     "text.plasmid.chat.switch.all": "Avalikule vestluskanalile lülitatud",
@@ -9,8 +9,6 @@
     "text.plasmid.chunk_generator.generator_not_found": "Kamakageneraatorit IDga \"%s\" ei leitud!",
     "text.plasmid.dimension_options.dimension_not_found": "Dimensiooni IDga \"%s\" ei leitud!",
     "text.plasmid.entry": " - %s",
-    "text.plasmid.event.add.error": "Sind mängu lisamisel esines ootamatu viga!",
-    "text.plasmid.event.join.error": "Sind mängu lisamisel esines ootamatu viga!",
     "text.plasmid.game.join": "%s liitus mängufuajeega!",
     "text.plasmid.game.join.error": "Mänguga liitumisel esines ootamatu tõrge!",
     "text.plasmid.game.join.no_game_open": "Ükski mäng pole avatud!",

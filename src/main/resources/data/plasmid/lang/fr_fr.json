@@ -1,5 +1,5 @@
 {
-  "game.plasmid.random": "Jeu aléatoire",
+  "gameType.plasmid.random": "Jeu aléatoire",
   "item.plasmid.add_region": "Ajouter une région",
   "item.plasmid.include_entity": "Inclure une entité",
   "text.plasmid.portal.portal_not_found": "Ce portail n'a pas été trouvé !",

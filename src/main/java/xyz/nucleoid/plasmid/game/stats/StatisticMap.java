@@ -46,7 +46,7 @@ public class StatisticMap {
      *
      * @return A {@link JsonObject} containing all of the encoded values
      */
-    public JsonObject encodeBundle() {
+    public JsonObject encode() {
         JsonObject obj = new JsonObject();
 
         for (Object2ObjectMap.Entry<StatisticKey<?>, Number> entry : this.values.object2ObjectEntrySet()) {

@@ -1,19 +1,15 @@
 package xyz.nucleoid.plasmid.game.manager;
 
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.*;
-import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
@@ -21,12 +17,9 @@ import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
-import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 import xyz.nucleoid.plasmid.game.world.GameSpaceWorlds;
 
 import java.util.Collection;
-import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class ManagedGameSpace implements GameSpace {
@@ -34,9 +27,7 @@ public final class ManagedGameSpace implements GameSpace {
     private final GameSpaceManager manager;
     private final MutablePlayerSet players;
 
-    private final GameConfig<?> sourceConfig;
-    private final UUID id;
-    private final Identifier userId;
+    private final GameSpaceMetadata metadata;
 
     private final GameSpaceWorlds worlds;
     private final IsolatingPlayerTeleporter playerTeleporter;
@@ -48,21 +39,24 @@ public final class ManagedGameSpace implements GameSpace {
     private final GameActivityState state = new GameActivityState(this);
     private boolean closed;
 
-    private final Object2ObjectMap<String, GameStatisticBundle> statistics = new Object2ObjectOpenHashMap<>();
+    private final GameSpaceStatistics statistics = new GameSpaceStatistics();
 
-    ManagedGameSpace(MinecraftServer server, GameSpaceManager manager, GameConfig<?> sourceConfig, UUID id, Identifier userId) {
+    ManagedGameSpace(MinecraftServer server, GameSpaceManager manager, GameSpaceMetadata metadata) {
         this.server = server;
         this.players = new MutablePlayerSet(server);
         this.manager = manager;
 
-        this.sourceConfig = sourceConfig;
-        this.id = id;
-        this.userId = userId;
+        this.metadata = metadata;
 
         this.worlds = new GameSpaceWorlds(server);
         this.playerTeleporter = new IsolatingPlayerTeleporter(server);
 
         this.openTime = server.getOverworld().getTime();
+    }
+
+    @Override
+    public GameSpaceMetadata getMetadata() {
+        return this.metadata;
     }
 
     @Override
@@ -262,23 +256,13 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     @Override
-    public GameConfig<?> getSourceConfig() {
-        return this.sourceConfig;
-    }
-
-    @Override
-    public UUID getId() {
-        return this.id;
-    }
-
-    @Override
-    public Identifier getUserId() {
-        return this.userId;
-    }
-
-    @Override
     public long getTime() {
         return this.server.getOverworld().getTime() - this.openTime;
+    }
+
+    @Override
+    public GameSpaceStatistics getStatistics() {
+        return this.statistics;
     }
 
     public GameBehavior getBehavior() {
@@ -287,20 +271,5 @@ public final class ManagedGameSpace implements GameSpace {
 
     public IsolatingPlayerTeleporter getPlayerTeleporter() {
         return this.playerTeleporter;
-    }
-
-    @Override
-    public GameStatisticBundle getStatistics(String namespace) {
-        GameStatisticBundle.validateNamespace(namespace); // Will throw an exception if validation fails.
-        return this.statistics.computeIfAbsent(namespace, __ -> new GameStatisticBundle());
-    }
-
-    @Override
-    public void visitAllStatistics(BiConsumer<String, GameStatisticBundle> consumer) {
-        for (var entry : this.statistics.entrySet()) {
-            if (!entry.getValue().isEmpty()) {
-                consumer.accept(entry.getKey(), entry.getValue());
-            }
-        }
     }
 }

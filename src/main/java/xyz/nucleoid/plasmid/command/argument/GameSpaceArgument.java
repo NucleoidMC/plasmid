@@ -12,7 +12,6 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 
 public final class GameSpaceArgument {
     private static final SimpleCommandExceptionType GAME_NOT_FOUND = new SimpleCommandExceptionType(new TranslatableText("text.plasmid.game.not_found"));
@@ -23,7 +22,7 @@ public final class GameSpaceArgument {
                     var gameSpaceManager = GameSpaceManager.get();
 
                     return CommandSource.suggestIdentifiers(
-                            gameSpaceManager.getOpenGameSpaces().stream().map(ManagedGameSpace::getUserId),
+                            gameSpaceManager.getOpenGameSpaces().stream().map(space -> space.getMetadata().userId()),
                             builder
                     );
                 });

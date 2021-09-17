@@ -3,17 +3,12 @@ package xyz.nucleoid.plasmid.game;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
-import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
-import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 
 import java.util.Collection;
-import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -32,6 +27,11 @@ public interface GameSpace {
      * @return the host server of this {@link GameSpace}
      */
     MinecraftServer getServer();
+
+    /**
+     * @return all metadata associated with this {@link GameSpace}
+     */
+    GameSpaceMetadata getMetadata();
 
     /**
      * Sets and replaces the active {@link GameActivity} on this {@link GameSpace}.
@@ -157,38 +157,12 @@ public interface GameSpace {
     GameLifecycle getLifecycle();
 
     /**
-     * @return the {@link GameConfig} that was responsible for creating this {@link GameSpace}
-     */
-    GameConfig<?> getSourceConfig();
-
-    /**
-     * @return the globally unique ID for this {@link GameSpace}
-     */
-    UUID getId();
-
-    /**
-     * Returns the ID assigned to this {@link GameSpace} instance that can be referenced by players in commands.
-     * This ID is not guaranteed to be unique over time, but only unique during the existence of this {@link GameSpace}!
-     *
-     * @return the user-referencable ID for this {@link GameSpace}
-     */
-    Identifier getUserId();
-
-    /**
      * @return the number of ticks that have passed since this {@link GameSpace} was created
      */
     long getTime();
 
     /**
-     * Note: bundle namespaces can only contain the characters a-zA-Z0-9_
-     *
-     * @param namespace The statistic namespace to get a bundle for
-     * @return the {@link GameStatisticBundle} for the given namespace
+     * @return the statistics manager for this {@link GameSpace}
      */
-    GameStatisticBundle getStatistics(String namespace);
-
-    /**
-     * @param consumer Will be called for every non-empty {@link GameStatisticBundle} in this {@link GameSpace}
-     */
-    void visitAllStatistics(BiConsumer<String, GameStatisticBundle> consumer);
+    GameSpaceStatistics getStatistics();
 }

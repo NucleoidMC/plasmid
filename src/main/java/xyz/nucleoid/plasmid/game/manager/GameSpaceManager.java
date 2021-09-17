@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
+import xyz.nucleoid.plasmid.game.GameSpaceMetadata;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.stimuli.EventSource;
 import xyz.nucleoid.stimuli.Stimuli;
@@ -87,7 +88,9 @@ public final class GameSpaceManager {
         var userId = this.userIds.acquire(config);
         Preconditions.checkState(!this.userIdToGameSpace.containsKey(userId), "duplicate GameSpace user id acquired");
 
-        var gameSpace = new ManagedGameSpace(this.server, this, config, id, userId);
+        var metadata = new GameSpaceMetadata(id, userId, config);
+
+        var gameSpace = new ManagedGameSpace(this.server, this, metadata);
         procedure.apply(gameSpace);
 
         this.gameSpaces.add(gameSpace);
@@ -132,10 +135,11 @@ public final class GameSpaceManager {
     }
 
     void removeGameSpace(ManagedGameSpace gameSpace) {
-        this.idToGameSpace.remove(gameSpace.getId(), gameSpace);
-        this.userIdToGameSpace.remove(gameSpace.getUserId(), gameSpace);
+        var metadata = gameSpace.getMetadata();
+        this.idToGameSpace.remove(metadata.id(), gameSpace);
+        this.userIdToGameSpace.remove(metadata.userId(), gameSpace);
         this.gameSpaces.remove(gameSpace);
-        this.userIds.release(gameSpace.getUserId());
+        this.userIds.release(metadata.userId());
     }
 
     void addDimensionToGameSpace(ManagedGameSpace gameSpace, RegistryKey<World> dimension) {

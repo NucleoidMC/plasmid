@@ -39,20 +39,21 @@ public class GameStatisticBundle {
                 && (this.players.isEmpty() || this.players.values().stream().allMatch(StatisticMap::isEmpty));
     }
 
-    public JsonObject encodeBundle() {
+    public JsonObject encode() {
         JsonObject obj = new JsonObject();
         JsonObject players = new JsonObject();
         for (Map.Entry<UUID, StatisticMap> entry : this.players.entrySet()) {
             if (!entry.getValue().isEmpty()) {
-                players.add(entry.getKey().toString(), entry.getValue().encodeBundle());
+                players.add(entry.getKey().toString(), entry.getValue().encode());
             }
         }
 
         obj.add("players", players);
 
         if (!this.global.isEmpty()) {
-            obj.add("global", this.global.encodeBundle());
+            obj.add("global", this.global.encode());
         }
+
         return obj;
     }
 

@@ -31,7 +31,6 @@ import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
 import xyz.nucleoid.plasmid.game.portal.menu.MenuPortalConfig;
 import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandPortalConfig;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
-import xyz.nucleoid.plasmid.party.PartyManager;
 import xyz.nucleoid.plasmid.test.TestGame;
 
 public final class Plasmid implements ModInitializer {
@@ -55,8 +54,6 @@ public final class Plasmid implements ModInitializer {
     }
 
     private void registerCallbacks() {
-        PartyManager.initialize();
-
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
             GameCommand.register(dispatcher);
             GamePortalCommand.register(dispatcher);

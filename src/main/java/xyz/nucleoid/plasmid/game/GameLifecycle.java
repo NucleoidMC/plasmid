@@ -36,6 +36,12 @@ public final class GameLifecycle {
         }
     }
 
+    public void onError(GameSpace gameSpace, Throwable throwable, String context) {
+        for (var listener : this.listeners) {
+            listener.onError(gameSpace, throwable, context);
+        }
+    }
+
     public interface Listeners {
         default void onAddPlayer(GameSpace gameSpace, ServerPlayerEntity player) {
         }
@@ -47,6 +53,9 @@ public final class GameLifecycle {
         }
 
         default void onClosed(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
+        }
+
+        default void onError(GameSpace gameSpace, Throwable throwable, String context) {
         }
     }
 }

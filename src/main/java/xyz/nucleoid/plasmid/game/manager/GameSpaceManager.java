@@ -12,10 +12,8 @@ import net.minecraft.util.Util;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.error.ErrorReporter;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.stimuli.EventSource;
@@ -74,24 +72,13 @@ public final class GameSpaceManager {
     }
 
     public CompletableFuture<ManagedGameSpace> open(GameConfig<?> config) {
-        var future = CompletableFuture.supplyAsync(
+        return CompletableFuture.supplyAsync(
                 () -> config.openProcedure(this.server),
                 Util.getMainWorkerExecutor()
         ).thenApplyAsync(
                 procedure -> this.addGameSpace(config, procedure),
                 this.server
         );
-
-        future.exceptionally(throwable -> {
-            if (GameOpenException.unwrap(throwable) == null) {
-                try (var reporter = ErrorReporter.open(config)) {
-                    reporter.report(throwable, "Opening game");
-                }
-            }
-            return null;
-        });
-
-        return future;
     }
 
     private ManagedGameSpace addGameSpace(GameConfig<?> config, GameOpenProcedure procedure) {

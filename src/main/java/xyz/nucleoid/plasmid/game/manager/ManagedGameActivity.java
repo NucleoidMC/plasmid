@@ -4,7 +4,6 @@ import com.google.common.collect.Iterables;
 import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.error.ErrorReporter;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameResources;
 import xyz.nucleoid.plasmid.game.GameSpace;
@@ -19,8 +18,6 @@ import java.util.Collections;
 public final class ManagedGameActivity implements GameActivity {
     private final ManagedGameSpace space;
 
-    private final ErrorReporter errorReporter;
-
     private final GameEventListeners listeners;
     private final GameRuleMap rules = new GameRuleMap();
     private final GameResources resources = new GameResources();
@@ -28,20 +25,18 @@ public final class ManagedGameActivity implements GameActivity {
     ManagedGameActivity(ManagedGameSpace space) {
         this.space = space;
 
-        this.errorReporter = ErrorReporter.open(space.getSourceConfig());
-
-        var exceptionHandler = createExceptionHandler(this.errorReporter);
+        var exceptionHandler = createExceptionHandler(space);
         this.listeners = new GameEventListeners(exceptionHandler);
     }
 
-    private static GameEventExceptionHandler createExceptionHandler(ErrorReporter errorReporter) {
+    private static GameEventExceptionHandler createExceptionHandler(ManagedGameSpace space) {
         return new GameEventExceptionHandler() {
             @Override
             public <T> void handleException(StimulusEvent<T> event, Throwable throwable) {
                 var listenerName = event.getListenerType().getSimpleName();
 
                 Plasmid.LOGGER.warn("An unexpected exception occurred while invoking {}", listenerName, throwable);
-                errorReporter.report(throwable, "Invoking " + listenerName);
+                space.getLifecycle().onError(space, throwable, "Invoking " + listenerName);
             }
         };
     }
@@ -106,6 +101,5 @@ public final class ManagedGameActivity implements GameActivity {
 
     public void onDestroy() {
         this.resources.close();
-        this.errorReporter.close();
     }
 }

@@ -37,12 +37,12 @@ import java.util.stream.Collectors;
 public final class TeamSelectionLobby {
     private static final String TEAM_KEY = Plasmid.ID + ":team";
 
-    private final GameTeamsList teams;
+    private final GameTeamList teams;
 
     private final Reference2IntMap<GameTeamKey> maxTeamSize = new Reference2IntOpenHashMap<>();
     private final Map<UUID, GameTeamKey> teamPreference = new Object2ObjectOpenHashMap<>();
 
-    private TeamSelectionLobby(GameTeamsList teams) {
+    private TeamSelectionLobby(GameTeamList teams) {
         this.teams = teams;
     }
 
@@ -54,7 +54,7 @@ public final class TeamSelectionLobby {
      * @return a new {@link TeamSelectionLobby} which can have teams added to it
      * @see TeamSelectionLobby#allocate(PlayerIterable, BiConsumer)
      */
-    public static TeamSelectionLobby addTo(GameActivity activity, GameTeamsList teams) {
+    public static TeamSelectionLobby addTo(GameActivity activity, GameTeamList teams) {
         var lobby = new TeamSelectionLobby(teams);
         activity.listen(GamePlayerEvents.ADD, lobby::onAddPlayer);
         activity.listen(ItemUseEvent.EVENT, lobby::onUseItem);

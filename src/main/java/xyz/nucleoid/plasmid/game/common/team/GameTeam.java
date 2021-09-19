@@ -21,4 +21,8 @@ public record GameTeam(
                 GameTeamConfig.MAP_CODEC.forGetter(GameTeam::config)
         ).apply(instance, GameTeam::new);
     });
+
+    public GameTeam withConfig(GameTeamConfig config) {
+        return new GameTeam(this.key, config);
+    }
 }

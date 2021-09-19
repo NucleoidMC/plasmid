@@ -1,6 +1,8 @@
 package xyz.nucleoid.plasmid.game.common.team;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.entity.damage.DamageSource;
@@ -25,16 +27,14 @@ import xyz.nucleoid.plasmid.mixin.chat.PlayerListS2CPacketEntryAccessor;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Simple, {@link GameActivity} specific team manager class.
  */
 @SuppressWarnings({ "unused" })
-public final class TeamManager {
-    private final Map<GameTeamKey, Entry> teams = new Object2ObjectOpenHashMap<>();
+public final class TeamManager implements Iterable<GameTeam> {
+    private final Map<GameTeamKey, State> teamToState = new Object2ObjectLinkedOpenHashMap<>();
     private final Map<UUID, GameTeamKey> playerToTeam = new Object2ObjectOpenHashMap<>();
 
     private final Scoreboard scoreboard = new Scoreboard();
@@ -70,7 +70,7 @@ public final class TeamManager {
      * @return {@code true} if team is registered for the first time
      */
     public boolean addTeam(GameTeamKey key, GameTeamConfig config) {
-        return this.teams.putIfAbsent(key, new Entry(key, config)) == null;
+        return this.addTeam(new GameTeam(key, config));
     }
 
     /**
@@ -81,7 +81,7 @@ public final class TeamManager {
      * @return {@code true} if team is registered for the first time
      */
     public boolean addTeam(GameTeam team) {
-        return this.addTeam(team.key(), team.config());
+        return this.teamToState.putIfAbsent(team.key(), new State(team)) == null;
     }
 
     /**
@@ -90,7 +90,7 @@ public final class TeamManager {
      *
      * @param teams the collection of teams to add
      */
-    public void addTeams(GameTeamsList teams) {
+    public void addTeams(GameTeamList teams) {
         teams.forEach(this::addTeam);
     }
 
@@ -102,7 +102,7 @@ public final class TeamManager {
      * @param config the new {@link GameTeamConfig} to apply to this team
      */
     public void setTeamConfig(GameTeamKey team, GameTeamConfig config) {
-        this.teamEntry(team).setConfig(config);
+        this.teamState(team).setConfig(config);
         this.sendTeamUpdates(team);
     }
 
@@ -114,7 +114,7 @@ public final class TeamManager {
      * @return the associated {@link GameTeamConfig}
      */
     public GameTeamConfig getTeamConfig(GameTeamKey team) {
-        return this.teamEntry(team).config;
+        return this.teamState(team).team.config();
     }
 
     /**
@@ -134,11 +134,11 @@ public final class TeamManager {
             this.removePlayerFrom(player, lastTeam);
         }
 
-        var entry = this.teamEntry(team);
-        if (entry.allPlayers.add(player)) {
+        var state = this.teamState(team);
+        if (state.allPlayers.add(player)) {
             var entity = this.gameSpace.getPlayers().getEntity(player.id());
             if (entity != null) {
-                this.addOnlinePlayer(entity, entry);
+                this.addOnlinePlayer(entity, state);
             }
             return true;
         } else {
@@ -178,11 +178,11 @@ public final class TeamManager {
     public boolean removePlayerFrom(PlayerRef player, GameTeamKey team) {
         this.playerToTeam.remove(player.id(), team);
 
-        var entry = this.teamEntry(team);
-        if (entry.allPlayers.remove(player)) {
+        var state = this.teamState(team);
+        if (state.allPlayers.remove(player)) {
             var entity = this.gameSpace.getPlayers().getEntity(player.id());
             if (entity != null) {
-                this.removeOnlinePlayer(entity, entry);
+                this.removeOnlinePlayer(entity, state);
             }
             return true;
         } else {
@@ -245,7 +245,7 @@ public final class TeamManager {
      * @return a {@link PlayerSet} of all online players within the given team
      */
     public PlayerSet playersIn(GameTeamKey team) {
-        return this.teamEntry(team).onlinePlayers;
+        return this.teamState(team).onlinePlayers;
     }
 
     /**
@@ -255,13 +255,13 @@ public final class TeamManager {
      * @return a {@link Set<PlayerRef>} of all players within the given team
      */
     public Set<PlayerRef> allPlayersIn(GameTeamKey team) {
-        return this.teamEntry(team).allPlayers;
+        return this.teamState(team).allPlayers;
     }
 
     private Text formatPlayerName(ServerPlayerEntity player, Text name) {
         var team = this.teamFor(player);
         if (team != null) {
-            var config = this.teamEntry(team).config;
+            var config = this.teamState(team).team.config();
             var style = Style.EMPTY.withFormatting(config.chatFormatting());
             return new LiteralText("").append(config.prefix())
                     .append(name.shallowCopy().setStyle(style))
@@ -275,10 +275,10 @@ public final class TeamManager {
         GameTeamKey smallest = null;
         int count = Integer.MAX_VALUE;
 
-        for (var entry : this.teams.entrySet()) {
-            int size = entry.getValue().onlinePlayers.size();
+        for (var state : this.teamToState.values()) {
+            int size = state.onlinePlayers.size();
             if (size <= count) {
-                smallest = entry.getKey();
+                smallest = state.team.key();
                 count = size;
             }
         }
@@ -295,15 +295,15 @@ public final class TeamManager {
     }
 
     @NotNull
-    private Entry teamEntry(GameTeamKey team) {
-        return Preconditions.checkNotNull(this.teams.get(team), "unregistered team for " + team);
+    private TeamManager.State teamState(GameTeamKey team) {
+        return Preconditions.checkNotNull(this.teamToState.get(team), "unregistered team for " + team);
     }
 
     private void onAddPlayer(ServerPlayerEntity player) {
         var team = this.teamFor(player);
         if (team != null) {
-            var entry = this.teamEntry(team);
-            this.addOnlinePlayer(player, entry);
+            var state = this.teamState(team);
+            this.addOnlinePlayer(player, state);
         }
 
         this.sendTeamsToPlayer(player);
@@ -312,8 +312,8 @@ public final class TeamManager {
     private void onRemovePlayer(ServerPlayerEntity player) {
         var team = this.teamFor(player);
         if (team != null) {
-            var entry = this.teamEntry(team);
-            this.removeOnlinePlayer(player, entry);
+            var state = this.teamState(team);
+            this.removeOnlinePlayer(player, state);
         }
 
         if (!player.isDisconnected()) {
@@ -326,7 +326,7 @@ public final class TeamManager {
             var playerTeam = this.teamFor(player);
             var attackerTeam = this.teamFor(attacker);
 
-            if (playerTeam != null && playerTeam == attackerTeam && !this.teamEntry(playerTeam).config.friendlyFire()) {
+            if (playerTeam != null && playerTeam == attackerTeam && !this.getTeamConfig(playerTeam).friendlyFire()) {
                 return ActionResult.FAIL;
             }
         }
@@ -339,17 +339,17 @@ public final class TeamManager {
     }
 
     private void sendTeamsToPlayer(ServerPlayerEntity player) {
-        for (var entry : this.teams.values()) {
-            player.networkHandler.sendPacket(TeamS2CPacket.updateTeam(entry.scoreboardTeam, true));
-            for (var member : entry.onlinePlayers) {
+        for (var state : this.teamToState.values()) {
+            player.networkHandler.sendPacket(TeamS2CPacket.updateTeam(state.scoreboardTeam, true));
+            for (var member : state.onlinePlayers) {
                 player.networkHandler.sendPacket(this.updatePlayerName(member));
             }
         }
     }
 
     private void sendRemoveTeamsForPlayer(ServerPlayerEntity player) {
-        for (var entry : this.teams.entrySet()) {
-            var data = entry.getValue();
+        for (var state : this.teamToState.entrySet()) {
+            var data = state.getValue();
 
             player.networkHandler.sendPacket(TeamS2CPacket.updateRemovedTeam(data.scoreboardTeam));
 
@@ -359,28 +359,28 @@ public final class TeamManager {
         }
     }
 
-    private void addOnlinePlayer(ServerPlayerEntity player, Entry entry) {
-        entry.onlinePlayers.add(player);
-        entry.scoreboardTeam.getPlayerList().add(player.getEntityName());
+    private void addOnlinePlayer(ServerPlayerEntity player, State state) {
+        state.onlinePlayers.add(player);
+        state.scoreboardTeam.getPlayerList().add(player.getEntityName());
 
-        this.sendPacketToAll(this.changePlayerTeam(player, entry, TeamS2CPacket.Operation.ADD));
+        this.sendPacketToAll(this.changePlayerTeam(player, state, TeamS2CPacket.Operation.ADD));
         this.sendPacketToAll(this.resetPlayerName(player));
     }
 
-    private void removeOnlinePlayer(ServerPlayerEntity player, Entry entry) {
-        entry.onlinePlayers.remove(player);
-        entry.scoreboardTeam.getPlayerList().remove(player.getEntityName());
+    private void removeOnlinePlayer(ServerPlayerEntity player, State state) {
+        state.onlinePlayers.remove(player);
+        state.scoreboardTeam.getPlayerList().remove(player.getEntityName());
 
-        this.sendPacketToAll(this.changePlayerTeam(player, entry, TeamS2CPacket.Operation.REMOVE));
+        this.sendPacketToAll(this.changePlayerTeam(player, state, TeamS2CPacket.Operation.REMOVE));
         this.sendPacketToAll(this.resetPlayerName(player));
     }
 
     private void sendTeamUpdates(GameTeamKey gameTeamKey) {
-        var entry = this.teamEntry(gameTeamKey);
-        this.sendPacketToAll(TeamS2CPacket.updateTeam(entry.scoreboardTeam, true));
+        var state = this.teamState(gameTeamKey);
+        this.sendPacketToAll(TeamS2CPacket.updateTeam(state.scoreboardTeam, true));
     }
 
-    private TeamS2CPacket changePlayerTeam(ServerPlayerEntity player, Entry team, TeamS2CPacket.Operation operation) {
+    private TeamS2CPacket changePlayerTeam(ServerPlayerEntity player, State team, TeamS2CPacket.Operation operation) {
         return TeamS2CPacket.changePlayerTeam(team.scoreboardTeam, player.getGameProfile().getName(), operation);
     }
 
@@ -405,24 +405,31 @@ public final class TeamManager {
         this.gameSpace.getPlayers().sendPacket(packet);
     }
 
-    final class Entry {
+    @NotNull
+    @Override
+    public Iterator<GameTeam> iterator() {
+        return Iterators.transform(this.teamToState.values().iterator(), state -> state.team);
+    }
+
+    final class State {
         final Set<PlayerRef> allPlayers;
         final MutablePlayerSet onlinePlayers;
         final Team scoreboardTeam;
-        GameTeamConfig config;
 
-        Entry(GameTeamKey teamKey, GameTeamConfig config) {
+        GameTeam team;
+
+        State(GameTeam team) {
             this.allPlayers = new ObjectOpenHashSet<>();
             this.onlinePlayers = new MutablePlayerSet(TeamManager.this.gameSpace.getServer());
 
-            this.scoreboardTeam = new Team(TeamManager.this.scoreboard, teamKey.id());
-            config.applyToScoreboard(this.scoreboardTeam);
+            this.scoreboardTeam = new Team(TeamManager.this.scoreboard, team.key().id());
+            team.config().applyToScoreboard(this.scoreboardTeam);
 
-            this.config = config;
+            this.team = team;
         }
 
         public void setConfig(GameTeamConfig config) {
-            this.config = config;
+            this.team = this.team.withConfig(config);
             config.applyToScoreboard(this.scoreboardTeam);
         }
     }

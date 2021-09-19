@@ -16,10 +16,10 @@ import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.map_templates.BlockBounds;
 import xyz.nucleoid.map_templates.MapTemplate;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameOpenContext;
-import xyz.nucleoid.plasmid.game.GameOpenProcedure;
+import xyz.nucleoid.plasmid.game.*;
+import xyz.nucleoid.plasmid.game.common.GameWaitingLobby;
 import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
+import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
 import xyz.nucleoid.plasmid.game.common.team.GameTeam;
 import xyz.nucleoid.plasmid.game.common.team.GameTeamConfig;
 import xyz.nucleoid.plasmid.game.common.team.GameTeamKey;
@@ -51,13 +51,13 @@ public final class TestGame {
                 .setGameRule(GameRules.KEEP_INVENTORY, true);
 
         return context.openWithWorld(worldConfig, (activity, world) -> {
-            var gameSpace = activity.getGameSpace();
-
             activity.listen(GamePlayerEvents.OFFER, offer -> {
                 var player = offer.player();
                 return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
                         .and(() -> player.changeGameMode(GameMode.ADVENTURE));
             });
+
+            GameWaitingLobby.addTo(activity, new PlayerConfig(1, 99));
 
             activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
             activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);
@@ -68,6 +68,18 @@ public final class TestGame {
                 return ActionResult.FAIL;
             });
 
+            activity.listen(GameActivityEvents.REQUEST_START, () -> startGame(activity.getGameSpace()));
+
+        });
+    }
+
+    private static GameResult startGame(GameSpace gameSpace) {
+        gameSpace.setActivity((activity) -> {
+            long currentTime = gameSpace.getTime();
+            activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
+            activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);
+            activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
+
             var teamManager = TeamManager.addTo(activity);
             teamManager.addTeam(TEAM);
 
@@ -77,7 +89,7 @@ public final class TestGame {
                     .addSidebar(new TranslatableText("text.plasmid.test"));
 
             activity.listen(GameActivityEvents.TICK, () -> {
-                long time = gameSpace.getTime();
+                long time = gameSpace.getTime() - currentTime;
                 if (time % 20 == 0) {
                     sidebar.set(b -> {
                         b.add(new LiteralText("Hello World! " + (time / 20) + "s").setStyle(Style.EMPTY.withColor(0xFF0000)));
@@ -95,7 +107,20 @@ public final class TestGame {
                     gameSpace.close(GameCloseReason.FINISHED);
                 }
             });
+
+            activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
+                player.teleport(0.0, 65.0, 0.0);
+                return ActionResult.FAIL;
+            });
+
+            activity.listen(GamePlayerEvents.OFFER, offer -> {
+                var player = offer.player();
+                return offer.accept(gameSpace.getWorlds().iterator().next(), new Vec3d(0.0, 65.0, 0.0))
+                        .and(() -> player.changeGameMode(GameMode.ADVENTURE));
+            });
         });
+
+        return GameResult.ok();
     }
 
     private static MapTemplate generateMapTemplate() {

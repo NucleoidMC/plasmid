@@ -21,6 +21,7 @@ import net.minecraft.util.Util;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.command.argument.GameConfigArgument;
 import xyz.nucleoid.plasmid.command.argument.GameSpaceArgument;
+import xyz.nucleoid.plasmid.command.ui.GameJoinUi;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameSpace;
@@ -110,19 +111,31 @@ public final class GameCommand {
     // @formatter:on
 
     private static int openGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var game = GameConfigArgument.get(context, "game_config");
-        return openGame(context, game.getSecond());
+        try {
+            var game = GameConfigArgument.get(context, "game_config");
+            return openGame(context, game.getSecond());
+        } catch (Exception e) {
+            e.printStackTrace();
+            context.getSource().sendFeedback(new TranslatableText("text.plasmid.game.open.error").formatted(Formatting.RED), false);
+            return 0;
+        }
     }
 
     private static int openAnonymousGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
-        var result = GameConfig.CODEC.parse(NbtOps.INSTANCE, configNbt);
-        if (result.error().isPresent()) {
-            throw MALFORMED_CONFIG.create(result.error().get());
-        }
+        try {
+            var configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
+            var result = GameConfig.CODEC.parse(NbtOps.INSTANCE, configNbt);
+            if (result.error().isPresent()) {
+                throw MALFORMED_CONFIG.create(result.error().get());
+            }
 
-        var game = result.result().get();
-        return openGame(context, game);
+            var game = result.result().get();
+            return openGame(context, game);
+        } catch (Exception e) {
+            e.printStackTrace();
+            context.getSource().sendFeedback(new TranslatableText("text.plasmid.game.open.error").formatted(Formatting.RED), false);
+            return 0;
+        }
     }
 
     private static int openGame(CommandContext<ServerCommandSource> context, GameConfig<?> config) {
@@ -205,11 +218,8 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    // TODO: display gui with all relevant games?
     private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var gameSpace = getJoinableGameSpace();
-        tryJoinGame(context.getSource().getPlayer(), gameSpace);
-
+        new GameJoinUi(context.getSource().getPlayer()).open();
         return Command.SINGLE_SUCCESS;
     }
 

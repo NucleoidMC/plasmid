@@ -113,8 +113,8 @@ public final record GameTeamConfig(
         private boolean friendlyFire = true;
         private AbstractTeam.CollisionRule collision = AbstractTeam.CollisionRule.ALWAYS;
         private AbstractTeam.VisibilityRule nameTagVisibility = AbstractTeam.VisibilityRule.ALWAYS;
-        private Text prefix = null;
-        private Text suffix = null;
+        private Text prefix = LiteralText.EMPTY;
+        private Text suffix = LiteralText.EMPTY;
 
         Builder() {
         }

@@ -1,11 +1,10 @@
 package xyz.nucleoid.plasmid.game.common;
 
+import net.minecraft.entity.boss.BossBar;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.GameActivity;
@@ -14,6 +13,7 @@ import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
 import xyz.nucleoid.plasmid.game.common.widget.BossBarWidget;
+import xyz.nucleoid.plasmid.game.common.widget.SidebarWidget;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
@@ -21,7 +21,9 @@ import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * A very simple waiting lobby implementation that games can easily apply to their {@link GameActivity}.
@@ -35,23 +37,31 @@ import java.util.Collection;
  */
 public final class GameWaitingLobby {
     private static final Text WAITING_TITLE = new TranslatableText("text.plasmid.game.waiting_lobby.bar.waiting");
-
     private static final int START_REQUESTED_COUNTDOWN = 20 * 3;
+
+    private static final BossBar.Color WAITING_COLOR = BossBar.Color.BLUE;
+    private static final BossBar.Color COUNTING_COLOR = BossBar.Color.GREEN;
+    private static final BossBar.Style BOSS_BAR_STYLE = BossBar.Style.NOTCHED_10;
+
+    private static final Text PADDING_LINE = new LiteralText(" ".repeat(36));
 
     private final GameSpace gameSpace;
     private final PlayerConfig playerConfig;
 
     private final BossBarWidget bar;
+    private final SidebarWidget sidebar;
     private long countdownStart = -1;
     private long countdownDuration = -1;
 
     private boolean startRequested;
     private boolean started;
+    private List<Text> sidebarText;
 
-    private GameWaitingLobby(GameSpace gameSpace, PlayerConfig playerConfig, BossBarWidget bar) {
+    private GameWaitingLobby(GameSpace gameSpace, PlayerConfig playerConfig, BossBarWidget bar, SidebarWidget sidebar) {
         this.gameSpace = gameSpace;
         this.playerConfig = playerConfig;
         this.bar = bar;
+        this.sidebar = sidebar;
     }
 
     /**
@@ -60,12 +70,13 @@ public final class GameWaitingLobby {
      * @param activity the activity to apply to
      * @param playerConfig the config that this waiting lobby should respect regarding player counts and countdowns
      */
-    public static void addTo(GameActivity activity, PlayerConfig playerConfig) {
+    public static GameWaitingLobby addTo(GameActivity activity, PlayerConfig playerConfig) {
+        var sourceConfig = activity.getGameSpace().getMetadata().sourceConfig();
+
         var widgets = GlobalWidgets.addTo(activity);
-        var bar = widgets.addBossBar(WAITING_TITLE);
-
-        var lobby = new GameWaitingLobby(activity.getGameSpace(), playerConfig, bar);
-
+        var bar = widgets.addBossBar(WAITING_TITLE, WAITING_COLOR, BOSS_BAR_STYLE);
+        var sidebar = widgets.addSidebar();
+        var lobby = new GameWaitingLobby(activity.getGameSpace(), playerConfig, bar, sidebar);
         activity.deny(GameRuleType.PVP).deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER)
                 .deny(GameRuleType.CRAFTING).deny(GameRuleType.PORTALS).deny(GameRuleType.THROW_ITEMS)
                 .deny(GameRuleType.INTERACTION).deny(GameRuleType.PLACE_BLOCKS).deny(GameRuleType.BREAK_BLOCKS);
@@ -75,6 +86,38 @@ public final class GameWaitingLobby {
         activity.listen(GamePlayerEvents.SCREEN_JOINS, lobby::screenJoins);
         activity.listen(GamePlayerEvents.OFFER, lobby::offerPlayer);
         activity.listen(GamePlayerEvents.REMOVE, lobby::onRemovePlayer);
+
+
+        lobby.setSidebarLines(sourceConfig.description());
+        var title = sourceConfig.shortName().shallowCopy();
+
+        if (title.getStyle().getColor() == null) {
+            title.setStyle(title.getStyle().withColor(Formatting.GOLD));
+        }
+
+        if (title.getStyle().toString().contains("bold=null")) {
+            title.setStyle(title.getStyle());
+        }
+
+        lobby.sidebar.setTitle(title);
+        lobby.sidebar.show();
+
+        return lobby;
+    }
+    public void setSidebarTitle(Text text) {
+        this.sidebar.setTitle(text);
+    }
+
+    public void setSidebarLines(List<Text> texts) {
+        this.sidebarText = new ArrayList<>(texts.size());
+
+        for (var line : texts) {
+            var text = line.shallowCopy();
+            if (line.getStyle().getColor() == null) {
+                text.setStyle(line.getStyle().withColor(Formatting.YELLOW));
+            }
+            this.sidebarText.add(text);
+        }
     }
 
     private void onTick() {
@@ -87,6 +130,7 @@ public final class GameWaitingLobby {
         if (time % 20 == 0) {
             this.updateCountdown();
             this.tickCountdownBar();
+            this.tickSidebar();
             this.tickCountdownSound();
         }
 
@@ -194,11 +238,41 @@ public final class GameWaitingLobby {
             long remainingSeconds = remainingTicks / 20;
 
             this.bar.setTitle(new TranslatableText("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
+            this.bar.setStyle(COUNTING_COLOR, BOSS_BAR_STYLE);
             this.bar.setProgress((float) remainingTicks / this.countdownDuration);
         } else {
             this.bar.setTitle(WAITING_TITLE);
+            this.bar.setStyle(WAITING_COLOR, BOSS_BAR_STYLE);
             this.bar.setProgress(1.0F);
         }
+    }
+
+    private void tickSidebar() {
+        this.sidebar.set((b) -> {
+            b.add(PADDING_LINE);
+            if (this.countdownStart != -1) {
+                long time = this.gameSpace.getTime();
+                long remainingTicks = this.getRemainingTicks(time);
+                long remainingSeconds = remainingTicks / 20;
+
+                b.add(new TranslatableText("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
+            } else {
+                b.add(WAITING_TITLE);
+            }
+            b.add(LiteralText.EMPTY);
+            b.add(new TranslatableText("text.plasmid.game.waiting_lobby.sidebar.players",
+                    new LiteralText("" + this.gameSpace.getPlayers().size()).formatted(Formatting.AQUA),
+                    new LiteralText("/").formatted(Formatting.GRAY),
+                    new LiteralText("" + this.playerConfig.maxPlayers()).formatted(Formatting.AQUA)));
+
+            if (this.sidebarText != null && !this.sidebarText.isEmpty()) {
+                b.add(LiteralText.EMPTY);
+                for (Text text : this.sidebarText) {
+                    b.add(text);
+                }
+            }
+            b.add(LiteralText.EMPTY);
+        });
     }
 
     private void tickCountdownSound() {

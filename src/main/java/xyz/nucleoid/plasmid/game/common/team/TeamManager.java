@@ -34,8 +34,8 @@ import java.util.UUID;
  */
 @SuppressWarnings({ "unused" })
 public final class TeamManager {
-    private final Map<GameTeam, Entry> teams = new Object2ObjectOpenHashMap<>();
-    private final Map<UUID, GameTeam> playerToTeam = new Object2ObjectOpenHashMap<>();
+    private final Map<GameTeamKey, Entry> teams = new Object2ObjectOpenHashMap<>();
+    private final Map<UUID, GameTeamKey> playerToTeam = new Object2ObjectOpenHashMap<>();
 
     private final Scoreboard scoreboard = new Scoreboard();
     private final GameSpace gameSpace;
@@ -65,11 +65,23 @@ public final class TeamManager {
      * Registers a team to this {@link TeamManager}.
      * Note that attempting to use an unregistered team will throw an exception!
      *
+     * @param key an identifier for the team to add
+     * @param config the configuration for the given team
+     * @return {@code true} if team is registered for the first time
+     */
+    public boolean addTeam(GameTeamKey key, GameTeamConfig config) {
+        return this.teams.putIfAbsent(key, new Entry(key, config)) == null;
+    }
+
+    /**
+     * Registers a team to this {@link TeamManager}.
+     * Note that attempting to use an unregistered team will throw an exception!
+     *
      * @param team the {@link GameTeam} to add
      * @return {@code true} if team is registered for the first time
      */
-    public boolean addTeam(GameTeam team, GameTeamConfig config) {
-        return this.teams.putIfAbsent(team, new Entry(team, config)) == null;
+    public boolean addTeam(GameTeam team) {
+        return this.addTeam(team.key(), team.config());
     }
 
     /**
@@ -78,30 +90,30 @@ public final class TeamManager {
      *
      * @param teams the collection of teams to add
      */
-    public void addTeams(GameTeamsConfig teams) {
-        teams.map().forEach(this::addTeam);
+    public void addTeams(GameTeamsList teams) {
+        teams.forEach(this::addTeam);
     }
 
     /**
-     * Updates the {@link GameTeamConfig} associated with the given {@link GameTeam}.
+     * Updates the {@link GameTeamConfig} associated with the given {@link GameTeamKey}.
      * These changes will then be synced to players and applied immediately.
      *
-     * @param team the {@link GameTeam} to modify
+     * @param team the {@link GameTeamKey} to modify
      * @param config the new {@link GameTeamConfig} to apply to this team
      */
-    public void setTeamConfig(GameTeam team, GameTeamConfig config) {
+    public void setTeamConfig(GameTeamKey team, GameTeamConfig config) {
         this.teamEntry(team).setConfig(config);
         this.sendTeamUpdates(team);
     }
 
     /**
-     * Gets the associated {@link GameTeamConfig} for the given {@link GameTeam}.
+     * Gets the associated {@link GameTeamConfig} for the given {@link GameTeamKey}.
      * Attempting to access a team that is not registered will throw an exception!
      *
      * @param team the team to query
      * @return the associated {@link GameTeamConfig}
      */
-    public GameTeamConfig getTeamConfig(GameTeam team) {
+    public GameTeamConfig getTeamConfig(GameTeamKey team) {
         return this.teamEntry(team).config;
     }
 
@@ -112,7 +124,7 @@ public final class TeamManager {
      * @param team the team to add the player to
      * @return {@code true} if player was successfully added
      */
-    public boolean addPlayerTo(PlayerRef player, GameTeam team) {
+    public boolean addPlayerTo(PlayerRef player, GameTeamKey team) {
         var lastTeam = this.playerToTeam.put(player.id(), team);
         if (lastTeam == team) {
             return false;
@@ -141,7 +153,7 @@ public final class TeamManager {
      * @param team the team to add the player to
      * @return {@code true} if player was successfully added
      */
-    public boolean addPlayerTo(ServerPlayerEntity player, GameTeam team) {
+    public boolean addPlayerTo(ServerPlayerEntity player, GameTeamKey team) {
         return this.addPlayerTo(PlayerRef.of(player), team);
     }
 
@@ -152,7 +164,7 @@ public final class TeamManager {
      * @param team the team to be removed from
      * @return {@code true} if the player was removed from this team
      */
-    public boolean removePlayerFrom(ServerPlayerEntity player, GameTeam team) {
+    public boolean removePlayerFrom(ServerPlayerEntity player, GameTeamKey team) {
         return this.removePlayerFrom(PlayerRef.of(player), team);
     }
 
@@ -163,7 +175,7 @@ public final class TeamManager {
      * @param team the team to be removed from
      * @return {@code true} if the player was removed from this team
      */
-    public boolean removePlayerFrom(PlayerRef player, GameTeam team) {
+    public boolean removePlayerFrom(PlayerRef player, GameTeamKey team) {
         this.playerToTeam.remove(player.id(), team);
 
         var entry = this.teamEntry(team);
@@ -185,7 +197,7 @@ public final class TeamManager {
      * @return the team that the player was removed from, or {@code null}
      */
     @Nullable
-    public GameTeam removePlayer(ServerPlayerEntity player) {
+    public GameTeamKey removePlayer(ServerPlayerEntity player) {
         return this.removePlayer(PlayerRef.of(player));
     }
 
@@ -196,7 +208,7 @@ public final class TeamManager {
      * @return the team that the player was removed from, or {@code null}
      */
     @Nullable
-    public GameTeam removePlayer(PlayerRef player) {
+    public GameTeamKey removePlayer(PlayerRef player) {
         var team = this.teamFor(player);
         if (team != null) {
             this.removePlayerFrom(player, team);
@@ -208,10 +220,10 @@ public final class TeamManager {
      * Returns the team that the given player is apart of.
      *
      * @param player the player to query
-     * @return the player's {@link GameTeam} or {@code null}
+     * @return the player's {@link GameTeamKey} or {@code null}
      */
     @Nullable
-    public GameTeam teamFor(PlayerRef player) {
+    public GameTeamKey teamFor(PlayerRef player) {
         return this.playerToTeam.get(player.id());
     }
 
@@ -219,30 +231,30 @@ public final class TeamManager {
      * Returns the team that the given player is apart of.
      *
      * @param player the player to query
-     * @return the player's {@link GameTeam} or {@code null}
+     * @return the player's {@link GameTeamKey} or {@code null}
      */
     @Nullable
-    public GameTeam teamFor(ServerPlayerEntity player) {
+    public GameTeamKey teamFor(ServerPlayerEntity player) {
         return this.playerToTeam.get(player.getUuid());
     }
 
     /**
      * Gets the {@link PlayerSet} of all online players within the given team.
      *
-     * @param team targeted {@link GameTeam}
+     * @param team targeted {@link GameTeamKey}
      * @return a {@link PlayerSet} of all online players within the given team
      */
-    public PlayerSet playersIn(GameTeam team) {
+    public PlayerSet playersIn(GameTeamKey team) {
         return this.teamEntry(team).onlinePlayers;
     }
 
     /**
      * Gets the {@link Set<PlayerRef>} of all players (including offline!) within the given team.
      *
-     * @param team targeted {@link GameTeam}
+     * @param team targeted {@link GameTeamKey}
      * @return a {@link Set<PlayerRef>} of all players within the given team
      */
-    public Set<PlayerRef> allPlayersIn(GameTeam team) {
+    public Set<PlayerRef> allPlayersIn(GameTeamKey team) {
         return this.teamEntry(team).allPlayers;
     }
 
@@ -259,8 +271,8 @@ public final class TeamManager {
     }
 
     @Nullable
-    public GameTeam getSmallestTeam() {
-        GameTeam smallest = null;
+    public GameTeamKey getSmallestTeam() {
+        GameTeamKey smallest = null;
         int count = Integer.MAX_VALUE;
 
         for (var entry : this.teams.entrySet()) {
@@ -283,7 +295,7 @@ public final class TeamManager {
     }
 
     @NotNull
-    private Entry teamEntry(GameTeam team) {
+    private Entry teamEntry(GameTeamKey team) {
         return Preconditions.checkNotNull(this.teams.get(team), "unregistered team for " + team);
     }
 
@@ -363,8 +375,8 @@ public final class TeamManager {
         this.sendPacketToAll(this.resetPlayerName(player));
     }
 
-    private void sendTeamUpdates(GameTeam gameTeam) {
-        var entry = this.teamEntry(gameTeam);
+    private void sendTeamUpdates(GameTeamKey gameTeamKey) {
+        var entry = this.teamEntry(gameTeamKey);
         this.sendPacketToAll(TeamS2CPacket.updateTeam(entry.scoreboardTeam, true));
     }
 
@@ -399,11 +411,11 @@ public final class TeamManager {
         final Team scoreboardTeam;
         GameTeamConfig config;
 
-        Entry(GameTeam team, GameTeamConfig config) {
+        Entry(GameTeamKey teamKey, GameTeamConfig config) {
             this.allPlayers = new ObjectOpenHashSet<>();
             this.onlinePlayers = new MutablePlayerSet(TeamManager.this.gameSpace.getServer());
 
-            this.scoreboardTeam = new Team(TeamManager.this.scoreboard, team.id());
+            this.scoreboardTeam = new Team(TeamManager.this.scoreboard, teamKey.id());
             config.applyToScoreboard(this.scoreboardTeam);
 
             this.config = config;

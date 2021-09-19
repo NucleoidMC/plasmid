@@ -1,0 +1,34 @@
+package xyz.nucleoid.plasmid.game.common.team;
+
+import com.mojang.serialization.Codec;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
+
+public final record GameTeamsList(List<GameTeam> list) implements Iterable<GameTeam> {
+    public static final Codec<GameTeamsList> CODEC = GameTeam.CODEC.listOf()
+            .xmap(GameTeamsList::new, GameTeamsList::list);
+
+    @NotNull
+    @Override
+    public Iterator<GameTeam> iterator() {
+        return this.list.iterator();
+    }
+
+    public Stream<GameTeam> stream() {
+        return this.list.stream();
+    }
+
+    @Nullable
+    public GameTeam byKey(GameTeamKey key) {
+        for (GameTeam team : this.list) {
+            if (team.key().equals(key)) {
+                return team;
+            }
+        }
+        return null;
+    }
+}

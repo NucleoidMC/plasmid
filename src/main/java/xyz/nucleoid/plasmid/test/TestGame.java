@@ -22,6 +22,7 @@ import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
 import xyz.nucleoid.plasmid.game.common.team.GameTeam;
 import xyz.nucleoid.plasmid.game.common.team.GameTeamConfig;
+import xyz.nucleoid.plasmid.game.common.team.GameTeamKey;
 import xyz.nucleoid.plasmid.game.common.team.TeamManager;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
@@ -34,10 +35,12 @@ import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 public final class TestGame {
     private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(new Identifier(Plasmid.ID, "test"), StatisticKey.StorageType.TOTAL);
 
-    private static final GameTeam TEAM = new GameTeam("players");
-    private static final GameTeamConfig TEAM_CONFIG = GameTeamConfig.builder()
-            .setNameTagVisibility(AbstractTeam.VisibilityRule.NEVER)
-            .build();
+    private static final GameTeam TEAM = new GameTeam(
+            new GameTeamKey("players"),
+            GameTeamConfig.builder()
+                    .setNameTagVisibility(AbstractTeam.VisibilityRule.NEVER)
+                    .build()
+    );
 
     public static GameOpenProcedure open(GameOpenContext<Unit> context) {
         var template = TestGame.generateMapTemplate();
@@ -66,9 +69,9 @@ public final class TestGame {
             });
 
             var teamManager = TeamManager.addTo(activity);
-            teamManager.addTeam(TEAM, TEAM_CONFIG);
+            teamManager.addTeam(TEAM);
 
-            activity.listen(GamePlayerEvents.ADD, player -> teamManager.addPlayerTo(player, TEAM));
+            activity.listen(GamePlayerEvents.ADD, player -> teamManager.addPlayerTo(player, TEAM.key()));
 
             var sidebar = GlobalWidgets.addTo(activity)
                     .addSidebar(new TranslatableText("text.plasmid.test"));

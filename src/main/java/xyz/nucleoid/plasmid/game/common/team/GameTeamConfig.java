@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game.common.team;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.FireworkItem;
 import net.minecraft.item.ItemStack;
@@ -35,7 +36,7 @@ public final record GameTeamConfig(
     private static final Codec<AbstractTeam.CollisionRule> COLLISION_CODEC = MoreCodecs.stringVariants(AbstractTeam.CollisionRule.values(), rule -> rule.name);
     private static final Codec<AbstractTeam.VisibilityRule> VISIBILITY_CODEC = MoreCodecs.stringVariants(AbstractTeam.VisibilityRule.values(), rule -> rule.name);
 
-    public static final Codec<GameTeamConfig> CODEC = RecordCodecBuilder.create(instance -> {
+    public static final MapCodec<GameTeamConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> {
         return instance.group(
                 MoreCodecs.TEXT.fieldOf("name").forGetter(GameTeamConfig::name),
                 Colors.CODEC.optionalFieldOf("color", Colors.NONE).forGetter(GameTeamConfig::colors),
@@ -46,6 +47,8 @@ public final record GameTeamConfig(
                 MoreCodecs.TEXT.optionalFieldOf("suffix", LiteralText.EMPTY).forGetter(GameTeamConfig::suffix)
         ).apply(instance, GameTeamConfig::new);
     });
+
+    public static final Codec<GameTeamConfig> CODEC = MAP_CODEC.codec();
 
     public static final GameTeamConfig DEFAULT = GameTeamConfig.builder().build();
 

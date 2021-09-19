@@ -21,6 +21,7 @@ import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 /**
  * A very simple team selection lobby implementation that allows players to select a team while waiting to start a game.
@@ -28,58 +29,37 @@ import java.util.function.BiConsumer;
  * This makes use of {@link TeamAllocator} in order to assign players teams fairly and take into account maximum team
  * sizes as well as team preferences.
  *
- * @see TeamSelectionLobby#addTeam(GameTeam, GameTeamConfig)
  * @see TeamSelectionLobby#allocate(PlayerIterable, BiConsumer)
- * @see GameTeam
+ * @see GameTeamKey
  * @see TeamAllocator
  * @see xyz.nucleoid.plasmid.game.common.GameWaitingLobby
  */
 public final class TeamSelectionLobby {
     private static final String TEAM_KEY = Plasmid.ID + ":team";
 
-    private final Map<GameTeam, GameTeamConfig> teams = new Object2ObjectOpenHashMap<>();
+    private final GameTeamsList teams;
 
-    private final Reference2IntMap<GameTeam> maxTeamSize = new Reference2IntOpenHashMap<>();
-    private final Map<UUID, GameTeam> teamPreference = new Object2ObjectOpenHashMap<>();
+    private final Reference2IntMap<GameTeamKey> maxTeamSize = new Reference2IntOpenHashMap<>();
+    private final Map<UUID, GameTeamKey> teamPreference = new Object2ObjectOpenHashMap<>();
 
-    private TeamSelectionLobby() {
+    private TeamSelectionLobby(GameTeamsList teams) {
+        this.teams = teams;
     }
 
     /**
      * Applies this team selection lobby implementation to the given {@link GameActivity}.
      *
      * @param activity the activity to apply this lobby to
+     * @param teams the teams to be available for selection
      * @return a new {@link TeamSelectionLobby} which can have teams added to it
-     * @see TeamSelectionLobby#addTeam(GameTeam, GameTeamConfig)
      * @see TeamSelectionLobby#allocate(PlayerIterable, BiConsumer)
      */
-    public static TeamSelectionLobby addTo(GameActivity activity) {
-        var lobby = new TeamSelectionLobby();
+    public static TeamSelectionLobby addTo(GameActivity activity, GameTeamsList teams) {
+        var lobby = new TeamSelectionLobby(teams);
         activity.listen(GamePlayerEvents.ADD, lobby::onAddPlayer);
         activity.listen(ItemUseEvent.EVENT, lobby::onUseItem);
 
         return lobby;
-    }
-
-    /**
-     * Adds a team that can be selected by players within this {@link TeamSelectionLobby}.
-     * This must be run before players join this lobby, or they will not receive the team items!
-     *
-     * @param team the team to add
-     * @param config the configuration for the added team
-     */
-    public void addTeam(GameTeam team, GameTeamConfig config) {
-        this.teams.put(team, config);
-    }
-
-    /**
-     * Adds a collection of teams that can be selected by players within this {@link TeamSelectionLobby}.
-     * This must be run before players join this lobby, or they will not receive the team items!
-     *
-     * @param teams the collection of teams to add
-     */
-    public void addTeams(GameTeamsConfig teams) {
-        teams.map().forEach(this::addTeam);
     }
 
     /**
@@ -88,24 +68,22 @@ public final class TeamSelectionLobby {
      * @param team the team to set a maximum size for
      * @param size the maximum number of players that can be allocated
      */
-    public void setSizeForTeam(GameTeam team, int size) {
+    public void setSizeForTeam(GameTeamKey team, int size) {
         this.maxTeamSize.put(team, size);
     }
 
     private void onAddPlayer(ServerPlayerEntity player) {
         int index = 0;
 
-        for (var entry : this.teams.entrySet()) {
-            var team = entry.getKey();
-            var config = entry.getValue();
-
+        for (var team : this.teams) {
+            var config = team.config();
             var name = new TranslatableText("text.plasmid.team_selection.request_team", config.name())
                     .formatted(Formatting.BOLD, config.chatFormatting());
 
             var stack = new ItemStack(ColoredBlocks.wool(config.blockDyeColor()));
             stack.setCustomName(name);
 
-            stack.getOrCreateTag().putString(TEAM_KEY, team.id());
+            stack.getOrCreateTag().putString(TEAM_KEY, team.key().id());
 
             player.getInventory().setStack(index++, stack);
         }
@@ -116,11 +94,13 @@ public final class TeamSelectionLobby {
 
         if (stack.isIn(ItemTags.WOOL)) {
             var tag = stack.getOrCreateTag();
-            var team = new GameTeam(tag.getString(TEAM_KEY));
+            var key = new GameTeamKey(tag.getString(TEAM_KEY));
 
-            var config = this.teams.get(team);
-            if (config != null) {
-                this.teamPreference.put(player.getUuid(), team);
+            var team = this.teams.byKey(key);
+            if (team != null) {
+                var config = team.config();
+
+                this.teamPreference.put(player.getUuid(), key);
 
                 var message = new TranslatableText("text.plasmid.team_selection.requested_team",
                         new TranslatableText("text.plasmid.team_selection.suffixed_team", config.name()).formatted(config.chatFormatting()));
@@ -141,15 +121,16 @@ public final class TeamSelectionLobby {
      * @param apply a consumer that accepts each player and their corresponding team
      * @see TeamAllocator
      */
-    public void allocate(PlayerIterable players, BiConsumer<GameTeam, ServerPlayerEntity> apply) {
-        var allocator = new TeamAllocator<GameTeam, ServerPlayerEntity>(this.teams.keySet());
+    public void allocate(PlayerIterable players, BiConsumer<GameTeamKey, ServerPlayerEntity> apply) {
+        var teamKeys = this.teams.stream().map(GameTeam::key).collect(Collectors.toList());
+        var allocator = new TeamAllocator<GameTeamKey, ServerPlayerEntity>(teamKeys);
 
         for (var entry : Reference2IntMaps.fastIterable(this.maxTeamSize)) {
             allocator.setSizeForTeam(entry.getKey(), entry.getIntValue());
         }
 
         for (var player : players) {
-            GameTeam preference = this.teamPreference.get(player.getUuid());
+            GameTeamKey preference = this.teamPreference.get(player.getUuid());
             allocator.add(player, preference);
         }
 

@@ -1,14 +1,24 @@
 package xyz.nucleoid.plasmid.game.common.team;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 /**
- * An identifier for a specific team for use within various team-related APIs.
+ * A compound object containing both a {@link GameTeamKey} and a {@link GameTeamConfig}.
  *
+ * @see GameTeamKey
  * @see GameTeamConfig
  * @see TeamManager
  * @see TeamSelectionLobby
  */
-public final record GameTeam(String id) {
-    public static final Codec<GameTeam> CODEC = Codec.STRING.xmap(GameTeam::new, GameTeam::id);
+public record GameTeam(
+        GameTeamKey key,
+        GameTeamConfig config
+) {
+    public static final Codec<GameTeam> CODEC = RecordCodecBuilder.create(instance -> {
+        return instance.group(
+                GameTeamKey.CODEC.fieldOf("key").forGetter(GameTeam::key),
+                GameTeamConfig.MAP_CODEC.forGetter(GameTeam::config)
+        ).apply(instance, GameTeam::new);
+    });
 }

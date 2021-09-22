@@ -3,6 +3,8 @@ package xyz.nucleoid.plasmid.game.config;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import fr.catcore.server.translations.api.ServerTranslations;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -13,7 +15,10 @@ import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.game.GameType;
+import xyz.nucleoid.plasmid.util.PlasmidCodecs;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -22,6 +27,9 @@ public record GameConfig<C>(
         @Nullable Identifier source,
         GameType<C> type,
         @Nullable Text name,
+        @Nullable Text shortName,
+        @Nullable List<Text> description,
+        @Nullable ItemStack icon,
         CustomValuesConfig custom,
         C config
 ) {
@@ -63,6 +71,40 @@ public record GameConfig<C>(
         return this.type.name();
     }
 
+    /**
+     * @return shortened version of the name, defaulted to standard name
+     */
+    @Override
+    public Text shortName() {
+        if (this.shortName != null) {
+            return this.shortName;
+        }
+        return this.name();
+    }
+
+    /**
+     * @return provided description of game, defaults to empty list
+     */
+    @Override
+    public List<Text> description() {
+        if (this.description != null) {
+            return this.description;
+        }
+        return Collections.emptyList();
+    }
+
+    /**
+     * @return game configs icon, defaults to grass block
+     */
+    @Override
+    public ItemStack icon() {
+        if (this.icon != null) {
+            return this.icon;
+        }
+
+        return Items.GRASS_BLOCK.getDefaultStack();
+    }
+
     private static boolean hasTranslationFor(String translationKey) {
         return ServerTranslations.INSTANCE.getDefaultLanguage().local().contains(translationKey);
     }
@@ -88,6 +130,9 @@ public record GameConfig<C>(
             return Stream.of(
                     ops.createString("type"),
                     ops.createString("name"),
+                    ops.createString("short_name"),
+                    ops.createString("description"),
+                    ops.createString("icon"),
                     ops.createString("config")
             );
         }
@@ -97,13 +142,16 @@ public record GameConfig<C>(
             var typeResult = GameType.REGISTRY.decode(ops, input.get("type")).map(Pair::getFirst);
 
             return typeResult.flatMap(type -> {
-                var name = tryDecode(MoreCodecs.TEXT, ops, input.get("name")).orElse(null);
+                var name = tryDecode(PlasmidCodecs.TEXT, ops, input.get("name")).orElse(null);
+                var shortName = tryDecode(PlasmidCodecs.TEXT, ops, input.get("short_name")).orElse(null);
+                var description = tryDecode(Codec.list(PlasmidCodecs.TEXT), ops, input.get("description")).orElse(null);
+                var icon = tryDecode(MoreCodecs.ITEM_STACK, ops, input.get("icon")).orElse(null);
                 var custom = tryDecode(CustomValuesConfig.CODEC, ops, input.get("custom"))
                         .orElse(CustomValuesConfig.empty());
-
                 var configCodec = type.configCodec();
+
                 return this.decodeConfig(ops, input, configCodec).map(config -> {
-                    return this.createConfigUnchecked(type, name, custom, config);
+                    return this.createConfigUnchecked(type, name, shortName, description, icon, custom, config);
                 });
             });
         }
@@ -117,12 +165,16 @@ public record GameConfig<C>(
         }
 
         private static <T, A> Optional<A> tryDecode(Codec<A> codec, DynamicOps<T> ops, T input) {
-            return codec.decode(ops, input).result().map(Pair::getFirst);
+            if (input != null) {
+                return codec.decode(ops, input).result().map(Pair::getFirst);
+            } else {
+                return Optional.empty();
+            }
         }
 
         @SuppressWarnings("unchecked")
-        private <C> GameConfig<C> createConfigUnchecked(GameType<C> type, @Nullable Text name, CustomValuesConfig custom, Object config) {
-            return new GameConfig<>(this.source, type, name, custom, (C) config);
+        private <C> GameConfig<C> createConfigUnchecked(GameType<C> type, @Nullable Text name, @Nullable Text shortName, @Nullable List<Text> description, @Nullable ItemStack icon, CustomValuesConfig custom, Object config) {
+            return new GameConfig<>(this.source, type, name, shortName, description, icon, custom, (C) config);
         }
 
         @Override
@@ -142,6 +194,18 @@ public record GameConfig<C>(
 
             if (game.name != null) {
                 prefix.add("name", MoreCodecs.TEXT.encodeStart(ops, game.name));
+            }
+
+            if (game.shortName != null) {
+                prefix.add("short_name", MoreCodecs.TEXT.encodeStart(ops, game.shortName));
+            }
+
+            if (game.icon != null) {
+                prefix.add("icon", MoreCodecs.ITEM_STACK.encodeStart(ops, game.icon));
+            }
+
+            if (game.description != null) {
+                prefix.add("description", Codec.list(MoreCodecs.TEXT).encodeStart(ops, game.description));
             }
 
             if (!game.custom.isEmpty()) {

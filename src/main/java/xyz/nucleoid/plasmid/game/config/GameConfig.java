@@ -165,9 +165,9 @@ public record GameConfig<C>(
         }
 
         private static <T, A> Optional<A> tryDecode(Codec<A> codec, DynamicOps<T> ops, T input) {
-            try {
+            if (input != null) {
                 return codec.decode(ops, input).result().map(Pair::getFirst);
-            } catch (Exception e) {
+            } else {
                 return Optional.empty();
             }
         }

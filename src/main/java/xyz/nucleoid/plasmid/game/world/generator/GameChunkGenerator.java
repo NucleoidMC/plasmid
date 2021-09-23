@@ -5,16 +5,21 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.structure.StructureManager;
+import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.Heightmap;
+import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.biome.source.FixedBiomeSource;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.StructuresConfig;
@@ -59,7 +64,19 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
     }
 
     @Override
+    public void setStructureStarts(DynamicRegistryManager registryManager, StructureAccessor accessor, Chunk chunk, StructureManager structureManager, long worldSeed) {
+    }
+
+    @Override
+    public void addStructureReferences(StructureWorldAccess world, StructureAccessor accessor, Chunk chunk) {
+    }
+
+    @Override
     public void buildSurface(ChunkRegion region, Chunk chunk) {
+    }
+
+    @Override
+    public void carve(long seed, BiomeAccess access, Chunk chunk, GenerationStep.Carver carver) {
     }
 
     @Override

@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game.config;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import fr.catcore.server.translations.api.ServerTranslations;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -127,14 +128,7 @@ public record GameConfig<C>(
 
         @Override
         public <T> Stream<T> keys(DynamicOps<T> ops) {
-            return Stream.of(
-                    ops.createString("type"),
-                    ops.createString("name"),
-                    ops.createString("short_name"),
-                    ops.createString("description"),
-                    ops.createString("icon"),
-                    ops.createString("config")
-            );
+            return Stream.concat(Stream.of(ops.createString("type"), ops.createString("config")), Metadata.MAP_CODEC.keys(ops));
         }
 
         @Override
@@ -142,16 +136,10 @@ public record GameConfig<C>(
             var typeResult = GameType.REGISTRY.decode(ops, input.get("type")).map(Pair::getFirst);
 
             return typeResult.flatMap(type -> {
-                var name = tryDecode(PlasmidCodecs.TEXT, ops, input.get("name")).orElse(null);
-                var shortName = tryDecode(PlasmidCodecs.TEXT, ops, input.get("short_name")).orElse(null);
-                var description = tryDecode(MoreCodecs.listOrUnit(PlasmidCodecs.TEXT), ops, input.get("description")).orElse(null);
-                var icon = tryDecode(MoreCodecs.ITEM_STACK, ops, input.get("icon")).orElse(null);
-                var custom = tryDecode(CustomValuesConfig.CODEC, ops, input.get("custom"))
-                        .orElse(CustomValuesConfig.empty());
-                var configCodec = type.configCodec();
-
-                return this.decodeConfig(ops, input, configCodec).map(config -> {
-                    return this.createConfigUnchecked(type, name, shortName, description, icon, custom, config);
+                return Metadata.MAP_CODEC.decode(ops, input).flatMap(metadata -> {
+                    return this.decodeConfig(ops, input, type.configCodec()).map(config -> {
+                        return this.createConfigUnchecked(type, metadata, config);
+                    });
                 });
             });
         }
@@ -164,17 +152,14 @@ public record GameConfig<C>(
             }
         }
 
-        private static <T, A> Optional<A> tryDecode(Codec<A> codec, DynamicOps<T> ops, T input) {
-            if (input != null) {
-                return codec.decode(ops, input).result().map(Pair::getFirst);
-            } else {
-                return Optional.empty();
-            }
-        }
-
         @SuppressWarnings("unchecked")
-        private <C> GameConfig<C> createConfigUnchecked(GameType<C> type, @Nullable Text name, @Nullable Text shortName, @Nullable List<Text> description, @Nullable ItemStack icon, CustomValuesConfig custom, Object config) {
-            return new GameConfig<>(this.source, type, name, shortName, description, icon, custom, (C) config);
+        private <C> GameConfig<C> createConfigUnchecked(GameType<C> type, Metadata metadata, Object config) {
+            return new GameConfig<>(
+                    this.source, type,
+                    metadata.name.orElse(null), metadata.shortName.orElse(null), metadata.description,
+                    metadata.icon, metadata.custom,
+                    (C) config
+            );
         }
 
         @Override
@@ -192,27 +177,28 @@ public record GameConfig<C>(
 
             prefix.add("type", GameType.REGISTRY.encodeStart(ops, game.type));
 
-            if (game.name != null) {
-                prefix.add("name", MoreCodecs.TEXT.encodeStart(ops, game.name));
-            }
-
-            if (game.shortName != null) {
-                prefix.add("short_name", MoreCodecs.TEXT.encodeStart(ops, game.shortName));
-            }
-
-            if (game.icon != null) {
-                prefix.add("icon", MoreCodecs.ITEM_STACK.encodeStart(ops, game.icon));
-            }
-
-            if (game.description != null) {
-                prefix.add("description", Codec.list(MoreCodecs.TEXT).encodeStart(ops, game.description));
-            }
-
-            if (!game.custom.isEmpty()) {
-                prefix.add("custom", CustomValuesConfig.CODEC.encodeStart(ops, game.custom));
-            }
+            var metadata = new Metadata(
+                    Optional.ofNullable(game.name), Optional.ofNullable(game.shortName), game.description,
+                    game.icon, game.custom
+            );
+            prefix = Metadata.MAP_CODEC.encode(metadata, ops, prefix);
 
             return prefix;
         }
+    }
+
+    static final record Metadata(
+            Optional<Text> name, Optional<Text> shortName, List<Text> description,
+            ItemStack icon, CustomValuesConfig custom
+    ) {
+        static final MapCodec<Metadata> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> {
+            return instance.group(
+                    PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(Metadata::name),
+                    PlasmidCodecs.TEXT.optionalFieldOf("short_name").forGetter(Metadata::shortName),
+                    MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).fieldOf("description").forGetter(Metadata::description),
+                    MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(Metadata::icon),
+                    CustomValuesConfig.CODEC.fieldOf("name").orElseGet(CustomValuesConfig::empty).forGetter(Metadata::custom)
+            ).apply(instance, Metadata::new);
+        });
     }
 }

@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ 1.16 ]
+    branches: [ 1.17 ]
 
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 16
 
       - name: Read mod version from Gradle
         id: read_version

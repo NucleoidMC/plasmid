@@ -156,7 +156,7 @@ public record GameConfig<C>(
         private <C> GameConfig<C> createConfigUnchecked(GameType<C> type, Metadata metadata, Object config) {
             return new GameConfig<>(
                     this.source, type,
-                    metadata.name.orElse(null), metadata.shortName.orElse(null), metadata.description,
+                    metadata.name.orElse(null), metadata.shortName.orElse(null), metadata.description.orElse(null),
                     metadata.icon, metadata.custom,
                     (C) config
             );
@@ -178,7 +178,7 @@ public record GameConfig<C>(
             prefix.add("type", GameType.REGISTRY.encodeStart(ops, game.type));
 
             var metadata = new Metadata(
-                    Optional.ofNullable(game.name), Optional.ofNullable(game.shortName), game.description,
+                    Optional.ofNullable(game.name), Optional.ofNullable(game.shortName), Optional.ofNullable(game.description),
                     game.icon, game.custom
             );
             prefix = Metadata.MAP_CODEC.encode(metadata, ops, prefix);
@@ -188,14 +188,14 @@ public record GameConfig<C>(
     }
 
     static final record Metadata(
-            Optional<Text> name, Optional<Text> shortName, List<Text> description,
+            Optional<Text> name, Optional<Text> shortName, Optional<List<Text>> description,
             ItemStack icon, CustomValuesConfig custom
     ) {
         static final MapCodec<Metadata> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> {
             return instance.group(
                     PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(Metadata::name),
                     PlasmidCodecs.TEXT.optionalFieldOf("short_name").forGetter(Metadata::shortName),
-                    MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).fieldOf("description").forGetter(Metadata::description),
+                    MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(Metadata::description),
                     MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(Metadata::icon),
                     CustomValuesConfig.CODEC.fieldOf("name").orElseGet(CustomValuesConfig::empty).forGetter(Metadata::custom)
             ).apply(instance, Metadata::new);

@@ -144,7 +144,7 @@ public record GameConfig<C>(
             return typeResult.flatMap(type -> {
                 var name = tryDecode(PlasmidCodecs.TEXT, ops, input.get("name")).orElse(null);
                 var shortName = tryDecode(PlasmidCodecs.TEXT, ops, input.get("short_name")).orElse(null);
-                var description = tryDecode(Codec.list(PlasmidCodecs.TEXT), ops, input.get("description")).orElse(null);
+                var description = tryDecode(MoreCodecs.listOrUnit(PlasmidCodecs.TEXT), ops, input.get("description")).orElse(null);
                 var icon = tryDecode(MoreCodecs.ITEM_STACK, ops, input.get("icon")).orElse(null);
                 var custom = tryDecode(CustomValuesConfig.CODEC, ops, input.get("custom"))
                         .orElse(CustomValuesConfig.empty());

@@ -10,6 +10,7 @@ import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -21,7 +22,7 @@ public class GameJoinUi extends SimpleGui {
     public GameJoinUi(ServerPlayerEntity player) {
         super(ScreenHandlerType.GENERIC_9X6, player, true);
         this.setTitle(new TranslatableText("text.plasmid.ui.game_join.title"));
-        updateGames();
+        this.updateGames();
     }
 
     @Override
@@ -29,7 +30,7 @@ public class GameJoinUi extends SimpleGui {
         super.onTick();
         this.tick++;
         if (this.tick % 20 == 0) {
-            updateGames();
+            this.updateGames();
         }
     }
 
@@ -41,7 +42,7 @@ public class GameJoinUi extends SimpleGui {
 
         for (ManagedGameSpace gameSpace : games) {
             if (this.getFirstEmptySlot() != -1) {
-                this.setSlot(i++, createIconFor(gameSpace));
+                this.setSlot(i++, this.createIconFor(gameSpace));
             }
         }
 
@@ -72,7 +73,17 @@ public class GameJoinUi extends SimpleGui {
                         new LiteralText(gameSpace.getPlayers().size() + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
         );
 
+        element.setCallback((a, b, c, d) -> tryJoinGame(this.getPlayer(), gameSpace));
 
         return element;
+    }
+
+    private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
+        player.server.submit(() -> {
+            var joiner = new GamePlayerJoiner(gameSpace);
+
+            var results = joiner.tryJoin(player);
+            results.sendErrorsTo(player);
+        });
     }
 }

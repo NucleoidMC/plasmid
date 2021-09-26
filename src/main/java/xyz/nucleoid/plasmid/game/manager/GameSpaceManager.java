@@ -91,13 +91,14 @@ public final class GameSpaceManager {
         var metadata = new GameSpaceMetadata(id, userId, config);
 
         var gameSpace = new ManagedGameSpace(this.server, this, metadata);
-        procedure.apply(gameSpace);
 
         this.gameSpaces.add(gameSpace);
         this.idToGameSpace.put(id, gameSpace);
         this.userIdToGameSpace.put(userId, gameSpace);
 
         GameEvents.OPENED.invoker().onGameSpaceOpened(config, gameSpace);
+
+        procedure.apply(gameSpace);
 
         return gameSpace;
     }

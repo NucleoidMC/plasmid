@@ -161,6 +161,11 @@ public final class ManagedGameSpace implements GameSpace {
         return this.statistics;
     }
 
+    @Override
+    public boolean isClosed() {
+        return this.closed;
+    }
+
     public GameBehavior getBehavior() {
         return this.state;
     }

@@ -103,4 +103,9 @@ public interface GameSpace {
      * @return the statistics manager for this {@link GameSpace}
      */
     GameSpaceStatistics getStatistics();
+
+    /**
+     * @return true if this GameSpace is closed, false otherwise
+     */
+    boolean isClosed();
 }

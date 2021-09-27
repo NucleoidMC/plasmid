@@ -6,6 +6,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameLifecycle;
 import xyz.nucleoid.plasmid.game.GameOpenException;
@@ -36,7 +37,13 @@ public final class OnDemandGame {
 
     public CompletableFuture<ManagedGameSpace> getOrOpen(MinecraftServer server) {
         if (this.gameFuture == null) {
-            this.gameFuture = this.openGame(server);
+            var gameFuture = this.openGame(server);
+
+            if (!gameFuture.isCompletedExceptionally()) {
+                this.gameFuture = gameFuture;
+            }
+
+            return gameFuture;
         }
         return this.gameFuture;
     }
@@ -50,7 +57,9 @@ public final class OnDemandGame {
         if (config == null) {
             var future = new CompletableFuture<ManagedGameSpace>();
             var error = new TranslatableText("text.plasmid.game_config.game_config_does_not_exist", this.gameId);
-            future.completeExceptionally(new GameOpenException(error));
+            var exception = new GameOpenException(error);
+            future.completeExceptionally(exception);
+            Plasmid.LOGGER.warn(exception);
             return future;
         }
 

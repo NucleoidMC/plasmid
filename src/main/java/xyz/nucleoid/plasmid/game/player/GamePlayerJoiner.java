@@ -19,22 +19,16 @@ import java.util.Set;
  * members, screening, and offering players to the {@link GameSpace}.
  */
 public final class GamePlayerJoiner {
-    private final GameSpace gameSpace;
-
-    public GamePlayerJoiner(GameSpace gameSpace) {
-        this.gameSpace = gameSpace;
-    }
-
-    public Results tryJoin(ServerPlayerEntity player) {
+    public static Results tryJoin(ServerPlayerEntity player, GameSpace gameSpace) {
         try {
-            var players = this.collectPlayersForJoin(player, this.gameSpace);
-            return this.tryJoinAll(players, this.gameSpace);
+            var players = collectPlayersForJoin(player, gameSpace);
+            return tryJoinAll(players, gameSpace);
         } catch (Throwable throwable) {
-            return this.handleJoinException(throwable);
+            return handleJoinException(throwable);
         }
     }
 
-    private Set<ServerPlayerEntity> collectPlayersForJoin(ServerPlayerEntity player, GameSpace gameSpace) {
+    private static Set<ServerPlayerEntity> collectPlayersForJoin(ServerPlayerEntity player, GameSpace gameSpace) {
         Set<ServerPlayerEntity> players = new ReferenceOpenHashSet<>();
         players.add(player);
 
@@ -43,7 +37,7 @@ public final class GamePlayerJoiner {
         return players;
     }
 
-    private Results tryJoinAll(Collection<ServerPlayerEntity> players, GameSpace gameSpace) {
+    private static Results tryJoinAll(Collection<ServerPlayerEntity> players, GameSpace gameSpace) {
         var results = new Results();
 
         var screenResult = gameSpace.getPlayers().screenJoins(players);
@@ -62,13 +56,13 @@ public final class GamePlayerJoiner {
         return results;
     }
 
-    private Results handleJoinException(Throwable throwable) {
+    public static Results handleJoinException(Throwable throwable) {
         var results = new Results();
-        results.globalError = this.getFeedbackForException(throwable);
+        results.globalError = getFeedbackForException(throwable);
         return results;
     }
 
-    private Text getFeedbackForException(Throwable throwable) {
+    private static Text getFeedbackForException(Throwable throwable) {
         var gameOpenException = GameOpenException.unwrap(throwable);
         if (gameOpenException != null) {
             return gameOpenException.getReason().shallowCopy();

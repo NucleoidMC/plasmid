@@ -36,16 +36,11 @@ public final class OnDemandGame {
     }
 
     public CompletableFuture<ManagedGameSpace> getOrOpen(MinecraftServer server) {
-        if (this.gameFuture == null) {
-            var gameFuture = this.openGame(server);
-
-            if (!gameFuture.isCompletedExceptionally()) {
-                this.gameFuture = gameFuture;
-            }
-
-            return gameFuture;
+        var future = this.gameFuture;
+        if (future == null) {
+            this.gameFuture = future = this.openGame(server);
         }
-        return this.gameFuture;
+        return future;
     }
 
     private void onClose() {
@@ -55,11 +50,12 @@ public final class OnDemandGame {
     private CompletableFuture<ManagedGameSpace> openGame(MinecraftServer server) {
         var config = GameConfigs.get(this.gameId);
         if (config == null) {
+            Plasmid.LOGGER.warn("Missing game config for on-demand game with id '{}'", this.gameId);
+
             var future = new CompletableFuture<ManagedGameSpace>();
             var error = new TranslatableText("text.plasmid.game_config.game_config_does_not_exist", this.gameId);
-            var exception = new GameOpenException(error);
-            future.completeExceptionally(exception);
-            Plasmid.LOGGER.warn(exception);
+            future.completeExceptionally(new GameOpenException(error));
+
             return future;
         }
 
@@ -73,11 +69,9 @@ public final class OnDemandGame {
 
     public int getPlayerCount() {
         var future = this.gameFuture;
-        if (future != null) {
-            var game = future.getNow(null);
-            if (game != null) {
-                return game.getPlayers().size();
-            }
+        if (future != null && future.isDone() && !future.isCompletedExceptionally()) {
+            var game = future.join();
+            return game.getPlayers().size();
         }
         return 0;
     }

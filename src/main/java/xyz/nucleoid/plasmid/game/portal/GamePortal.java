@@ -43,11 +43,17 @@ public final class GamePortal {
     public void requestJoin(ServerPlayerEntity player) {
         CompletableFuture.supplyAsync(() -> this.backend.requestJoin(player))
                 .thenCompose(Function.identity())
-                .thenAcceptAsync(gameSpace -> {
-                    var joiner = new GamePlayerJoiner(gameSpace);
+                .handleAsync((gameSpace, throwable) -> {
+                    GamePlayerJoiner.Results results;
+                    if (gameSpace != null) {
+                        results = GamePlayerJoiner.tryJoin(player, gameSpace);
+                    } else {
+                        results = GamePlayerJoiner.handleJoinException(throwable);
+                    }
 
-                    var results = joiner.tryJoin(player);
                     results.sendErrorsTo(player);
+
+                    return null;
                 }, this.server);
     }
 

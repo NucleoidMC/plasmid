@@ -273,9 +273,7 @@ public final class GameCommand {
 
     private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
         player.server.submit(() -> {
-            var joiner = new GamePlayerJoiner(gameSpace);
-
-            var results = joiner.tryJoin(player);
+            var results = GamePlayerJoiner.tryJoin(player, gameSpace);
             results.sendErrorsTo(player);
         });
     }

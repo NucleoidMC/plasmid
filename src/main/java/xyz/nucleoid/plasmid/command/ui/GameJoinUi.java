@@ -56,12 +56,6 @@ public class GameJoinUi extends SimpleGui {
         var games = new ArrayList<>(GameSpaceManager.get().getOpenGameSpaces());
         games.sort(Comparator.comparingInt(space -> space.getPlayers().size()));
 
-        if (games.size() != 0) {
-            for (int x = 0; x < 183; x++) {
-                games.add(games.get(0));
-            }
-        }
-
         int limit = this.size;
         this.pageSize = 0;
 

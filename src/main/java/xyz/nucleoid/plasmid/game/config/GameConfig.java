@@ -197,7 +197,7 @@ public record GameConfig<C>(
                     PlasmidCodecs.TEXT.optionalFieldOf("short_name").forGetter(Metadata::shortName),
                     MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(Metadata::description),
                     MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(Metadata::icon),
-                    CustomValuesConfig.CODEC.fieldOf("name").orElseGet(CustomValuesConfig::empty).forGetter(Metadata::custom)
+                    CustomValuesConfig.CODEC.fieldOf("custom").orElseGet(CustomValuesConfig::empty).forGetter(Metadata::custom)
             ).apply(instance, Metadata::new);
         });
     }

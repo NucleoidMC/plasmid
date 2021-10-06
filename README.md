@@ -8,7 +8,8 @@ You may even be interested in playing some of them over on our testing Minecraft
 You can also find us on our [Discord](https://nucleoid.xyz/discord) if you have any troubles or queries, or would like to get involved.
 
 ## Using
-This is a mirror of our [Getting Started](https://github.com/NucleoidMC/plasmid/wiki/Getting-Started) wiki page and provides a basic introduction to Plasmid concepts.
+This is a mirror of our [Getting Started](https://docs.nucleoid.xyz/plasmid/01_getting_started/) wiki page and provides a basic introduction to Plasmid concepts.
+You can view our [wiki site](https://docs.nucleoid.xyz/plasmid/) for more detailed information.
 
 If you would like to get up and running quickly with a basic game setup, clone the [plasmid-starter](https://github.com/NucleoidMC/plasmid-starter) repository, run `init.py`, and then delete `.git`, `README.md`, and `init.py`. Alternatively, if you are looking for examples of existing implemented games, take a look through the [Nucleoid Organisation](https://github.com/NucleoidMC) repositories.
 

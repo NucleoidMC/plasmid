@@ -42,6 +42,42 @@ public final class GameLogic {
     }
 
     /**
+     * Sets a global rule on this {@link GameLogic} to {@link RuleResult#ALLOW}.
+     *
+     * @param rule the rule type
+     * @return the updated {@link GameLogic}
+     * @see GameLogic#setRule(GameRule, RuleResult)
+     */
+    public GameLogic allow(GameRule rule) {
+        return this.setRule(rule, RuleResult.ALLOW);
+    }
+
+    /**
+     * Sets a global rule on this {@link GameLogic} to {@link RuleResult#DENY}.
+     *
+     * @param rule the rule type
+     * @return the updated {@link GameLogic}
+     * @see GameLogic#setRule(GameRule, RuleResult)
+     */
+    public GameLogic deny(GameRule rule) {
+        return this.setRule(rule, RuleResult.DENY);
+    }
+
+    /**
+     * Attaches a listener for the given event to this {@link GameLogic}
+     *
+     * @param event the event type to listen for
+     * @param listener the listener to call when this event is invoked
+     * @param <T> the event listener type
+     * @return the updated {@link GameLogic}
+     * @deprecated use {@link GameLogic#listen(EventType, Object)}
+     */
+    @Deprecated
+    public <T> GameLogic on(EventType<T> event, T listener) {
+        return this.listen(event, listener);
+    }
+
+    /**
      * Attaches a listener for the given event to this {@link GameLogic}
      *
      * @param event the event type to listen for
@@ -49,7 +85,7 @@ public final class GameLogic {
      * @param <T> the event listener type
      * @return the updated {@link GameLogic}
      */
-    public <T> GameLogic on(EventType<T> event, T listener) {
+    public <T> GameLogic listen(EventType<T> event, T listener) {
         this.listeners.add(event, listener);
         return this;
     }
@@ -71,8 +107,17 @@ public final class GameLogic {
 
     /**
      * @return the parent {@link GameSpace} that this logic acts upon
+     * @deprecated use {@link GameLogic#getGameSpace()}
      */
+    @Deprecated
     public GameSpace getSpace() {
+        return this.getGameSpace();
+    }
+
+    /**
+     * @return the parent {@link GameSpace} that this logic acts upon
+     */
+    public GameSpace getGameSpace() {
         return this.space;
     }
 

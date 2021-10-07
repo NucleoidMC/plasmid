@@ -71,8 +71,17 @@ public final class GameLogic {
 
     /**
      * @return the parent {@link GameSpace} that this logic acts upon
+     * @deprecated use {@link GameLogic#getGameSpace()}
      */
+    @Deprecated
     public GameSpace getSpace() {
+        return this.getGameSpace();
+    }
+
+    /**
+     * @return the parent {@link GameSpace} that this logic acts upon
+     */
+    public GameSpace getGameSpace() {
         return this.space;
     }
 

@@ -48,8 +48,22 @@ public final class GameLogic {
      * @param listener the listener to call when this event is invoked
      * @param <T> the event listener type
      * @return the updated {@link GameLogic}
+     * @deprecated use {@link GameLogic#listen(EventType, Object)}
      */
+    @Deprecated
     public <T> GameLogic on(EventType<T> event, T listener) {
+        return this.listen(event, listener);
+    }
+
+    /**
+     * Attaches a listener for the given event to this {@link GameLogic}
+     *
+     * @param event the event type to listen for
+     * @param listener the listener to call when this event is invoked
+     * @param <T> the event listener type
+     * @return the updated {@link GameLogic}
+     */
+    public <T> GameLogic listen(EventType<T> event, T listener) {
         this.listeners.add(event, listener);
         return this;
     }

@@ -42,6 +42,28 @@ public final class GameLogic {
     }
 
     /**
+     * Sets a global rule on this {@link GameLogic} to {@link RuleResult#ALLOW}.
+     *
+     * @param rule the rule type
+     * @return the updated {@link GameLogic}
+     * @see GameLogic#setRule(GameRule, RuleResult)
+     */
+    public GameLogic allow(GameRule rule) {
+        return this.setRule(rule, RuleResult.ALLOW);
+    }
+
+    /**
+     * Sets a global rule on this {@link GameLogic} to {@link RuleResult#DENY}.
+     *
+     * @param rule the rule type
+     * @return the updated {@link GameLogic}
+     * @see GameLogic#setRule(GameRule, RuleResult)
+     */
+    public GameLogic deny(GameRule rule) {
+        return this.setRule(rule, RuleResult.DENY);
+    }
+
+    /**
      * Attaches a listener for the given event to this {@link GameLogic}
      *
      * @param event the event type to listen for

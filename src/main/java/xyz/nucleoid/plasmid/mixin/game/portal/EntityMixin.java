@@ -9,8 +9,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -37,7 +35,6 @@ public abstract class EntityMixin implements GamePortalInterface {
     private EntityHologram hologram;
     private GamePortal portal;
     private Identifier loadedPortalId;
-    private boolean portalActive = false;
 
     @Override
     public boolean interactWithPortal(ServerPlayerEntity player) {
@@ -53,9 +50,6 @@ public abstract class EntityMixin implements GamePortalInterface {
         this.portal = portal;
         if (portal == null) {
             this.removeHologram();
-            this.loadedPortalId = null;
-        } else {
-            this.loadedPortalId = portal.getId();
         }
     }
 
@@ -63,11 +57,6 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Override
     public GamePortal getPortal() {
         return this.portal;
-    }
-
-    @Override
-    public @Nullable Identifier getStoredPortalId() {
-        return this.loadedPortalId;
     }
 
     @Override
@@ -112,13 +101,9 @@ public abstract class EntityMixin implements GamePortalInterface {
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
-        if (!this.portalActive && this.loadedPortalId != null) {
+        if (this.loadedPortalId != null) {
             this.tryConnectTo(this.loadedPortalId);
-            this.portalActive = true;
-
-            if (this.portal == null) {
-                this.getOrCreateHologram().setText(0, new TranslatableText("text.plasmid.game_portal.not_found", this.loadedPortalId.toString()).formatted(Formatting.RED));
-            }
+            this.loadedPortalId = null;
         }
     }
 

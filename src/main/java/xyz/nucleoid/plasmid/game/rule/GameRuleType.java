@@ -20,6 +20,7 @@ import xyz.nucleoid.stimuli.event.item.ItemThrowEvent;
 import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerConsumeHungerEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
+import xyz.nucleoid.stimuli.event.world.FireTickEvent;
 import xyz.nucleoid.stimuli.event.world.FluidFlowEvent;
 import xyz.nucleoid.stimuli.event.world.IceMeltEvent;
 import xyz.nucleoid.stimuli.event.world.NetherPortalOpenEvent;
@@ -91,6 +92,8 @@ public final class GameRuleType {
                 }
             });
 
+    public static final GameRuleType FIRE_TICK = GameRuleType.create()
+            .enforces(FireTickEvent.EVENT, result -> (world, pos) -> result);
     public static final GameRuleType FLUID_FLOW = GameRuleType.create()
             .enforces(FluidFlowEvent.EVENT, result -> (world, fluidPos, fluidBlock, flowDirection, flowTo, flowToBlock) -> result);
     public static final GameRuleType ICE_MELT = GameRuleType.create()

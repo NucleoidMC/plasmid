@@ -17,12 +17,15 @@ public interface GamePortalInterface {
     @Nullable
     GamePortal getPortal();
 
+    @Nullable
+    Identifier getStoredPortalId();
+
     void setDisplay(GamePortalDisplay display);
 
     default void serializePortal(NbtCompound root) {
-        var connection = this.getPortal();
+        var connection = this.getStoredPortalId();
         if (connection != null) {
-            root.putString(NBT_KEY, connection.getId().toString());
+            root.putString(NBT_KEY, connection.toString());
         }
     }
 

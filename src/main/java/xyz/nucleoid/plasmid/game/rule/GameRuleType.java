@@ -19,6 +19,7 @@ import xyz.nucleoid.stimuli.event.item.ItemThrowEvent;
 import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerConsumeHungerEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
+import xyz.nucleoid.stimuli.event.world.FluidFlowEvent;
 import xyz.nucleoid.stimuli.event.world.NetherPortalOpenEvent;
 
 import java.util.ArrayList;
@@ -85,6 +86,9 @@ public final class GameRuleType {
                     player.world.setBlockState(pos, Blocks.AIR.getDefaultState());
                 }
             });
+
+    public static final GameRuleType FLUID_FLOW = GameRuleType.create()
+            .enforces(FluidFlowEvent.EVENT, result -> (world, fluidPos, fluidBlock, flowDirection, flowTo, flowToBlock) -> result);
 
     public static final GameRuleType DISMOUNT_VEHICLE = GameRuleType.create();
     public static final GameRuleType PLAYER_PROJECTILE_KNOCKBACK = GameRuleType.create();

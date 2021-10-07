@@ -15,6 +15,7 @@ import xyz.nucleoid.stimuli.event.block.BlockPlaceEvent;
 import xyz.nucleoid.stimuli.event.block.BlockUseEvent;
 import xyz.nucleoid.stimuli.event.entity.EntityUseEvent;
 import xyz.nucleoid.stimuli.event.item.ItemCraftEvent;
+import xyz.nucleoid.stimuli.event.item.ItemPickupEvent;
 import xyz.nucleoid.stimuli.event.item.ItemThrowEvent;
 import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerConsumeHungerEvent;
@@ -77,6 +78,8 @@ public final class GameRuleType {
 
     public static final GameRuleType THROW_ITEMS = GameRuleType.create()
             .enforces(ItemThrowEvent.EVENT, result -> (player, slot, stack) -> result);
+    public static final GameRuleType PICKUP_ITEMS = GameRuleType.create()
+            .enforces(ItemPickupEvent.EVENT, result -> (player, slot, stack) -> result);
 
     public static final GameRuleType UNSTABLE_TNT = GameRuleType.create()
             .enforces(BlockPlaceEvent.AFTER, result -> (player, world, pos, state) -> {

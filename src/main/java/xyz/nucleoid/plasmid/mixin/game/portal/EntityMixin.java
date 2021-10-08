@@ -109,7 +109,11 @@ public abstract class EntityMixin implements GamePortalInterface {
 
     @Inject(method = "writeNbt", at = @At("RETURN"))
     private void writeNbt(NbtCompound root, CallbackInfoReturnable<NbtCompound> ci) {
-        this.serializePortal(root);
+        if (this.loadedPortalId == null) {
+            this.serializePortal(root);
+        } else {
+            root.putString(GamePortalInterface.NBT_KEY, this.loadedPortalId.toString());
+        }
     }
 
     @Inject(method = "readNbt", at = @At("RETURN"))

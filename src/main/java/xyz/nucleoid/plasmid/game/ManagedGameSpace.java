@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.network.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -26,6 +27,7 @@ import xyz.nucleoid.leukocyte.authority.Authority;
 import xyz.nucleoid.leukocyte.shape.ProtectionShape;
 import xyz.nucleoid.plasmid.error.ErrorReporter;
 import xyz.nucleoid.plasmid.event.GameEvents;
+import xyz.nucleoid.plasmid.event.GamePackets;
 import xyz.nucleoid.plasmid.game.event.*;
 import xyz.nucleoid.plasmid.game.player.JoinResult;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
@@ -244,6 +246,7 @@ public final class ManagedGameSpace implements GameSpace {
             }
 
             this.lifecycle.addPlayer(this, player);
+            this.players.sendPacket(GamePackets.playerAdd(this, player));
 
             return true;
         }
@@ -270,6 +273,10 @@ public final class ManagedGameSpace implements GameSpace {
 
         this.players.remove(player);
         this.lifecycle.removePlayer(this, player);
+
+        Packet<?> packet = GamePackets.playerRemove(this, player);
+        this.players.sendPacket(packet);
+        player.networkHandler.sendPacket(packet);
 
         if (this.getPlayerCount() <= 0) {
             this.close(GameCloseReason.CANCELED);
@@ -367,6 +374,11 @@ public final class ManagedGameSpace implements GameSpace {
                 this.resources.close();
 
                 this.lifecycle.onClosed(this, players, reason);
+
+                Packet<?> packet = GamePackets.gameClose(this, reason);
+                for (ServerPlayerEntity player : players) {
+                    player.networkHandler.sendPacket(packet);
+                }
 
                 Leukocyte leukocyte = Leukocyte.get(this.getServer());
                 leukocyte.removeAuthority(this.ruleAuthority);

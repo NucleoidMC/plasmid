@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.stimuli.Stimuli;
 
-@Mixin(PlayerEntity.class)
+@Mixin(value = PlayerEntity.class, priority = 600)
 public class PlayerEntityMixin {
 
     @Inject(method = "getDisplayName", at = @At("TAIL"), cancellable = true)

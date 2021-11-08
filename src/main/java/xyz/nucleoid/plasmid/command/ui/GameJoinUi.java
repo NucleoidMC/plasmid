@@ -54,7 +54,7 @@ public class GameJoinUi extends SimpleGui {
         int gameI = 0;
 
         var games = new ArrayList<>(GameSpaceManager.get().getOpenGameSpaces());
-        games.sort(Comparator.comparingInt(space -> space.getPlayers().size()));
+        games.sort(Comparator.comparingInt(space -> -space.getPlayers().size()));
 
         int limit = this.size;
         this.pageSize = 0;
@@ -132,6 +132,7 @@ public class GameJoinUi extends SimpleGui {
                         new LiteralText(gameSpace.getPlayers().size() + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
         );
 
+        element.hideFlags();
         element.setCallback((a, b, c, d) -> tryJoinGame(this.getPlayer(), gameSpace));
 
         return element;

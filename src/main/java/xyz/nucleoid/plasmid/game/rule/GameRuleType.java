@@ -109,7 +109,7 @@ public final class GameRuleType {
     public static final GameRuleType MODIFY_ARMOR = GameRuleType.create();
 
     private GameRuleEnforcer enforcer;
-    private Priority priority;
+    private Priority priority = Priority.NORMAL;
 
     private GameRuleType() {
     }

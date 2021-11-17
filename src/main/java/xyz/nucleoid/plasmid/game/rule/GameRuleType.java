@@ -26,8 +26,11 @@ import xyz.nucleoid.stimuli.event.world.IceMeltEvent;
 import xyz.nucleoid.stimuli.event.world.NetherPortalOpenEvent;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public final class GameRuleType {
+    public static final Comparator<GameRuleType> COMPARATOR = Comparator.comparing(type -> type.priority);
+
     public static final GameRuleType BREAK_BLOCKS = GameRuleType.create()
             .enforces(BlockBreakEvent.EVENT, result -> (player, world, pos) -> result);
 
@@ -106,6 +109,7 @@ public final class GameRuleType {
     public static final GameRuleType MODIFY_ARMOR = GameRuleType.create();
 
     private GameRuleEnforcer enforcer;
+    private Priority priority;
 
     private GameRuleType() {
     }
@@ -115,7 +119,9 @@ public final class GameRuleType {
     }
 
     public static GameRuleType allOf(GameRuleType... rules) {
-        return new GameRuleType().enforcesAll(rules);
+        return new GameRuleType()
+                .enforcesAll(rules)
+                .priority(Priority.HIGH);
     }
 
     public GameRuleType enforces(GameRuleEnforcer enforcer) {
@@ -135,10 +141,23 @@ public final class GameRuleType {
         });
     }
 
+    public GameRuleType priority(Priority priority) {
+        this.priority = priority;
+        return this;
+    }
+
     public void enforce(EventRegistrar events, ActionResult result) {
         var enforcer = this.enforcer;
         if (enforcer != null) {
             enforcer.apply(events, result);
         }
+    }
+
+    public enum Priority {
+        HIGHEST,
+        HIGH,
+        NORMAL,
+        LOW,
+        LOWEST
     }
 }

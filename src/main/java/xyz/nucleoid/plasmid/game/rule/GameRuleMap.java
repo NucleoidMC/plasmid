@@ -8,6 +8,8 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.stimuli.event.EventListenerMap;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
+import java.util.Map;
+
 public final class GameRuleMap {
     private final Reference2ObjectMap<GameRuleType, ActionResult> rules = new Reference2ObjectOpenHashMap<>();
     private EventListenerMap listeners = null;
@@ -52,12 +54,14 @@ public final class GameRuleMap {
     private EventListenerMap buildListeners() {
         var listeners = new EventListenerMap();
 
-        for (var entry : this.rules.entrySet()) {
-            var rule = entry.getKey();
-            var result = entry.getValue();
+        this.rules.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey(GameRuleType.COMPARATOR))
+                .forEach(entry -> {
+                    var rule = entry.getKey();
+                    var result = entry.getValue();
 
-            rule.enforce(listeners, result);
-        }
+                    rule.enforce(listeners, result);
+                });
 
         return listeners;
     }

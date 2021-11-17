@@ -121,7 +121,7 @@ public final class GameRuleType {
     public static GameRuleType allOf(GameRuleType... rules) {
         return new GameRuleType()
                 .enforcesAll(rules)
-                .priority(Priority.HIGH);
+                .priority(Priority.LOW);
     }
 
     public GameRuleType enforces(GameRuleEnforcer enforcer) {

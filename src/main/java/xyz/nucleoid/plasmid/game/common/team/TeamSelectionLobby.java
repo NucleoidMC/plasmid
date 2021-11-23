@@ -83,7 +83,7 @@ public final class TeamSelectionLobby {
             var stack = new ItemStack(ColoredBlocks.wool(config.blockDyeColor()));
             stack.setCustomName(name);
 
-            stack.getOrCreateTag().putString(TEAM_KEY, team.key().id());
+            stack.getOrCreateNbt().putString(TEAM_KEY, team.key().id());
 
             player.getInventory().setStack(index++, stack);
         }
@@ -93,7 +93,7 @@ public final class TeamSelectionLobby {
         var stack = player.getStackInHand(hand);
 
         if (stack.isIn(ItemTags.WOOL)) {
-            var tag = stack.getOrCreateTag();
+            var tag = stack.getOrCreateNbt();
             var key = new GameTeamKey(tag.getString(TEAM_KEY));
 
             var team = this.teams.byKey(key);

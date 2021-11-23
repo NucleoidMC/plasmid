@@ -96,7 +96,7 @@ public final class Guis {
     private static ItemStack createBanner(String nbt) {
         ItemStack stack = Items.GRAY_BANNER.getDefaultStack();
         try {
-            stack.setTag(StringNbtReader.parse(nbt));
+            stack.setNbt(StringNbtReader.parse(nbt));
             stack.setCustomName(LiteralText.EMPTY);
             stack.addHideFlag(ItemStack.TooltipSection.ADDITIONAL);
         } catch (Exception e) {}

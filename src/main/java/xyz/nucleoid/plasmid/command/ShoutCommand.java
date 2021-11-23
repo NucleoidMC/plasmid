@@ -33,7 +33,7 @@ public class ShoutCommand {
         hasChatChannel.setChatChannel(ChatChannel.ALL);
 
         var message = StringArgumentType.getString(context, "message");
-        context.getSource().getServer().getPlayerManager().broadcastChatMessage(
+        context.getSource().getServer().getPlayerManager().broadcast(
                 new TranslatableText("chat.type.text", player.getDisplayName(), message),
                 MessageType.CHAT,
                 context.getSource().getPlayer().getUuid()

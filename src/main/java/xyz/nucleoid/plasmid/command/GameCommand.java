@@ -174,7 +174,7 @@ public final class GameCommand {
         var players = source.getServer().getPlayerManager();
 
         var message = GameTexts.Broadcast.gameOpened(source, gameSpace);
-        players.broadcastChatMessage(message, MessageType.SYSTEM, Util.NIL_UUID);
+        players.broadcast(message, MessageType.SYSTEM, Util.NIL_UUID);
     }
 
     private static void onOpenError(ServerCommandSource source, Throwable throwable) {
@@ -190,7 +190,7 @@ public final class GameCommand {
         }
 
         var players = source.getServer().getPlayerManager();
-        players.broadcastChatMessage(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);
+        players.broadcast(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);
     }
 
     private static int proposeGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -213,7 +213,7 @@ public final class GameCommand {
         var message = GameTexts.Broadcast.propose(source, gameSpace);
 
         var playerManager = source.getServer().getPlayerManager();
-        playerManager.broadcastChatMessage(message, MessageType.SYSTEM, Util.NIL_UUID);
+        playerManager.broadcast(message, MessageType.SYSTEM, Util.NIL_UUID);
 
         return Command.SINGLE_SUCCESS;
     }

@@ -29,16 +29,16 @@ public final class ItemStackBuilder {
         return new ItemStackBuilder(stack.copy());
     }
 
-    public static ItemStackBuilder firework(int color, int flight, FireworkItem.Type type) {
+    public static ItemStackBuilder firework(int color, int flight, FireworkRocketItem.Type type) {
         var rocket = new ItemStack(Items.FIREWORK_ROCKET, 1);
 
         var star = new ItemStack(Items.FIREWORK_STAR);
-        var explosion = star.getOrCreateSubTag("Explosion");
+        var explosion = star.getOrCreateSubNbt("Explosion");
 
         explosion.putIntArray("Colors", new int[] { color });
         explosion.putByte("Type", (byte) type.getId());
 
-        var fireworks = rocket.getOrCreateSubTag("Fireworks");
+        var fireworks = rocket.getOrCreateSubNbt("Fireworks");
 
         var explosions = new NbtList();
         explosions.add(explosion);
@@ -96,7 +96,7 @@ public final class ItemStackBuilder {
     }
 
     private ItemStackBuilder addPredicate(String key, String predicate) {
-        var tag = this.stack.getOrCreateTag();
+        var tag = this.stack.getOrCreateNbt();
 
         NbtList predicateList;
 
@@ -113,7 +113,7 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder setUnbreakable() {
-        var tag = this.stack.getOrCreateTag();
+        var tag = this.stack.getOrCreateNbt();
         tag.putBoolean("Unbreakable", true);
         return this;
     }
@@ -132,7 +132,7 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder addLore(Text text) {
-        var display = this.stack.getOrCreateSubTag("display");
+        var display = this.stack.getOrCreateSubNbt("display");
 
         NbtList loreList;
         if (display.contains("Lore", 9)) {
@@ -163,17 +163,17 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder hideFlags() {
-        this.stack.getOrCreateTag().putByte("HideFlags", (byte) 127);
+        this.stack.getOrCreateNbt().putByte("HideFlags", (byte) 127);
         return this;
     }
 
     public ItemStackBuilder hideFlag(ItemStack.TooltipSection section) {
-        this.stack.getOrCreateTag().putByte("HideFlags", (byte) (this.stack.getOrCreateTag().getByte("HideFlags") | section.getFlag()) );
+        this.stack.getOrCreateNbt().putByte("HideFlags", (byte) (this.stack.getOrCreateNbt().getByte("HideFlags") | section.getFlag()) );
         return this;
     }
 
     public ItemStackBuilder hideFlags(byte value) {
-        this.stack.getOrCreateTag().putByte("HideFlags", value);
+        this.stack.getOrCreateNbt().putByte("HideFlags", value);
         return this;
     }
 

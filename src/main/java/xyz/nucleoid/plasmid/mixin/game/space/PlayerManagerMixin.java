@@ -111,7 +111,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         }
 
         NbtCompound playerData;
-        if (player.getName().getString().equals(this.server.getUserName()) && userData != null) {
+        if (this.server.isHost(player.getGameProfile()) && userData != null) {
             playerData = userData;
             player.readNbt(userData);
         } else {

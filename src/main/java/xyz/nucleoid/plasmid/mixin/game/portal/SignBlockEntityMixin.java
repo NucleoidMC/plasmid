@@ -86,7 +86,7 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     }
 
     @Inject(method = "writeNbt", at = @At("RETURN"))
-    private void writeNbt(NbtCompound root, CallbackInfoReturnable<NbtCompound> ci) {
+    private void writeNbt(NbtCompound root, CallbackInfo ci) {
         this.serializePortal(root);
     }
 

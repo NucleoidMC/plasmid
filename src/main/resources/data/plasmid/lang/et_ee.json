@@ -13,6 +13,7 @@
     "text.plasmid.entry": " - %s",
     "text.plasmid.game_config.game_config_does_not_exist": "Mänguseadistust IDga \"%\" ei eksiteeri!",
     "text.plasmid.game_config.game_not_found": "Mänguseadistust IDga \"%\" ei leitud!",
+    "text.plasmid.game.portal.player_count": "%s mängijat",
     "text.plasmid.game.join": "%s liitus mängufuajeega!",
     "text.plasmid.game.join.error": "Mänguga liitumisel esines ootamatu tõrge!",
     "text.plasmid.game.join.no_game_open": "Ükski mäng pole avatud!",

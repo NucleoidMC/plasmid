@@ -9,6 +9,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -71,7 +72,7 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
         } else if (line == 1) {
             var playerCount = display.get(GamePortalDisplay.PLAYER_COUNT);
             if (playerCount != null) {
-                return new LiteralText(playerCount + " players");
+                return new TranslatableText("text.plasmid.game.portal.player_count", playerCount);
             }
         }
         return LiteralText.EMPTY;

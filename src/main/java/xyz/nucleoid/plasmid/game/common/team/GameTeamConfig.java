@@ -16,6 +16,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.util.ItemStackBuilder;
+import xyz.nucleoid.plasmid.util.PlasmidCodecs;
 
 import java.util.function.Function;
 
@@ -38,13 +39,13 @@ public final record GameTeamConfig(
 
     public static final MapCodec<GameTeamConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> {
         return instance.group(
-                MoreCodecs.TEXT.fieldOf("name").forGetter(GameTeamConfig::name),
+                PlasmidCodecs.TEXT.fieldOf("name").forGetter(GameTeamConfig::name),
                 Colors.CODEC.optionalFieldOf("color", Colors.NONE).forGetter(GameTeamConfig::colors),
                 Codec.BOOL.optionalFieldOf("friendly_fire", true).forGetter(GameTeamConfig::friendlyFire),
                 COLLISION_CODEC.optionalFieldOf("collision", AbstractTeam.CollisionRule.ALWAYS).forGetter(GameTeamConfig::collision),
                 VISIBILITY_CODEC.optionalFieldOf("name_tag_visibility", AbstractTeam.VisibilityRule.ALWAYS).forGetter(GameTeamConfig::nameTagVisibility),
-                MoreCodecs.TEXT.optionalFieldOf("prefix", LiteralText.EMPTY).forGetter(GameTeamConfig::prefix),
-                MoreCodecs.TEXT.optionalFieldOf("suffix", LiteralText.EMPTY).forGetter(GameTeamConfig::suffix)
+                PlasmidCodecs.TEXT.optionalFieldOf("prefix", LiteralText.EMPTY).forGetter(GameTeamConfig::prefix),
+                PlasmidCodecs.TEXT.optionalFieldOf("suffix", LiteralText.EMPTY).forGetter(GameTeamConfig::suffix)
         ).apply(instance, GameTeamConfig::new);
     });
 
@@ -214,11 +215,10 @@ public final record GameTeamConfig(
             return switch (dye) {
                 case WHITE -> Formatting.WHITE;
                 case ORANGE -> Formatting.GOLD;
-                case MAGENTA -> Formatting.LIGHT_PURPLE;
+                case MAGENTA, PINK -> Formatting.LIGHT_PURPLE;
                 case LIGHT_BLUE -> Formatting.AQUA;
                 case YELLOW -> Formatting.YELLOW;
                 case LIME -> Formatting.GREEN;
-                case PINK -> Formatting.LIGHT_PURPLE;
                 case GRAY -> Formatting.DARK_GRAY;
                 case LIGHT_GRAY -> Formatting.GRAY;
                 case CYAN -> Formatting.DARK_AQUA;

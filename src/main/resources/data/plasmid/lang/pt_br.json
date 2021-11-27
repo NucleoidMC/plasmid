@@ -30,6 +30,7 @@
   "text.plasmid.game.portal.connect.target_is_not_interface": "O alvo selecionado não é uma interface de portal valida!",
   "text.plasmid.game.portal.disconnect.block": "Disconectado todos os portais do block em (%1$s; %2$s; %3$s)",
   "text.plasmid.game.portal.disconnect.entity": "Disconectado'%1$s' de todos os portais",
+  "text.plasmid.game.portal.player_count": "%s jogadores",
   "text.plasmid.game.join": "%s entrou no lobby de jogo!",
   "text.plasmid.game.join.error": "Uma exceção inesperada ocorreu ao entrar no jogo!",
   "text.plasmid.game.join.no_game_open": "Nenhum jogos estão acontencedo!",

@@ -51,6 +51,9 @@ public final class ManagedGameSpaceWorlds implements GameSpaceWorlds {
     }
 
     void clear() {
+        for (var worldHandler : this.worlds.values()) {
+            worldHandler.delete();
+        }
         this.worlds.clear();
     }
 

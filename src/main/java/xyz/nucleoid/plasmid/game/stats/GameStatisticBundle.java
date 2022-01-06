@@ -15,6 +15,23 @@ import java.util.UUID;
  * key for their namespace in the form <code>statistic.bundle.[namespace]</code>
  */
 public class GameStatisticBundle {
+    public static final GameStatisticBundle EMPTY = new GameStatisticBundle() {
+        @Override
+        public StatisticMap forPlayer(UUID uuid) {
+            return StatisticMap.EMPTY;
+        }
+
+        @Override
+        public StatisticMap global() {
+            return StatisticMap.EMPTY;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return true;
+        }
+    };
+
     private final Object2ObjectMap<UUID, StatisticMap> players = new Object2ObjectOpenHashMap<>();
     private final StatisticMap global = new StatisticMap();
 

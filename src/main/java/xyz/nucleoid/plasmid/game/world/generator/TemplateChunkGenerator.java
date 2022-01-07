@@ -37,10 +37,6 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
 
         this.template = template;
         this.worldBounds = template.getBounds();
-
-        if (this.worldBounds.min().getY() < 0 || this.worldBounds.max().getY() > 255) {
-            throw new IllegalArgumentException("map template does not fit in world height range [0; 256]");
-        }
     }
 
     @Override

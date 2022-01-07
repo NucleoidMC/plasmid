@@ -10,6 +10,48 @@ import java.util.function.BiConsumer;
  * Stores a mapping of {@link StatisticKey} to their corresponding values
  */
 public class StatisticMap {
+    protected static final StatisticMap EMPTY = new StatisticMap() {
+        @Override
+        public void increment(StatisticKey<Double> key, double amount) {
+            return;
+        }
+
+        @Override
+        public void increment(StatisticKey<Float> key, float amount) {
+            return;
+        }
+
+        @Override
+        public void increment(StatisticKey<Integer> key, int amount) {
+            return;
+        }
+
+        @Override
+        public <T extends Number> T get(StatisticKey<T> key, T defaultValue) {
+            return defaultValue;
+        }
+
+        @Override
+        public void set(StatisticKey<Double> key, double value) {
+            return;
+        }
+
+        @Override
+        public void set(StatisticKey<Float> key, float value) {
+            return;
+        }
+
+        @Override
+        public void set(StatisticKey<Integer> key, int value) {
+            return;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return true;
+        }
+    };
+
     private final Object2ObjectMap<StatisticKey<?>, Number> values = new Object2ObjectOpenHashMap<>();
 
     public void increment(StatisticKey<Double> key, double amount) {

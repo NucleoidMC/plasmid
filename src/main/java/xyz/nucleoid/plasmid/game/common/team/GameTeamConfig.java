@@ -25,7 +25,7 @@ import java.util.function.Function;
  *
  * @see GameTeam
  */
-public final record GameTeamConfig(
+public record GameTeamConfig(
         Text name,
         Colors colors,
         boolean friendlyFire,
@@ -37,8 +37,8 @@ public final record GameTeamConfig(
     private static final Codec<AbstractTeam.CollisionRule> COLLISION_CODEC = MoreCodecs.stringVariants(AbstractTeam.CollisionRule.values(), rule -> rule.name);
     private static final Codec<AbstractTeam.VisibilityRule> VISIBILITY_CODEC = MoreCodecs.stringVariants(AbstractTeam.VisibilityRule.values(), rule -> rule.name);
 
-    public static final MapCodec<GameTeamConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> {
-        return instance.group(
+    public static final MapCodec<GameTeamConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
+        instance.group(
                 PlasmidCodecs.TEXT.fieldOf("name").forGetter(GameTeamConfig::name),
                 Colors.CODEC.optionalFieldOf("color", Colors.NONE).forGetter(GameTeamConfig::colors),
                 Codec.BOOL.optionalFieldOf("friendly_fire", true).forGetter(GameTeamConfig::friendlyFire),
@@ -46,8 +46,8 @@ public final record GameTeamConfig(
                 VISIBILITY_CODEC.optionalFieldOf("name_tag_visibility", AbstractTeam.VisibilityRule.ALWAYS).forGetter(GameTeamConfig::nameTagVisibility),
                 PlasmidCodecs.TEXT.optionalFieldOf("prefix", LiteralText.EMPTY).forGetter(GameTeamConfig::prefix),
                 PlasmidCodecs.TEXT.optionalFieldOf("suffix", LiteralText.EMPTY).forGetter(GameTeamConfig::suffix)
-        ).apply(instance, GameTeamConfig::new);
-    });
+        ).apply(instance, GameTeamConfig::new)
+    );
 
     public static final Codec<GameTeamConfig> CODEC = MAP_CODEC.codec();
 
@@ -174,20 +174,20 @@ public final record GameTeamConfig(
         }
     }
 
-    public final record Colors(
+    public record Colors(
             Formatting chatFormatting,
             TextColor dyeColor,
             DyeColor blockDyeColor,
             TextColor fireworkColor
     ) {
-        private static final Codec<Colors> RECORD_CODEC = RecordCodecBuilder.create(instance -> {
-            return instance.group(
+        private static final Codec<Colors> RECORD_CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
                     MoreCodecs.FORMATTING.optionalFieldOf("chat", Formatting.RESET).forGetter(Colors::chatFormatting),
                     MoreCodecs.TEXT_COLOR.fieldOf("dye").forGetter(Colors::dyeColor),
                     MoreCodecs.DYE_COLOR.fieldOf("block_dye").forGetter(Colors::blockDyeColor),
                     MoreCodecs.TEXT_COLOR.fieldOf("firework").forGetter(Colors::fireworkColor)
-            ).apply(instance, Colors::new);
-        });
+            ).apply(instance, Colors::new)
+        );
 
         public static final Codec<Colors> CODEC = Codec.either(MoreCodecs.DYE_COLOR, RECORD_CODEC).xmap(
                 either -> either.map(Colors::from, Function.identity()),

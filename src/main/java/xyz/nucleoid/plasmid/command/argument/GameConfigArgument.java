@@ -18,9 +18,9 @@ import java.util.Locale;
 import java.util.function.Function;
 
 public final class GameConfigArgument {
-    private static final DynamicCommandExceptionType GAME_NOT_FOUND = new DynamicCommandExceptionType(id -> {
-        return new TranslatableText("text.plasmid.game_config.game_not_found", id);
-    });
+    private static final DynamicCommandExceptionType GAME_NOT_FOUND = new DynamicCommandExceptionType(id ->
+        new TranslatableText("text.plasmid.game_config.game_not_found", id)
+    );
 
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
@@ -28,9 +28,9 @@ public final class GameConfigArgument {
                     Iterable<Identifier> candidates = GameConfigs.getKeys().stream()::iterator;
                     var remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
-                    CommandSource.forEachMatching(candidates, remaining, Function.identity(), id -> {
-                        builder.suggest(id.toString(), GameConfigs.get(id).name());
-                    });
+                    CommandSource.forEachMatching(candidates, remaining, Function.identity(), id ->
+                        builder.suggest(id.toString(), GameConfigs.get(id).name())
+                    );
                     return builder.buildFuture();
                 });
     }

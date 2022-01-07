@@ -9,7 +9,7 @@ import xyz.nucleoid.codecs.MoreCodecs;
 import java.util.function.Function;
 
 public final class PlasmidCodecs {
-    public static Codec<Text> TEXT = Codec.either(Codec.STRING, MoreCodecs.TEXT)
+    public static final Codec<Text> TEXT = Codec.either(Codec.STRING, MoreCodecs.TEXT)
             .xmap(either -> either.map(TextParser::parseSafe, Function.identity()), Either::right);
 
     private PlasmidCodecs() {}

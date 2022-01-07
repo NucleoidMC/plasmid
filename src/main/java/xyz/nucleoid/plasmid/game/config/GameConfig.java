@@ -20,6 +20,7 @@ import xyz.nucleoid.plasmid.util.PlasmidCodecs;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -41,7 +42,7 @@ public record GameConfig<C>(
     }
 
     public GameOpenProcedure openProcedure(MinecraftServer server) {
-        var context = new GameOpenContext<C>(server, this);
+        var context = new GameOpenContext<>(server, this);
         return this.type.open(context);
     }
 
@@ -88,10 +89,7 @@ public record GameConfig<C>(
      */
     @Override
     public List<Text> description() {
-        if (this.description != null) {
-            return this.description;
-        }
-        return Collections.emptyList();
+        return Objects.requireNonNullElse(this.description, Collections.emptyList());
     }
 
     /**
@@ -135,13 +133,13 @@ public record GameConfig<C>(
         public <T> DataResult<GameConfig<?>> decode(DynamicOps<T> ops, MapLike<T> input) {
             var typeResult = GameType.REGISTRY.decode(ops, input.get("type")).map(Pair::getFirst);
 
-            return typeResult.flatMap(type -> {
-                return Metadata.MAP_CODEC.decode(ops, input).flatMap(metadata -> {
-                    return this.decodeConfig(ops, input, type.configCodec()).map(config -> {
-                        return this.createConfigUnchecked(type, metadata, config);
-                    });
-                });
-            });
+            return typeResult.flatMap(type ->
+                Metadata.MAP_CODEC.decode(ops, input).flatMap(metadata ->
+                    this.decodeConfig(ops, input, type.configCodec()).map(config ->
+                        this.createConfigUnchecked(type, metadata, config)
+                    )
+                )
+            );
         }
 
         private <T> DataResult<?> decodeConfig(DynamicOps<T> ops, MapLike<T> input, Codec<?> configCodec) {
@@ -187,18 +185,18 @@ public record GameConfig<C>(
         }
     }
 
-    static final record Metadata(
+    record Metadata(
             Optional<Text> name, Optional<Text> shortName, Optional<List<Text>> description,
             ItemStack icon, CustomValuesConfig custom
     ) {
-        static final MapCodec<Metadata> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> {
-            return instance.group(
+        static final MapCodec<Metadata> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
+            instance.group(
                     PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(Metadata::name),
                     PlasmidCodecs.TEXT.optionalFieldOf("short_name").forGetter(Metadata::shortName),
                     MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(Metadata::description),
                     MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(Metadata::icon),
                     CustomValuesConfig.CODEC.fieldOf("custom").orElseGet(CustomValuesConfig::empty).forGetter(Metadata::custom)
-            ).apply(instance, Metadata::new);
-        });
+            ).apply(instance, Metadata::new)
+        );
     }
 }

@@ -9,17 +9,12 @@ import net.minecraft.util.Identifier;
 import java.util.Map;
 import java.util.Optional;
 
-public final class CustomValuesConfig {
+public record CustomValuesConfig(
+        Map<Identifier, Dynamic<?>> values) {
     public static final Codec<CustomValuesConfig> CODEC = Codec.unboundedMap(Identifier.CODEC, Codec.PASSTHROUGH)
             .xmap(CustomValuesConfig::new, config -> config.values);
 
     private static final CustomValuesConfig EMPTY = new CustomValuesConfig(ImmutableMap.of());
-
-    private final Map<Identifier, Dynamic<?>> values;
-
-    private CustomValuesConfig(Map<Identifier, Dynamic<?>> values) {
-        this.values = values;
-    }
 
     public static CustomValuesConfig empty() {
         return EMPTY;

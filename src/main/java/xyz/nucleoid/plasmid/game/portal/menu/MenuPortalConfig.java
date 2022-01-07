@@ -17,6 +17,7 @@ import xyz.nucleoid.plasmid.util.PlasmidCodecs;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -28,24 +29,20 @@ public record MenuPortalConfig(
         CustomValuesConfig custom
 ) implements GamePortalConfig {
 
-    public static final Codec<MenuPortalConfig> CODEC = RecordCodecBuilder.create(instance -> {
-        return instance.group(
+    public static final Codec<MenuPortalConfig> CODEC = RecordCodecBuilder.create(instance ->
+        instance.group(
                 PlasmidCodecs.TEXT.optionalFieldOf("name", LiteralText.EMPTY).forGetter(MenuPortalConfig::name),
                 MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description", Collections.emptyList()).forGetter(MenuPortalConfig::description),
                 MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(MenuPortalConfig::icon),
                 Entry.CODEC.listOf().fieldOf("games").forGetter(config -> config.games),
                 CustomValuesConfig.CODEC.optionalFieldOf("custom", CustomValuesConfig.empty()).forGetter(config -> config.custom)
-        ).apply(instance, MenuPortalConfig::new);
-    });
+        ).apply(instance, MenuPortalConfig::new)
+    );
 
     @Override
     public GamePortalBackend createBackend(MinecraftServer server, Identifier id) {
         Text name;
-        if (this.name != null) {
-            name = this.name;
-        } else {
-            name = new LiteralText(id.toString());
-        }
+        name = Objects.requireNonNullElseGet(this.name, () -> new LiteralText(id.toString()));
 
         return new MenuPortalBackend(name, this.games);
     }
@@ -60,14 +57,14 @@ public record MenuPortalConfig(
                         Optional<List<Text>> description,
                         Optional<ItemStack> icon) {
 
-        static final Codec<Entry> CODEC_OBJECT = RecordCodecBuilder.create(instance -> {
-            return instance.group(
+        static final Codec<Entry> CODEC_OBJECT = RecordCodecBuilder.create(instance ->
+            instance.group(
                     Identifier.CODEC.fieldOf("game").forGetter(entry -> entry.game),
                     PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(Entry::name),
                     MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(Entry::description),
                     MoreCodecs.ITEM_STACK.optionalFieldOf("icon").forGetter(Entry::icon)
-            ).apply(instance, Entry::new);
-        });
+            ).apply(instance, Entry::new)
+        );
 
         public static final Codec<Entry> CODEC = Codec.either(Identifier.CODEC, CODEC_OBJECT)
                 .xmap(either -> either.map((identifier) -> new Entry(identifier, Optional.empty(), Optional.empty(), Optional.empty()), Function.identity()), Either::right);

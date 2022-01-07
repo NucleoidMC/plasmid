@@ -101,19 +101,19 @@ public final class GamePortalManager {
             try {
                 var resource = manager.getResource(path);
                 try (var reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-                    var json = new JsonParser().parse(reader);
+                    var json = JsonParser.parseReader(reader);
 
                     var identifier = identifierFromPath(path);
 
                     var result = GamePortalConfig.CODEC.parse(JsonOps.INSTANCE, json);
 
-                    result.result().ifPresent(config -> {
-                        configs.put(identifier, config);
-                    });
+                    result.result().ifPresent(config ->
+                        configs.put(identifier, config)
+                    );
 
-                    result.error().ifPresent(error -> {
-                        Plasmid.LOGGER.error("Failed to parse game portal at {}: {}", path, error.toString());
-                    });
+                    result.error().ifPresent(error ->
+                        Plasmid.LOGGER.error("Failed to parse game portal at {}: {}", path, error.toString())
+                    );
                 }
             } catch (IOException e) {
                 Plasmid.LOGGER.error("Failed to read game portal at {}", path, e);

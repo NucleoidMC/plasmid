@@ -57,9 +57,9 @@ public final class GameResourcePack {
         var serverUrl = server.getResourcePackUrl();
         var serverHash = server.getResourcePackHash();
 
-        activity.listen(GamePlayerEvents.ADD, player -> {
-            player.sendResourcePackUrl(this.url, this.hash, this.required, this.prompt);
-        });
+        activity.listen(GamePlayerEvents.ADD, player ->
+            player.sendResourcePackUrl(this.url, this.hash, this.required, this.prompt)
+        );
 
         activity.listen(GamePlayerEvents.REMOVE, player -> {
             if (!Strings.isNullOrEmpty(serverUrl) && !Strings.isNullOrEmpty(serverHash)) {

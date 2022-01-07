@@ -140,16 +140,10 @@ public final class BlockTraversal {
     /**
      * @see <a href="https://en.wikipedia.org/wiki/Pixel_connectivity#3-dimensional">3-dimensional pixel connectivity</a>
      */
-    public static final class Connectivity {
+    public record Connectivity(Vec3i[] offsets) {
         public static final Connectivity SIX = create(Connectivity::six);
         public static final Connectivity EIGHTEEN = create(Connectivity::eighteen);
         public static final Connectivity TWENTY_SIX = create(Connectivity::twentySix);
-
-        final Vec3i[] offsets;
-
-        Connectivity(Vec3i[] offsets) {
-            this.offsets = offsets;
-        }
 
         static Connectivity create(Consumer<Consumer<Vec3i>> generator) {
             var offsets = new ArrayList<Vec3i>();

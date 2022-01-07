@@ -9,12 +9,7 @@ import xyz.nucleoid.plasmid.chat.HasChatChannel;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.stimuli.event.player.PlayerChatEvent;
 
-public final class TeamChat {
-    private final TeamManager manager;
-
-    private TeamChat(TeamManager manager) {
-        this.manager = manager;
-    }
+public record TeamChat(TeamManager manager) {
 
     public static void addTo(GameActivity activity, TeamManager manager) {
         var teamChat = new TeamChat(manager);
@@ -36,5 +31,4 @@ public final class TeamChat {
 
         return ActionResult.PASS;
     }
-
 }

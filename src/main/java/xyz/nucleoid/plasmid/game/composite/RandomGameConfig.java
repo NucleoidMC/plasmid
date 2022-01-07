@@ -8,11 +8,11 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import java.util.Random;
 
 public record RandomGameConfig(GameListConfig games) {
-    public static final Codec<RandomGameConfig> CODEC = RecordCodecBuilder.create(instance -> {
-        return instance.group(
+    public static final Codec<RandomGameConfig> CODEC = RecordCodecBuilder.create(instance ->
+        instance.group(
                 GameListConfig.CODEC.fieldOf("games").forGetter(config -> config.games)
-        ).apply(instance, RandomGameConfig::new);
-    });
+        ).apply(instance, RandomGameConfig::new)
+    );
 
     @Nullable
     public GameConfig<?> selectGame(Random random) {

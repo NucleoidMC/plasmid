@@ -44,20 +44,20 @@ public final class GameConfigs {
                     try {
                         Resource resource = manager.getResource(path);
                         try (Reader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-                            JsonElement json = new JsonParser().parse(reader);
+                            JsonElement json = JsonParser.parseReader(reader);
 
                             Identifier identifier = identifierFromPath(path);
 
                             Codec<GameConfig<?>> codec = GameConfig.codecFrom(identifier);
                             DataResult<GameConfig<?>> result = codec.parse(JsonOps.INSTANCE, json);
 
-                            result.result().ifPresent(game -> {
-                                CONFIGS.register(identifier, game);
-                            });
+                            result.result().ifPresent(game ->
+                                CONFIGS.register(identifier, game)
+                            );
 
-                            result.error().ifPresent(error -> {
-                                Plasmid.LOGGER.error("Failed to parse game at {}: {}", path, error.toString());
-                            });
+                            result.error().ifPresent(error ->
+                                Plasmid.LOGGER.error("Failed to parse game at {}: {}", path, error.toString())
+                            );
                         }
                     } catch (IOException e) {
                         Plasmid.LOGGER.error("Failed to read configured game at {}", path, e);

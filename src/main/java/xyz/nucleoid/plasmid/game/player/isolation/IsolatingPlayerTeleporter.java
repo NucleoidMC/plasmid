@@ -19,12 +19,7 @@ import java.util.function.Function;
  * This class is also responsible for resetting player state and sending packets such that the player is fully refreshed
  * after teleporting and no weird issues can arise from invalid state passing through dimensions.
  */
-public final class IsolatingPlayerTeleporter {
-    private final MinecraftServer server;
-
-    public IsolatingPlayerTeleporter(MinecraftServer server) {
-        this.server = server;
-    }
+public record IsolatingPlayerTeleporter(MinecraftServer server) {
 
     /**
      * Teleports a player into a {@link GameSpace}. The player will save any associated data before teleporting.

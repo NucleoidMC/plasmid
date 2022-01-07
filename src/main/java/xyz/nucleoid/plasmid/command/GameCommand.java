@@ -47,13 +47,13 @@ public final class GameCommand {
             new TranslatableText("text.plasmid.game.not_in_game")
     );
 
-    public static final DynamicCommandExceptionType MALFORMED_CONFIG = new DynamicCommandExceptionType(error -> {
-        return new TranslatableText("text.plasmid.game.open.malformed_config", error);
-    });
+    public static final DynamicCommandExceptionType MALFORMED_CONFIG = new DynamicCommandExceptionType(error ->
+        new TranslatableText("text.plasmid.game.open.malformed_config", error)
+    );
 
-    public static final DynamicCommandExceptionType PLAYER_NOT_IN_GAME = new DynamicCommandExceptionType(player -> {
-        return new TranslatableText("text.plasmid.game.locate.player_not_in_game", player);
-    });
+    public static final DynamicCommandExceptionType PLAYER_NOT_IN_GAME = new DynamicCommandExceptionType(player ->
+        new TranslatableText("text.plasmid.game.locate.player_not_in_game", player)
+    );
 
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -110,7 +110,7 @@ public final class GameCommand {
     }
     // @formatter:on
 
-    private static int openGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int openGame(CommandContext<ServerCommandSource> context) {
         try {
             var game = GameConfigArgument.get(context, "game_config");
             return openGame(context, game.getSecond());
@@ -121,7 +121,7 @@ public final class GameCommand {
         }
     }
 
-    private static int openAnonymousGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int openAnonymousGame(CommandContext<ServerCommandSource> context) {
         try {
             var configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
             var result = GameConfig.CODEC.parse(NbtOps.INSTANCE, configNbt);

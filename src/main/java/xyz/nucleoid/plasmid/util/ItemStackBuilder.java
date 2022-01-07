@@ -14,12 +14,7 @@ import net.minecraft.tag.Tag;
 import net.minecraft.text.Text;
 import net.minecraft.util.registry.Registry;
 
-public final class ItemStackBuilder {
-    private final ItemStack stack;
-
-    private ItemStackBuilder(ItemStack stack) {
-        this.stack = stack;
-    }
+public record ItemStackBuilder(ItemStack stack) {
 
     public static ItemStackBuilder of(ItemConvertible item) {
         return new ItemStackBuilder(new ItemStack(item));
@@ -70,7 +65,7 @@ public final class ItemStackBuilder {
             throw new IllegalArgumentException("tag " + block + " does not exist!");
         }
 
-        return this.addCanDestroy("#" + tagId.toString());
+        return this.addCanDestroy("#" + tagId);
     }
 
     public ItemStackBuilder addCanPlaceOn(Block block) {
@@ -84,7 +79,7 @@ public final class ItemStackBuilder {
             throw new IllegalArgumentException("tag " + block + " does not exist!");
         }
 
-        return this.addCanPlaceOn("#" + tagId.toString());
+        return this.addCanPlaceOn("#" + tagId);
     }
 
     private ItemStackBuilder addCanDestroy(String predicate) {
@@ -168,7 +163,7 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder hideFlag(ItemStack.TooltipSection section) {
-        this.stack.getOrCreateNbt().putByte("HideFlags", (byte) (this.stack.getOrCreateNbt().getByte("HideFlags") | section.getFlag()) );
+        this.stack.getOrCreateNbt().putByte("HideFlags", (byte) (this.stack.getOrCreateNbt().getByte("HideFlags") | section.getFlag()));
         return this;
     }
 
@@ -176,7 +171,6 @@ public final class ItemStackBuilder {
         this.stack.getOrCreateNbt().putByte("HideFlags", value);
         return this;
     }
-
 
     public ItemStack build() {
         return this.stack.copy();

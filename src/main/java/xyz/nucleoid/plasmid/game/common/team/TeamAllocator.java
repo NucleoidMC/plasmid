@@ -119,7 +119,7 @@ public final class TeamAllocator<T, V> {
     }
 
     private void optimizeTeamsByPreference(Allocations<T, V> allocations) {
-        var players = new ArrayList<V>(this.players);
+        var players = new ArrayList<>(this.players);
         Collections.shuffle(players);
 
         for (var player : players) {

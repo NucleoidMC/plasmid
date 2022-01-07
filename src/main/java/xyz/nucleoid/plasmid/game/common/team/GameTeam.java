@@ -15,12 +15,12 @@ public record GameTeam(
         GameTeamKey key,
         GameTeamConfig config
 ) {
-    public static final Codec<GameTeam> CODEC = RecordCodecBuilder.create(instance -> {
-        return instance.group(
+    public static final Codec<GameTeam> CODEC = RecordCodecBuilder.create(instance ->
+        instance.group(
                 GameTeamKey.CODEC.fieldOf("key").forGetter(GameTeam::key),
                 GameTeamConfig.MAP_CODEC.forGetter(GameTeam::config)
-        ).apply(instance, GameTeam::new);
-    });
+        ).apply(instance, GameTeam::new)
+    );
 
     public GameTeam withConfig(GameTeamConfig config) {
         return new GameTeam(this.key, config);

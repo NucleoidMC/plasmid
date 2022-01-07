@@ -14,6 +14,7 @@ import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.Collections;
+import java.util.Objects;
 
 public final class ManagedGameActivity implements GameActivity {
     private final ManagedGameSpace space;
@@ -86,11 +87,7 @@ public final class ManagedGameActivity implements GameActivity {
             return Iterables.concat(eventInvokers, ruleInvokers);
         } else if (ruleInvokers != null) {
             return ruleInvokers;
-        } else if (eventInvokers != null) {
-            return eventInvokers;
-        } else {
-            return Collections.emptyList();
-        }
+        } else return Objects.requireNonNullElse(eventInvokers, Collections.emptyList());
     }
 
     @Override

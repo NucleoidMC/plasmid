@@ -100,9 +100,9 @@ public final class GameEventListeners implements EventRegistrar {
 
             var exceptionHandler = GameEventListeners.this.exceptionHandler;
 
-            this.invoker = this.createInvoker(throwable -> {
-                exceptionHandler.handleException(event, throwable);
-            });
+            this.invoker = this.createInvoker(throwable ->
+                exceptionHandler.handleException(event, throwable)
+            );
 
             this.propagatingInvoker = this.createInvoker(throwable -> {
                 exceptionHandler.handleException(event, throwable);
@@ -113,7 +113,7 @@ public final class GameEventListeners implements EventRegistrar {
         }
 
         private T createInvoker(Consumer<Throwable> exceptionHandler) {
-            return this.event.createInvoker(new EventInvokerContext<T>() {
+            return this.event.createInvoker(new EventInvokerContext<>() {
                 @Override
                 public Iterable<T> getListeners() {
                     return InvokerEntry.this.listeners;

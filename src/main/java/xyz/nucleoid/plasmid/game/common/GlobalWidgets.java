@@ -141,7 +141,7 @@ public final class GlobalWidgets implements AutoCloseable {
      *
      * @param title the title for the boss bar
      * @param color the color for the boss bar
-     * @param style the style for the bossbar
+     * @param style the style for the boss bar
      * @return the created {@link BossBarWidget}
      */
     public BossBarWidget addBossBar(Text title, BossBar.Color color, BossBar.Style style) {

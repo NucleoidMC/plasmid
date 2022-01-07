@@ -10,6 +10,6 @@ import com.mojang.serialization.Codec;
  * @see TeamManager
  * @see TeamSelectionLobby
  */
-public final record GameTeamKey(String id) {
+public record GameTeamKey(String id) {
     public static final Codec<GameTeamKey> CODEC = Codec.STRING.xmap(GameTeamKey::new, GameTeamKey::id);
 }

@@ -86,9 +86,9 @@ public final class Plasmid implements ModInitializer {
             }
         });
 
-        ServerTickEvents.START_SERVER_TICK.register(server -> {
-            GamePortalManager.INSTANCE.tick();
-        });
+        ServerTickEvents.START_SERVER_TICK.register(server ->
+            GamePortalManager.INSTANCE.tick()
+        );
 
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             GameSpaceManager.openServer(server);
@@ -100,17 +100,17 @@ public final class Plasmid implements ModInitializer {
             GamePortalManager.INSTANCE.close(server);
         });
 
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
-            GameSpaceManager.closeServer();
-        });
+        ServerLifecycleEvents.SERVER_STOPPED.register(server ->
+            GameSpaceManager.closeServer()
+        );
 
         // For games to debug their statistic collection without needing to setup a backend
         if (Boolean.getBoolean("plasmid.debug_statistics")) {
-            GameEvents.CLOSING.register((gameSpace, reason) -> {
-                gameSpace.getStatistics().visitAll((name, bundle) -> {
-                    LOGGER.info(bundle.encode());
-                });
-            });
+            GameEvents.CLOSING.register((gameSpace, reason) ->
+                gameSpace.getStatistics().visitAll((name, bundle) ->
+                    LOGGER.info(bundle.encode())
+                )
+            );
         }
     }
 }

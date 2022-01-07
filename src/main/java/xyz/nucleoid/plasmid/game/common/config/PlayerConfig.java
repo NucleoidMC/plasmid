@@ -14,15 +14,15 @@ import java.util.Optional;
  *
  * @see GameWaitingLobby
  */
-public final record PlayerConfig(int minPlayers, int maxPlayers, int thresholdPlayers, Countdown countdown) {
-    public static final Codec<PlayerConfig> CODEC = RecordCodecBuilder.create(instance -> {
-        return instance.group(
+public record PlayerConfig(int minPlayers, int maxPlayers, int thresholdPlayers, Countdown countdown) {
+    public static final Codec<PlayerConfig> CODEC = RecordCodecBuilder.create(instance ->
+        instance.group(
                 Codec.intRange(1, Integer.MAX_VALUE).fieldOf("min").forGetter(PlayerConfig::minPlayers),
                 Codec.intRange(1, Integer.MAX_VALUE).fieldOf("max").forGetter(PlayerConfig::maxPlayers),
                 Codec.intRange(1, Integer.MAX_VALUE).optionalFieldOf("threshold").forGetter(c -> Optional.of(c.thresholdPlayers)),
                 Countdown.CODEC.optionalFieldOf("countdown", Countdown.DEFAULT).forGetter(PlayerConfig::countdown)
-        ).apply(instance, PlayerConfig::new);
-    });
+        ).apply(instance, PlayerConfig::new)
+    );
 
     public PlayerConfig(int min, int max) {
         this(min, max, min, Countdown.DEFAULT);
@@ -35,11 +35,11 @@ public final record PlayerConfig(int minPlayers, int maxPlayers, int thresholdPl
     public record Countdown(int readySeconds, int fullSeconds) {
         public static final Countdown DEFAULT = new Countdown(30, 5);
 
-        public static final Codec<Countdown> CODEC = RecordCodecBuilder.create(instance -> {
-            return instance.group(
+        public static final Codec<Countdown> CODEC = RecordCodecBuilder.create(instance ->
+            instance.group(
                     Codec.INT.optionalFieldOf("ready_seconds", DEFAULT.readySeconds).forGetter(Countdown::readySeconds),
                     Codec.INT.optionalFieldOf("full_seconds", DEFAULT.fullSeconds).forGetter(Countdown::fullSeconds)
-            ).apply(instance, Countdown::new);
-        });
+            ).apply(instance, Countdown::new)
+        );
     }
 }

@@ -256,4 +256,46 @@ public final class ColoredBlocks {
             case WHITE -> Blocks.WHITE_SHULKER_BOX;
         };
     }
+
+    public static Block candle(DyeColor color) {
+        return switch (color) {
+            case ORANGE -> Blocks.ORANGE_CANDLE;
+            case MAGENTA -> Blocks.MAGENTA_CANDLE;
+            case LIGHT_BLUE -> Blocks.LIGHT_BLUE_CANDLE;
+            case YELLOW -> Blocks.YELLOW_CANDLE;
+            case LIME -> Blocks.LIME_CANDLE;
+            case PINK -> Blocks.PINK_CANDLE;
+            case GRAY -> Blocks.GRAY_CANDLE;
+            case LIGHT_GRAY -> Blocks.LIGHT_GRAY_CANDLE;
+            case CYAN -> Blocks.CYAN_CANDLE;
+            case PURPLE -> Blocks.PURPLE_CANDLE;
+            case BLUE -> Blocks.BLUE_CANDLE;
+            case BROWN -> Blocks.BROWN_CANDLE;
+            case GREEN -> Blocks.GREEN_CANDLE;
+            case RED -> Blocks.RED_CANDLE;
+            case BLACK -> Blocks.BLACK_CANDLE;
+            case WHITE -> Blocks.WHITE_CANDLE;
+        };
+    }
+
+    public static Block candleCake(DyeColor color) {
+        return switch (color) {
+            case ORANGE -> Blocks.ORANGE_CANDLE_CAKE;
+            case MAGENTA -> Blocks.MAGENTA_CANDLE_CAKE;
+            case LIGHT_BLUE -> Blocks.LIGHT_BLUE_CANDLE_CAKE;
+            case YELLOW -> Blocks.YELLOW_CANDLE_CAKE;
+            case LIME -> Blocks.LIME_CANDLE_CAKE;
+            case PINK -> Blocks.PINK_CANDLE_CAKE;
+            case GRAY -> Blocks.GRAY_CANDLE_CAKE;
+            case LIGHT_GRAY -> Blocks.LIGHT_GRAY_CANDLE_CAKE;
+            case CYAN -> Blocks.CYAN_CANDLE_CAKE;
+            case PURPLE -> Blocks.PURPLE_CANDLE_CAKE;
+            case BLUE -> Blocks.BLUE_CANDLE_CAKE;
+            case BROWN -> Blocks.BROWN_CANDLE_CAKE;
+            case GREEN -> Blocks.GREEN_CANDLE_CAKE;
+            case RED -> Blocks.RED_CANDLE_CAKE;
+            case BLACK -> Blocks.BLACK_CANDLE_CAKE;
+            case WHITE -> Blocks.WHITE_CANDLE_CAKE;
+        };
+    }
 }

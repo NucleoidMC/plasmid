@@ -5,6 +5,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -27,7 +28,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
         return woodType;
     }
     
-    public static Set<WoodType> getTypes() {
+    public static Set<WoodType> values() {
         return TYPES;
     }
 
@@ -56,9 +57,126 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     public boolean contains(Item item) {
         if(item instanceof BlockItem blockItem) {
             return this.contains(blockItem.getBlock());
-        }
-        else {
+        } else {
             return item == this.boat;
         }
+    }
+
+    /**
+     * @deprecated Use {@link #sapling()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getSapling() {
+        return this.sapling;
+    }
+
+    /**
+     * @deprecated Use {@link #leaves()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getLeaves() {
+        return this.leaves;
+    }
+
+    /**
+     * @deprecated Use {@link #log()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getLog() {
+        return this.log;
+    }
+
+    /**
+     * @deprecated Use {@link #planks()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getPlanks() {
+        return this.planks;
+    }
+
+    /**
+     * @deprecated Use {@link #slab()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getSlab() {
+        return this.slab;
+    }
+
+    /**
+     * @deprecated Use {@link #stairs()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getStairs() {
+        return this.stairs;
+    }
+
+    /**
+     * @deprecated Use {@link #fence()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getFence() {
+        return this.fence;
+    }
+
+    /**
+     * @deprecated Use {@link #fenceGate()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getFenceGate() {
+        return this.fenceGate;
+    }
+
+    /**
+     * @deprecated Use {@link #door()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getDoor() {
+        return this.door;
+    }
+
+    /**
+     * @deprecated Use {@link #sign()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getSign() {
+        return this.sign;
+    }
+
+    /**
+     * @deprecated Use {@link #button()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getButton() {
+        return this.button;
+    }
+
+    /**
+     * @deprecated Use {@link #pressurePlate()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    public Block getPressurePlate() {
+        return this.pressurePlate;
+    }
+
+    /**
+     * @deprecated Use {@link #boat()}
+     */
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval
+    @Nullable
+    public Item getBoat() {
+        return this.boat;
     }
 }

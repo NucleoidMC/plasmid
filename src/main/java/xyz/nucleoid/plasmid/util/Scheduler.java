@@ -78,7 +78,7 @@ public final class Scheduler {
      * repeat the given task until the predicate returns false
      *
      * @param task the action to perform
-     * @param condition whether or not to reschedule the task again, with the parameter being the current tick
+     * @param condition whether to reschedule the task again, with the parameter being the current tick
      * @param delay how many ticks in the future this event should first be called
      * @param interval the number of ticks in between each execution
      */

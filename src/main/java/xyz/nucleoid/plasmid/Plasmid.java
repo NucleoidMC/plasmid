@@ -104,7 +104,7 @@ public final class Plasmid implements ModInitializer {
             GameSpaceManager.closeServer()
         );
 
-        // For games to debug their statistic collection without needing to setup a backend
+        // For games to debug their statistic collection without needing to set up a backend
         if (Boolean.getBoolean("plasmid.debug_statistics")) {
             GameEvents.CLOSING.register((gameSpace, reason) ->
                 gameSpace.getStatistics().visitAll((name, bundle) ->

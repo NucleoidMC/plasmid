@@ -126,7 +126,7 @@ public final class TeamAllocator<T, V> {
             var preference = this.teamPreferences.get(player);
             var current = allocations.teamFor(player);
 
-            // we have no preference or we are already in our desired position, continue
+            // we have no preference, or we are already in our desired position, continue
             if (preference == null || current == preference) {
                 continue;
             }

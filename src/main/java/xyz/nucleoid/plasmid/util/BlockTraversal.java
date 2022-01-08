@@ -216,7 +216,7 @@ public final class BlockTraversal {
          * @param pos the current block position.
          * @param fromPos the block position the current was found from. Can be equal to the current pos for the origin.
          * @param depth the depth at the current block (how many steps we have taken from the origin)
-         * @return whether or not traversal should continue from this point.
+         * @return whether traversal should continue from this point.
          */
         Result visit(BlockPos pos, BlockPos fromPos, int depth);
     }

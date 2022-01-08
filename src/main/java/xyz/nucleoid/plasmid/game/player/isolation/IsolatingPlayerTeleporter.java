@@ -59,7 +59,7 @@ public final class IsolatingPlayerTeleporter {
     }
 
     /**
-     * Teleports a player out of a {@link GameSpace} and into the previous world that they were apart of. The player
+     * Teleports a player out of a {@link GameSpace} and into the previous world that they were a part of. The player
      * will NOT save any associated data before teleporting, and instead will restore any previously saved data.
      *
      * @param player the player to teleport

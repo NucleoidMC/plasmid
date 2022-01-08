@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * A very simple waiting lobby implementation that games can easily apply to their {@link GameActivity}.
  * <p>
- * This implements both control for minimum/maximum players as well as a countdown for game start, and additionally
+ * This implements control for minimum/maximum players as well as a countdown for game start, and additionally
  * sets some basic rules which prevent players from damaging the map or each other.
  *
  * @see GameWaitingLobby#addTo(GameActivity, PlayerConfig)
@@ -309,7 +309,7 @@ public final class GameWaitingLobby {
             return true;
         }
 
-        // if there are no players outside of a game on the server
+        // if there are no players outside a game on the server
         for (var world : server.getWorlds()) {
             if (!world.getPlayers().isEmpty() && !GameSpaceManager.get().hasGame(world)) {
                 return false;

@@ -118,7 +118,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Adds given player to the given team, and removes them from any previous team they were apart of.
+     * Adds given player to the given team, and removes them from any previous team they were a part of.
      *
      * @param player {@link PlayerRef} to add
      * @param team the team to add the player to
@@ -147,7 +147,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Adds given player to the given team, and removes them from any previous team they were apart of.
+     * Adds given player to the given team, and removes them from any previous team they were a part of.
      *
      * @param player {@link ServerPlayerEntity} to add
      * @param team the team to add the player to
@@ -191,7 +191,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Removes the given player from any team they are apart of.
+     * Removes the given player from any team they are a part of.
      *
      * @param player the {@link ServerPlayerEntity} of the player to remove
      * @return the team that the player was removed from, or {@code null}
@@ -202,7 +202,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Removes the given player from any team they are apart of.
+     * Removes the given player from any team they are a part of.
      *
      * @param player the {@link PlayerRef} of the player to remove
      * @return the team that the player was removed from, or {@code null}
@@ -217,7 +217,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Returns the team that the given player is apart of.
+     * Returns the team that the given player is a part of.
      *
      * @param player the player to query
      * @return the player's {@link GameTeamKey} or {@code null}
@@ -228,7 +228,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Returns the team that the given player is apart of.
+     * Returns the team that the given player is a part of.
      *
      * @param player the player to query
      * @return the player's {@link GameTeamKey} or {@code null}

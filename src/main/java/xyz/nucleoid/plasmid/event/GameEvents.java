@@ -80,7 +80,7 @@ public final class GameEvents {
 
     public interface CreateActivity {
         /**
-         * Called when the {@link GameActivity} of a {@link GameSpace} is being created (eg. when going from waiting lobby -> active game)
+         * Called when the {@link GameActivity} of a {@link GameSpace} is being created (e.g. when going from waiting lobby -> active game)
          * Note: This event can be called multiple times on the same {@link GameSpace}
          *
          * @param gameSpace The {@link GameSpace} that is having its {@link GameActivity} changed.
@@ -91,7 +91,7 @@ public final class GameEvents {
 
     public interface DestroyActivity {
         /**
-         * Called when the {@link GameActivity} of a {@link GameSpace} is being destroyed (eg. when going from waiting lobby -> active game)
+         * Called when the {@link GameActivity} of a {@link GameSpace} is being destroyed (e.g. when going from waiting lobby -> active game)
          * Note: This event can be called multiple times on the same {@link GameSpace}
          *
          * @param gameSpace The {@link GameSpace} that is having its {@link GameActivity} changed.

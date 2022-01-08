@@ -44,7 +44,7 @@ public class StatisticMap {
     /**
      * Write this bundle to a new {@link JsonObject} ready to be sent to a backend
      *
-     * @return A {@link JsonObject} containing all of the encoded values
+     * @return A {@link JsonObject} containing all the encoded values
      */
     public JsonObject encode() {
         JsonObject obj = new JsonObject();

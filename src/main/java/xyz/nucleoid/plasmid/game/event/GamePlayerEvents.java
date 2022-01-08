@@ -96,7 +96,7 @@ public final class GamePlayerEvents {
     });
 
     /**
-     * Called when a group of players try to join this game. This should be used to reject multiple players as a group,
+     * Called when a group of players tries to join this game. This should be used to reject multiple players as a group,
      * such as when a party tries to join but has too many players to fit into the game.
      * <p>
      * This is called before {@link GamePlayerEvents#OFFER} which handles specifically bringing a player into the game.

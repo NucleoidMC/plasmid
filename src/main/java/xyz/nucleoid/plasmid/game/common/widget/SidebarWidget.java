@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 
 /**
  * An implementation of {@link GameWidget} which provides a sidebar through the use of the vanilla scoreboard which
- * displays at the right side of players' screens.
+ * displays on the right side of players' screens.
  *
  * @see xyz.nucleoid.plasmid.game.common.GlobalWidgets
  */

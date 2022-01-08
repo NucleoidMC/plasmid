@@ -10,7 +10,7 @@ import java.util.Collections;
 /**
  * Represents the logic that describes how a {@link GameSpace} or {@link GameActivity} interacts with the world.
  *
- * This contains both event listeners, allowing games to respond to specific events within the world, as well as
+ * This contains event listeners, allowing games to respond to specific events within the world, as well as
  * containing rules which can simply allow or disallow certain behavior in the world.
  *
  * @see StimulusEvent

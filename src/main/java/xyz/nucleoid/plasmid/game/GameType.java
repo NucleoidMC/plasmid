@@ -21,9 +21,18 @@ import java.util.function.Consumer;
  * @param <C> the type of config that should be loaded
  * @see GameConfig
  */
-public record GameType<C>(Identifier id, Codec<C> configCodec,
-                          xyz.nucleoid.plasmid.game.GameType.Open<C> open) {
+public final class GameType<C> {
     public static final TinyRegistry<GameType<?>> REGISTRY = TinyRegistry.create();
+
+    private final Identifier id;
+    private final Codec<C> configCodec;
+    private final Open<C> open;
+
+    private GameType(Identifier id, Codec<C> configCodec, Open<C> open) {
+        this.id = id;
+        this.configCodec = configCodec;
+        this.open = open;
+    }
 
     /**
      * Registers a new {@link GameType} with the given id, codec to parse a config, and function to set up the game.
@@ -44,6 +53,14 @@ public record GameType<C>(Identifier id, Codec<C> configCodec,
 
     public GameOpenProcedure open(GameOpenContext<C> context) {
         return this.open.open(context);
+    }
+
+    public Identifier id() {
+        return this.id;
+    }
+
+    public Codec<C> configCodec() {
+        return this.configCodec;
     }
 
     public Text name() {

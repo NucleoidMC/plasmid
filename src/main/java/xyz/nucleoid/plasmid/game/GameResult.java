@@ -10,8 +10,14 @@ import org.jetbrains.annotations.Nullable;
  * The result can either represent that the action was performed successfully ({@link GameResult#ok()}) or that an
  * issue occurred while trying to perform this action ({@link GameResult#error(Text)}).
  */
-public record GameResult(@Nullable Text error) {
+public final class GameResult {
     private static final GameResult OK = new GameResult(null);
+
+    private final Text error;
+
+    private GameResult(Text error) {
+        this.error = error;
+    }
 
     public static GameResult ok() {
         return OK;
@@ -40,6 +46,18 @@ public record GameResult(@Nullable Text error) {
      */
     public boolean isError() {
         return this.error != null;
+    }
+
+    /**
+     * Returns the error result of this {@link GameResult} as a {@link Text}.
+     *
+     * <p>If no error occurred, null is returned.
+     *
+     * @return the error of this {@link GameResult}, or null if one does not exist
+     */
+    @Nullable
+    public Text error() {
+        return this.error;
     }
 
     /**

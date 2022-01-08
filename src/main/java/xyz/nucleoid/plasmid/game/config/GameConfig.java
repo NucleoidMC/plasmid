@@ -20,7 +20,6 @@ import xyz.nucleoid.plasmid.util.PlasmidCodecs;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -89,7 +88,10 @@ public record GameConfig<C>(
      */
     @Override
     public List<Text> description() {
-        return Objects.requireNonNullElse(this.description, Collections.emptyList());
+        if (this.description != null) {
+            return this.description;
+        }
+        return Collections.emptyList();
     }
 
     /**

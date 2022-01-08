@@ -17,7 +17,6 @@ import xyz.nucleoid.plasmid.util.PlasmidCodecs;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -42,7 +41,11 @@ public record MenuPortalConfig(
     @Override
     public GamePortalBackend createBackend(MinecraftServer server, Identifier id) {
         Text name;
-        name = Objects.requireNonNullElseGet(this.name, () -> new LiteralText(id.toString()));
+        if (this.name != null) {
+            name = this.name;
+        } else {
+            name = new LiteralText(id.toString());
+        }
 
         return new MenuPortalBackend(name, this.games);
     }

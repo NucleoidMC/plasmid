@@ -17,7 +17,6 @@ import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public final class ManagedGameSpace implements GameSpace {
@@ -81,7 +80,11 @@ public final class ManagedGameSpace implements GameSpace {
         }
 
         startResult = this.state.invoker(GameActivityEvents.REQUEST_START).onRequestStart();
-        return Objects.requireNonNullElseGet(startResult, () -> GameResult.error(GameTexts.Start.genericError()));
+        if (startResult != null) {
+            return startResult;
+        } else {
+            return GameResult.error(GameTexts.Start.genericError());
+        }
     }
 
     public void closeWithError(String message) {

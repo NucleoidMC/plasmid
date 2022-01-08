@@ -5,7 +5,12 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.registry.Registry;
 
-public record PlayerResetter(NbtCompound resetNbt) {
+public final class PlayerResetter {
+    private final NbtCompound resetNbt;
+
+    public PlayerResetter(NbtCompound resetNbt) {
+        this.resetNbt = resetNbt;
+    }
 
     public void apply(ServerPlayerEntity player) {
         this.clearAttributeModifiers(player);

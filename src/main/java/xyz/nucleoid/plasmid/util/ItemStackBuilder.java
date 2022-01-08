@@ -14,7 +14,12 @@ import net.minecraft.tag.Tag;
 import net.minecraft.text.Text;
 import net.minecraft.util.registry.Registry;
 
-public record ItemStackBuilder(ItemStack stack) {
+public final class ItemStackBuilder {
+    private final ItemStack stack;
+
+    private ItemStackBuilder(ItemStack stack) {
+        this.stack = stack;
+    }
 
     public static ItemStackBuilder of(ItemConvertible item) {
         return new ItemStackBuilder(new ItemStack(item));

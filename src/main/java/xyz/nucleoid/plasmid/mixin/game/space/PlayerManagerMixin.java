@@ -155,12 +155,12 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             this.statisticsMap.remove(Util.NIL_UUID);
             this.advancementTrackers.remove(Util.NIL_UUID);
 
-            var tag = new NbtCompound();
-            player.writeNbt(tag);
-            tag.remove("UUID");
-            tag.remove("Pos");
+            var nbt = new NbtCompound();
+            player.writeNbt(nbt);
+            nbt.remove("UUID");
+            nbt.remove("Pos");
 
-            this.playerResetter = new PlayerResetter(tag);
+            this.playerResetter = new PlayerResetter(nbt);
         }
 
         return this.playerResetter;

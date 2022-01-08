@@ -27,9 +27,9 @@ public final class ServerStorageManager extends PersistentState {
     public NbtCompound writeNbt(NbtCompound nbt) {
         var storageList = new NbtList();
         ServerStorage.STORAGES.forEach((key, value) -> {
-            var storageTag = value.toTag();
-            storageTag.putString("id", key.toString());
-            storageList.add(storageTag);
+            var storageNbt = value.writeNbt();
+            storageNbt.putString("id", key.toString());
+            storageList.add(storageNbt);
         });
         nbt.put("storages", storageList);
         return nbt;
@@ -38,13 +38,13 @@ public final class ServerStorageManager extends PersistentState {
     private static ServerStorageManager readNbt(NbtCompound nbt) {
         loaded = true;
 
-        var storageTags = nbt.getList("storages", NbtType.COMPOUND);
+        var storageNbts = nbt.getList("storages", NbtType.COMPOUND);
 
-        for (int i = 0; i < storageTags.size(); i++) {
-            var storageTag = storageTags.getCompound(i);
-            var storage = ServerStorage.STORAGES.get(new Identifier(storageTag.getString("id")));
+        for (int i = 0; i < storageNbts.size(); i++) {
+            var storageNbt = storageNbts.getCompound(i);
+            var storage = ServerStorage.STORAGES.get(new Identifier(storageNbt.getString("id")));
             if (storage != null) {
-                storage.fromTag(storageTag);
+                storage.readNbt(storageNbt);
             }
         }
 

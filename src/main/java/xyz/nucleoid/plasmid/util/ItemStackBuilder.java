@@ -96,15 +96,15 @@ public final class ItemStackBuilder {
     }
 
     private ItemStackBuilder addPredicate(String key, String predicate) {
-        var tag = this.stack.getOrCreateNbt();
+        var nbt = this.stack.getOrCreateNbt();
 
         NbtList predicateList;
 
-        if (tag.contains(key, NbtType.LIST)) {
-            predicateList = tag.getList(key, NbtType.STRING);
+        if (nbt.contains(key, NbtType.LIST)) {
+            predicateList = nbt.getList(key, NbtType.STRING);
         } else {
             predicateList = new NbtList();
-            tag.put(key, predicateList);
+            nbt.put(key, predicateList);
         }
 
         predicateList.add(NbtString.of(predicate));
@@ -113,8 +113,8 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder setUnbreakable() {
-        var tag = this.stack.getOrCreateNbt();
-        tag.putBoolean("Unbreakable", true);
+        var nbt = this.stack.getOrCreateNbt();
+        nbt.putBoolean("Unbreakable", true);
         return this;
     }
 

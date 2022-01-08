@@ -36,11 +36,11 @@ public interface ServerStorage {
      * Called when saving this {@link ServerStorage} to NBT.
      * @return - The serialized NBT data of this {@link ServerStorage}.
      */
-    NbtCompound toTag();
+    NbtCompound writeNbt();
 
     /**
      * Called when loading the saved NBT data for this {@link ServerStorage}.
-     * @param tag - The deserialized NBT data of this {@link ServerStorage}.
+     * @param nbt - The deserialized NBT data of this {@link ServerStorage}.
      */
-    void fromTag(NbtCompound tag);
+    void readNbt(NbtCompound nbt);
 }

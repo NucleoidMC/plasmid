@@ -93,8 +93,8 @@ public final class TeamSelectionLobby {
         var stack = player.getStackInHand(hand);
 
         if (stack.isIn(ItemTags.WOOL)) {
-            var tag = stack.getOrCreateNbt();
-            var key = new GameTeamKey(tag.getString(TEAM_KEY));
+            var nbt = stack.getOrCreateNbt();
+            var key = new GameTeamKey(nbt.getString(TEAM_KEY));
 
             var team = this.teams.byKey(key);
             if (team != null) {

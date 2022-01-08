@@ -35,27 +35,27 @@ public class PlayerScoreStorage implements ServerStorage {
     }
 
     @Override
-    public NbtCompound toTag() {
-        var tag = new NbtCompound();
+    public NbtCompound writeNbt() {
+        var nbt = new NbtCompound();
         var list = new NbtList();
-        this.scoreMap.forEach((uuid, score) -> list.add(this.createPlayerScoreTag(uuid, score)));
-        tag.put("Players", list);
-        return tag;
+        this.scoreMap.forEach((uuid, score) -> list.add(this.createPlayerScoreNbt(uuid, score)));
+        nbt.put("Players", list);
+        return nbt;
     }
 
     @Override
-    public void fromTag(NbtCompound tag) {
-        var list = tag.getList("Players", NbtType.COMPOUND);
+    public void readNbt(NbtCompound nbt) {
+        var list = nbt.getList("Players", NbtType.COMPOUND);
         for (NbtElement element : list) {
             NbtCompound compound = (NbtCompound) element;
             this.scoreMap.put(compound.getUuid("UUID"), compound.getInt("Score"));
         }
     }
 
-    private NbtCompound createPlayerScoreTag(UUID uuid, int score) {
-        var tag = new NbtCompound();
-        tag.putUuid("UUID", uuid);
-        tag.putInt("Score", score);
-        return tag;
+    private NbtCompound createPlayerScoreNbt(UUID uuid, int score) {
+        var nbt = new NbtCompound();
+        nbt.putUuid("UUID", uuid);
+        nbt.putInt("Score", score);
+        return nbt;
     }
 }

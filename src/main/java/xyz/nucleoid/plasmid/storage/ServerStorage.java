@@ -39,8 +39,24 @@ public interface ServerStorage {
     NbtCompound writeNbt();
 
     /**
+     * @deprecated use {@link #writeNbt()}
+     */
+    @Deprecated(forRemoval = true)
+    default NbtCompound toTag() {
+        return this.writeNbt();
+    }
+
+    /**
      * Called when loading the saved NBT data for this {@link ServerStorage}.
      * @param nbt - The deserialized NBT data of this {@link ServerStorage}.
      */
     void readNbt(NbtCompound nbt);
+
+    /**
+     * @deprecated use {@link #readNbt(NbtCompound)}
+     */
+    @Deprecated(forRemoval = true)
+    default void fromTag(NbtCompound nbt) {
+        this.readNbt(nbt);
+    }
 }

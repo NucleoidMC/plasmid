@@ -5,7 +5,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -28,8 +27,16 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
         return woodType;
     }
     
-    public static Set<WoodType> values() {
+    public static Set<WoodType> types() {
         return TYPES;
+    }
+
+    /**
+     * @deprecated use {@link #types()}
+     */
+    @Deprecated(forRemoval = true)
+    public static WoodType[] values() {
+        return TYPES.toArray(new WoodType[0]);
     }
 
     public static WoodType getType(Block block) {
@@ -65,8 +72,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #sapling()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getSapling() {
         return this.sapling;
     }
@@ -74,8 +80,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #leaves()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getLeaves() {
         return this.leaves;
     }
@@ -83,8 +88,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #log()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getLog() {
         return this.log;
     }
@@ -92,8 +96,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #planks()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getPlanks() {
         return this.planks;
     }
@@ -101,8 +104,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #slab()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getSlab() {
         return this.slab;
     }
@@ -110,8 +112,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #stairs()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getStairs() {
         return this.stairs;
     }
@@ -119,8 +120,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #fence()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getFence() {
         return this.fence;
     }
@@ -128,8 +128,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #fenceGate()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getFenceGate() {
         return this.fenceGate;
     }
@@ -137,8 +136,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #door()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getDoor() {
         return this.door;
     }
@@ -146,8 +144,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #sign()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getSign() {
         return this.sign;
     }
@@ -155,8 +152,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #button()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getButton() {
         return this.button;
     }
@@ -164,8 +160,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #pressurePlate()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     public Block getPressurePlate() {
         return this.pressurePlate;
     }
@@ -173,8 +168,7 @@ public record WoodType(Block sapling, Block pottedSapling, Block leaves, Block l
     /**
      * @deprecated Use {@link #boat()}
      */
-    @Deprecated
-    @ApiStatus.ScheduledForRemoval
+    @Deprecated(forRemoval = true)
     @Nullable
     public Item getBoat() {
         return this.boat;

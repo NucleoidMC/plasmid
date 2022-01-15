@@ -76,9 +76,11 @@ public final class TestGame {
     private static GameResult startGame(GameSpace gameSpace) {
         gameSpace.setActivity((activity) -> {
             long currentTime = gameSpace.getTime();
-            activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
+            activity.deny(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
             activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);
             activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
+
+            activity.deny(GameRuleType.INTERACTION).allow(GameRuleType.USE_BLOCKS);
 
             var teamManager = TeamManager.addTo(activity);
             teamManager.addTeam(TEAM);

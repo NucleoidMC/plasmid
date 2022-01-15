@@ -11,21 +11,14 @@ group = project.maven_group
 
 def env = System.getenv()
 
-def build_number = env.BUILDNUM_FOR_VERSION
+version = "${project.mod_version}+${project.minecraft_version}"
 
-version = project.mod_version
-
-if (!Boolean.valueOf(project.prerelease)) {
-  if (build_number) {
-    version += ".$build_number"
-  }
-} else {
-  version += "-pre${build_number ?: ''}"
+if (!env.GITHUB_ACTIONS) {
+  version += "-local"
 }
 
-version += "+${project.minecraft_version}"
-if (!build_number) {
-  version += "-local"
+if (project.snapshot) {
+  version += "-SNAPSHOT"
 }
 
 minecraft {

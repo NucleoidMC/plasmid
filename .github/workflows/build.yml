@@ -25,20 +25,6 @@ jobs:
         with:
           java-version: 17
 
-      - name: Read mod version from Gradle
-        id: read_version
-        uses: christian-draeger/read-properties@1.0.1
-        with:
-          path: './gradle.properties'
-          property: 'mod_version'
-
-      - name: Generate build number
-        uses: zyborg/gh-action-buildnum@v1
-        with:
-          version_key: ${{ steps.read_version.outputs.value }}
-          gist_token: ${{ secrets.GIST_TOKEN }}
-          set_env: true
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -48,6 +34,7 @@ jobs:
           MAVEN_URL: ${{ secrets.MAVEN_URL }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          GITHUB_ACTIONS: true
 
       - uses: actions/upload-artifact@v2
         with:

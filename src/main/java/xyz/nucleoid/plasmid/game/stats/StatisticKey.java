@@ -46,26 +46,66 @@ public record StatisticKey<T extends Number>(
         return Util.createTranslationKey("statistic", this.id);
     }
 
+    public static StatisticKey<Integer> intKey(Identifier id) {
+        return new StatisticKey<>(id, ValueType.INT, StorageType.TOTAL, false);
+    }
+
+    public static StatisticKey<Float> floatKey(Identifier id) {
+        return new StatisticKey<>(id, ValueType.FLOAT, StorageType.TOTAL, false);
+    }
+
+    public static StatisticKey<Double> doubleKey(Identifier id) {
+        return new StatisticKey<>(id, ValueType.FLOAT, StorageType.TOTAL, false);
+    }
+
+    public StatisticKey<T> hidden(boolean hidden) {
+        return new StatisticKey<>(this.id, this.valueType, this.storageType, hidden);
+    }
+
+    /**
+     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#intKey(Identifier)}
+     */
+    @Deprecated
     public static StatisticKey<Integer> intKey(Identifier id, StorageType storageType) {
         return new StatisticKey<>(id, ValueType.INT, storageType, false);
     }
 
+    /**
+     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#floatKey(Identifier)}
+     */
+    @Deprecated
     public static StatisticKey<Float> floatKey(Identifier id, StorageType storageType) {
         return new StatisticKey<>(id, ValueType.FLOAT, storageType, false);
     }
 
+    /**
+     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#doubleKey(Identifier)}
+     */
+    @Deprecated
     public static StatisticKey<Double> doubleKey(Identifier id, StorageType storageType) {
         return new StatisticKey<>(id, ValueType.FLOAT, storageType, false);
     }
 
+    /**
+     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#intKey(Identifier)}
+     */
+    @Deprecated
     public static StatisticKey<Integer> hiddenIntKey(Identifier id, StorageType storageType) {
         return new StatisticKey<>(id, ValueType.INT, storageType, true);
     }
 
+    /**
+     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#floatKey(Identifier)}
+     */
+    @Deprecated
     public static StatisticKey<Float> hiddenFloatKey(Identifier id, StorageType storageType) {
         return new StatisticKey<>(id, ValueType.FLOAT, storageType, true);
     }
 
+    /**
+     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#doubleKey(Identifier)}
+     */
+    @Deprecated
     public static StatisticKey<Double> hiddenDoubleKey(Identifier id, StorageType storageType) {
         return new StatisticKey<>(id, ValueType.FLOAT, storageType, true);
     }

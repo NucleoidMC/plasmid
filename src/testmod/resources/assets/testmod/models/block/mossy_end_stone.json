@@ -1,0 +1,9 @@
+{
+    "parent": "minecraft:block/cube_bottom_top",
+	"textures": {
+		"up": "testmod:block/mossy_end_stone_up",
+		"side": "testmod:block/mossy_end_stone_side",
+		"down": "minecraft:block/end_stone",
+		"particle": "testmod:block/mossy_end_stone_side"
+	}
+}

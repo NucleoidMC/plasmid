@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game.manager;
 
 import com.google.common.collect.Lists;
+import eu.pb4.polymer.api.x.BlockMapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -209,7 +210,7 @@ public final class ManagedGameSpace implements GameSpace {
 
         this.lifecycle.onRemovePlayer(this, player);
         GameEvents.PLAYER_LEFT.invoker().onPlayerLeft(this, player);
-
+        BlockMapper.resetMapper(player);
         this.manager.removePlayerFromGameSpace(this, player);
     }
 

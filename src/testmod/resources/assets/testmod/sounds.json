@@ -1,0 +1,29 @@
+{
+	"ghost1": {
+		"sounds": [
+			{
+				"name": "testmod:ghost1",
+				"stream": false,
+				"volume": 1.5
+			}
+		]
+	},
+	"ghost2": {
+		"sounds": [
+			{
+				"name": "testmod:ghost2",
+				"stream": false,
+				"volume": 1.5
+			}
+		]
+	},
+	"ghosthurt": {
+		"sounds": [
+			{
+				"name": "testmod:ghost-hurt",
+				"stream": false,
+				"volume": 1.5
+			}
+		]
+	}
+}

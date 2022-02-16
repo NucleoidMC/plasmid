@@ -108,4 +108,6 @@ public interface GameSpace {
      * @return true if this GameSpace is closed, false otherwise
      */
     boolean isClosed();
+
+    ResourcePackStates getResourcePackStates();
 }

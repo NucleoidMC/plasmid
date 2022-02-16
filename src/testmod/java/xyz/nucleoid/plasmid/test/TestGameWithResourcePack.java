@@ -70,12 +70,12 @@ public final class TestGameWithResourcePack {
                 return ActionResult.FAIL;
             });
 
-            activity.listen(GameActivityEvents.REQUEST_START, () -> startGame(activity.getGameSpace()));
+            activity.listen(GameActivityEvents.REQUEST_START, () -> startGame(activity.getGameSpace(), 0));
 
         });
     }
 
-    private static GameResult startGame(GameSpace gameSpace) {
+    private static GameResult startGame(GameSpace gameSpace, int iter) {
         gameSpace.setActivity((activity) -> {
             long currentTime = gameSpace.getTime();
             activity.deny(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
@@ -87,7 +87,9 @@ public final class TestGameWithResourcePack {
             var teamManager = TeamManager.addTo(activity);
             teamManager.addTeam(TEAM);
 
-            TestInitializer.RESOURCE_PACK.addTo(activity);
+            if (iter != 3) {
+                TestInitializer.RESOURCE_PACK.addTo(activity);
+            }
 
             activity.listen(GamePlayerEvents.ADD, player -> {
                 teamManager.addPlayerTo(player, TEAM.key());
@@ -102,7 +104,7 @@ public final class TestGameWithResourcePack {
                 long time = gameSpace.getTime() - currentTime;
                 if (time % 20 == 0) {
                     sidebar.set(b -> {
-                        b.add(new LiteralText("Hello World! " + (time / 20) + "s").setStyle(Style.EMPTY.withColor(0xFF0000)));
+                        b.add(new LiteralText("Hello World! " + ((400 - time) / 20) + "s").setStyle(Style.EMPTY.withColor(0xFF0000)));
                         b.add(new LiteralText(""));
                         b.add(new TranslatableText("text.plasmid.game.started.player", "test"));
                     });
@@ -113,8 +115,13 @@ public final class TestGameWithResourcePack {
                     }
                 }
 
-                if (time > 1000) {
-                    gameSpace.close(GameCloseReason.FINISHED);
+                if (time > 400) {
+                    if (iter == 3) {
+                        gameSpace.close(GameCloseReason.FINISHED);
+                    } else {
+                        startGame(gameSpace, iter + 1);
+                    }
+                    //
                 }
             });
 

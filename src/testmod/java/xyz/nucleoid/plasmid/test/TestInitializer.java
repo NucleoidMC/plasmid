@@ -33,7 +33,7 @@ public class TestInitializer implements ModInitializer {
             CREATOR.requestModel(Items.NOTE_BLOCK, id("block/chair"))
     );
 
-    public static GameResourcePack RESOURCE_PACK = GameResourcePack.generate(id("pack"), CREATOR);
+    public static GameResourcePack RESOURCE_PACK = GameResourcePack.create(id("pack"), CREATOR);
 
     @Override
     public void onInitialize() {
@@ -44,7 +44,7 @@ public class TestInitializer implements ModInitializer {
 
 
         CREATOR.addAssetSource("plasmid-test-mod");
-        RESOURCE_PACK = GameResourcePack.generate(id("pack"), CREATOR);
+        RESOURCE_PACK = GameResourcePack.create(id("pack"), CREATOR);
     }
 
     private static final Identifier id(String path) {

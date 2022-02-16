@@ -37,6 +37,8 @@ final class GameActivityState implements GameBehavior {
 
         createActivity(gameSpace, activity);
         enableActivity(gameSpace, activity);
+
+        this.gameSpace.getLifecycle().onActivityChange(gameSpace, activity, closedActivity);
     }
 
     boolean closeActivity(GameCloseReason reason) {

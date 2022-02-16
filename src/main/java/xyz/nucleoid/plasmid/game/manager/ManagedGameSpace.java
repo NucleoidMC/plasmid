@@ -34,6 +34,7 @@ public final class ManagedGameSpace implements GameSpace {
     private final long openTime;
 
     private final GameActivityState state = new GameActivityState(this);
+    private final ResourcePackStates resourcePackStateManager = new ResourcePackStates(this);
     private boolean closed;
 
     private final GameSpaceStatistics statistics = new GameSpaceStatistics();
@@ -165,6 +166,11 @@ public final class ManagedGameSpace implements GameSpace {
     @Override
     public boolean isClosed() {
         return this.closed;
+    }
+
+    @Override
+    public ResourcePackStates getResourcePackStates() {
+        return this.resourcePackStateManager;
     }
 
     public GameBehavior getBehavior() {

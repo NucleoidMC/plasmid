@@ -27,6 +27,8 @@ final class GameActivityState implements GameBehavior {
         var gameSpace = this.gameSpace;
 
         var closedActivity = this.activity;
+        this.gameSpace.getLifecycle().beforeActivityChange(gameSpace, activity, closedActivity);
+
         if (closedActivity != null) {
             disableActivity(gameSpace, closedActivity);
             destroyActivity(gameSpace, closedActivity, GameCloseReason.SWAPPED);
@@ -38,7 +40,7 @@ final class GameActivityState implements GameBehavior {
         createActivity(gameSpace, activity);
         enableActivity(gameSpace, activity);
 
-        this.gameSpace.getLifecycle().onActivityChange(gameSpace, activity, closedActivity);
+        this.gameSpace.getLifecycle().afterActivityChange(gameSpace, activity, closedActivity);
     }
 
     boolean closeActivity(GameCloseReason reason) {

@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.game.manager.ManagedGameActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +44,15 @@ public final class GameLifecycle {
         }
     }
 
-    public void onActivityChange(GameSpace gameSpace, GameActivity newActivity, @Nullable GameActivity oldActivity) {
+    public void beforeActivityChange(GameSpace gameSpace, GameActivity activity, @Nullable GameActivity closedActivity) {
         for (var listener : this.listeners) {
-            listener.onActivityChange(gameSpace, newActivity, oldActivity);
+            listener.beforeActivityChange(gameSpace, activity, closedActivity);
+        }
+    }
+
+    public void afterActivityChange(GameSpace gameSpace, ManagedGameActivity activity, @Nullable ManagedGameActivity closedActivity) {
+        for (var listener : this.listeners) {
+            listener.afterActivityChange(gameSpace, activity, closedActivity);
         }
     }
 
@@ -65,7 +72,10 @@ public final class GameLifecycle {
         default void onError(GameSpace gameSpace, Throwable throwable, String context) {
         }
 
-        default void onActivityChange(GameSpace gameSpace, GameActivity newActivity, @Nullable GameActivity oldActivity) {
+        default void beforeActivityChange(GameSpace gameSpace, GameActivity activity, @Nullable GameActivity closedActivity) {
+        }
+
+        default void afterActivityChange(GameSpace gameSpace, GameActivity activity, @Nullable GameActivity closedActivity) {
         }
     }
 }

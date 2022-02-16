@@ -20,8 +20,7 @@ import java.nio.file.Paths;
 
 public record PlasmidConfig(
         String userFacingPackAddress,
-        boolean useServer,
-        int serverPort
+        PlasmidWebServer.Config webServerConfig
 ) {
     private static final Path PATH = Paths.get("config/plasmid.json");
 
@@ -30,15 +29,14 @@ public record PlasmidConfig(
     private static final Codec<PlasmidConfig> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
                 Codec.STRING.optionalFieldOf("resource_pack_address", "http://127.0.0.1:25566").forGetter(PlasmidConfig::userFacingPackAddress),
-                Codec.BOOL.optionalFieldOf("create_resource_pack_server", false).forGetter(PlasmidConfig::useServer),
-                Codec.INT.optionalFieldOf("resource_pack_server_port", 25566).forGetter(PlasmidConfig::serverPort)
+                PlasmidWebServer.Config.CODEC.optionalFieldOf("webserver", PlasmidWebServer.Config.createDefault()).forGetter(PlasmidConfig::webServerConfig)
         ).apply(instance, PlasmidConfig::new)
     );
 
     private static PlasmidConfig instance;
 
     private PlasmidConfig() {
-        this("http://127.0.0.1:25566", true, 25566);
+        this("http://127.0.0.1:25566", PlasmidWebServer.Config.createDefault());
     }
 
     @NotNull

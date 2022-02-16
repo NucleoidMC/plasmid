@@ -216,7 +216,6 @@ public final class ManagedGameSpace implements GameSpace {
 
         this.lifecycle.onRemovePlayer(this, player);
         GameEvents.PLAYER_LEFT.invoker().onPlayerLeft(this, player);
-        BlockMapper.resetMapper(player);
         this.manager.removePlayerFromGameSpace(this, player);
     }
 

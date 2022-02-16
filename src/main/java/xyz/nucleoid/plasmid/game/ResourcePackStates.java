@@ -11,8 +11,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class ResourcePackStates {
-    private final Map<UUID, GameResourcePack> resourcePacks = new HashMap<>();
-    private GameResourcePack globalPack = null;
+    private Map<UUID, GameResourcePack> resourcePacks = new HashMap<>();
+    private Map<UUID, GameResourcePack> oldResourcePacks = new HashMap<>();
+    private boolean active = false;
 
     @ApiStatus.Internal
     public ResourcePackStates(GameSpace gameSpace) {
@@ -23,17 +24,31 @@ public final class ResourcePackStates {
             }
 
             @Override
-            public void onActivityChange(GameSpace gameSpace, GameActivity newActivity, @Nullable GameActivity oldActivity) {
-                var packs = ResourcePackStates.this.resourcePacks;
-                var globalPack = ResourcePackStates.this.globalPack;
+            public void beforeActivityChange(GameSpace gameSpace, GameActivity newActivity, @Nullable GameActivity oldActivity) {
+                ResourcePackStates.this.oldResourcePacks = ResourcePackStates.this.resourcePacks;
+                ResourcePackStates.this.resourcePacks = new HashMap<>();
+
+                ResourcePackStates.this.active = false;
+            }
+
+            @Override
+            public void afterActivityChange(GameSpace gameSpace, GameActivity newActivity, @Nullable GameActivity oldActivity) {
+                var oldPacks = ResourcePackStates.this.oldResourcePacks;
+                var newPacks = ResourcePackStates.this.resourcePacks;
 
                 for (var player : gameSpace.getPlayers()) {
-                    var currentPack = packs.get(player.getUuid());
+                    var previousPack = oldPacks.get(player.getUuid());
+                    var currentPack = newPacks.get(player.getUuid());
 
-                    if (currentPack != globalPack && globalPack == null) {
-                        resetPack(player);
+                    if (currentPack != previousPack) {
+                        if (currentPack == null) {
+                            resetPack(player);
+                        } else {
+                            currentPack.sendTo(player);
+                        }
                     }
                 }
+                ResourcePackStates.this.active = true;
             }
         });
     }
@@ -69,17 +84,14 @@ public final class ResourcePackStates {
     public void setFor(ServerPlayerEntity player, GameResourcePack pack) {
         if (pack == null) {
             var oldPack = this.resourcePacks.remove(player.getUuid());
-            if (oldPack != null && !player.isDisconnected()) {
+            if (this.active && oldPack != null && !player.isDisconnected()) {
                 resetPack(player);
             }
         } else if (this.getFor(player) != pack) {
             this.resourcePacks.put(player.getUuid(), pack);
-            pack.sendTo(player);
+            if (this.active) {
+                pack.sendTo(player);
+            }
         }
-    }
-
-    @ApiStatus.Internal
-    public void setCurrentGlobalPack(GameResourcePack pack) {
-        this.globalPack = pack;
     }
 }

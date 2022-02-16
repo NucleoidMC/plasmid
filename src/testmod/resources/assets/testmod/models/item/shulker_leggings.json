@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "testmod:item/shulker_leggings",
-    "layer1": "testmod:item/shulker_leggings"
-  }
-}

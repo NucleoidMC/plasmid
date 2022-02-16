@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.player.isolation;
 
+import eu.pb4.polymer.api.x.BlockMapper;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.MinecraftServer;
@@ -112,6 +113,7 @@ public final class IsolatingPlayerTeleporter {
 
         playerManager.sendCommandTree(player);
         player.getRecipeBook().sendInitRecipesPacket(player);
+        BlockMapper.resetMapper(player);
 
         world.onPlayerTeleport(player);
         networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());

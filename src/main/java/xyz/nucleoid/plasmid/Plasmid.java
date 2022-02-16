@@ -91,7 +91,7 @@ public final class Plasmid implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             GameSpaceManager.openServer(server);
             GamePortalManager.INSTANCE.setup(server);
-            if (PlasmidConfig.get().useServer()) {
+            if (PlasmidConfig.get().webServerConfig().enabled()) {
                 httpServer = PlasmidWebServer.start(server);
             }
         });

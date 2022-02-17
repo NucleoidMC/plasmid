@@ -7,6 +7,7 @@ import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
+import xyz.nucleoid.plasmid.game.resource_packs.ResourcePackStates;
 import xyz.nucleoid.plasmid.game.world.GameSpaceWorlds;
 
 import java.util.function.Consumer;

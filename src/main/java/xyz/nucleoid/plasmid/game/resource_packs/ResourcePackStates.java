@@ -1,18 +1,21 @@
-package xyz.nucleoid.plasmid.game;
+package xyz.nucleoid.plasmid.game.resource_packs;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import joptsimple.internal.Strings;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.game.GameActivity;
+import xyz.nucleoid.plasmid.game.GameLifecycle;
+import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.common.GameResourcePack;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public final class ResourcePackStates {
-    private Map<UUID, GameResourcePack> resourcePacks = new HashMap<>();
-    private Map<UUID, GameResourcePack> oldResourcePacks = new HashMap<>();
+    private Map<UUID, GameResourcePack> resourcePacks = new Object2ObjectOpenHashMap<>();
+    private Map<UUID, GameResourcePack> oldResourcePacks = new Object2ObjectOpenHashMap<>();
     private boolean active = false;
 
     @ApiStatus.Internal
@@ -26,7 +29,7 @@ public final class ResourcePackStates {
             @Override
             public void beforeActivityChange(GameSpace gameSpace, GameActivity newActivity, @Nullable GameActivity oldActivity) {
                 ResourcePackStates.this.oldResourcePacks = ResourcePackStates.this.resourcePacks;
-                ResourcePackStates.this.resourcePacks = new HashMap<>();
+                ResourcePackStates.this.resourcePacks = new Object2ObjectOpenHashMap<>();
 
                 ResourcePackStates.this.active = false;
             }
@@ -48,19 +51,21 @@ public final class ResourcePackStates {
                         }
                     }
                 }
+
                 ResourcePackStates.this.active = true;
             }
         });
     }
 
     private static void resetPack(ServerPlayerEntity player) {
-        var serverUrl = player.getServer().getResourcePackUrl();
-        var serverHash = player.getServer().getResourcePackHash();
+        var server = player.getServer();
+        var serverUrl = server.getResourcePackUrl();
+        var serverHash = server.getResourcePackHash();
 
         if (!Strings.isNullOrEmpty(serverUrl) && !Strings.isNullOrEmpty(serverHash)) {
-            player.sendResourcePackUrl(serverUrl, serverHash, true, player.getServer().getResourcePackPrompt());
+            player.sendResourcePackUrl(serverUrl, serverHash, true, server.getResourcePackPrompt());
         } else {
-            GameResourcePack.EMPTY.sendTo(player);
+            GameResourcePackManager.emptyPack().ifPresent(pack -> pack.sendTo(player));
         }
     }
 
@@ -78,7 +83,7 @@ public final class ResourcePackStates {
     /**
      * Sets resource pack state for player, used to limit resource pack reloads on activity changes
      *
-     * @param player
+     * @param player the player to set the resource pack for
      * @param pack {@link GameResourcePack}'s of player
      */
     public void setFor(ServerPlayerEntity player, GameResourcePack pack) {

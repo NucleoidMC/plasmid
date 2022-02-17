@@ -17,6 +17,8 @@ import net.minecraft.util.registry.Registry;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.common.GameResourcePack;
 
+import java.util.Optional;
+
 public class TestInitializer implements ModInitializer {
     public static final String ID = "testmod";
     public static final ResourcePackCreator CREATOR = ResourcePackCreator.create();
@@ -33,7 +35,7 @@ public class TestInitializer implements ModInitializer {
             CREATOR.requestModel(Items.NOTE_BLOCK, id("block/chair"))
     );
 
-    public static GameResourcePack RESOURCE_PACK = GameResourcePack.create(id("pack"), CREATOR);
+    public static Optional<GameResourcePack> resourcePack = Optional.empty();
 
     @Override
     public void onInitialize() {
@@ -44,7 +46,7 @@ public class TestInitializer implements ModInitializer {
 
 
         CREATOR.addAssetSource("plasmid-test-mod");
-        RESOURCE_PACK = GameResourcePack.create(id("pack"), CREATOR);
+        resourcePack = GameResourcePack.tryRegister(CREATOR);
     }
 
     private static final Identifier id(String path) {

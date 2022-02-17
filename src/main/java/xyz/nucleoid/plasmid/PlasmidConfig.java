@@ -29,7 +29,7 @@ public record PlasmidConfig(
     private static final Codec<PlasmidConfig> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
                 Codec.STRING.optionalFieldOf("resource_pack_address").forGetter(PlasmidConfig::userFacingPackAddress),
-                PlasmidWebServer.Config.CODEC.optionalFieldOf("webserver").forGetter(PlasmidConfig::webServerConfig)
+                PlasmidWebServer.Config.CODEC.optionalFieldOf("web_server").forGetter(PlasmidConfig::webServerConfig)
         ).apply(instance, PlasmidConfig::new)
     );
 
@@ -64,7 +64,7 @@ public record PlasmidConfig(
             var result = CODEC.decode(JsonOps.INSTANCE, json).map(Pair::getFirst);
             return result.result().orElseGet(PlasmidConfig::new);
         } catch (IOException e) {
-            Plasmid.LOGGER.warn("Failed to load nucleoid extras config", e);
+            Plasmid.LOGGER.warn("Failed to load Plasmid config", e);
             return new PlasmidConfig();
         }
     }
@@ -78,7 +78,7 @@ public record PlasmidConfig(
                 IOUtils.write(GSON.toJson(json), output, StandardCharsets.UTF_8);
             }
         } catch (IOException e) {
-            Plasmid.LOGGER.warn("Failed to create default plasmid config", e);
+            Plasmid.LOGGER.warn("Failed to create default Plasmid config", e);
         }
         return config;
     }

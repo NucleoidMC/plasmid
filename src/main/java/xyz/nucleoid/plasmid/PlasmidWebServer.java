@@ -1,11 +1,11 @@
 package xyz.nucleoid.plasmid;
 
+import com.google.common.base.Strings;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import joptsimple.internal.Strings;
 import net.minecraft.server.MinecraftServer;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;

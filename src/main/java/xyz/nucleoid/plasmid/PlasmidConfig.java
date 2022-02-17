@@ -10,17 +10,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 public record PlasmidConfig(
-        String userFacingPackAddress,
-        PlasmidWebServer.Config webServerConfig
+        Optional<String> userFacingPackAddress,
+        Optional<PlasmidWebServer.Config> webServerConfig
 ) {
     private static final Path PATH = Paths.get("config/plasmid.json");
 
@@ -28,15 +28,18 @@ public record PlasmidConfig(
 
     private static final Codec<PlasmidConfig> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
-                Codec.STRING.optionalFieldOf("resource_pack_address", "http://127.0.0.1:25566").forGetter(PlasmidConfig::userFacingPackAddress),
-                PlasmidWebServer.Config.CODEC.optionalFieldOf("webserver", PlasmidWebServer.Config.createDefault()).forGetter(PlasmidConfig::webServerConfig)
+                Codec.STRING.optionalFieldOf("resource_pack_address").forGetter(PlasmidConfig::userFacingPackAddress),
+                PlasmidWebServer.Config.CODEC.optionalFieldOf("webserver").forGetter(PlasmidConfig::webServerConfig)
         ).apply(instance, PlasmidConfig::new)
     );
 
     private static PlasmidConfig instance;
 
     private PlasmidConfig() {
-        this("http://127.0.0.1:25566", PlasmidWebServer.Config.createDefault());
+        this(
+                Optional.of("http://127.0.0.1:25566/" + PlasmidWebServer.RESOURCE_PACKS_ENDPOINT),
+                Optional.of(new PlasmidWebServer.Config(25566))
+        );
     }
 
     @NotNull

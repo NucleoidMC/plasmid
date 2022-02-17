@@ -2,7 +2,6 @@ package xyz.nucleoid.plasmid.test;
 
 import eu.pb4.polymer.api.utils.PolymerUtils;
 import eu.pb4.polymer.api.x.BlockMapper;
-import net.minecraft.block.Blocks;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -88,7 +87,7 @@ public final class TestGameWithResourcePack {
             teamManager.addTeam(TEAM);
 
             if (iter != 3) {
-                TestInitializer.RESOURCE_PACK.addTo(activity);
+                TestInitializer.resourcePack.ifPresent(pack -> pack.addTo(activity));
             }
 
             activity.listen(GamePlayerEvents.ADD, player -> {

@@ -1,6 +1,8 @@
 package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.game.manager.ManagedGameActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +44,18 @@ public final class GameLifecycle {
         }
     }
 
+    public void beforeActivityChange(GameSpace gameSpace, GameActivity activity, @Nullable GameActivity closedActivity) {
+        for (var listener : this.listeners) {
+            listener.beforeActivityChange(gameSpace, activity, closedActivity);
+        }
+    }
+
+    public void afterActivityChange(GameSpace gameSpace, ManagedGameActivity activity, @Nullable ManagedGameActivity closedActivity) {
+        for (var listener : this.listeners) {
+            listener.afterActivityChange(gameSpace, activity, closedActivity);
+        }
+    }
+
     public interface Listeners {
         default void onAddPlayer(GameSpace gameSpace, ServerPlayerEntity player) {
         }
@@ -56,6 +70,12 @@ public final class GameLifecycle {
         }
 
         default void onError(GameSpace gameSpace, Throwable throwable, String context) {
+        }
+
+        default void beforeActivityChange(GameSpace gameSpace, GameActivity activity, @Nullable GameActivity closedActivity) {
+        }
+
+        default void afterActivityChange(GameSpace gameSpace, GameActivity activity, @Nullable GameActivity closedActivity) {
         }
     }
 }

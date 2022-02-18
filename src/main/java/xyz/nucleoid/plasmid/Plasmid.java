@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid;
 
-import com.mojang.serialization.Codec;
+import com.sun.net.httpserver.HttpServer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -10,7 +10,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Unit;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,11 +30,11 @@ import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
 import xyz.nucleoid.plasmid.game.portal.menu.MenuPortalConfig;
 import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandPortalConfig;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
-import xyz.nucleoid.plasmid.test.TestGame;
 
 public final class Plasmid implements ModInitializer {
     public static final String ID = "plasmid";
     public static final Logger LOGGER = LogManager.getLogger(ID);
+    private static HttpServer httpServer = null;
 
     @Override
     public void onInitialize() {
@@ -47,7 +46,6 @@ public final class Plasmid implements ModInitializer {
         GamePortalConfig.register(new Identifier(ID, "on_demand"), OnDemandPortalConfig.CODEC);
         GamePortalConfig.register(new Identifier(ID, "menu"), MenuPortalConfig.CODEC);
 
-        GameType.register(new Identifier(Plasmid.ID, "test"), Codec.unit(Unit.INSTANCE), TestGame::open);
         GameType.register(new Identifier(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
 
         this.registerCallbacks();
@@ -93,11 +91,17 @@ public final class Plasmid implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             GameSpaceManager.openServer(server);
             GamePortalManager.INSTANCE.setup(server);
+            PlasmidConfig.get().webServerConfig().ifPresent(config -> {
+                httpServer = PlasmidWebServer.start(server, config);
+            });
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             GameSpaceManager.startClosing();
             GamePortalManager.INSTANCE.close(server);
+            if (httpServer != null) {
+                httpServer.stop(0);
+            }
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {

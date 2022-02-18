@@ -1,9 +1,15 @@
 package xyz.nucleoid.plasmid.game.common;
 
-import joptsimple.internal.Strings;
+import eu.pb4.polymer.api.resourcepack.ResourcePackCreator;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.ApiStatus;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.resource_packs.GameResourcePackManager;
+
+import java.util.Optional;
 
 // TODO: prevent resource-pack soft-lock
 
@@ -13,9 +19,6 @@ import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
  * @see GameResourcePack#addTo(GameActivity)
  */
 public final class GameResourcePack {
-    private static final String EMPTY_PACK_URL = "https://nucleoid.xyz/resources/empty_resource_pack.zip";
-    private static final String EMPTY_PACK_HASH = "B740E5E6C39C0549D05A1F979156B1FE6A03D9BF";
-
     private final String url;
     private final String hash;
     private boolean required;
@@ -53,19 +56,25 @@ public final class GameResourcePack {
      * @param activity the activity to add to
      */
     public void addTo(GameActivity activity) {
-        var server = activity.getGameSpace().getServer();
-        var serverUrl = server.getResourcePackUrl();
-        var serverHash = server.getResourcePackHash();
+        var gameSpace = activity.getGameSpace();
 
         activity.listen(GamePlayerEvents.ADD, player -> {
-            player.sendResourcePackUrl(this.url, this.hash, this.required, this.prompt);
+            gameSpace.getResourcePackStates().setFor(player, this);
         });
+    }
 
-        activity.listen(GamePlayerEvents.REMOVE, player -> {
-            if (!Strings.isNullOrEmpty(serverUrl) && !Strings.isNullOrEmpty(serverHash)) {
-                player.sendResourcePackUrl(serverUrl, serverHash, true, null);
-            } else {
-                player.sendResourcePackUrl(EMPTY_PACK_URL, EMPTY_PACK_HASH, true, null);
+    @ApiStatus.Internal
+    public void sendTo(ServerPlayerEntity player) {
+        player.sendResourcePackUrl(this.url, this.hash, this.required, this.prompt);
+    }
+
+    public static Optional<GameResourcePack> tryRegister(ResourcePackCreator creator) {
+        return GameResourcePackManager.get().flatMap(packs -> {
+            try {
+                return Optional.of(packs.register(creator));
+            } catch (Exception e) {
+                Plasmid.LOGGER.error("Failed to generate resource pack", e);
+                return Optional.empty();
             }
         });
     }

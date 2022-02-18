@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "plasmid-test-mod",
+  "version": "${version}",
+  "name": "Plasmid Test Mod",
+  "description": "Test Mod",
+  "authors": ["Nucleoid Contributors"],
+  "license": "LGPLv3",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["xyz.nucleoid.plasmid.test.TestInitializer"]
+  },
+  "depends": {
+    "fabricloader": ">=0.11"
+  }
+}

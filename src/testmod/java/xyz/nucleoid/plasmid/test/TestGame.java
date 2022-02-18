@@ -33,7 +33,7 @@ import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 public final class TestGame {
-    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(new Identifier(Plasmid.ID, "test"), StatisticKey.StorageType.TOTAL);
+    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(new Identifier(Plasmid.ID, "test"));
 
     private static final GameTeam TEAM = new GameTeam(
             new GameTeamKey("players"),
@@ -88,7 +88,7 @@ public final class TestGame {
             activity.listen(GamePlayerEvents.ADD, player -> teamManager.addPlayerTo(player, TEAM.key()));
 
             var sidebar = GlobalWidgets.addTo(activity)
-                    .addSidebar(new TranslatableText("text.plasmid.test"));
+                    .addSidebar(new TranslatableText("text.test.test"));
 
             activity.listen(GameActivityEvents.TICK, () -> {
                 long time = gameSpace.getTime() - currentTime;

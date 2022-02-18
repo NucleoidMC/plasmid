@@ -9,6 +9,30 @@ targetCompatibility = JavaVersion.VERSION_17
 archivesBaseName = project.archives_base_name
 group = project.maven_group
 
+sourceSets {
+  testmod {
+    runtimeClasspath += main.runtimeClasspath
+    compileClasspath += main.compileClasspath
+  }
+}
+
+loom {
+  runs {
+    testmodClient {
+      client()
+      ideConfigGenerated project.rootProject == project
+      name = "Test Mod Client"
+      source sourceSets.testmod
+    }
+    testmodServer {
+      server()
+      ideConfigGenerated project.rootProject == project
+      name = "Test Mod Server"
+      source sourceSets.testmod
+    }
+  }
+}
+
 def env = System.getenv()
 
 version = "${project.mod_version}+${project.minecraft_version}"
@@ -44,7 +68,8 @@ dependencies {
   modImplementation include('xyz.nucleoid:more-codecs:0.2.1+1.18')
   modImplementation include('xyz.nucleoid:stimuli:0.2.7+1.18.1')
   modImplementation include('xyz.nucleoid:map-templates:0.1.4+1.18.1')
-  modImplementation include('eu.pb4:polymer:0.2.0-beta.24+1.18.1')
+  modImplementation include('eu.pb4:polymer:0.2.0-beta.26+1.18.1')
+  modImplementation include('eu.pb4:polymer-blocks:0.1.0-alpha.3+1.18.1')
   modImplementation include('eu.pb4:hologram-api:0.2.1+1.18-pre5')
   modImplementation include('eu.pb4:sgui:1.0.0-rc6+1.18-pre5')
   modImplementation include('eu.pb4:sidebar-api:0.1.0+1.18')
@@ -55,6 +80,8 @@ dependencies {
   }*/
 
   modCompileOnly('xyz.nucleoid:disguiselib-fabric:1.0.5')
+
+  testmodImplementation sourceSets.main.output
 }
 
 processResources {

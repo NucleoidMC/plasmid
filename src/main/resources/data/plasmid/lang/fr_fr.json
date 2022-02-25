@@ -58,7 +58,7 @@
   "text.plasmid.map.data.get.at": "Données de carte de \"%s\" à \"%s\" :\n%s",
   "text.plasmid.map.data.merge.success": "Données de carte fusionnées.",
   "text.plasmid.map.join.leave_command": "/map leave",
-  "text.plasmid.map.join.success": "Vous avez rejoint '%s' ! Exécutez %s pour retourner à votre point original",
+  "text.plasmid.map.join.success": "Vous avez rejoint '%s' ! Utilisez %s pour retourner en arrière",
   "text.plasmid.map.data.get": "Données de carte de %s :\n%s",
   "text.plasmid.map.import.success": "L’espace de travail a été importé avec succès dans '%s' !",
   "text.plasmid.map.data.set.success": "Données de carte définies.",

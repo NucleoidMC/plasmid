@@ -99,7 +99,7 @@ public final class IsolatingPlayerTeleporter {
 
         var networkHandler = player.networkHandler;
         networkHandler.sendPacket(new PlayerRespawnS2CPacket(
-                world.getDimension(), world.getRegistryKey(),
+                world.method_40134(), world.getRegistryKey(),
                 BiomeAccess.hashSeed(world.getSeed()),
                 player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(),
                 world.isDebugWorld(), world.isFlat(), false

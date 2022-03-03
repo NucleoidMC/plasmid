@@ -1,13 +1,10 @@
 package xyz.nucleoid.plasmid.game.common;
 
-import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ToolItem;
+import net.minecraft.item.*;
 
 import java.util.UUID;
 
@@ -64,15 +61,16 @@ public final class OldCombat {
     }
 
     private static int getBaseDamage(ItemStack stack) {
-        if (stack.isIn(FabricToolTags.SWORDS)) {
+        var item = stack.getItem();
+        if (item instanceof SwordItem) {
             return SWORD_BASE_DAMAGE;
-        } else if (stack.isIn(FabricToolTags.AXES)) {
+        } else if (item instanceof AxeItem) {
             return AXE_BASE_DAMAGE;
-        } else if (stack.isIn(FabricToolTags.PICKAXES)) {
+        } else if (item instanceof PickaxeItem) {
             return PICKAXE_BASE_DAMAGE;
-        } else if (stack.isIn(FabricToolTags.SHOVELS)) {
+        } else if (item instanceof ShovelItem) {
             return SHOVEL_BASE_DAMAGE;
-        } else if (stack.isIn(FabricToolTags.HOES)) {
+        } else if (item instanceof HoeItem) {
             return HOE_BASE_DAMAGE;
         }
         return 0;

@@ -9,8 +9,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.tag.BlockTags;
-import net.minecraft.tag.Tag;
+import net.minecraft.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.registry.Registry;
 
@@ -64,13 +63,8 @@ public final class ItemStackBuilder {
         return this.addCanDestroy(blockId.toString());
     }
 
-    public ItemStackBuilder addCanDestroy(Tag<Block> block) {
-        var tagId = BlockTags.getTagGroup().getUncheckedTagId(block);
-        if (tagId == null) {
-            throw new IllegalArgumentException("tag " + block + " does not exist!");
-        }
-
-        return this.addCanDestroy("#" + tagId.toString());
+    public ItemStackBuilder addCanDestroy(TagKey<Block> block) {
+        return this.addCanDestroy("#" + block.id());
     }
 
     public ItemStackBuilder addCanPlaceOn(Block block) {
@@ -78,13 +72,8 @@ public final class ItemStackBuilder {
         return this.addCanPlaceOn(blockId.toString());
     }
 
-    public ItemStackBuilder addCanPlaceOn(Tag<Block> block) {
-        var tagId = BlockTags.getTagGroup().getUncheckedTagId(block);
-        if (tagId == null) {
-            throw new IllegalArgumentException("tag " + block + " does not exist!");
-        }
-
-        return this.addCanPlaceOn("#" + tagId.toString());
+    public ItemStackBuilder addCanPlaceOn(TagKey<Block> block) {
+        return this.addCanPlaceOn("#" + block.id());
     }
 
     private ItemStackBuilder addCanDestroy(String predicate) {

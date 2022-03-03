@@ -17,7 +17,7 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.dimension.DimensionType;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -39,9 +39,6 @@ import java.util.UUID;
 public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     @Shadow
     @Final
-    private static Logger LOGGER;
-    @Shadow
-    @Final
     private MinecraftServer server;
     @Shadow
     @Final
@@ -59,6 +56,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     @Shadow
     public abstract NbtCompound getUserData();
 
+    @Shadow @Final private static Logger LOGGER;
     @Unique
     private PlayerResetter playerResetter;
 

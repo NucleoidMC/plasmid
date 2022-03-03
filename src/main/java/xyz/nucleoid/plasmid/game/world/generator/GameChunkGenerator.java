@@ -1,13 +1,14 @@
 package xyz.nucleoid.plasmid.game.world.generator;
 
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureManager;
+import net.minecraft.structure.StructureSet;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryEntryList;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.HeightLimitView;
@@ -24,11 +25,10 @@ import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.Blender;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
-import net.minecraft.world.gen.chunk.StructuresConfig;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
 import xyz.nucleoid.fantasy.util.VoidChunkGenerator;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -47,19 +47,17 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
         }
     };
 
-    private static final MultiNoiseUtil.MultiNoiseSampler EMPTY_SAMPLER = (x, y, z) -> new MultiNoiseUtil.NoiseValuePoint(0, 0,0,0, 0, 0);
-
-    public GameChunkGenerator(BiomeSource biomes, StructuresConfig structures) {
-        super(biomes, structures);
+    public GameChunkGenerator(Registry<StructureSet> structureRegistry, Optional<RegistryEntryList<StructureSet>> structures, BiomeSource biomeSource) {
+        super(structureRegistry, structures, biomeSource);
     }
 
     public GameChunkGenerator(MinecraftServer server) {
-        this(createBiomeSource(server, BiomeKeys.THE_VOID), new StructuresConfig(Optional.empty(), Collections.emptyMap()));
+        this(server.getRegistryManager().get(Registry.STRUCTURE_SET_KEY), Optional.empty(), createBiomeSource(server, BiomeKeys.THE_VOID));
     }
 
     protected static FixedBiomeSource createBiomeSource(MinecraftServer server, RegistryKey<Biome> biome) {
         var registryManager = server.getRegistryManager();
-        return new FixedBiomeSource(registryManager.get(Registry.BIOME_KEY).get(biome));
+        return new FixedBiomeSource(registryManager.get(Registry.BIOME_KEY).getEntry(biome).get());
     }
 
     @Override
@@ -69,7 +67,7 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
 
     @Override
     public MultiNoiseUtil.MultiNoiseSampler getMultiNoiseSampler() {
-        return EMPTY_SAMPLER;
+        return VoidChunkGenerator.EMPTY_SAMPLER;
     }
 
     @Override
@@ -133,4 +131,7 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
     protected final Codec<? extends ChunkGenerator> getCodec() {
         return CODEC;
     }
+
+    @Override
+    public void getDebugHudText(List<String> text, BlockPos pos) { }
 }

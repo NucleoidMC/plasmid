@@ -11,8 +11,8 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import xyz.nucleoid.plasmid.command.ChatCommand;
 import xyz.nucleoid.plasmid.command.GameCommand;
 import xyz.nucleoid.plasmid.command.GamePortalCommand;
@@ -33,7 +33,7 @@ import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 
 public final class Plasmid implements ModInitializer {
     public static final String ID = "plasmid";
-    public static final Logger LOGGER = LogManager.getLogger(ID);
+    public static final Logger LOGGER = LoggerFactory.getLogger(ID);
     private static HttpServer httpServer = null;
 
     @Override
@@ -112,7 +112,7 @@ public final class Plasmid implements ModInitializer {
         if (Boolean.getBoolean("plasmid.debug_statistics")) {
             GameEvents.CLOSING.register((gameSpace, reason) -> {
                 gameSpace.getStatistics().visitAll((name, bundle) -> {
-                    LOGGER.info(bundle.encode());
+                    LOGGER.info(bundle.encode().toString());
                 });
             });
         }

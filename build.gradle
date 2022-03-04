@@ -63,7 +63,7 @@ dependencies {
 
   modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-  modImplementation include('fr.catcore:server-translations-api:1.4.9+1.18.2-rc1')
+  modImplementation include('fr.catcore:server-translations-api:1.4.10+1.18.2')
   modImplementation include('xyz.nucleoid:packet-tweaker:0.2.0+1.18-pre1')
   modImplementation include('xyz.nucleoid:fantasy:0.4.4+1.18.2')
   modImplementation include('xyz.nucleoid:more-codecs:0.2.1+1.18')

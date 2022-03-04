@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.portal;
 
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -117,6 +118,8 @@ public final class GamePortalManager {
                 }
             } catch (IOException e) {
                 Plasmid.LOGGER.error("Failed to read game portal at {}", path, e);
+            } catch (JsonParseException e) {
+                Plasmid.LOGGER.error("Failed to parse game portal JSON at {}: {}", path, e);
             }
         }
 

@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game.config;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -61,6 +62,8 @@ public final class GameConfigs {
                         }
                     } catch (IOException e) {
                         Plasmid.LOGGER.error("Failed to read configured game at {}", path, e);
+                    } catch (JsonParseException e) {
+                        Plasmid.LOGGER.error("Failed to parse game JSON at {}: {}", path, e);
                     }
                 }
             }

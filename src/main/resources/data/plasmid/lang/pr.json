@@ -1,0 +1,6 @@
+{
+  "text.plasmid.game.portal.player_count": "%s buccaneers",
+  "text.plasmid.chat.team": "[Crew] %s",
+  "text.plasmid.game.waiting_lobby.sidebar.players": "Buccaneers: %s%s%s",
+  "text.plasmid.shop.cost.iron": "%s steel"
+}

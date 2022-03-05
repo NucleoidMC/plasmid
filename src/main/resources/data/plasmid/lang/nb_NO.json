@@ -1,0 +1,15 @@
+{
+  "gameType.plasmid.random": "Tilfeldig spill",
+  "gameType.plasmid.test": "Plasmid-testspill",
+  "statistic.plasmid.test": "Plasmid-teststatistikk",
+  "statistic.bundle.plasmid_test_game": "Plasmid-testspill",
+  "item.plasmid.add_region": "Legg til region",
+  "item.plasmid.add_region.trace_mode.at_feet": "fotmodus",
+  "item.plasmid.add_region.trace_mode.changed": "Endret sporingsmodus til: %s",
+  "item.plasmid.add_region.trace_mode.exact": "eksakt modus",
+  "item.plasmid.add_region.trace_mode.offset": "forskjøvet modus",
+  "item.plasmid.include_entity": "Inkluder entitet",
+  "item.plasmid.include_entity.player_not_in_map": "Du finnes ikke på noe kart.",
+  "text.plasmid.portal.portal_not_found": "Denne portalen ble ikke funnet.",
+  "text.plasmid.join_link_hover": "Ta del i %s"
+}

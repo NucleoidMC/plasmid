@@ -1,5 +1,5 @@
 plugins {
-  id 'fabric-loom' version '0.10-SNAPSHOT'
+  id 'fabric-loom' version '0.11-SNAPSHOT'
   id 'maven-publish'
 }
 
@@ -31,6 +31,9 @@ loom {
       source sourceSets.testmod
     }
   }
+
+  accessWidenerPath = file("src/main/resources/plasmid.accesswidener")
+  runtimeOnlyLog4j = true
 }
 
 def env = System.getenv()
@@ -43,10 +46,6 @@ if (!env.GITHUB_ACTIONS) {
 
 if (project.snapshot) {
   version += "-SNAPSHOT"
-}
-
-minecraft {
-  accessWidener = file("src/main/resources/plasmid.accesswidener")
 }
 
 repositories {

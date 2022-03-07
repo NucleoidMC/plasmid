@@ -68,21 +68,12 @@
   "statistic.plasmid.points": "Punkte",
   "statistic.plasmid.quickest_time": "Kiireim aeg",
   "statistic.plasmid.longest_time": "Pikim aeg",
-  "text.plasmid.map.join.success": "",
   "text.plasmid.map_workspace.workspace_not_found": "",
-  "text.plasmid.map.delete.error": "",
   "text.plasmid.map.region.data.get": "",
-  "text.plasmid.map.data.get": "",
   "text.plasmid.game.not_in_game": "",
-  "text.plasmid.map.open.join_command": "",
   "text.plasmid.map.data.get.at": "",
-  "item.plasmid.add_region.trace_mode.changed": "",
   "text.plasmid.map.origin.set": "",
-  "text.plasmid.map.data.merge.success": "",
   "text.plasmid.map.export.vertical_bounds_warning.line.3": "",
-  "text.plasmid.map.export.success": "",
   "text.plasmid.map.region.entity.filter.type.add.already_present": "",
-  "text.plasmid.map.region.entity.filter.type.remove.success": "",
-  "text.plasmid.map.bounds.set": "",
-  "text.plasmid.map.region.entity.filter.entity_type_not_found": ""
+  "text.plasmid.map.bounds.set": ""
 }

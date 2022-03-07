@@ -3,8 +3,6 @@
   "text.plasmid.chat.team": "[Crew] %s",
   "text.plasmid.game.waiting_lobby.sidebar.players": "Buccaneers: %s%s%s",
   "text.plasmid.shop.cost.iron": "%s steel",
-  "item.plasmid.add_region.trace_mode.offset": "",
   "text.plasmid.shop.cost.custom": "",
-  "text.plasmid.portal.portal_not_found": "",
   "text.plasmid.map.data.remove.at.success": ""
 }

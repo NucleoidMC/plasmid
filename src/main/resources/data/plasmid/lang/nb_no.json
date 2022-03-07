@@ -12,7 +12,5 @@
   "item.plasmid.include_entity.player_not_in_map": "Du finnes ikke på noe kart.",
   "text.plasmid.portal.portal_not_found": "Denne portalen ble ikke funnet.",
   "text.plasmid.join_link_hover": "Ta del i %s",
-  "text.plasmid.join_result.already_joined": "",
-  "text.plasmid.random.empty_composite_game_config": "",
-  "text.plasmid.map.import.success": ""
+  "text.plasmid.random.empty_composite_game_config": ""
 }

@@ -3,12 +3,8 @@
   "text.plasmid.chat.team": "[Crew] %s",
   "text.plasmid.game.waiting_lobby.sidebar.players": "Buccaneers: %s%s%s",
   "text.plasmid.shop.cost.iron": "%s steel",
-  "gameType.plasmid.random": "",
   "text.plasmid.chat.switch.all": "",
-  "text.plasmid.join_result.generic_error": "",
   "text.plasmid.map.data.remove.success": "",
-  "text.plasmid.map.open.map_already_exists": "",
   "text.plasmid.shop.cost.gold": "",
-  "text.plasmid.game.join.error": "",
   "text.plasmid.map.export.error": ""
 }

@@ -68,12 +68,8 @@
   "statistic.plasmid.points": "Punkte",
   "statistic.plasmid.quickest_time": "Kiireim aeg",
   "statistic.plasmid.longest_time": "Pikim aeg",
-  "text.plasmid.map.join.success": "",
   "text.plasmid.shop.cost.custom": "",
-  "text.plasmid.map.data.set.at.success": "",
   "text.plasmid.game.join.party.error": "",
-  "item.plasmid.add_region.trace_mode.commit": "",
   "text.plasmid.map.export.success": "",
-  "item.plasmid.include_entity.removed": "",
   "text.plasmid.map.open.success": ""
 }

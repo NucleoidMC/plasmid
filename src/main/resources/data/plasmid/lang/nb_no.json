@@ -12,19 +12,11 @@
   "item.plasmid.include_entity.player_not_in_map": "Du finnes ikke på noe kart.",
   "text.plasmid.portal.portal_not_found": "Denne portalen ble ikke funnet.",
   "text.plasmid.join_link_hover": "Ta del i %s",
-  "text.plasmid.map.data.remove.at.success": "",
   "text.plasmid.game.stopped.error": "",
-  "text.plasmid.map.open.map_already_exists": "",
   "text.plasmid.game.portal.disconnect.entity": "",
-  "statistic.plasmid.games_played": "",
   "text.plasmid.game.started.player": "",
-  "text.plasmid.join_result.error": "",
   "text.plasmid.map.region.data.get": "",
-  "text.plasmid.game.waiting_lobby.sidebar.players": "",
   "text.plasmid.game.portal.disconnect.block": "",
-  "item.plasmid.include_entity.target_not_in_map": "",
   "text.plasmid.map.bounds.get": "",
-  "text.plasmid.random.empty_composite_game_config": "",
-  "text.plasmid.map.data.merge.success": "",
-  "text.plasmid.game.join.error": ""
+  "text.plasmid.map.data.merge.success": ""
 }

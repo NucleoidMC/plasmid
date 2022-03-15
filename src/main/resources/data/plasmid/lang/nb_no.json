@@ -11,6 +11,5 @@
   "item.plasmid.include_entity": "Inkluder entitet",
   "item.plasmid.include_entity.player_not_in_map": "Du finnes ikke på noe kart.",
   "text.plasmid.portal.portal_not_found": "Denne portalen ble ikke funnet.",
-  "text.plasmid.join_link_hover": "Ta del i %s",
-  "text.plasmid.map.region.data.get": ""
+  "text.plasmid.join_link_hover": "Ta del i %s"
 }

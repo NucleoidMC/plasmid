@@ -5,6 +5,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
@@ -12,6 +13,8 @@ import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.dynamic.RegistryOps;
+import net.minecraft.util.registry.DynamicRegistryManager;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
@@ -25,6 +28,7 @@ import java.util.Set;
 
 public final class GameConfigs {
     private static final TinyRegistry<GameConfig<?>> CONFIGS = TinyRegistry.create();
+    public static DynamicRegistryManager registryManager;
 
     public static void register() {
         ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
@@ -41,6 +45,9 @@ public final class GameConfigs {
 
                 Collection<Identifier> resources = manager.findResources("games", path -> path.endsWith(".json"));
 
+                DynamicOps<JsonElement> ops = RegistryOps.of(JsonOps.INSTANCE, registryManager);
+                registryManager = null;
+
                 for (Identifier path : resources) {
                     try {
                         Resource resource = manager.getResource(path);
@@ -50,7 +57,7 @@ public final class GameConfigs {
                             Identifier identifier = identifierFromPath(path);
 
                             Codec<GameConfig<?>> codec = GameConfig.codecFrom(identifier);
-                            DataResult<GameConfig<?>> result = codec.parse(JsonOps.INSTANCE, json);
+                            DataResult<GameConfig<?>> result = codec.parse(ops, json);
 
                             result.result().ifPresent(game -> {
                                 CONFIGS.register(identifier, game);

@@ -3,7 +3,7 @@ package xyz.nucleoid.plasmid.util.compatibility;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.disguiselib.casts.EntityDisguise;
+import xyz.nucleoid.disguiselib.api.EntityDisguise;
 
 public final class DisguiseLibCompatibility {
     private static final boolean ENABLED = FabricLoader.getInstance().isModLoaded("disguiselib");

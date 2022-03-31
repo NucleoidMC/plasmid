@@ -14,6 +14,8 @@ public interface RustGameMessage {
 
     static void register() {
         REGISTRY.register(new Identifier("plasmid", "participants"), SetParticipants.CODEC);
+        REGISTRY.register(new Identifier("plasmid", "player_die"), PlayerDie.CODEC);
+
         REGISTRY.register(new Identifier("plasmid", "teleport"), TeleportPlayer.CODEC);
         REGISTRY.register(new Identifier("plasmid", "give_item"), GiveItem.CODEC);
         REGISTRY.register(new Identifier("plasmid", "set_block"), SetBlock.CODEC);

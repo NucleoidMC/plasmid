@@ -1,21 +1,29 @@
 package xyz.nucleoid.plasmid.game.common.rust;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.GameMode;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.common.rust.network.connection.RustGameConnection;
 import xyz.nucleoid.plasmid.game.common.rust.network.connection.RustSocketConnection;
 import xyz.nucleoid.plasmid.game.common.rust.network.message.*;
+import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public final class RustGame {
@@ -24,6 +32,8 @@ public final class RustGame {
     private ServerWorld world;
 
     private RustGameConnection connection;
+
+    private final Set<UUID> deadPlayers = new ObjectOpenHashSet<>();
 
     private RustGame() {
     }
@@ -63,10 +73,25 @@ public final class RustGame {
 
         activity.listen(GamePlayerEvents.ADD, player -> this.onPlayersChange());
         activity.listen(GamePlayerEvents.REMOVE, player -> this.onPlayersChange());
+
+        activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
+            this.deadPlayers.add(player.getUuid());
+            this.send(new PlayerDie(player.getUuid()));
+            player.changeGameMode(GameMode.SPECTATOR);
+            return ActionResult.FAIL;
+        });
+
+        activity.listen(GameActivityEvents.DISABLE, () -> {
+            this.connection.close();
+        });
     }
 
     private void onPlayersChange() {
-        this.send(new SetParticipants(this.gameSpace.getPlayers().stream().map(Entity::getUuid).toList()));
+        final List<UUID> participants = this.gameSpace.getPlayers().stream()
+                .map(Entity::getUuid)
+                .filter(uuid -> !this.deadPlayers.contains(uuid))
+                .toList();
+        this.send(new SetParticipants(participants));
     }
 
     public void send(RustGameMessage message) {

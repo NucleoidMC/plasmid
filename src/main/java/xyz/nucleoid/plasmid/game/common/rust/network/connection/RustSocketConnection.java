@@ -172,4 +172,9 @@ public final class RustSocketConnection extends SimpleChannelInboundHandler<Byte
     public void channelInactive(ChannelHandlerContext ctx) {
         this.handler.acceptClosed();
     }
+
+    @Override
+    public void close() {
+        this.channel.close();
+    }
 }

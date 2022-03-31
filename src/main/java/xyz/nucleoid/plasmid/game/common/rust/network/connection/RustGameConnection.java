@@ -7,6 +7,8 @@ public interface RustGameConnection {
 
     boolean send(RustGameMessage message);
 
+    void close();
+
     interface Handler {
         void acceptConnection();
 

@@ -1,7 +1,7 @@
 use std::pin::Pin;
 use anyhow::Error;
 use futures::{Sink, SinkExt, Stream, StreamExt};
-use tokio::net::TcpStream;
+use tokio::net::{TcpListener, TcpStream};
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 use glam::{IVec3, Vec3};
@@ -72,7 +72,9 @@ impl Handler<Event> for Plasmid {
 
 impl Plasmid {
     pub async fn connect() -> Address<Self> {
-        let tcp = TcpStream::connect("localhost:12345").await.unwrap();
+        let listener = TcpListener::bind("0.0.0.0:12345").await.unwrap();
+        let (tcp, _) = listener.accept().await.unwrap();
+
         let (tx, rx) = split_framed(tcp);
 
         let plasmid = Plasmid {

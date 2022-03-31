@@ -48,7 +48,10 @@ public final class RustGame {
 
             @Override
             public void acceptMessage(RustGameMessage message) {
-                game.accept(message);
+                final GameSpace gameSpace = game.gameSpace;
+                if (gameSpace != null) {
+                    gameSpace.getServer().execute(() -> game.accept(gameSpace, message));
+                }
             }
 
             @Override
@@ -69,14 +72,15 @@ public final class RustGame {
         this.activity = activity;
         this.world = world;
 
-        this.onPlayersChange();
+        this.sendParticipants();
 
-        activity.listen(GamePlayerEvents.ADD, player -> this.onPlayersChange());
-        activity.listen(GamePlayerEvents.REMOVE, player -> this.onPlayersChange());
+        activity.listen(GamePlayerEvents.ADD, player -> this.sendParticipants());
+        activity.listen(GamePlayerEvents.REMOVE, player -> this.sendParticipants());
 
         activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
             this.deadPlayers.add(player.getUuid());
             this.send(new PlayerDie(player.getUuid()));
+            this.sendParticipants();
             player.changeGameMode(GameMode.SPECTATOR);
             return ActionResult.FAIL;
         });
@@ -86,7 +90,7 @@ public final class RustGame {
         });
     }
 
-    private void onPlayersChange() {
+    private void sendParticipants() {
         final List<UUID> participants = this.gameSpace.getPlayers().stream()
                 .map(Entity::getUuid)
                 .filter(uuid -> !this.deadPlayers.contains(uuid))
@@ -98,12 +102,7 @@ public final class RustGame {
         this.connection.send(message);
     }
 
-    private void accept(RustGameMessage message) {
-        final GameSpace gameSpace = this.gameSpace;
-        if (gameSpace == null) {
-            return;
-        }
-
+    private void accept(GameSpace gameSpace, RustGameMessage message) {
         if (message instanceof TeleportPlayer teleportPlayer) {
             final ServerPlayerEntity player = gameSpace.getPlayers().getEntity(teleportPlayer.player());
             if (player != null) {
@@ -117,7 +116,7 @@ public final class RustGame {
             final Item item = Registry.ITEM.get(giveItem.item());
             final ServerPlayerEntity player = gameSpace.getPlayers().getEntity(giveItem.player());
             if (player != null) {
-                player.dropItem(new ItemStack(item, giveItem.quantity()), true);
+                player.giveItemStack(new ItemStack(item, giveItem.quantity()));
             }
         }
     }

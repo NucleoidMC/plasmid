@@ -1,18 +1,19 @@
 use std::pin::Pin;
+
 use anyhow::Error;
-use futures::{Sink, SinkExt, Stream, StreamExt};
-use tokio::net::{TcpListener, TcpStream};
-use serde::{Serialize, Deserialize};
-use uuid::Uuid;
-use glam::{IVec3, Vec3};
-use bytes::Bytes;
 use async_trait::async_trait;
+use bytes::Bytes;
+use futures::{Sink, SinkExt, Stream, StreamExt};
+use glam::{IVec3, Vec3};
+use serde::{Deserialize, Serialize};
+use tokio::net::{TcpListener, TcpStream};
+use uuid::Uuid;
 use xtra::{Actor, Address, Context, Handler, Message, spawn::TokioGlobalSpawnExt};
 
 const MAX_FRAME_LENGTH: usize = 4 * 1024 * 1024;
 const FRAME_HEADER_SIZE: usize = 4;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PlayerRef(Uuid);
 
@@ -36,7 +37,7 @@ pub enum Command {
         player: PlayerRef,
         item: Identifier,
         quantity: u32,
-    }
+    },
 }
 
 #[derive(Deserialize, Debug)]
@@ -52,8 +53,12 @@ impl Message for Event {
     type Result = ();
 }
 
+impl Message for Command {
+    type Result = ();
+}
+
 pub struct Plasmid {
-    tx: Pin<Box<dyn Sink<Command, Error = Error> + Send + Sync + 'static>>,
+    tx: Pin<Box<dyn Sink<Command, Error=Error> + Send + Sync + 'static>>,
     participants: Vec<PlayerRef>,
 }
 
@@ -64,9 +69,34 @@ impl Actor for Plasmid {
 }
 
 #[async_trait]
+impl Handler<Command> for Plasmid {
+    async fn handle(&mut self, message: Command, _ctx: &mut Context<Self>) {
+        self.tx.send(message).await.expect("failed to send")
+    }
+}
+
+#[async_trait]
 impl Handler<Event> for Plasmid {
     async fn handle(&mut self, message: Event, _ctx: &mut Context<Self>) {
-        dbg!(message);
+        dbg!(&message);
+        match message {
+            Event::SetParticipants { players } => {
+                self.participants = players;
+            }
+        }
+    }
+}
+
+pub struct GetParticipants;
+
+impl Message for GetParticipants {
+    type Result = Vec<PlayerRef>;
+}
+
+#[async_trait]
+impl Handler<GetParticipants> for Plasmid {
+    async fn handle(&mut self, _: GetParticipants, _ctx: &mut Context<Self>) -> Vec<PlayerRef> {
+        self.participants.clone()
     }
 }
 
@@ -88,7 +118,7 @@ impl Plasmid {
     }
 }
 
-fn split_framed(stream: TcpStream) -> (impl Sink<Command, Error = Error> + Send, impl Stream<Item = Event>) {
+fn split_framed(stream: TcpStream) -> (impl Sink<Command, Error=Error> + Send, impl Stream<Item=Event>) {
     let (sink, stream) = tokio_util::codec::LengthDelimitedCodec::builder()
         .big_endian()
         .max_frame_length(MAX_FRAME_LENGTH)

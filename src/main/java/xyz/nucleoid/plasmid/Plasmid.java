@@ -19,6 +19,7 @@ import xyz.nucleoid.plasmid.command.GamePortalCommand;
 import xyz.nucleoid.plasmid.command.ShoutCommand;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameType;
+import xyz.nucleoid.plasmid.game.common.rust.network.message.RustGameMessage;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
@@ -116,5 +117,7 @@ public final class Plasmid implements ModInitializer {
                 });
             });
         }
+
+        RustGameMessage.register();
     }
 }

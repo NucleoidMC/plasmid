@@ -43,7 +43,7 @@ public class TestInitializer implements ModInitializer {
         GameType.register(new Identifier(ID, "test_rp"), Codec.unit(Unit.INSTANCE), TestGameWithResourcePack::open);
         Registry.register(Registry.BLOCK, id("test_block"), TEST_BLOCK);
         Registry.register(Registry.ITEM, id("test_item"), TEST_ITEM);
-
+        GameType.register(new Identifier(ID, "test_revolutionary_game_system"), Codec.unit(Unit.INSTANCE), TestRustGame::open);
 
         CREATOR.addAssetSource("plasmid-test-mod");
         resourcePack = GameResourcePack.tryRegister(CREATOR);

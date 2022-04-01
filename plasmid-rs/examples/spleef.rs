@@ -43,7 +43,7 @@ async fn main() {
             }
         }
 
-        std::thread::sleep(Duration::from_millis(1000));
+        tokio::time::sleep(Duration::from_millis(1000)).await;
     }
 }
 

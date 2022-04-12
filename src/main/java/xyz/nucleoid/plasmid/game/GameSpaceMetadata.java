@@ -9,7 +9,7 @@ import java.util.UUID;
  * Represents the static metadata to a {@link GameSpace} relating to how it should be referenced (by IDs) and which
  * game configuration is responsible for constructing it.
  */
-public final record GameSpaceMetadata(
+public record GameSpaceMetadata(
         UUID id,
         Identifier userId,
         GameConfig<?> sourceConfig

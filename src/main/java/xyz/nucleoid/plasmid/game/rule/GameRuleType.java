@@ -20,6 +20,7 @@ import xyz.nucleoid.stimuli.event.item.ItemThrowEvent;
 import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerConsumeHungerEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
+import xyz.nucleoid.stimuli.event.player.PlayerSwapWithOffhandEvent;
 import xyz.nucleoid.stimuli.event.world.FireTickEvent;
 import xyz.nucleoid.stimuli.event.world.FluidFlowEvent;
 import xyz.nucleoid.stimuli.event.world.IceMeltEvent;
@@ -107,6 +108,7 @@ public final class GameRuleType {
     public static final GameRuleType TRIDENTS_LOYAL_IN_VOID = GameRuleType.create();
     public static final GameRuleType MODIFY_INVENTORY = GameRuleType.create();
     public static final GameRuleType MODIFY_ARMOR = GameRuleType.create();
+    public static final GameRuleType SWAP_OFFHAND = GameRuleType.create().enforces(PlayerSwapWithOffhandEvent.EVENT, result -> (player) -> result);
 
     private GameRuleEnforcer enforcer;
     private Priority priority = Priority.NORMAL;

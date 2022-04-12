@@ -30,20 +30,30 @@ public final class GamePortalCommand {
         dispatcher.register(
             literal("game")
                 .then(literal("portal")
-                    .requires(source -> source.hasPermissionLevel(3))
                     .then(literal("connect")
+                        .requires(source -> source.hasPermissionLevel(3))
                         .then(GamePortalArgument.argument("portal")
                         .then(argument("entity", EntityArgumentType.entity()).executes(GamePortalCommand::connectEntity))
                         .then(argument("pos", BlockPosArgumentType.blockPos()).executes(GamePortalCommand::connectBlock))
                     ))
                     .then(literal("disconnect")
+                        .requires(source -> source.hasPermissionLevel(3))
                         .then(argument("entity", EntityArgumentType.entity()).executes(GamePortalCommand::disconnectEntity))
                         .then(argument("pos", BlockPosArgumentType.blockPos()).executes(GamePortalCommand::disconnectBlock))
+                    )
+                    .then(literal("open")
+                        .then(GamePortalArgument.argument("portal").executes(GamePortalCommand::openPortal))
                     )
                 )
         );
     }
     // @formatter:on
+
+    private static int openPortal(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        var portal = GamePortalArgument.get(context, "portal");
+        portal.requestJoin(context.getSource().getPlayer());
+        return 1;
+    }
 
     private static int connectEntity(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var portal = GamePortalArgument.get(context, "portal");

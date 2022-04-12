@@ -114,6 +114,8 @@ public final class GameCommand {
         try {
             var game = GameConfigArgument.get(context, "game_config");
             return openGame(context, game.getSecond());
+        } catch (CommandSyntaxException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             context.getSource().sendFeedback(new TranslatableText("text.plasmid.game.open.error").formatted(Formatting.RED), false);
@@ -131,6 +133,8 @@ public final class GameCommand {
 
             var game = result.result().get();
             return openGame(context, game);
+        } catch (CommandSyntaxException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             context.getSource().sendFeedback(new TranslatableText("text.plasmid.game.open.error").formatted(Formatting.RED), false);

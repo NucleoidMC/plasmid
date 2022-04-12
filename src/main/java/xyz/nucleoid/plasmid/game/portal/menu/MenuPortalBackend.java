@@ -39,6 +39,20 @@ public final class MenuPortalBackend implements GamePortalBackend {
         this.games = this.buildGames(games);
     }
 
+    @Override
+    public Text getName() {
+        return this.name;
+    }
+
+    @Override
+    public int getPlayerCount() {
+        int count = 0;
+        for (var entry : this.games) {
+            count += entry.game.getPlayerCount();
+        }
+        return count;
+    }
+
     private List<GameEntry> buildGames(List<MenuPortalConfig.Entry> configs) {
         var games = new ArrayList<GameEntry>(configs.size());
         for (var configEntry : configs) {
@@ -69,12 +83,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
     public void populateDisplay(GamePortalDisplay display) {
         display.set(GamePortalDisplay.NAME, this.hologramName);
 
-        int count = 0;
-        for (var entry : this.games) {
-            count += entry.game.getPlayerCount();
-        }
-
-        display.set(GamePortalDisplay.PLAYER_COUNT, count);
+        display.set(GamePortalDisplay.PLAYER_COUNT, this.getPlayerCount());
     }
 
     @Override

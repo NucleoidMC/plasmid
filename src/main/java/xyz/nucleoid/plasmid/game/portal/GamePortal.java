@@ -1,8 +1,10 @@
 package xyz.nucleoid.plasmid.game.portal;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
@@ -38,6 +40,14 @@ public final class GamePortal {
 
     public CustomValuesConfig getCustom() {
         return this.custom;
+    }
+
+    public Text getName() {
+        return this.backend.getName();
+    }
+
+    public int getPlayerCount() {
+        return this.backend.getPlayerCount();
     }
 
     public void requestJoin(ServerPlayerEntity player) {

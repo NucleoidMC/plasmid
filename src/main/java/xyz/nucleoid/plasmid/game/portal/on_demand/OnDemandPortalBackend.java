@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game.portal.on_demand;
 
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
@@ -20,6 +21,16 @@ public final class OnDemandPortalBackend implements GamePortalBackend {
     public void populateDisplay(GamePortalDisplay display) {
         display.set(GamePortalDisplay.NAME, this.game.getName());
         display.set(GamePortalDisplay.PLAYER_COUNT, this.game.getPlayerCount());
+    }
+
+    @Override
+    public Text getName() {
+        return this.game.getName();
+    }
+
+    @Override
+    public int getPlayerCount() {
+        return this.game.getPlayerCount();
     }
 
     @Override

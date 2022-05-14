@@ -21,12 +21,15 @@ import java.util.concurrent.CompletableFuture;
 
 public final class AdvancedMenuPortalBackend implements GamePortalBackend {
     private final Text name;
-    private final List<Text> description;
-    private final ItemStack icon;
-    private final List<MenuEntry> entries;
     private final MutableText hologramName;
 
-    AdvancedMenuPortalBackend(Text name, List<Text> description, ItemStack icon, List<MenuEntryConfig> entries) {
+    private final List<Text> description;
+    private final ItemStack icon;
+
+    private final List<MenuEntryConfig> entryConfigs;
+    private List<MenuEntry> entries;
+
+    AdvancedMenuPortalBackend(Text name, List<Text> description, ItemStack icon, List<MenuEntryConfig> entryConfigs) {
         this.name = name;
         var hologramName = name.shallowCopy();
 
@@ -37,7 +40,8 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
         this.hologramName = hologramName;
         this.description = description;
         this.icon = icon;
-        this.entries = this.buildEntries(entries);
+
+        this.entryConfigs = entryConfigs;
     }
 
     @Override
@@ -58,7 +62,7 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
     @Override
     public int getPlayerCount() {
         int count = 0;
-        for (var entry : this.entries) {
+        for (var entry : this.getEntries()) {
             count += entry.getPlayerCount();
         }
         return count;
@@ -67,7 +71,7 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
     private List<GuiElementInterface> getGuiElements(CompletableFuture<GameSpace> future) {
         List<GuiElementInterface> elements = new ArrayList<>();
 
-        for (var entry : this.entries) {
+        for (var entry : this.getEntries()) {
             var uiEntry = this.createIconFor(entry, future).build();
             elements.add(uiEntry);
         }
@@ -80,13 +84,15 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
         return this::getGuiElements;
     }
 
-    private List<MenuEntry> buildEntries(List<MenuEntryConfig> configs) {
-        var entries = new ArrayList<MenuEntry>(configs.size());
-        for (var configEntry : configs) {
-            entries.add(configEntry.createEntry());
+    private List<MenuEntry> getEntries() {
+        if (this.entries == null) {
+            this.entries = new ArrayList<MenuEntry>(this.entryConfigs.size());
+            for (var configEntry : this.entryConfigs) {
+                this.entries.add(configEntry.createEntry());
+            }
         }
 
-        return entries;
+        return this.entries;
     }
 
     @Override

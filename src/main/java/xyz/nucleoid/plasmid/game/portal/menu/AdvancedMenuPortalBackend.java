@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game.portal.menu;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
@@ -9,23 +10,23 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.GamePortalDisplay;
 import xyz.nucleoid.plasmid.game.portal.GamePortal.GuiProvider;
-import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandGame;
 import xyz.nucleoid.plasmid.util.Guis;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public final class MenuPortalBackend implements GamePortalBackend {
+public final class AdvancedMenuPortalBackend implements GamePortalBackend {
     private final Text name;
-    private final List<MenuEntry> games;
+    private final List<Text> description;
+    private final ItemStack icon;
+    private final List<MenuEntry> entries;
     private final MutableText hologramName;
 
-    MenuPortalBackend(Text name, List<MenuPortalConfig.Entry> games) {
+    AdvancedMenuPortalBackend(Text name, List<Text> description, ItemStack icon, List<MenuEntryConfig> entries) {
         this.name = name;
         var hologramName = name.shallowCopy();
 
@@ -34,7 +35,9 @@ public final class MenuPortalBackend implements GamePortalBackend {
         }
 
         this.hologramName = hologramName;
-        this.games = this.buildGames(games);
+        this.description = description;
+        this.icon = icon;
+        this.entries = this.buildEntries(entries);
     }
 
     @Override
@@ -43,9 +46,19 @@ public final class MenuPortalBackend implements GamePortalBackend {
     }
 
     @Override
+    public List<Text> getDescription() {
+        return this.description;
+    }
+
+    @Override
+    public ItemStack getIcon() {
+        return this.icon;
+    }
+
+    @Override
     public int getPlayerCount() {
         int count = 0;
-        for (var entry : this.games) {
+        for (var entry : this.entries) {
             count += entry.getPlayerCount();
         }
         return count;
@@ -54,8 +67,8 @@ public final class MenuPortalBackend implements GamePortalBackend {
     private List<GuiElementInterface> getGuiElements(CompletableFuture<GameSpace> future) {
         List<GuiElementInterface> elements = new ArrayList<>();
 
-        for (var game : this.games) {
-            var uiEntry = this.createIconFor(game, future).build();
+        for (var entry : this.entries) {
+            var uiEntry = this.createIconFor(entry, future).build();
             elements.add(uiEntry);
         }
 
@@ -67,25 +80,13 @@ public final class MenuPortalBackend implements GamePortalBackend {
         return this::getGuiElements;
     }
 
-    private List<MenuEntry> buildGames(List<MenuPortalConfig.Entry> configs) {
-        var games = new ArrayList<MenuEntry>(configs.size());
+    private List<MenuEntry> buildEntries(List<MenuEntryConfig> configs) {
+        var entries = new ArrayList<MenuEntry>(configs.size());
         for (var configEntry : configs) {
-            var game = new OnDemandGame(configEntry.game());
-            var gameConfig = GameConfigs.get(configEntry.game());
-
-            if (gameConfig != null) {
-                games.add(new GameMenuEntry(
-                        game,
-                        configEntry.name().orElse(gameConfig.name()),
-                        configEntry.description().orElse(gameConfig.description()),
-                        configEntry.icon().orElse(gameConfig.icon())
-                ));
-            } else {
-                games.add(new InvalidMenuEntry(game.getName()));
-            }
+            entries.add(configEntry.createEntry());
         }
 
-        return games;
+        return entries;
     }
 
     @Override
@@ -119,6 +120,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
             element.addLoreLine(text);
         }
 
+        
         element.addLoreLine(LiteralText.EMPTY);
         element.addLoreLine(new LiteralText("")
                 .append(new LiteralText("» ").formatted(Formatting.DARK_GRAY))

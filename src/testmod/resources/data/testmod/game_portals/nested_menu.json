@@ -1,5 +1,5 @@
 {
-  "type": "plasmid:menu",
+  "type": "plasmid:advanced_menu",
   "name": "Nested Menu",
   "icon": "minecraft:baked_potato",
   "entries": [

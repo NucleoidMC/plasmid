@@ -30,6 +30,7 @@ import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
 import xyz.nucleoid.plasmid.game.portal.menu.GameMenuEntryConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.MenuEntryConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.MenuPortalConfig;
+import xyz.nucleoid.plasmid.game.portal.menu.AdvancedMenuPortalConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.PortalGuiEntryConfig;
 import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandPortalConfig;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
@@ -48,6 +49,7 @@ public final class Plasmid implements ModInitializer {
 
         GamePortalConfig.register(new Identifier(ID, "on_demand"), OnDemandPortalConfig.CODEC);
         GamePortalConfig.register(new Identifier(ID, "menu"), MenuPortalConfig.CODEC);
+        GamePortalConfig.register(new Identifier(ID, "advanced_menu"), AdvancedMenuPortalConfig.CODEC);
 
         MenuEntryConfig.register(new Identifier(ID, "game"), GameMenuEntryConfig.CODEC);
         MenuEntryConfig.register(new Identifier(ID, "portal_gui"), PortalGuiEntryConfig.CODEC);

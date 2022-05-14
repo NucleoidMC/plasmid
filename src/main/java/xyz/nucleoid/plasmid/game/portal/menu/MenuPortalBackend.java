@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.game.portal.menu;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
@@ -11,23 +10,23 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.GamePortalDisplay;
-import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandGame;
+import xyz.nucleoid.plasmid.game.portal.GamePortal.GuiProvider;
 import xyz.nucleoid.plasmid.util.Guis;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public final class MenuPortalBackend implements GamePortalBackend {
     private final Text name;
-    private final List<GameEntry> games;
+    private final List<Text> description;
+    private final ItemStack icon;
+    private final List<MenuEntry> entries;
     private final MutableText hologramName;
 
-    MenuPortalBackend(Text name, List<MenuPortalConfig.Entry> games) {
+    MenuPortalBackend(Text name, List<Text> description, ItemStack icon, List<MenuEntryConfig> entries) {
         this.name = name;
         var hologramName = name.shallowCopy();
 
@@ -36,7 +35,9 @@ public final class MenuPortalBackend implements GamePortalBackend {
         }
 
         this.hologramName = hologramName;
-        this.games = this.buildGames(games);
+        this.description = description;
+        this.icon = icon;
+        this.entries = this.buildEntries(entries);
     }
 
     @Override
@@ -45,38 +46,47 @@ public final class MenuPortalBackend implements GamePortalBackend {
     }
 
     @Override
+    public List<Text> getDescription() {
+        return this.description;
+    }
+
+    @Override
+    public ItemStack getIcon() {
+        return this.icon;
+    }
+
+    @Override
     public int getPlayerCount() {
         int count = 0;
-        for (var entry : this.games) {
-            count += entry.game.getPlayerCount();
+        for (var entry : this.entries) {
+            count += entry.getPlayerCount();
         }
         return count;
     }
 
-    private List<GameEntry> buildGames(List<MenuPortalConfig.Entry> configs) {
-        var games = new ArrayList<GameEntry>(configs.size());
-        for (var configEntry : configs) {
-            var game = new OnDemandGame(configEntry.game());
-            var gameConfig = GameConfigs.get(configEntry.game());
+    private List<GuiElementInterface> getGuiElements(CompletableFuture<GameSpace> future) {
+        List<GuiElementInterface> elements = new ArrayList<>();
 
-            if (gameConfig != null) {
-                games.add(new GameEntry(
-                        game,
-                        configEntry.name().orElse(gameConfig.name()),
-                        configEntry.description().orElse(gameConfig.description()),
-                        configEntry.icon().orElse(gameConfig.icon())
-                ));
-            } else {
-                games.add(new GameEntry(
-                        game,
-                        game.getName(),
-                        Collections.singletonList(new TranslatableText("text.plasmid.game.not_found")),
-                        Items.BARRIER.getDefaultStack()
-                ));
-            }
+        for (var entry : this.entries) {
+            var uiEntry = this.createIconFor(entry, future).build();
+            elements.add(uiEntry);
         }
 
-        return games;
+        return elements;
+    }
+
+    @Override
+    public GuiProvider getGuiProvider() {
+        return this::getGuiElements;
+    }
+
+    private List<MenuEntry> buildEntries(List<MenuEntryConfig> configs) {
+        var entries = new ArrayList<MenuEntry>(configs.size());
+        for (var configEntry : configs) {
+            entries.add(configEntry.createEntry());
+        }
+
+        return entries;
     }
 
     @Override
@@ -90,20 +100,13 @@ public final class MenuPortalBackend implements GamePortalBackend {
     public CompletableFuture<GameSpace> requestJoin(ServerPlayerEntity player) {
         var future = new CompletableFuture<GameSpace>();
 
-        List<GuiElementInterface> games = new ArrayList<>();
-
-        for (var entry : this.games) {
-            var uiEntry = this.createIconFor(entry, future).build();
-            games.add(uiEntry);
-        }
-
-        var ui = Guis.createSelectorGui(player, this.name.shallowCopy(), true, games);
+        var ui = Guis.createSelectorGui(player, this.name.shallowCopy(), true, this.getGuiElements(future));
         ui.open();
 
         return future;
     }
 
-    private GuiElementBuilder createIconFor(GameEntry entry, CompletableFuture<GameSpace> future) {
+    private GuiElementBuilder createIconFor(MenuEntry entry, CompletableFuture<GameSpace> future) {
             var element = GuiElementBuilder.from(entry.icon().copy())
                 .setName(entry.name().shallowCopy());
 
@@ -117,25 +120,18 @@ public final class MenuPortalBackend implements GamePortalBackend {
             element.addLoreLine(text);
         }
 
+        
         element.addLoreLine(LiteralText.EMPTY);
         element.addLoreLine(new LiteralText("")
                 .append(new LiteralText("» ").formatted(Formatting.DARK_GRAY))
                 .append(new TranslatableText("text.plasmid.ui.game_join.players",
-                        new LiteralText(entry.game.getPlayerCount() + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
+                        new LiteralText(entry.getPlayerCount() + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
         );
 
-        element.setCallback((a, b, c, gui) -> entry.game.getOrOpen(gui.getPlayer().getServer()).handle((gameSpace, throwable) -> {
-            if (throwable == null) {
-                future.complete(gameSpace);
-            } else {
-                future.completeExceptionally(throwable);
-            }
-            return null;
-        }));
+        element.setCallback((a, b, c, gui) -> {
+            entry.click(gui.getPlayer(), future);
+        });
 
         return element;
-    }
-
-    record GameEntry(OnDemandGame game, Text name, List<Text> description, ItemStack icon) {
     }
 }

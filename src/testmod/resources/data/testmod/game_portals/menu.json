@@ -1,0 +1,15 @@
+{
+  "type": "plasmid:menu",
+  "name": "Menu",
+  "icon": "minecraft:potato",
+  "entries": [
+    {
+      "type": "plasmid:portal_gui",
+      "portal": "testmod:nested_menu"
+    },
+    {
+      "type": "plasmid:game",
+      "game": "testmod:test"
+    }
+  ]
+}

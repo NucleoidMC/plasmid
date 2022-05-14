@@ -1,0 +1,11 @@
+{
+  "type": "plasmid:menu",
+  "name": "Nested Menu",
+  "icon": "minecraft:baked_potato",
+  "entries": [
+    {
+      "type": "plasmid:game",
+      "game": "testmod:test"
+    }
+  ]
+}

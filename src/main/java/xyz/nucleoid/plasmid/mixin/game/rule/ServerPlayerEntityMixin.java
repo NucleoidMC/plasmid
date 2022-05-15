@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 
@@ -23,6 +24,14 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
     private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
         super(world, pos, yaw, profile);
+    }
+
+    @Inject(method = "isPvpEnabled", at = @At("HEAD"), cancellable = true)
+    private void allowPvPInGames(CallbackInfoReturnable<Boolean> cir) {
+        var gameSpace = GameSpaceManager.get().byPlayer(this);
+        if (gameSpace != null) {
+            cir.setReturnValue(true);
+        }
     }
 
     @Inject(method = "stopRiding", at = @At("HEAD"), cancellable = true)

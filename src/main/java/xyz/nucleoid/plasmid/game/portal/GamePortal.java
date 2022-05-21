@@ -6,12 +6,18 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+
+import org.jetbrains.annotations.Nullable;
+
+import eu.pb4.sgui.api.elements.GuiElementInterface;
 
 public final class GamePortal {
     private final MinecraftServer server;
@@ -46,8 +52,21 @@ public final class GamePortal {
         return this.backend.getName();
     }
 
+    public List<Text> getDescription() {
+        return this.backend.getDescription();
+    }
+
+    public ItemStack getIcon() {
+        return this.backend.getIcon();
+    }
+
     public int getPlayerCount() {
         return this.backend.getPlayerCount();
+    }
+
+    @Nullable
+    public GuiProvider getGuiProvider() {
+        return this.backend.getGuiProvider();
     }
 
     public void requestJoin(ServerPlayerEntity player) {
@@ -110,5 +129,10 @@ public final class GamePortal {
         this.lastDisplay = swap;
 
         this.currentDisplay.clear();
+    }
+
+    @FunctionalInterface
+    public interface GuiProvider {
+        List<GuiElementInterface> getGuiElements(CompletableFuture<GameSpace> future);
     }
 }

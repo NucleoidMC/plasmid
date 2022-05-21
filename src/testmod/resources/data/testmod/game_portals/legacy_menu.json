@@ -1,0 +1,10 @@
+{
+  "type": "plasmid:menu",
+  "name": "Legacy Menu",
+  "icon": "minecraft:poisonous_potato",
+  "games": [
+    {
+      "game": "testmod:test"
+    }
+  ]
+}

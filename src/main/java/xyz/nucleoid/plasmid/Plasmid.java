@@ -30,6 +30,7 @@ import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
 import xyz.nucleoid.plasmid.game.portal.menu.GameMenuEntryConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.MenuEntryConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.MenuPortalConfig;
+import xyz.nucleoid.plasmid.game.portal.menu.PortalEntryConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.AdvancedMenuPortalConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.PortalGuiEntryConfig;
 import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandPortalConfig;
@@ -52,6 +53,7 @@ public final class Plasmid implements ModInitializer {
         GamePortalConfig.register(new Identifier(ID, "advanced_menu"), AdvancedMenuPortalConfig.CODEC);
 
         MenuEntryConfig.register(new Identifier(ID, "game"), GameMenuEntryConfig.CODEC);
+        MenuEntryConfig.register(new Identifier(ID, "portal"), PortalEntryConfig.CODEC);
         MenuEntryConfig.register(new Identifier(ID, "portal_gui"), PortalGuiEntryConfig.CODEC);
 
         GameType.register(new Identifier(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);

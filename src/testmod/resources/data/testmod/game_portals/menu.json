@@ -12,6 +12,10 @@
       "portal": "testmod:legacy_menu"
     },
     {
+      "type": "plasmid:portal",
+      "portal": "testmod:portal"
+    },
+    {
       "type": "plasmid:game",
       "game": "testmod:test"
     }

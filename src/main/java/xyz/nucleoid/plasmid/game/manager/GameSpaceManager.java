@@ -12,6 +12,7 @@ import net.minecraft.util.Util;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
@@ -96,6 +97,7 @@ public final class GameSpaceManager {
         this.idToGameSpace.put(id, gameSpace);
         this.userIdToGameSpace.put(userId, gameSpace);
 
+        Plasmid.LOGGER.info("Game space {} (source: {}) opened", id, config.source());
         GameEvents.OPENED.invoker().onGameSpaceOpened(config, gameSpace);
 
         procedure.apply(gameSpace);

@@ -104,6 +104,7 @@ public final class ManagedGameSpace implements GameSpace {
 
         var players = Lists.newArrayList(this.players);
 
+        Plasmid.LOGGER.info("Game space {} (source: {}) closing for reason {}", this.metadata.id(), this.metadata.sourceConfig().source(), reason);
         GameEvents.CLOSING.invoker().onGameSpaceClosing(this, reason);
         this.lifecycle.onClosing(this, reason);
 

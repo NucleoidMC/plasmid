@@ -32,6 +32,16 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
 
     @Override
     public GameResult offer(ServerPlayerEntity player) {
+        var result = this.attemptOffer(player);
+
+        if (result.isError()) {
+            this.attemptGarbageCollection();
+        }
+
+        return result;
+    }
+
+    private GameResult attemptOffer(ServerPlayerEntity player) {
         if (this.set.contains(player)) {
             return GameResult.error(GameTexts.Join.alreadyJoined());
         }
@@ -60,6 +70,12 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         }
     }
 
+    private void attemptGarbageCollection() {
+        if (this.set.isEmpty()) {
+            this.space.close(GameCloseReason.GARBAGE_COLLECTED);
+        }
+    }
+
     @Override
     public boolean kick(ServerPlayerEntity player) {
         if (this.remove(player)) {
@@ -79,9 +95,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
 
         this.set.remove(player);
 
-        if (this.set.isEmpty()) {
-            this.space.close(GameCloseReason.GARBAGE_COLLECTED);
-        }
+        this.attemptGarbageCollection();
 
         return true;
     }

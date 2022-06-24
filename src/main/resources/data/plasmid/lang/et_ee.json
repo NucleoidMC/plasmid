@@ -67,5 +67,16 @@
   "statistic.plasmid.blocks_broken": "Plokke lõhutud",
   "statistic.plasmid.points": "Punkte",
   "statistic.plasmid.quickest_time": "Kiireim aeg",
-  "statistic.plasmid.longest_time": "Pikim aeg"
+  "statistic.plasmid.longest_time": "Pikim aeg",
+  "text.plasmid.game.join.party.error": "%s mängijat ei saanud selle mänguga liituda!",
+  "text.plasmid.map.open.join_command": "/map join %s",
+  "text.plasmid.map.map_not_here": "Siit kaarti ei leitud",
+  "text.plasmid.ui.game_join.invalid.name": "Sobimatu menüükirje",
+  "text.plasmid.ui.game_join.invalid.description": "Selle kirjega pole ühendatud ühtegi mängu ega menüüd",
+  "text.plasmid.game.not_found": "Selle IDga mängu ei leitud!",
+  "text.plasmid.map.leave.success": "Lahkusid kaardilt \"%s\"!",
+  "text.plasmid.map.join.success": "Liitusid kaardiga \"%s\"! Algkohale pöördumiseks kasuta %s",
+  "text.plasmid.game.not_in_game": "Sa ei ole hetkel mõnes mängus!",
+  "text.plasmid.map.open.map_already_exists": "Kaart IDga \"%s\" juba eksisteerib!",
+  "text.plasmid.map.region.bounds.get": "%s kuni %s"
 }

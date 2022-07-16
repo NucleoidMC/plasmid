@@ -15,7 +15,7 @@ public final class PlasmidMessageTypes {
 
     public static void register() {
         BuiltinRegistries.add(BuiltinRegistries.MESSAGE_TYPE, TEAM_CHAT, new MessageType(
-                Optional.of(MessageType.DisplayRule.of(Decoration.ofTeamMessage("text.plasmid.chat.tea"))),
+                Optional.of(MessageType.DisplayRule.of(Decoration.ofTeamMessage("text.plasmid.chat.team"))),
                 Optional.empty(),
                 Optional.of(MessageType.NarrationRule.of(Decoration.ofChat("chat.type.text.narrate"), MessageType.NarrationRule.Kind.CHAT))
         ));

@@ -1,7 +1,6 @@
 package xyz.nucleoid.plasmid.game.resource_packs;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import joptsimple.internal.Strings;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -58,15 +57,10 @@ public final class ResourcePackStates {
     }
 
     private static void resetPack(ServerPlayerEntity player) {
-        var server = player.getServer();
-        var serverUrl = server.getResourcePackUrl();
-        var serverHash = server.getResourcePackHash();
-
-        if (!Strings.isNullOrEmpty(serverUrl) && !Strings.isNullOrEmpty(serverHash)) {
-            player.sendResourcePackUrl(serverUrl, serverHash, true, server.getResourcePackPrompt());
-        } else {
-            GameResourcePackManager.emptyPack().ifPresent(pack -> pack.sendTo(player));
-        }
+        player.getServer().getResourcePackProperties().ifPresentOrElse(
+                properties -> player.sendResourcePackUrl(properties.url(), properties.hash(), true, properties.prompt()),
+                () -> GameResourcePackManager.emptyPack().ifPresent(pack -> pack.sendTo(player))
+        );
     }
 
     /**

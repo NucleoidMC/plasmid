@@ -18,7 +18,7 @@
   "text.plasmid.join_link_hover": "Entrar %s",
   "text.plasmid.chat.switch.all": "Canal de Chat mudado para todos",
   "text.plasmid.chat.switch.team": "Canal de Chat mudado para time",
-  "text.plasmid.chat.team": "[Time] %s",
+  "text.plasmid.chat.team": "[%s] <%s> %s",
   "text.plasmid.chunk_generator.generator_not_found": "Gerador de Chunk com id '%s' não foi encontrado!",
   "text.plasmid.dimension_options.dimension_not_found": "Dimensão com id '%s' não foi encontrada!",
   "text.plasmid.entry": " - %s",

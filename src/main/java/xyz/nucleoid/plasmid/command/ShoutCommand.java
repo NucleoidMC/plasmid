@@ -2,12 +2,11 @@ package xyz.nucleoid.plasmid.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.network.MessageType;
+import net.minecraft.command.argument.MessageArgumentType;
+import net.minecraft.network.message.MessageType;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
 
@@ -19,27 +18,26 @@ public class ShoutCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
             literal("shout")
-                .then(
-                    argument("message", StringArgumentType.greedyString()).executes(ShoutCommand::sendMessage)
-                )
+                .then(argument("message", MessageArgumentType.message())
+                .executes(ShoutCommand::sendMessage))
         );
     }
     // @formatter:on
 
     public static int sendMessage(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var player = context.getSource().getPlayer();
-        var hasChatChannel = (HasChatChannel) player;
+        var source = context.getSource();
+        var server = source.getServer();
+
+        var hasChatChannel = (HasChatChannel) source.getPlayerOrThrow();
         var old = hasChatChannel.getChatChannel();
         hasChatChannel.setChatChannel(ChatChannel.ALL);
 
-        var message = StringArgumentType.getString(context, "message");
-        context.getSource().getServer().getPlayerManager().broadcast(
-                Text.translatable("chat.type.text", player.getDisplayName(), message),
-                MessageType.CHAT,
-                context.getSource().getPlayer().getUuid()
-        );
+        MessageArgumentType.getSignedMessage(context, "message").decorate(source)
+                .thenAcceptAsync(message -> {
+                    server.getPlayerManager().broadcast(message, source, MessageType.CHAT);
+                    hasChatChannel.setChatChannel(old);
+                }, server);
 
-        hasChatChannel.setChatChannel(old);
         return Command.SINGLE_SUCCESS;
     }
 }

@@ -149,7 +149,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             var overworld = this.server.getOverworld();
             var profile = new GameProfile(Util.NIL_UUID, "null");
 
-            var player = new ServerPlayerEntity(this.server, overworld, profile);
+            var player = new ServerPlayerEntity(this.server, overworld, profile, null);
             this.statisticsMap.remove(Util.NIL_UUID);
             this.advancementTrackers.remove(Util.NIL_UUID);
 

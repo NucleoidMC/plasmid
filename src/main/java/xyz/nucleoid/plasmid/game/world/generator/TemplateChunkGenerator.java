@@ -2,7 +2,7 @@ package xyz.nucleoid.plasmid.game.world.generator;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.structure.StructureManager;
+import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.registry.DynamicRegistryManager;
@@ -17,11 +17,11 @@ import net.minecraft.world.chunk.ProtoChunk;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.Blender;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
+import net.minecraft.world.gen.noise.NoiseConfig;
 import xyz.nucleoid.map_templates.BlockBounds;
 import xyz.nucleoid.map_templates.MapChunk;
 import xyz.nucleoid.map_templates.MapTemplate;
 
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -38,7 +38,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     }
 
     @Override
-    public void setStructureStarts(DynamicRegistryManager registryManager, StructureAccessor accessor, Chunk chunk, StructureManager manager, long seed) {
+    public void setStructureStarts(DynamicRegistryManager registryManager, NoiseConfig noiseConfig, StructureAccessor structureAccessor, Chunk chunk, StructureTemplateManager structureTemplateManager, long seed) {
     }
 
     @Override
@@ -46,7 +46,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     }
 
     @Override
-    public CompletableFuture<Chunk> populateNoise(Executor executor, Blender blender, StructureAccessor structureAccessor, Chunk chunk) {
+    public CompletableFuture<Chunk> populateNoise(Executor executor, Blender blender, NoiseConfig noiseConfig, StructureAccessor structureAccessor, Chunk chunk) {
         var chunkPos = chunk.getPos();
 
         var chunkBounds = BlockBounds.ofChunk(chunk);
@@ -143,7 +143,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     }
 
     @Override
-    public int getHeight(int x, int z, Heightmap.Type heightmap, HeightLimitView world) {
+    public int getHeight(int x, int z, Heightmap.Type heightmap, HeightLimitView world, NoiseConfig noiseConfig) {
         if (this.worldBounds.contains(x, z)) {
             return this.template.getTopY(x, z, heightmap);
         }
@@ -151,7 +151,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     }
 
     @Override
-    public VerticalBlockSample getColumnSample(int x, int z, HeightLimitView world) {
+    public VerticalBlockSample getColumnSample(int x, int z, HeightLimitView world, NoiseConfig noiseConfig) {
         if (this.worldBounds.contains(x, z)) {
             var mutablePos = new BlockPos.Mutable(x, 0, z);
 

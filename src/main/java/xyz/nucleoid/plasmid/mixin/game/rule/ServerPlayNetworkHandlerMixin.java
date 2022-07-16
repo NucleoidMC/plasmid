@@ -82,7 +82,8 @@ public abstract class ServerPlayNetworkHandlerMixin {
                     this.sendPacket(new PlaySoundS2CPacket(
                             SoundEvents.ENTITY_VILLAGER_NO, SoundCategory.MASTER,
                             this.player.getX(), this.player.getY(), this.player.getZ(),
-                            1.0f, 1.0f
+                            1.0f, 1.0f,
+                            this.player.getRandom().nextLong()
                     ));
                 }
 

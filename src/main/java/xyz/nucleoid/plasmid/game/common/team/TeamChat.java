@@ -1,34 +1,41 @@
 package xyz.nucleoid.plasmid.game.common.team;
 
+import net.minecraft.network.message.MessageSender;
+import net.minecraft.network.message.SignedMessage;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
+import xyz.nucleoid.plasmid.chat.PlasmidMessageTypes;
 import xyz.nucleoid.plasmid.game.GameActivity;
+import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.stimuli.event.player.PlayerChatEvent;
 
 public final class TeamChat {
+    private final GameSpace gameSpace;
     private final TeamManager manager;
 
-    private TeamChat(TeamManager manager) {
+    private TeamChat(GameSpace gameSpace, TeamManager manager) {
+        this.gameSpace = gameSpace;
         this.manager = manager;
     }
 
     public static void addTo(GameActivity activity, TeamManager manager) {
-        var teamChat = new TeamChat(manager);
+        var teamChat = new TeamChat(activity.getGameSpace(), manager);
         activity.listen(PlayerChatEvent.EVENT, teamChat::onSendMessage);
     }
 
-    private ActionResult onSendMessage(ServerPlayerEntity sender, Text message) {
-        var team = this.manager.teamFor(sender);
+    private ActionResult onSendMessage(MessageSender sender, SignedMessage message) {
+        final ServerPlayerEntity player = this.gameSpace.getPlayers().getEntity(sender.uuid());
+        if (player == null) {
+            return ActionResult.PASS;
+        }
 
-        if (team != null && sender instanceof HasChatChannel hasChannel && hasChannel.getChatChannel() == ChatChannel.TEAM) {
-            var teamMessage = Text.translatable("text.plasmid.chat.team", message);
+        var team = this.manager.teamFor(player);
 
-            for (var player : this.manager.playersIn(team)) {
-                player.sendSystemMessage(teamMessage, sender.getUuid());
+        if (team != null && player instanceof HasChatChannel hasChannel && hasChannel.getChatChannel() == ChatChannel.TEAM) {
+            for (var receiver : this.manager.playersIn(team)) {
+                receiver.sendChatMessage(message, sender, PlasmidMessageTypes.TEAM_CHAT);
             }
 
             return ActionResult.FAIL;

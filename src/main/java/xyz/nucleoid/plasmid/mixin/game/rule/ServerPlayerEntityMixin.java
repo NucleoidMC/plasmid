@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.mixin.game.rule;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -22,8 +23,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     @Shadow
     public ServerPlayNetworkHandler networkHandler;
 
-    private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
-        super(world, pos, yaw, profile);
+    private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile, PlayerPublicKey publicKey) {
+        super(world, pos, yaw, profile, publicKey);
     }
 
     @Inject(method = "isPvpEnabled", at = @At("HEAD"), cancellable = true)

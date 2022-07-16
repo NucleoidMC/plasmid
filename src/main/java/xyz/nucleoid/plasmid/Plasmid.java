@@ -2,7 +2,7 @@ package xyz.nucleoid.plasmid;
 
 import com.sun.net.httpserver.HttpServer;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
@@ -13,6 +13,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.nucleoid.plasmid.chat.PlasmidMessageTypes;
 import xyz.nucleoid.plasmid.command.ChatCommand;
 import xyz.nucleoid.plasmid.command.GameCommand;
 import xyz.nucleoid.plasmid.command.GamePortalCommand;
@@ -27,12 +28,7 @@ import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.portal.GamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.GamePortalInterface;
 import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
-import xyz.nucleoid.plasmid.game.portal.menu.GameMenuEntryConfig;
-import xyz.nucleoid.plasmid.game.portal.menu.MenuEntryConfig;
-import xyz.nucleoid.plasmid.game.portal.menu.MenuPortalConfig;
-import xyz.nucleoid.plasmid.game.portal.menu.PortalEntryConfig;
-import xyz.nucleoid.plasmid.game.portal.menu.AdvancedMenuPortalConfig;
-import xyz.nucleoid.plasmid.game.portal.menu.PortalGuiEntryConfig;
+import xyz.nucleoid.plasmid.game.portal.menu.*;
 import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandPortalConfig;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 
@@ -58,11 +54,13 @@ public final class Plasmid implements ModInitializer {
 
         GameType.register(new Identifier(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
 
+        PlasmidMessageTypes.register();
+
         this.registerCallbacks();
     }
 
     private void registerCallbacks() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             GameCommand.register(dispatcher);
             GamePortalCommand.register(dispatcher);
             ChatCommand.register(dispatcher);

@@ -14,9 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -96,14 +94,10 @@ public final class GamePortalManager {
     private Map<Identifier, GamePortalConfig> loadConfigs(ResourceManager manager) {
         var configs = new Object2ObjectOpenHashMap<Identifier, GamePortalConfig>();
 
-        var resources = manager.findResources(PATH, path -> path.endsWith(".json"));
-
-        for (var path : resources) {
+        manager.findResources(PATH, path -> path.getPath().endsWith(".json")).forEach((path, resource) -> {
             try {
-                var resource = manager.getResource(path);
-                try (var reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-                    var json = new JsonParser().parse(reader);
-
+                try (var reader = resource.getReader()) {
+                    var json = JsonParser.parseReader(reader);
                     var identifier = identifierFromPath(path);
 
                     var result = GamePortalConfig.CODEC.parse(JsonOps.INSTANCE, json);
@@ -121,7 +115,7 @@ public final class GamePortalManager {
             } catch (JsonParseException e) {
                 Plasmid.LOGGER.error("Failed to parse game portal JSON at {}: {}", path, e);
             }
-        }
+        });
 
         return configs;
     }

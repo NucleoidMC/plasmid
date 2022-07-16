@@ -10,14 +10,12 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.MessageType;
+import net.minecraft.network.message.MessageType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.command.argument.GameConfigArgument;
 import xyz.nucleoid.plasmid.command.argument.GameSpaceArgument;
@@ -178,7 +176,7 @@ public final class GameCommand {
         var players = source.getServer().getPlayerManager();
 
         var message = GameTexts.Broadcast.gameOpened(source, gameSpace);
-        players.broadcast(message, MessageType.SYSTEM, Util.NIL_UUID);
+        players.broadcast(message, MessageType.SYSTEM);
     }
 
     private static void onOpenError(ServerCommandSource source, Throwable throwable) {
@@ -194,7 +192,7 @@ public final class GameCommand {
         }
 
         var players = source.getServer().getPlayerManager();
-        players.broadcast(message.formatted(Formatting.RED), MessageType.SYSTEM, Util.NIL_UUID);
+        players.broadcast(message.formatted(Formatting.RED), MessageType.SYSTEM);
     }
 
     private static int proposeGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
@@ -205,7 +203,7 @@ public final class GameCommand {
     private static int proposeCurrentGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var source = context.getSource();
 
-        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
+        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayerOrThrow());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
@@ -217,7 +215,7 @@ public final class GameCommand {
         var message = GameTexts.Broadcast.propose(source, gameSpace);
 
         var playerManager = source.getServer().getPlayerManager();
-        playerManager.broadcast(message, MessageType.SYSTEM, Util.NIL_UUID);
+        playerManager.broadcast(message, MessageType.SYSTEM);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -304,7 +302,7 @@ public final class GameCommand {
 
     private static int leaveGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var source = context.getSource();
-        var player = source.getPlayer();
+        var player = source.getPlayerOrThrow();
 
         var gameSpace = GameSpaceManager.get().byPlayer(player);
         if (gameSpace == null) {
@@ -321,7 +319,7 @@ public final class GameCommand {
     private static int startGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var source = context.getSource();
 
-        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
+        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayerOrThrow());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
@@ -344,7 +342,7 @@ public final class GameCommand {
 
     private static int stopGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var source = context.getSource();
-        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
+        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayerOrThrow());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
@@ -365,7 +363,7 @@ public final class GameCommand {
 
     private static int stopGameConfirmed(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var source = context.getSource();
-        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayer());
+        var gameSpace = GameSpaceManager.get().byPlayer(source.getPlayerOrThrow());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }

@@ -9,7 +9,6 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -19,11 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Collection;
 import java.util.Set;
 
 public final class GameConfigs {
@@ -43,16 +38,13 @@ public final class GameConfigs {
             public void reload(ResourceManager manager) {
                 CONFIGS.clear();
 
-                Collection<Identifier> resources = manager.findResources("games", path -> path.endsWith(".json"));
-
                 DynamicOps<JsonElement> ops = RegistryOps.of(JsonOps.INSTANCE, registryManager);
                 registryManager = null;
 
-                for (Identifier path : resources) {
+                manager.findResources("games", path -> path.getPath().endsWith(".json")).forEach((path, resource) -> {
                     try {
-                        Resource resource = manager.getResource(path);
-                        try (Reader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-                            JsonElement json = new JsonParser().parse(reader);
+                        try (var reader = resource.getReader()) {
+                            JsonElement json = JsonParser.parseReader(reader);
 
                             Identifier identifier = identifierFromPath(path);
 
@@ -72,7 +64,7 @@ public final class GameConfigs {
                     } catch (JsonParseException e) {
                         Plasmid.LOGGER.error("Failed to parse game JSON at {}: {}", path, e);
                     }
-                }
+                });
             }
         });
     }

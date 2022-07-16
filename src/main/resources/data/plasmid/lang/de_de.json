@@ -17,7 +17,7 @@
   "item.plasmid.include_entity.target_not_in_map": "Die ausgewählte Entität ist nicht in der Map \"%s\".",
   "text.plasmid.portal.portal_not_found": "Dieses Portal konnte nicht gefunden werden!",
   "text.plasmid.join_link_hover": "%s beitreten",
-  "text.plasmid.chat.team": "[Team] %s",
+  "text.plasmid.chat.team": "[%s] <%s> %s",
   "text.plasmid.chunk_generator.generator_not_found": "Es konnte kein Chunkgenerator mit der id '%s' gefunden werden!",
   "text.plasmid.dimension_options.dimension_not_found": "Eine Dimension mit der id '%s' konnte nicht gefunden werden!",
   "text.plasmid.entry": " - %s",

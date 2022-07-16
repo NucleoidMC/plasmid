@@ -1,5 +1,5 @@
 plugins {
-  id 'fabric-loom' version '0.11-SNAPSHOT'
+  id 'fabric-loom' version '0.12-SNAPSHOT'
   id 'maven-publish'
 }
 
@@ -62,25 +62,21 @@ dependencies {
 
   modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-  modImplementation include('fr.catcore:server-translations-api:1.4.12+1.18.2')
+  modImplementation include('fr.catcore:server-translations-api:1.4.16+1.19')
   modImplementation include('xyz.nucleoid:packet-tweaker:0.3.0+1.18.2')
-  modImplementation include('xyz.nucleoid:fantasy:0.4.5+1.18.2')
-  modImplementation include('xyz.nucleoid:more-codecs:0.2.1+1.18')
-  modImplementation include('xyz.nucleoid:stimuli:0.2.10+1.18.2')
-  modImplementation include('xyz.nucleoid:map-templates:0.1.4+1.18.1')
-  modImplementation include('eu.pb4:polymer:0.2.0-pre.5+1.18.2')
-  modImplementation include('eu.pb4:polymer-blocks:0.1.0-alpha.7+1.18.2')
-  modImplementation include('eu.pb4:hologram-api:0.2.1+1.18-pre5')
-  modImplementation include('eu.pb4:sgui:1.0.2+1.18.2')
-  modImplementation include('eu.pb4:sidebar-api:0.1.0+1.18')
-  modImplementation include("eu.pb4:placeholder-api:1.1.3+1.17.1")
-  modImplementation include("eu.pb4:map-canvas-api:0.1.3+1.18.2")
+  modImplementation include('xyz.nucleoid:fantasy:0.4.5+1.19')
+  modImplementation include('xyz.nucleoid:more-codecs:0.2.2+1.18')
+  modImplementation include('xyz.nucleoid:stimuli:0.2.10+1.19')
+  modImplementation include('xyz.nucleoid:map-templates:0.1.5+1.19')
+  modImplementation include('eu.pb4:polymer:0.2.7+1.19')
+  modImplementation include('eu.pb4:polymer-blocks:0.1.0-alpha.8+1.19')
+  modImplementation include('eu.pb4:hologram-api:0.2.2+1.19')
+  modImplementation include('eu.pb4:sgui:1.1.3+1.19')
+  modImplementation include('eu.pb4:sidebar-api:0.1.1+1.19')
+  modImplementation include("eu.pb4:placeholder-api:2.0.0-beta.7+1.19")
+  modImplementation include("eu.pb4:map-canvas-api:0.1.4+1.19")
 
-  /*modRuntime("supercoder79:databreaker:0.2.7") {
-    exclude module: "fabric-loader"
-  }*/
-
-  modCompileOnly('xyz.nucleoid:disguiselib-fabric:1.2.2')
+  modCompileOnly('xyz.nucleoid:disguiselib-fabric:1.3.1')
 
   testmodImplementation sourceSets.main.output
 }

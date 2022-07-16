@@ -2,10 +2,10 @@ package xyz.nucleoid.plasmid.test;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.scoreboard.AbstractTeam;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
@@ -88,15 +88,15 @@ public final class TestGame {
             activity.listen(GamePlayerEvents.ADD, player -> teamManager.addPlayerTo(player, TEAM.key()));
 
             var sidebar = GlobalWidgets.addTo(activity)
-                    .addSidebar(new TranslatableText("text.test.test"));
+                    .addSidebar(Text.translatable("text.test.test"));
 
             activity.listen(GameActivityEvents.TICK, () -> {
                 long time = gameSpace.getTime() - currentTime;
                 if (time % 20 == 0) {
                     sidebar.set(b -> {
-                        b.add(new LiteralText("Hello World! " + (time / 20) + "s").setStyle(Style.EMPTY.withColor(0xFF0000)));
-                        b.add(new LiteralText(""));
-                        b.add(new TranslatableText("text.plasmid.game.started.player", "test"));
+                        b.add(Text.literal("Hello World! " + (time / 20) + "s").setStyle(Style.EMPTY.withColor(0xFF0000)));
+                        b.add(ScreenTexts.EMPTY);
+                        b.add(Text.translatable("text.plasmid.game.started.player", "test"));
                     });
 
                     GameStatisticBundle statistics = gameSpace.getStatistics().bundle("plasmid_test_game");

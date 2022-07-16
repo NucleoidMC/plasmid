@@ -5,9 +5,9 @@ import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 import xyz.nucleoid.plasmid.game.GameSpace;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 public class GameJoinUi extends SimpleGui {
-    private static final GuiElementInterface EMPTY = new GuiElementBuilder(Items.GRAY_STAINED_GLASS_PANE).setName(LiteralText.EMPTY.copy()).build();
+    private static final GuiElementInterface EMPTY = new GuiElementBuilder(Items.GRAY_STAINED_GLASS_PANE).setName(Text.empty()).build();
 
     private static final int NAVBAR_POS = 81;
     private int tick;
@@ -29,7 +29,7 @@ public class GameJoinUi extends SimpleGui {
 
     public GameJoinUi(ServerPlayerEntity player) {
         super(ScreenHandlerType.GENERIC_9X6, player, true);
-        this.setTitle(new TranslatableText("text.plasmid.ui.game_join.title"));
+        this.setTitle(Text.translatable("text.plasmid.ui.game_join.title"));
         this.updateUi();
     }
 
@@ -87,7 +87,7 @@ public class GameJoinUi extends SimpleGui {
             this.setSlot(NAVBAR_POS + 1, EMPTY);
 
             this.setSlot(NAVBAR_POS + 2, new GuiElementBuilder(hasPrevious ? Items.LIME_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE)
-                    .setName(new TranslatableText("spectatorMenu.previous_page").formatted(hasPrevious ? Formatting.GOLD : Formatting.DARK_GRAY))
+                    .setName(Text.translatable("spectatorMenu.previous_page").formatted(hasPrevious ? Formatting.GOLD : Formatting.DARK_GRAY))
                     .setCallback((x, y, z) -> this.changePage(-1))
             );
             int pageValue = this.page + 1;
@@ -97,7 +97,7 @@ public class GameJoinUi extends SimpleGui {
             this.setSlot(NAVBAR_POS + 5, Guis.getNumericBanner(pageValue));
 
             this.setSlot(NAVBAR_POS + 6, new GuiElementBuilder(hasNext ? Items.LIME_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE)
-                    .setName(new TranslatableText("spectatorMenu.next_page").formatted(hasNext ? Formatting.GOLD : Formatting.DARK_GRAY))
+                    .setName(Text.translatable("spectatorMenu.next_page").formatted(hasNext ? Formatting.GOLD : Formatting.DARK_GRAY))
                     .setCallback((x, y, z) -> this.changePage(1))
             );
 
@@ -114,10 +114,10 @@ public class GameJoinUi extends SimpleGui {
     private GuiElementBuilder createIconFor(GameSpace gameSpace) {
         var sourceConfig = gameSpace.getMetadata().sourceConfig();
         var element = GuiElementBuilder.from(sourceConfig.icon().copy())
-                .setName(sourceConfig.name().shallowCopy());
+                .setName(sourceConfig.name().copy());
 
         for (var line : sourceConfig.description()) {
-            var text = line.shallowCopy();
+            var text = line.copy();
 
             if (line.getStyle().getColor() == null) {
                 text.setStyle(line.getStyle().withColor(Formatting.GRAY));
@@ -125,11 +125,11 @@ public class GameJoinUi extends SimpleGui {
 
             element.addLoreLine(text);
         }
-        element.addLoreLine(LiteralText.EMPTY);
-        element.addLoreLine(new LiteralText("")
-                .append(new LiteralText("» ").formatted(Formatting.DARK_GRAY))
-                .append(new TranslatableText("text.plasmid.ui.game_join.players",
-                        new LiteralText(gameSpace.getPlayers().size() + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
+        element.addLoreLine(ScreenTexts.EMPTY);
+        element.addLoreLine(Text.empty()
+                .append(Text.literal("» ").formatted(Formatting.DARK_GRAY))
+                .append(Text.translatable("text.plasmid.ui.game_join.players",
+                        Text.literal(gameSpace.getPlayers().size() + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
         );
 
         element.hideFlags();

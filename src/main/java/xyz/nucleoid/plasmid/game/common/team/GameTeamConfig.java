@@ -8,7 +8,7 @@ import net.minecraft.item.FireworkRocketItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.Team;
-import net.minecraft.text.LiteralText;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.DyeColor;
@@ -44,8 +44,8 @@ public final record GameTeamConfig(
                 Codec.BOOL.optionalFieldOf("friendly_fire", true).forGetter(GameTeamConfig::friendlyFire),
                 COLLISION_CODEC.optionalFieldOf("collision", AbstractTeam.CollisionRule.ALWAYS).forGetter(GameTeamConfig::collision),
                 VISIBILITY_CODEC.optionalFieldOf("name_tag_visibility", AbstractTeam.VisibilityRule.ALWAYS).forGetter(GameTeamConfig::nameTagVisibility),
-                PlasmidCodecs.TEXT.optionalFieldOf("prefix", LiteralText.EMPTY).forGetter(GameTeamConfig::prefix),
-                PlasmidCodecs.TEXT.optionalFieldOf("suffix", LiteralText.EMPTY).forGetter(GameTeamConfig::suffix)
+                PlasmidCodecs.TEXT.optionalFieldOf("prefix", ScreenTexts.EMPTY).forGetter(GameTeamConfig::prefix),
+                PlasmidCodecs.TEXT.optionalFieldOf("suffix", ScreenTexts.EMPTY).forGetter(GameTeamConfig::suffix)
         ).apply(instance, GameTeamConfig::new);
     });
 
@@ -54,7 +54,7 @@ public final record GameTeamConfig(
     public static final GameTeamConfig DEFAULT = GameTeamConfig.builder().build();
 
     public GameTeamConfig(Text name, Colors colors, boolean friendlyFire, AbstractTeam.CollisionRule collision, AbstractTeam.VisibilityRule nameTagVisibility, Text prefix, Text suffix) {
-        this.name = name.shallowCopy().styled(style -> style.getColor() == null ? style.withColor(colors.chatFormatting()) : style);
+        this.name = name.copy().styled(style -> style.getColor() == null ? style.withColor(colors.chatFormatting()) : style);
         this.colors = colors;
         this.friendlyFire = friendlyFire;
         this.collision = collision;
@@ -109,13 +109,13 @@ public final record GameTeamConfig(
     }
 
     public static final class Builder {
-        private Text name = new LiteralText("Team");
+        private Text name = Text.literal("Team");
         private Colors colors = Colors.NONE;
         private boolean friendlyFire = true;
         private AbstractTeam.CollisionRule collision = AbstractTeam.CollisionRule.ALWAYS;
         private AbstractTeam.VisibilityRule nameTagVisibility = AbstractTeam.VisibilityRule.ALWAYS;
-        private Text prefix = LiteralText.EMPTY;
-        private Text suffix = LiteralText.EMPTY;
+        private Text prefix = ScreenTexts.EMPTY;
+        private Text suffix = ScreenTexts.EMPTY;
 
         Builder() {
         }

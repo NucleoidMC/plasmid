@@ -40,19 +40,19 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public final class GameCommand {
     public static final SimpleCommandExceptionType NO_GAME_OPEN = new SimpleCommandExceptionType(
-            new TranslatableText("text.plasmid.game.join.no_game_open")
+            Text.translatable("text.plasmid.game.join.no_game_open")
     );
 
     public static final SimpleCommandExceptionType NOT_IN_GAME = new SimpleCommandExceptionType(
-            new TranslatableText("text.plasmid.game.not_in_game")
+            Text.translatable("text.plasmid.game.not_in_game")
     );
 
     public static final DynamicCommandExceptionType MALFORMED_CONFIG = new DynamicCommandExceptionType(error -> {
-        return new TranslatableText("text.plasmid.game.open.malformed_config", error);
+        return Text.translatable("text.plasmid.game.open.malformed_config", error);
     });
 
     public static final DynamicCommandExceptionType PLAYER_NOT_IN_GAME = new DynamicCommandExceptionType(player -> {
-        return new TranslatableText("text.plasmid.game.locate.player_not_in_game", player);
+        return Text.translatable("text.plasmid.game.locate.player_not_in_game", player);
     });
 
     // @formatter:off
@@ -118,7 +118,7 @@ public final class GameCommand {
             throw e;
         } catch (Exception e) {
             e.printStackTrace();
-            context.getSource().sendFeedback(new TranslatableText("text.plasmid.game.open.error").formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(Text.translatable("text.plasmid.game.open.error").formatted(Formatting.RED), false);
             return 0;
         }
     }
@@ -137,7 +137,7 @@ public final class GameCommand {
             throw e;
         } catch (Exception e) {
             e.printStackTrace();
-            context.getSource().sendFeedback(new TranslatableText("text.plasmid.game.open.error").formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(Text.translatable("text.plasmid.game.open.error").formatted(Formatting.RED), false);
             return 0;
         }
     }
@@ -188,7 +188,7 @@ public final class GameCommand {
 
         MutableText message;
         if (gameOpenException != null) {
-            message = ((GameOpenException) throwable).getReason().shallowCopy();
+            message = ((GameOpenException) throwable).getReason().copy();
         } else {
             message = GameTexts.Broadcast.gameOpenError();
         }
@@ -395,7 +395,7 @@ public final class GameCommand {
         for (var id : GameConfigs.getKeys()) {
             String command = "/game open " + id;
 
-            var link = GameConfigs.get(id).name().shallowCopy()
+            var link = GameConfigs.get(id).name().copy()
                     .setStyle(GameTexts.commandLinkStyle(command));
 
             source.sendFeedback(GameTexts.Command.listEntry(link), false);

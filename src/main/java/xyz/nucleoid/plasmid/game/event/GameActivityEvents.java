@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.game.event;
 
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
@@ -119,7 +119,7 @@ public final class GameActivityEvents {
             return null;
         } catch (Throwable throwable) {
             ctx.handleException(throwable);
-            return GameResult.error(new TranslatableText("text.plasmid.game.start_result.error"));
+            return GameResult.error(Text.translatable("text.plasmid.game.start_result.error"));
         }
     });
 

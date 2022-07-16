@@ -65,7 +65,7 @@ public final class GamePlayerJoiner {
     private static Text getFeedbackForException(Throwable throwable) {
         var gameOpenException = GameOpenException.unwrap(throwable);
         if (gameOpenException != null) {
-            return gameOpenException.getReason().shallowCopy();
+            return gameOpenException.getReason().copy();
         } else {
             return GameTexts.Join.unexpectedError();
         }
@@ -77,7 +77,7 @@ public final class GamePlayerJoiner {
 
         public void sendErrorsTo(ServerPlayerEntity player) {
             if (this.globalError != null) {
-                player.sendMessage(this.globalError.shallowCopy().formatted(Formatting.RED), false);
+                player.sendMessage(this.globalError.copy().formatted(Formatting.RED), false);
             } else if (!this.playerErrors.isEmpty()) {
                 player.sendMessage(
                         GameTexts.Join.partyJoinError(this.playerErrors.size()).formatted(Formatting.RED),
@@ -85,7 +85,7 @@ public final class GamePlayerJoiner {
                 );
 
                 for (var entry : this.playerErrors.entrySet()) {
-                    Text error = entry.getValue().shallowCopy().formatted(Formatting.RED);
+                    Text error = entry.getValue().copy().formatted(Formatting.RED);
                     entry.getKey().sendMessage(error, false);
                 }
             }

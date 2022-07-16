@@ -263,8 +263,8 @@ public final class TeamManager implements Iterable<GameTeam> {
         if (team != null) {
             var config = this.teamState(team).team.config();
             var style = Style.EMPTY.withFormatting(config.chatFormatting());
-            return new LiteralText("").append(config.prefix())
-                    .append(name.shallowCopy().setStyle(style))
+            return Text.empty().append(config.prefix())
+                    .append(name.copy().setStyle(style))
                     .append(config.suffix());
         }
         return name;

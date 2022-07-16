@@ -41,12 +41,12 @@ public final class ShopEntry implements GuiElementInterface {
         boolean canBuy = this.canBuy.test(player, entry);
 
         var style = Style.EMPTY.withItalic(false).withColor(canBuy ? Formatting.BLUE : Formatting.RED);
-        var name = icon.getName().shallowCopy().setStyle(style);
+        var name = icon.getName().copy().setStyle(style);
 
         if (this.cost != null) {
             var cost = this.cost.apply(player, entry);
             var costText = cost.getDisplay();
-            costText = new LiteralText(" (").append(costText).append(")").setStyle(costText.getStyle());
+            costText = Text.literal(" (").append(costText).append(")").setStyle(costText.getStyle());
             name.append(costText);
         }
 
@@ -72,8 +72,8 @@ public final class ShopEntry implements GuiElementInterface {
     public static ShopEntry buyItem(ItemStack stack) {
         var icon = stack.copy();
 
-        var count = new LiteralText(stack.getCount() + "x ");
-        var name = icon.getName().shallowCopy().formatted(Formatting.BOLD);
+        var count = Text.literal(stack.getCount() + "x ");
+        var name = icon.getName().copy().formatted(Formatting.BOLD);
         icon.setCustomName(count.append(name));
 
         return new ShopEntry(icon).onBuy((player) -> player.getInventory().offerOrDrop(stack.copy()));
@@ -82,8 +82,8 @@ public final class ShopEntry implements GuiElementInterface {
     public static ShopEntry buyItem(ItemStack stack, Cost cost) {
         var icon = stack.copy();
 
-        var count = new LiteralText(stack.getCount() + "x ");
-        var name = icon.getName().shallowCopy().formatted(Formatting.BOLD);
+        var count = Text.literal(stack.getCount() + "x ");
+        var name = icon.getName().copy().formatted(Formatting.BOLD);
         icon.setCustomName(count.append(name));
 
         return new ShopEntry(icon).onBuy((player) -> player.getInventory().offerOrDrop(stack.copy())).withCost(cost);

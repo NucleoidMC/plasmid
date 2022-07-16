@@ -5,8 +5,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.codecs.MoreCodecs;
@@ -30,7 +30,7 @@ public record MenuPortalConfig(
 
     public static final Codec<MenuPortalConfig> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
-                PlasmidCodecs.TEXT.optionalFieldOf("name", LiteralText.EMPTY).forGetter(MenuPortalConfig::name),
+                PlasmidCodecs.TEXT.optionalFieldOf("name", ScreenTexts.EMPTY).forGetter(MenuPortalConfig::name),
                 MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description", Collections.emptyList()).forGetter(MenuPortalConfig::description),
                 MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(MenuPortalConfig::icon),
                 Entry.CODEC.listOf().fieldOf("games").forGetter(config -> config.games),
@@ -44,7 +44,7 @@ public record MenuPortalConfig(
         if (this.name != null) {
             name = this.name;
         } else {
-            name = new LiteralText(id.toString());
+            name = Text.literal(id.toString());
         }
 
         return new MenuPortalBackend(name, this.games);

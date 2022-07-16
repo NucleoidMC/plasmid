@@ -2,7 +2,6 @@ package xyz.nucleoid.plasmid.game;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
@@ -64,7 +63,7 @@ public final class GameType<C> {
     }
 
     public Text name() {
-        return new TranslatableText(this.translationKey());
+        return Text.translatable(this.translationKey());
     }
 
     public String translationKey() {

@@ -20,7 +20,7 @@ public record PortalGuiEntry(
 ) implements MenuEntry {
     @Override
     public void click(ServerPlayerEntity player, CompletableFuture<GameSpace> future) {
-        var ui = Guis.createSelectorGui(player, this.name.shallowCopy(), true, this.provider.getGuiElements(future));
+        var ui = Guis.createSelectorGui(player, this.name.copy(), true, this.provider.getGuiElements(future));
         ui.open();
     }
 

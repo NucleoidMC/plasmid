@@ -9,7 +9,7 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
@@ -19,7 +19,7 @@ import java.util.function.Function;
 
 public final class GameConfigArgument {
     private static final DynamicCommandExceptionType GAME_NOT_FOUND = new DynamicCommandExceptionType(id -> {
-        return new TranslatableText("text.plasmid.game_config.game_not_found", id);
+        return Text.translatable("text.plasmid.game_config.game_not_found", id);
     });
 
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {

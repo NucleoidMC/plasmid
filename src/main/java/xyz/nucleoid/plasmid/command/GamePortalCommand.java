@@ -8,7 +8,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.command.argument.GamePortalArgument;
 import xyz.nucleoid.plasmid.game.portal.GamePortalInterface;
@@ -18,11 +18,11 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public final class GamePortalCommand {
     public static final SimpleCommandExceptionType TARGET_IS_NOT_INTERFACE = new SimpleCommandExceptionType(
-            new TranslatableText("text.plasmid.game.portal.connect.target_is_not_interface")
+            Text.translatable("text.plasmid.game.portal.connect.target_is_not_interface")
     );
 
     public static final SimpleCommandExceptionType INTERFACE_ALREADY_CONNECTED = new SimpleCommandExceptionType(
-            new TranslatableText("text.plasmid.game.portal.connect.interface_already_connected")
+            Text.translatable("text.plasmid.game.portal.connect.interface_already_connected")
     );
 
     // @formatter:off
@@ -65,7 +65,7 @@ public final class GamePortalCommand {
                 throw INTERFACE_ALREADY_CONNECTED.create();
             }
 
-            var message = new TranslatableText("text.plasmid.game.portal.connect.entity", portal.getId(), entity.getEntityName());
+            var message = Text.translatable("text.plasmid.game.portal.connect.entity", portal.getId(), entity.getEntityName());
             context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;
@@ -87,7 +87,7 @@ public final class GamePortalCommand {
                 throw INTERFACE_ALREADY_CONNECTED.create();
             }
 
-            var message = new TranslatableText("text.plasmid.game.portal.connect.block", portal.getId(), pos.getX(), pos.getY(), pos.getZ());
+            var message = Text.translatable("text.plasmid.game.portal.connect.block", portal.getId(), pos.getX(), pos.getY(), pos.getZ());
             source.sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;
@@ -102,7 +102,7 @@ public final class GamePortalCommand {
         if (entity instanceof GamePortalInterface portalInterface) {
             portalInterface.invalidatePortal();
 
-            var message = new TranslatableText("text.plasmid.game.portal.disconnect.entity", entity.getEntityName());
+            var message = Text.translatable("text.plasmid.game.portal.disconnect.entity", entity.getEntityName());
             context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;
@@ -121,7 +121,7 @@ public final class GamePortalCommand {
         if (blockEntity instanceof GamePortalInterface portalInterface) {
             portalInterface.invalidatePortal();
 
-            var message = new TranslatableText("text.plasmid.game.portal.disconnect.block", pos.getX(), pos.getY(), pos.getZ());
+            var message = Text.translatable("text.plasmid.game.portal.disconnect.block", pos.getX(), pos.getY(), pos.getZ());
             source.sendFeedback(message.formatted(Formatting.GRAY), false);
 
             return Command.SINGLE_SUCCESS;

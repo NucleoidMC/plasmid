@@ -8,8 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Range;
@@ -97,7 +97,7 @@ public final class Guis {
         ItemStack stack = Items.GRAY_BANNER.getDefaultStack();
         try {
             stack.setNbt(StringNbtReader.parse(nbt));
-            stack.setCustomName(LiteralText.EMPTY);
+            stack.setCustomName(ScreenTexts.EMPTY);
             stack.addHideFlag(ItemStack.TooltipSection.ADDITIONAL);
         } catch (Exception e) {}
 

@@ -70,6 +70,6 @@ public final class GameResult {
     @Nullable
     public MutableText errorCopy() {
         var error = this.error;
-        return error != null ? error.shallowCopy() : null;
+        return error != null ? error.copy() : null;
     }
 }

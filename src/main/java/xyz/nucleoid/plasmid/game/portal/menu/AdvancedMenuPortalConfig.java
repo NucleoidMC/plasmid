@@ -4,8 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.codecs.MoreCodecs;
@@ -27,7 +27,7 @@ public record AdvancedMenuPortalConfig(
 
     public static final Codec<AdvancedMenuPortalConfig> CODEC = RecordCodecBuilder.create(instance -> {
         return instance.group(
-                PlasmidCodecs.TEXT.optionalFieldOf("name", LiteralText.EMPTY).forGetter(AdvancedMenuPortalConfig::name),
+                PlasmidCodecs.TEXT.optionalFieldOf("name", ScreenTexts.EMPTY).forGetter(AdvancedMenuPortalConfig::name),
                 MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description", Collections.emptyList()).forGetter(AdvancedMenuPortalConfig::description),
                 MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(AdvancedMenuPortalConfig::icon),
                 MenuEntryConfig.CODEC.listOf().fieldOf("entries").forGetter(AdvancedMenuPortalConfig::entries),
@@ -41,7 +41,7 @@ public record AdvancedMenuPortalConfig(
         if (this.name != null) {
             name = this.name;
         } else {
-            name = new LiteralText(id.toString());
+            name = Text.literal(id.toString());
         }
 
         return new AdvancedMenuPortalBackend(name, description, icon, this.entries);

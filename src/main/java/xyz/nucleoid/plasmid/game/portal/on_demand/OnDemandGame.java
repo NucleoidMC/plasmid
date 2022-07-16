@@ -29,9 +29,9 @@ public final class OnDemandGame {
     public Text getName() {
         var config = GameConfigs.get(this.gameId);
         if (config != null) {
-            return config.name().shallowCopy().formatted(Formatting.AQUA);
+            return config.name().copy().formatted(Formatting.AQUA);
         } else {
-            return new LiteralText(this.gameId.toString()).formatted(Formatting.RED);
+            return Text.literal(this.gameId.toString()).formatted(Formatting.RED);
         }
     }
 
@@ -53,7 +53,7 @@ public final class OnDemandGame {
             Plasmid.LOGGER.warn("Missing game config for on-demand game with id '{}'", this.gameId);
 
             var future = new CompletableFuture<ManagedGameSpace>();
-            var error = new TranslatableText("text.plasmid.game_config.game_config_does_not_exist", this.gameId);
+            var error = Text.translatable("text.plasmid.game_config.game_config_does_not_exist", this.gameId);
             future.completeExceptionally(new GameOpenException(error));
 
             return future;

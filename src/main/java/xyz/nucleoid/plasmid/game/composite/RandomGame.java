@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.game.composite;
 
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
@@ -13,7 +13,7 @@ public final class RandomGame {
 
         var game = config.selectGame(new Random());
         if (game == null) {
-            throw new GameOpenException(new TranslatableText("text.plasmid.random.empty_composite_game_config"));
+            throw new GameOpenException(Text.translatable("text.plasmid.random.empty_composite_game_config"));
         }
 
         return game.openProcedure(context.server());

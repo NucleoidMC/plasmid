@@ -66,7 +66,7 @@ public record GameConfig<C>(
 
         var translationKey = this.translationKey();
         if (translationKey != null && hasTranslationFor(translationKey)) {
-            return new TranslatableText(translationKey);
+            return Text.translatable(translationKey);
         }
 
         return this.type.name();

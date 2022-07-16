@@ -3,7 +3,7 @@ package xyz.nucleoid.plasmid.game.manager;
 import com.google.common.collect.Lists;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
@@ -90,7 +90,7 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     public void closeWithError(String message) {
-        this.getPlayers().sendMessage(new LiteralText(message).formatted(Formatting.RED));
+        this.getPlayers().sendMessage(Text.literal(message).formatted(Formatting.RED));
         this.close(GameCloseReason.ERRORED);
     }
 

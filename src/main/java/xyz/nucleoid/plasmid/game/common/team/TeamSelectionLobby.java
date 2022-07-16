@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.tag.ItemTags;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -77,7 +77,7 @@ public final class TeamSelectionLobby {
 
         for (var team : this.teams) {
             var config = team.config();
-            var name = new TranslatableText("text.plasmid.team_selection.request_team", config.name())
+            var name = Text.translatable("text.plasmid.team_selection.request_team", config.name())
                     .formatted(Formatting.BOLD, config.chatFormatting());
 
             var stack = new ItemStack(ColoredBlocks.wool(config.blockDyeColor()));
@@ -102,8 +102,8 @@ public final class TeamSelectionLobby {
 
                 this.teamPreference.put(player.getUuid(), key);
 
-                var message = new TranslatableText("text.plasmid.team_selection.requested_team",
-                        new TranslatableText("text.plasmid.team_selection.suffixed_team", config.name()).formatted(config.chatFormatting()));
+                var message = Text.translatable("text.plasmid.team_selection.requested_team",
+                        Text.translatable("text.plasmid.team_selection.suffixed_team", config.name()).formatted(config.chatFormatting()));
 
                 player.sendMessage(message, false);
 

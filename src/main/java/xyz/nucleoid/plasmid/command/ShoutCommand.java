@@ -7,7 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
 
@@ -34,7 +34,7 @@ public class ShoutCommand {
 
         var message = StringArgumentType.getString(context, "message");
         context.getSource().getServer().getPlayerManager().broadcast(
-                new TranslatableText("chat.type.text", player.getDisplayName(), message),
+                Text.translatable("chat.type.text", player.getDisplayName(), message),
                 MessageType.CHAT,
                 context.getSource().getPlayer().getUuid()
         );

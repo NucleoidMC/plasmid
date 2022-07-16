@@ -1,10 +1,12 @@
 package xyz.nucleoid.plasmid.game.common;
 
 import net.minecraft.entity.boss.BossBar;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.*;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.GameActivity;
@@ -36,14 +38,14 @@ import java.util.List;
  * @see xyz.nucleoid.plasmid.game.common.team.TeamSelectionLobby
  */
 public final class GameWaitingLobby {
-    private static final Text WAITING_TITLE = new TranslatableText("text.plasmid.game.waiting_lobby.bar.waiting");
+    private static final Text WAITING_TITLE = Text.translatable("text.plasmid.game.waiting_lobby.bar.waiting");
     private static final int START_REQUESTED_COUNTDOWN = 20 * 3;
 
     private static final BossBar.Color WAITING_COLOR = BossBar.Color.BLUE;
     private static final BossBar.Color COUNTING_COLOR = BossBar.Color.GREEN;
     private static final BossBar.Style BOSS_BAR_STYLE = BossBar.Style.NOTCHED_10;
 
-    private static final Text PADDING_LINE = new LiteralText(" ".repeat(36));
+    private static final Text PADDING_LINE = Text.literal(" ".repeat(36));
 
     private final GameSpace gameSpace;
     private final PlayerConfig playerConfig;
@@ -89,7 +91,7 @@ public final class GameWaitingLobby {
 
 
         lobby.setSidebarLines(sourceConfig.description());
-        var title = sourceConfig.shortName().shallowCopy();
+        var title = sourceConfig.shortName().copy();
 
         if (title.getStyle().getColor() == null) {
             title.setStyle(title.getStyle().withColor(Formatting.GOLD));
@@ -112,7 +114,7 @@ public final class GameWaitingLobby {
         this.sidebarText = new ArrayList<>(texts.size());
 
         for (var line : texts) {
-            var text = line.shallowCopy();
+            var text = line.copy();
             if (line.getStyle().getColor() == null) {
                 text.setStyle(line.getStyle().withColor(Formatting.YELLOW));
             }
@@ -139,7 +141,7 @@ public final class GameWaitingLobby {
 
             var startResult = this.gameSpace.requestStart();
             if (startResult.isError()) {
-                MutableText message = new TranslatableText("text.plasmid.game.waiting_lobby.bar.cancel").append(startResult.error());
+                MutableText message = Text.translatable("text.plasmid.game.waiting_lobby.bar.cancel").append(startResult.error());
                 this.gameSpace.getPlayers().sendMessage(message.formatted(Formatting.RED));
                 this.started = false;
                 this.startRequested = false;
@@ -237,7 +239,7 @@ public final class GameWaitingLobby {
             long remainingTicks = this.getRemainingTicks(time);
             long remainingSeconds = remainingTicks / 20;
 
-            this.bar.setTitle(new TranslatableText("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
+            this.bar.setTitle(Text.translatable("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
             this.bar.setStyle(COUNTING_COLOR, BOSS_BAR_STYLE);
             this.bar.setProgress((float) remainingTicks / this.countdownDuration);
         } else {
@@ -255,23 +257,23 @@ public final class GameWaitingLobby {
                 long remainingTicks = this.getRemainingTicks(time);
                 long remainingSeconds = remainingTicks / 20;
 
-                b.add(new TranslatableText("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
+                b.add(Text.translatable("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
             } else {
                 b.add(WAITING_TITLE);
             }
-            b.add(LiteralText.EMPTY);
-            b.add(new TranslatableText("text.plasmid.game.waiting_lobby.sidebar.players",
-                    new LiteralText("" + this.gameSpace.getPlayers().size()).formatted(Formatting.AQUA),
-                    new LiteralText("/").formatted(Formatting.GRAY),
-                    new LiteralText("" + this.playerConfig.maxPlayers()).formatted(Formatting.AQUA)));
+            b.add(ScreenTexts.EMPTY);
+            b.add(Text.translatable("text.plasmid.game.waiting_lobby.sidebar.players",
+                    Text.literal("" + this.gameSpace.getPlayers().size()).formatted(Formatting.AQUA),
+                    Text.literal("/").formatted(Formatting.GRAY),
+                    Text.literal("" + this.playerConfig.maxPlayers()).formatted(Formatting.AQUA)));
 
             if (this.sidebarText != null && !this.sidebarText.isEmpty()) {
-                b.add(LiteralText.EMPTY);
+                b.add(ScreenTexts.EMPTY);
                 for (Text text : this.sidebarText) {
                     b.add(text);
                 }
             }
-            b.add(LiteralText.EMPTY);
+            b.add(ScreenTexts.EMPTY);
         });
     }
 

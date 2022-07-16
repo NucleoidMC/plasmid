@@ -25,7 +25,7 @@ public final class TeamChat {
         var team = this.manager.teamFor(sender);
 
         if (team != null && sender instanceof HasChatChannel hasChannel && hasChannel.getChatChannel() == ChatChannel.TEAM) {
-            var teamMessage = new TranslatableText("text.plasmid.chat.team", message);
+            var teamMessage = Text.translatable("text.plasmid.chat.team", message);
 
             for (var player : this.manager.playersIn(team)) {
                 player.sendSystemMessage(teamMessage, sender.getUuid());

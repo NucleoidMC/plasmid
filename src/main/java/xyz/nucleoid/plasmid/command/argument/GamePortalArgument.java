@@ -8,13 +8,13 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.portal.GamePortal;
 import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
 
 public final class GamePortalArgument {
-    private static final SimpleCommandExceptionType PORTAL_NOT_FOUND = new SimpleCommandExceptionType(new TranslatableText("text.plasmid.portal.portal_not_found"));
+    private static final SimpleCommandExceptionType PORTAL_NOT_FOUND = new SimpleCommandExceptionType(Text.translatable("text.plasmid.portal.portal_not_found"));
 
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())

@@ -4,7 +4,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
 public final class Cost {
@@ -14,31 +13,31 @@ public final class Cost {
     public static Cost ofIron(int iron) {
         return new Cost()
                 .take(Items.IRON_INGOT, iron)
-                .display(new TranslatableText("text.plasmid.shop.cost.iron", iron).formatted(Formatting.GRAY));
+                .display(Text.translatable("text.plasmid.shop.cost.iron", iron).formatted(Formatting.GRAY));
     }
 
     public static Cost ofGold(int gold) {
         return new Cost()
                 .take(Items.GOLD_INGOT, gold)
-                .display(new TranslatableText("text.plasmid.shop.cost.gold", gold).formatted(Formatting.GOLD));
+                .display(Text.translatable("text.plasmid.shop.cost.gold", gold).formatted(Formatting.GOLD));
     }
 
     public static Cost ofDiamonds(int diamonds) {
         return new Cost()
                 .take(Items.DIAMOND, diamonds)
-                .display(new TranslatableText("text.plasmid.shop.cost.diamonds", diamonds).formatted(Formatting.AQUA));
+                .display(Text.translatable("text.plasmid.shop.cost.diamonds", diamonds).formatted(Formatting.AQUA));
     }
 
     public static Cost ofEmeralds(int emeralds) {
         return new Cost()
                 .take(Items.EMERALD, emeralds)
-                .display(new TranslatableText("text.plasmid.shop.cost.emeralds", emeralds).formatted(Formatting.GREEN));
+                .display(Text.translatable("text.plasmid.shop.cost.emeralds", emeralds).formatted(Formatting.GREEN));
     }
 
     public static Cost free() {
         return new Cost()
                 .take((player, simulate) -> true)
-                .display(new TranslatableText("text.plasmid.shop.cost.free"));
+                .display(Text.translatable("text.plasmid.shop.cost.free"));
     }
 
     public static Cost ofItem(Item item, int count, Text text) {
@@ -50,11 +49,11 @@ public final class Cost {
     public static Cost ofItem(Item item, int count) {
         return new Cost()
                 .take(item, count)
-                .display(new TranslatableText("text.plasmid.shop.cost.custom", count, item.getName()));
+                .display(Text.translatable("text.plasmid.shop.cost.custom", count, item.getName()));
     }
 
     public static Cost no() {
-        return new Cost().display(new TranslatableText("text.plasmid.shop.cost.no"));
+        return new Cost().display(Text.translatable("text.plasmid.shop.cost.no"));
     }
 
     public Cost take(Take take) {

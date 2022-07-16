@@ -12,15 +12,15 @@ import net.minecraft.util.Formatting;
  */
 public final class GameTexts {
     public static MutableText commandLink(String text, String command) {
-        return new LiteralText(text).setStyle(commandLinkStyle(command));
+        return Text.literal(text).setStyle(commandLinkStyle(command));
     }
 
     public static MutableText commandLink(Text text, String command) {
-        return text.shallowCopy().setStyle(commandLinkStyle(command));
+        return text.copy().setStyle(commandLinkStyle(command));
     }
 
     public static Style commandLinkStyle(String command) {
-        return commandLinkStyle(command, new LiteralText(command));
+        return commandLinkStyle(command, Text.literal(command));
     }
 
     public static Style commandLinkStyle(String command, Text hoverText) {
@@ -32,114 +32,114 @@ public final class GameTexts {
 
     public static final class Broadcast {
         public static MutableText gameOpened(ServerCommandSource source, GameSpace gameSpace) {
-            var gameName = gameSpace.getMetadata().sourceConfig().name().shallowCopy().formatted(Formatting.GRAY);
+            var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
 
-            return new TranslatableText("text.plasmid.game.open.opened", source.getDisplayName(), gameName)
+            return Text.translatable("text.plasmid.game.open.opened", source.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
         }
 
         public static MutableText propose(ServerCommandSource source, GameSpace gameSpace) {
-            var gameName = gameSpace.getMetadata().sourceConfig().name().shallowCopy().formatted(Formatting.GRAY);
+            var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
 
-            return new TranslatableText("text.plasmid.game.propose", source.getDisplayName(), gameName)
+            return Text.translatable("text.plasmid.game.propose", source.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
         }
 
         public static MutableText gameOpenError() {
-            return new TranslatableText("text.plasmid.game.open.error");
+            return Text.translatable("text.plasmid.game.open.error");
         }
     }
 
     public static final class Command {
         public static MutableText located(ServerPlayerEntity player, GameSpace gameSpace) {
-            var gameName = gameSpace.getMetadata().sourceConfig().name().shallowCopy().formatted(Formatting.GRAY);
+            var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
 
-            return new TranslatableText("text.plasmid.game.locate.located", player.getDisplayName(), gameName)
+            return Text.translatable("text.plasmid.game.locate.located", player.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
         }
 
         public static MutableText gameList() {
-            return new TranslatableText("text.plasmid.game.list");
+            return Text.translatable("text.plasmid.game.list");
         }
 
         public static MutableText listEntry(Text entry) {
-            return new TranslatableText("text.plasmid.entry", entry);
+            return Text.translatable("text.plasmid.entry", entry);
         }
     }
 
     public static final class Start {
         public static MutableText genericError() {
-            return new TranslatableText("text.plasmid.game.start_result.generic_error");
+            return Text.translatable("text.plasmid.game.start_result.generic_error");
         }
 
         public static MutableText alreadyStarted() {
-            return new TranslatableText("text.plasmid.game.start_result.already_started");
+            return Text.translatable("text.plasmid.game.start_result.already_started");
         }
 
         public static MutableText notEnoughPlayers() {
-            return new TranslatableText("text.plasmid.game.start_result.not_enough_players");
+            return Text.translatable("text.plasmid.game.start_result.not_enough_players");
         }
 
         public static MutableText startedBy(ServerCommandSource source) {
-            return new TranslatableText("text.plasmid.game.started.player", source.getDisplayName());
+            return Text.translatable("text.plasmid.game.started.player", source.getDisplayName());
         }
     }
 
     public static final class Stop {
         public static MutableText stoppedBy(ServerCommandSource source) {
-            return new TranslatableText("text.plasmid.game.stopped.player", source.getDisplayName());
+            return Text.translatable("text.plasmid.game.stopped.player", source.getDisplayName());
         }
 
         public static MutableText confirmStop() {
-            return new TranslatableText("text.plasmid.game.stop.confirm");
+            return Text.translatable("text.plasmid.game.stop.confirm");
         }
 
         public static MutableText genericError() {
-            return new TranslatableText("text.plasmid.game.stopped.error");
+            return Text.translatable("text.plasmid.game.stopped.error");
         }
     }
 
     public static final class Join {
         public static MutableText success(ServerPlayerEntity player) {
-            return new TranslatableText("text.plasmid.game.join", player.getDisplayName());
+            return Text.translatable("text.plasmid.game.join", player.getDisplayName());
         }
 
         public static MutableText link(GameSpace gameSpace) {
-            var hover = new TranslatableText("text.plasmid.join_link_hover", gameSpace.getMetadata().sourceConfig().name());
+            var hover = Text.translatable("text.plasmid.join_link_hover", gameSpace.getMetadata().sourceConfig().name());
 
-            return new TranslatableText("text.plasmid.game.open.join")
+            return Text.translatable("text.plasmid.game.open.join")
                     .setStyle(commandLinkStyle("/game join " + gameSpace.getMetadata().userId(), hover));
         }
 
         public static MutableText partyJoinError(int errorCount) {
-            return new TranslatableText("text.plasmid.game.join.party.error", errorCount);
+            return Text.translatable("text.plasmid.game.join.party.error", errorCount);
         }
 
         public static MutableText genericError() {
-            return new TranslatableText("text.plasmid.join_result.generic_error");
+            return Text.translatable("text.plasmid.join_result.generic_error");
         }
 
         public static MutableText unexpectedError() {
-            return new TranslatableText("text.plasmid.join_result.error");
+            return Text.translatable("text.plasmid.join_result.error");
         }
 
         public static MutableText gameClosed() {
-            return new TranslatableText("text.plasmid.join_result.game_closed");
+            return Text.translatable("text.plasmid.join_result.game_closed");
         }
 
         public static MutableText gameFull() {
-            return new TranslatableText("text.plasmid.join_result.game_full");
+            return Text.translatable("text.plasmid.join_result.game_full");
         }
 
         public static MutableText alreadyJoined() {
-            return new TranslatableText("text.plasmid.join_result.already_joined");
+            return Text.translatable("text.plasmid.join_result.already_joined");
         }
 
         public static MutableText inOtherGame() {
-            return new TranslatableText(
+            return Text.translatable(
                     "text.plasmid.join_result.in_other_game",
                     commandLink(
-                            new TranslatableText("text.plasmid.join_result.in_other_game.leave_this_game"),
+                            Text.translatable("text.plasmid.join_result.in_other_game.leave_this_game"),
                             "/game leave"
                     )
             );

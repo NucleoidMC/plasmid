@@ -8,29 +8,21 @@ import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
 import xyz.nucleoid.plasmid.chat.PlasmidMessageTypes;
 import xyz.nucleoid.plasmid.game.GameActivity;
-import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.stimuli.event.player.PlayerChatEvent;
 
 public final class TeamChat {
-    private final GameSpace gameSpace;
     private final TeamManager manager;
 
-    private TeamChat(GameSpace gameSpace, TeamManager manager) {
-        this.gameSpace = gameSpace;
+    private TeamChat(TeamManager manager) {
         this.manager = manager;
     }
 
     public static void addTo(GameActivity activity, TeamManager manager) {
-        var teamChat = new TeamChat(activity.getGameSpace(), manager);
+        var teamChat = new TeamChat(manager);
         activity.listen(PlayerChatEvent.EVENT, teamChat::onSendMessage);
     }
 
-    private ActionResult onSendMessage(MessageSender sender, SignedMessage message) {
-        final ServerPlayerEntity player = this.gameSpace.getPlayers().getEntity(sender.uuid());
-        if (player == null) {
-            return ActionResult.PASS;
-        }
-
+    private ActionResult onSendMessage(ServerPlayerEntity player, MessageSender sender, SignedMessage message) {
         var team = this.manager.teamFor(player);
 
         if (team != null && player instanceof HasChatChannel hasChannel && hasChannel.getChatChannel() == ChatChannel.TEAM) {

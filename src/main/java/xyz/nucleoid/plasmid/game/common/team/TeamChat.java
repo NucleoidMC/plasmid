@@ -1,14 +1,14 @@
 package xyz.nucleoid.plasmid.game.common.team;
 
-import net.minecraft.network.message.MessageSender;
+import net.minecraft.network.message.MessageType;
+import net.minecraft.network.message.SentMessage;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
 import xyz.nucleoid.plasmid.chat.ChatChannel;
 import xyz.nucleoid.plasmid.chat.HasChatChannel;
 import xyz.nucleoid.plasmid.chat.PlasmidMessageTypes;
 import xyz.nucleoid.plasmid.game.GameActivity;
-import xyz.nucleoid.stimuli.event.player.PlayerChatEvent;
+import xyz.nucleoid.stimuli.event.player.ReplacePlayerChatEvent;
 
 public final class TeamChat {
     private final TeamManager manager;
@@ -19,21 +19,25 @@ public final class TeamChat {
 
     public static void addTo(GameActivity activity, TeamManager manager) {
         var teamChat = new TeamChat(manager);
-        activity.listen(PlayerChatEvent.EVENT, teamChat::onSendMessage);
+        activity.listen(ReplacePlayerChatEvent.EVENT, teamChat::onSendMessage);
     }
 
-    private ActionResult onSendMessage(ServerPlayerEntity player, MessageSender sender, SignedMessage message) {
+    private boolean onSendMessage(ServerPlayerEntity player, SignedMessage message, MessageType.Parameters messageType) {
         var team = this.manager.teamFor(player);
 
         if (team != null && player instanceof HasChatChannel hasChannel && hasChannel.getChatChannel() == ChatChannel.TEAM) {
-            for (var receiver : this.manager.playersIn(team)) {
-                receiver.sendChatMessage(message, sender, PlasmidMessageTypes.TEAM_CHAT);
-            }
+            var teamName = this.manager.getTeamConfig(team).name();
+            var teamMessageType = MessageType.params(PlasmidMessageTypes.TEAM_CHAT, player).withTargetName(teamName);
 
-            return ActionResult.FAIL;
+            var sentMessage = SentMessage.of(message);
+            for (var receiver : this.manager.playersIn(team)) {
+                receiver.sendChatMessage(sentMessage, player.shouldFilterMessagesSentTo(receiver), teamMessageType);
+            }
+            sentMessage.afterPacketsSent(player.server.getPlayerManager());
+
+            return true;
         }
 
-        return ActionResult.PASS;
+        return false;
     }
-
 }

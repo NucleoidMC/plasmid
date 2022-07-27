@@ -18,7 +18,6 @@
   "text.plasmid.join_link_hover": "Join %s",
   "text.plasmid.chat.switch.all": "Chat channel switched to all",
   "text.plasmid.chat.switch.team": "Chat channel switched to team",
-  "text.plasmid.chat.team": "[%s] <%s> %s",
   "text.plasmid.chunk_generator.generator_not_found": "Chunk generator with id '%s' was not found!",
   "text.plasmid.dimension_options.dimension_not_found": "Dimension with id '%s' was not found!",
   "text.plasmid.entry": " - %s",

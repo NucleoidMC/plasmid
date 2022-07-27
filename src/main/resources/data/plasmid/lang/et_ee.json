@@ -7,7 +7,6 @@
     "text.plasmid.join_link_hover": "Liitu kanaliga %s",
     "text.plasmid.chat.switch.all": "Avalikule vestluskanalile lülitatud",
     "text.plasmid.chat.switch.team": "Meeskonna vestluskanalile lülitatud",
-    "text.plasmid.chat.team": "[%s] <%s> %s",
     "text.plasmid.chunk_generator.generator_not_found": "Kamakageneraatorit IDga \"%s\" ei leitud!",
     "text.plasmid.dimension_options.dimension_not_found": "Dimensiooni IDga \"%s\" ei leitud!",
     "text.plasmid.entry": " - %s",

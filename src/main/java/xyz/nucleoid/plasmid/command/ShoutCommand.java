@@ -28,15 +28,23 @@ public class ShoutCommand {
         var source = context.getSource();
         var server = source.getServer();
 
-        var hasChatChannel = (HasChatChannel) source.getPlayerOrThrow();
-        var old = hasChatChannel.getChatChannel();
-        hasChatChannel.setChatChannel(ChatChannel.ALL);
+        final MessageArgumentType.SignedMessage argument = MessageArgumentType.getSignedMessage(context, "message");
 
-        MessageArgumentType.getSignedMessage(context, "message").decorate(source)
-                .thenAcceptAsync(message -> {
-                    server.getPlayerManager().broadcast(message, source, MessageType.CHAT);
+        try {
+            var hasChatChannel = (HasChatChannel) source.getPlayerOrThrow();
+            argument.decorate(source, message -> {
+                var old = hasChatChannel.getChatChannel();
+                try {
+                    hasChatChannel.setChatChannel(ChatChannel.ALL);
+                    server.getPlayerManager().broadcast(message, source, MessageType.params(MessageType.CHAT, source));
+                } finally {
                     hasChatChannel.setChatChannel(old);
-                }, server);
+                }
+            });
+        } catch (final CommandSyntaxException e) {
+            argument.sendHeader(source);
+            throw e;
+        }
 
         return Command.SINGLE_SUCCESS;
     }

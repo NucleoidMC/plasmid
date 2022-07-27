@@ -6,7 +6,6 @@
   "text.plasmid.join_link_hover": "Rejoindre %s",
   "text.plasmid.chat.switch.all": "Canal de discussion réglé sur tout le monde",
   "text.plasmid.chat.switch.team": "Canal de discussion réglé sur l'équipe",
-  "text.plasmid.chat.team": "[%s] <%s> %s",
   "text.plasmid.game.portal.connect.block": "'%1$s' connecté au bloc avec pour position (%2$s ; %3$s ; %4$s)",
   "text.plasmid.game.portal.connect.entity": "'%1$s' connecté à '%2$s''",
   "text.plasmid.game.join": "%s a rejoint le lobby !",

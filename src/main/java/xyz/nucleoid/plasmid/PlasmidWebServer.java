@@ -76,7 +76,7 @@ public class PlasmidWebServer {
                     exchange.getResponseHeaders().add("Content-Type", "application/zip");
                     exchange.sendResponseHeaders(HttpStatus.SC_OK, pack.getSize());
 
-                    IOUtils.copy(input, output);
+                    input.transferTo(output);
                     output.flush();
 
                     return true;

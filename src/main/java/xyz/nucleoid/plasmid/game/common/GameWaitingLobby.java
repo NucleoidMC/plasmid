@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.common;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
@@ -22,6 +23,7 @@ import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
+import xyz.nucleoid.plasmid.util.compatibility.AfkDisplayCompatibility;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -223,7 +225,7 @@ public final class GameWaitingLobby {
         }
 
         if (this.gameSpace.getPlayers().size() >= this.playerConfig.minPlayers()) {
-            if (this.isFull()) {
+            if (this.isActiveFull()) {
                 return countdown.fullSeconds() * 20L;
             } else if (this.isReady()) {
                 return countdown.readySeconds() * 20L;
@@ -300,24 +302,37 @@ public final class GameWaitingLobby {
     }
 
     private boolean isFull() {
-        int playerCount = this.gameSpace.getPlayers().size();
-        if (playerCount >= this.playerConfig.maxPlayers()) {
+        return this.gameSpace.getPlayers().size() >= this.playerConfig.maxPlayers();
+    }
+
+    private boolean isActiveFull() {
+        if (this.isFull()) {
             return true;
         }
 
         // if all players on the server are in this lobby
         var server = this.gameSpace.getServer();
-        if (playerCount >= server.getCurrentPlayerCount()) {
+        if (this.gameSpace.getPlayers().size() >= server.getCurrentPlayerCount()) {
             return true;
         }
 
         // if there are no players outside of a game on the server
         for (var world : server.getWorlds()) {
-            if (!world.getPlayers().isEmpty() && !GameSpaceManager.get().hasGame(world)) {
+            if (!hasActivePlayer(world) && !GameSpaceManager.get().hasGame(world)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private static boolean hasActivePlayer(ServerWorld world) {
+        for (var player : world.getPlayers()) {
+            if (AfkDisplayCompatibility.isActive(player)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

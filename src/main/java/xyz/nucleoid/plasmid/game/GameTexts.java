@@ -145,4 +145,18 @@ public final class GameTexts {
             );
         }
     }
+
+    public static final class Kick {
+        public static MutableText kick(ServerCommandSource source, ServerPlayerEntity target) {
+            return source.isExecutedByPlayer() ? kickBy(source.getPlayer(), target) : kick(target);
+        }
+
+        public static MutableText kickBy(ServerPlayerEntity source, ServerPlayerEntity target) {
+            return Text.translatable("text.plasmid.game.kick.by", target.getDisplayName(), source.getDisplayName());
+        }
+
+        public static MutableText kick(ServerPlayerEntity target) {
+            return Text.translatable("text.plasmid.game.kick", target.getDisplayName());
+        }
+    }
 }

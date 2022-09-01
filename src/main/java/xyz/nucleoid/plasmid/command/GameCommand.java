@@ -84,6 +84,12 @@ public final class GameCommand {
                             .executes(GameCommand::stopGameConfirmed)
                         )
                 )
+                .then(literal("kick")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(argument("targets", EntityArgumentType.players())
+                        .executes(GameCommand::kickPlayers)
+                    )
+                )
                 .then(literal("join")
                     .executes(GameCommand::joinGame)
                     .then(GameSpaceArgument.argument("game_space")
@@ -399,5 +405,30 @@ public final class GameCommand {
         }
 
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int kickPlayers(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        var source = context.getSource();
+        var playerManager = source.getServer().getPlayerManager();
+
+        var targets = EntityArgumentType.getPlayers(context, "targets");
+
+        int successes = 0;
+
+        for (var target : targets) {
+            var gameSpace = GameSpaceManager.get().byPlayer(target);
+            if (gameSpace != null) {
+                var message = GameTexts.Kick.kick(source, target).formatted(Formatting.GRAY);
+                playerManager.broadcast(message, false);
+
+                Scheduler.INSTANCE.submit(server -> {
+                    gameSpace.getPlayers().kick(target);
+                });
+
+                successes += 1;
+            }
+        }
+
+        return successes;
     }
 }

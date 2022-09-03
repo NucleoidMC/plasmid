@@ -57,6 +57,8 @@ public final class GameRuleType {
     public static final GameRuleType HUNGER = GameRuleType.create()
             .enforces(PlayerConsumeHungerEvent.EVENT, result -> (player, foodLevel, saturation, exhaustion) -> result);
 
+    public static final GameRuleType SATURATED_REGENERATION = GameRuleType.create();
+
     public static final GameRuleType FALL_DAMAGE = GameRuleType.create()
             .enforces(PlayerDamageEvent.EVENT, result -> (player, source, amount) -> {
                 if (source == DamageSource.FALL) {

@@ -10,6 +10,7 @@
     "game.portal.EntityMixin",
     "game.portal.SignBlockEntityMixin",
     "game.rule.ArmorAndElytraItemMixin",
+    "game.rule.HungerManagerMixin",
     "game.rule.PlayerEntityMixin",
     "game.rule.ServerPlayerEntityMixin",
     "game.rule.ServerPlayNetworkHandlerMixin",

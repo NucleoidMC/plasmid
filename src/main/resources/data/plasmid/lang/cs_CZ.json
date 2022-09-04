@@ -12,7 +12,6 @@
   "item.plasmid.include_entity.removed": "Vybraná entita byla odebrána z mapy \"%s\".",
   "text.plasmid.portal.portal_not_found": "Tento portál nebyl nalezen!",
   "text.plasmid.join_link_hover": "Připojit %s",
-  "text.plasmid.chat.team": "[Tým] %s",
   "text.plasmid.chat.switch.team": "Kanál chatu přepnut na Tým",
   "text.plasmid.chat.switch.all": "Kanál chatu přepnut na Všichni",
   "text.plasmid.entry": " - %s",

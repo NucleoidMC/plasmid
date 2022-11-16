@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -17,6 +18,7 @@ import xyz.nucleoid.plasmid.chat.PlasmidMessageTypes;
 import xyz.nucleoid.plasmid.command.ChatCommand;
 import xyz.nucleoid.plasmid.command.GameCommand;
 import xyz.nucleoid.plasmid.command.GamePortalCommand;
+import xyz.nucleoid.plasmid.command.GameTestCommand;
 import xyz.nucleoid.plasmid.command.ShoutCommand;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameType;
@@ -65,6 +67,10 @@ public final class Plasmid implements ModInitializer {
             GamePortalCommand.register(dispatcher);
             ChatCommand.register(dispatcher);
             ShoutCommand.register(dispatcher);
+
+            if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+                GameTestCommand.register(dispatcher);
+            }
         });
 
         UseEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {

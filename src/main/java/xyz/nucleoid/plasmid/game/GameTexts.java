@@ -38,6 +38,13 @@ public final class GameTexts {
                     .append(GameTexts.Join.link(gameSpace));
         }
 
+        public static MutableText gameOpenedTesting(ServerCommandSource source, GameSpace gameSpace) {
+            var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
+
+            return Text.translatable("text.plasmid.game.open.opened.testing", source.getDisplayName(), gameName)
+                    .append(GameTexts.Join.link(gameSpace));
+        }
+
         public static MutableText propose(ServerCommandSource source, GameSpace gameSpace) {
             var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
 

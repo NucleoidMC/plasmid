@@ -25,7 +25,6 @@
   "text.plasmid.dimension_options.dimension_not_found": "Измерение «%s» не найдено!",
   "statistic.bundle.plasmid_test_game": "Тестовая игра Plasmid",
   "text.plasmid.join_link_hover": "Присоединиться к %s",
-  "text.plasmid.chat.team": "[Команда] %s",
   "text.plasmid.game_config.game_config_does_not_exist": "Игровая конфигурация «%s» не существует!",
   "text.plasmid.game.join.party.error": "%s игрокам не удалось присоединиться к этой игре!",
   "text.plasmid.game.started.player": "%s запустил игру!",
@@ -72,5 +71,7 @@
   "statistic.plasmid.damage_taken": "Получено урона",
   "statistic.plasmid.damage_dealt": "Нанесено урона",
   "statistic.plasmid.blocks_broken": "Разрушено блоков",
-  "statistic.plasmid.quickest_time": "Самое быстрое время"
+  "statistic.plasmid.quickest_time": "Самое быстрое время",
+  "item.plasmid.add_region": "Добавить регион",
+  "item.plasmid.add_region.trace_mode.commit": "Используйте /map region commit <название> чтобы добавить регион"
 }

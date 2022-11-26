@@ -12,7 +12,6 @@
   "item.plasmid.include_entity.removed": "Vybraná entita byla odebrána z mapy \"%s\".",
   "text.plasmid.portal.portal_not_found": "Tento portál nebyl nalezen!",
   "text.plasmid.join_link_hover": "Připojit %s",
-  "text.plasmid.chat.team": "[Tým] %s",
   "text.plasmid.chat.switch.team": "Kanál chatu přepnut na Tým",
   "text.plasmid.chat.switch.all": "Kanál chatu přepnut na Všichni",
   "text.plasmid.entry": " - %s",
@@ -49,5 +48,7 @@
   "item.plasmid.include_entity.player_not_in_map": "Nejsi na žádné mapě.",
   "item.plasmid.include_entity.added": "Vybraná entita byla přidána na mapě \"%s\".",
   "text.plasmid.game.portal.connect.entity": "Propojen '%1$s' s '%2$s''",
-  "text.plasmid.game_config.game_config_does_not_exist": "Herní config s identifikátorem '%s' neexistuje!"
+  "text.plasmid.game_config.game_config_does_not_exist": "Herní config s identifikátorem '%s' neexistuje!",
+  "text.plasmid.game.kick": "%s byl vyhozen ze hry!",
+  "text.plasmid.game.kick.by": "%s byl vyhozen ze hry hráčem %s!"
 }

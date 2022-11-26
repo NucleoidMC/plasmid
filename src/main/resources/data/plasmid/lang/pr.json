@@ -1,5 +1,17 @@
 {
   "text.plasmid.game.portal.player_count": "%s buccaneers",
   "text.plasmid.game.waiting_lobby.sidebar.players": "Buccaneers: %s%s%s",
-  "text.plasmid.shop.cost.iron": "%s steel"
+  "text.plasmid.shop.cost.iron": "%s steel",
+  "text.plasmid.join_result.in_other_game.leave_this_game": "abandon this battle",
+  "text.plasmid.ui.game_join.title": "Sail to a Battle",
+  "statistic.plasmid.deaths": "Trips to Davy Jones' locker",
+  "statistic.plasmid.games_won": "Battles won",
+  "statistic.plasmid.games_lost": "Battles lost",
+  "text.plasmid.team_selection.request_team": "Request %s Crew",
+  "statistic.plasmid.games_played": "Battles contended",
+  "statistic.plasmid.blocks_broken": "Blocks spoilt",
+  "statistic.plasmid.damage_dealt": "Injuries caused",
+  "statistic.plasmid.damage_taken": "Injuries resisted",
+  "statistic.plasmid.total_kills": "Total slaughters",
+  "text.plasmid.team_selection.suffixed_team": "%s Crew"
 }

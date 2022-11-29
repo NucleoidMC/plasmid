@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.manager;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
@@ -9,20 +10,30 @@ import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
+import xyz.nucleoid.plasmid.game.player.isolation.ManagedIsolatingPlayerTeleporter;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.function.Function;
+
 
 public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     private final ManagedGameSpace space;
     final MutablePlayerSet set;
     final IsolatingPlayerTeleporter teleporter;
 
+    private static Function<MinecraftServer, IsolatingPlayerTeleporter> teleporterAllocator = ManagedIsolatingPlayerTeleporter::new;
+
+    public static void setTeleporterAllocator(Function<MinecraftServer, IsolatingPlayerTeleporter> allocator)
+    {
+        teleporterAllocator = allocator;
+    }
+
     ManagedGameSpacePlayers(ManagedGameSpace space) {
         this.space = space;
         this.set = new MutablePlayerSet(space.getServer());
-        this.teleporter = new IsolatingPlayerTeleporter(space.getServer());
+        this.teleporter = teleporterAllocator.apply(space.getServer());
     }
 
     @Override

@@ -110,8 +110,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
                     if (state.getLuminance() != 0) {
                         chunk.addLightSource(templatePos);
                     }
-
-                    var blockEntityTag = this.template.getBlockEntityTag(templatePos);
+                    var blockEntityTag = this.template.getBlockEntityNbt(templatePos);
                     if (blockEntityTag != null) {
                         chunk.addPendingBlockEntityNbt(blockEntityTag);
                     }
@@ -136,7 +135,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
 
         for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
             this.template.getEntitiesInChunk(chunkPos.x, sectionY, chunkPos.z).forEach(entity -> {
-                var entityTag = entity.createEntityTag(BlockPos.ORIGIN);
+                var entityTag = entity.createEntityNbt(BlockPos.ORIGIN);
                 protoChunk.addEntity(entityTag);
             });
         }

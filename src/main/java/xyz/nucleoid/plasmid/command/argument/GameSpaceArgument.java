@@ -10,7 +10,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 
 public final class GameSpaceArgument {
@@ -28,7 +28,7 @@ public final class GameSpaceArgument {
                 });
     }
 
-    public static GameSpace get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static ListedGameSpace get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
         var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
         var gameSpace = GameSpaceManager.get().byUserId(identifier);

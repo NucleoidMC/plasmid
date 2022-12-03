@@ -4,13 +4,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
-import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface ListedGameConfig {
-    CompletableFuture<GameSpace> open(MinecraftServer server);
+    CompletableFuture<ListedGameSpace> open(MinecraftServer server);
 
     Text name();
 

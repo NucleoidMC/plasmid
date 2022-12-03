@@ -23,6 +23,7 @@ import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigList;
 import xyz.nucleoid.plasmid.game.config.GameConfigLists;
@@ -188,16 +189,17 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(ServerCommandSource source, GameSpace gameSpace, ServerPlayerEntity player, boolean test) {
+    private static void onOpenSuccess(ServerCommandSource source, ListedGameSpace gameSpace, ServerPlayerEntity player, boolean test) {
         var players = source.getServer().getPlayerManager();
 
         var message = test ? GameTexts.Broadcast.gameOpenedTesting(source, gameSpace) : GameTexts.Broadcast.gameOpened(source, gameSpace);
         players.broadcast(message, false);
 
-        if (test) {
+        // TODO: Handle more explicitly - only allow test command to run on local games
+        if (test && gameSpace instanceof GameSpace localGameSpace) {
             joinAllPlayersToGame(source, gameSpace);
 
-            var startResult = gameSpace.requestStart();
+            var startResult = localGameSpace.requestStart();
 
             if (!startResult.isOk()) {
                 var error = startResult.errorCopy().formatted(Formatting.RED);
@@ -240,7 +242,7 @@ public final class GameCommand {
         return proposeGame(source, gameSpace);
     }
 
-    private static int proposeGame(ServerCommandSource source, GameSpace gameSpace) {
+    private static int proposeGame(ServerCommandSource source, ListedGameSpace gameSpace) {
         var message = GameTexts.Broadcast.propose(source, gameSpace);
 
         var playerManager = source.getServer().getPlayerManager();
@@ -262,7 +264,7 @@ public final class GameCommand {
     }
 
     private static int joinAllGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameSpace gameSpace = null;
+        ListedGameSpace gameSpace = null;
 
         var entity = context.getSource().getEntity();
         if (entity instanceof ServerPlayerEntity) {
@@ -285,7 +287,7 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void joinAllPlayersToGame(ServerCommandSource source, GameSpace gameSpace) {
+    private static void joinAllPlayersToGame(ServerCommandSource source, ListedGameSpace gameSpace) {
         var playerManager = source.getServer().getPlayerManager();
 
         var players = playerManager.getPlayerList().stream()
@@ -302,14 +304,14 @@ public final class GameCommand {
         }
     }
 
-    private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
+    private static void tryJoinGame(ServerPlayerEntity player, ListedGameSpace gameSpace) {
         player.server.submit(() -> {
             var results = GamePlayerJoiner.tryJoin(player, gameSpace);
             results.sendErrorsTo(player);
         });
     }
 
-    private static GameSpace getJoinableGameSpace() throws CommandSyntaxException {
+    private static ListedGameSpace getJoinableGameSpace() throws CommandSyntaxException {
         return GameSpaceManager.get().getOpenGameSpaces().stream()
                 .max(Comparator.comparingInt(space -> space.getPlayers().size()))
                 .orElseThrow(NO_GAME_OPEN::create);

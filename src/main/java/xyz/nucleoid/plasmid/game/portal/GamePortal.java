@@ -1,12 +1,14 @@
 package xyz.nucleoid.plasmid.game.portal;
 
+import eu.pb4.sgui.api.elements.GuiElementInterface;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.game.GameSpace;
+import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 
@@ -14,10 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-
-import org.jetbrains.annotations.Nullable;
-
-import eu.pb4.sgui.api.elements.GuiElementInterface;
 
 public final class GamePortal {
     private final MinecraftServer server;
@@ -133,6 +131,6 @@ public final class GamePortal {
 
     @FunctionalInterface
     public interface GuiProvider {
-        List<GuiElementInterface> getGuiElements(CompletableFuture<GameSpace> future);
+        List<GuiElementInterface> getGuiElements(CompletableFuture<ListedGameSpace> future);
     }
 }

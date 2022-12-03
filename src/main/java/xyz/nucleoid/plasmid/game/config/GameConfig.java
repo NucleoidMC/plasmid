@@ -12,10 +12,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.codecs.MoreCodecs;
-import xyz.nucleoid.plasmid.game.GameOpenContext;
-import xyz.nucleoid.plasmid.game.GameOpenProcedure;
-import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.GameType;
+import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.util.PlasmidCodecs;
 
@@ -122,7 +119,7 @@ public record GameConfig<C>(
     }
 
     @Override
-    public CompletableFuture<GameSpace> open(MinecraftServer server) {
+    public CompletableFuture<ListedGameSpace> open(MinecraftServer server) {
         return GameSpaceManager.get().open(this).thenApply(Function.identity());
     }
 

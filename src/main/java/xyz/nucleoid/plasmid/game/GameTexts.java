@@ -31,21 +31,21 @@ public final class GameTexts {
     }
 
     public static final class Broadcast {
-        public static MutableText gameOpened(ServerCommandSource source, GameSpace gameSpace) {
+        public static MutableText gameOpened(ServerCommandSource source, ListedGameSpace gameSpace) {
             var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
 
             return Text.translatable("text.plasmid.game.open.opened", source.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
         }
 
-        public static MutableText gameOpenedTesting(ServerCommandSource source, GameSpace gameSpace) {
+        public static MutableText gameOpenedTesting(ServerCommandSource source, ListedGameSpace gameSpace) {
             var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
 
             return Text.translatable("text.plasmid.game.open.opened.testing", source.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
         }
 
-        public static MutableText propose(ServerCommandSource source, GameSpace gameSpace) {
+        public static MutableText propose(ServerCommandSource source, ListedGameSpace gameSpace) {
             var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
 
             return Text.translatable("text.plasmid.game.propose", source.getDisplayName(), gameName)
@@ -58,7 +58,7 @@ public final class GameTexts {
     }
 
     public static final class Command {
-        public static MutableText located(ServerPlayerEntity player, GameSpace gameSpace) {
+        public static MutableText located(ServerPlayerEntity player, ListedGameSpace gameSpace) {
             var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
 
             return Text.translatable("text.plasmid.game.locate.located", player.getDisplayName(), gameName)
@@ -111,7 +111,7 @@ public final class GameTexts {
             return Text.translatable("text.plasmid.game.join", player.getDisplayName());
         }
 
-        public static MutableText link(GameSpace gameSpace) {
+        public static MutableText link(ListedGameSpace gameSpace) {
             var hover = Text.translatable("text.plasmid.join_link_hover", gameSpace.getMetadata().sourceConfig().name());
 
             return Text.translatable("text.plasmid.game.open.join")

@@ -14,10 +14,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.event.GameEvents;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameOpenProcedure;
-import xyz.nucleoid.plasmid.game.GameSpaceList;
-import xyz.nucleoid.plasmid.game.GameSpaceMetadata;
+import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.stimuli.EventSource;
 import xyz.nucleoid.stimuli.Stimuli;
@@ -75,7 +72,11 @@ public final class GameSpaceManager implements GameSpaceList {
     }
 
     private static void updateInstance(@Nullable GameSpaceManager instance) {
+        if (GameSpaceManager.instance != null) {
+            GameSpaceLists.unregister(GameSpaceManager.instance);
+        }
         GameSpaceManager.instance = instance;
+        GameSpaceLists.register(instance);
     }
 
     public CompletableFuture<ManagedGameSpace> open(GameConfig<?> config) {

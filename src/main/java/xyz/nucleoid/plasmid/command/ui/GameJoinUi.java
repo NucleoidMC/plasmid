@@ -10,10 +10,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
-import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.GameSpaceLists;
 import xyz.nucleoid.plasmid.game.ListedGameSpace;
-import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.util.Guis;
 
@@ -54,7 +52,7 @@ public class GameJoinUi extends SimpleGui {
         int i = 0;
         int gameI = 0;
 
-        var games = new ArrayList<>(GameSpaceManager.get().getOpenGameSpaces());
+        var games = new ArrayList<>(GameSpaceLists.composite().getOpenGameSpaces());
         games.sort(Comparator.comparingInt(space -> -space.getPlayers().size()));
 
         int limit = this.size;

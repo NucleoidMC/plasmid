@@ -19,11 +19,7 @@ import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.command.argument.GameConfigArgument;
 import xyz.nucleoid.plasmid.command.argument.GameSpaceArgument;
 import xyz.nucleoid.plasmid.command.ui.GameJoinUi;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameOpenException;
-import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.GameTexts;
-import xyz.nucleoid.plasmid.game.ListedGameSpace;
+import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigList;
 import xyz.nucleoid.plasmid.game.config.GameConfigLists;
@@ -312,7 +308,7 @@ public final class GameCommand {
     }
 
     private static ListedGameSpace getJoinableGameSpace() throws CommandSyntaxException {
-        return GameSpaceManager.get().getOpenGameSpaces().stream()
+        return GameSpaceLists.composite().getOpenGameSpaces().stream()
                 .max(Comparator.comparingInt(space -> space.getPlayers().size()))
                 .orElseThrow(NO_GAME_OPEN::create);
     }

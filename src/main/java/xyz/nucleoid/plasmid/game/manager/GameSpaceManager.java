@@ -16,6 +16,7 @@ import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
+import xyz.nucleoid.plasmid.game.GameSpaceList;
 import xyz.nucleoid.plasmid.game.GameSpaceMetadata;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.stimuli.EventSource;
@@ -26,7 +27,7 @@ import xyz.nucleoid.stimuli.selector.EventListenerSelector;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public final class GameSpaceManager {
+public final class GameSpaceManager implements GameSpaceList {
     private static GameSpaceManager instance;
 
     private final MinecraftServer server;
@@ -105,15 +106,18 @@ public final class GameSpaceManager {
         return gameSpace;
     }
 
+    @Override
     public Collection<ManagedGameSpace> getOpenGameSpaces() {
         return this.gameSpaces;
     }
 
+    @Override
     @Nullable
     public ManagedGameSpace byId(UUID id) {
         return this.idToGameSpace.get(id);
     }
 
+    @Override
     @Nullable
     public ManagedGameSpace byUserId(Identifier userId) {
         return this.userIdToGameSpace.get(userId);

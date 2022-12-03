@@ -13,29 +13,17 @@ public record GameSpaceMetadata(
         UUID id,
         Identifier userId,
         GameConfig<?> sourceConfig
-) {
-    /**
-     * @return the globally unique ID for this {@link GameSpace}
-     */
+) implements ListedGameSpaceMetadata {
     @Override
     public UUID id() {
         return this.id;
     }
 
-    /**
-     * Returns the ID assigned to this {@link GameSpace} instance that can be referenced by players in commands.
-     * This ID is not guaranteed to be unique over time, but only unique during the existence of this {@link GameSpace}!
-     *
-     * @return the user-referencable ID for this {@link GameSpace}
-     */
     @Override
     public Identifier userId() {
         return this.userId;
     }
 
-    /**
-     * @return the {@link GameConfig} that was responsible for creating this {@link GameSpace}
-     */
     @Override
     public GameConfig<?> sourceConfig() {
         return this.sourceConfig;

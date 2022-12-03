@@ -19,7 +19,7 @@ public record GameListConfig(List<Identifier> games) {
     public List<GameConfig<?>> collectGames() {
         var games = new ArrayList<GameConfig<?>>(this.games.size());
         for (var gameId : this.games) {
-            var game = GameConfigs.get(gameId);
+            var game = GameConfigs.get().byKey(gameId);
             if (game == null) {
                 Plasmid.LOGGER.warn("Missing game config by id '{}'!", gameId);
                 continue;

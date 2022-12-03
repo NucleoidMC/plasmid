@@ -24,6 +24,7 @@ import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
+import xyz.nucleoid.plasmid.game.config.GameConfigList;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.config.ListedGameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
@@ -418,14 +419,15 @@ public final class GameCommand {
         var source = context.getSource();
         source.sendFeedback(GameTexts.Command.gameList().formatted(Formatting.BOLD), false);
 
-        for (var id : GameConfigs.getKeys()) {
+        GameConfigList list = GameConfigs.get();
+        list.keys().forEach(id -> {
             String command = "/game open " + id;
 
-            var link = GameConfigs.get(id).name().copy()
+            var link = list.byKey(id).name().copy()
                     .setStyle(GameTexts.commandLinkStyle(command));
 
             source.sendFeedback(GameTexts.Command.listEntry(link), false);
-        }
+        });
 
         return Command.SINGLE_SUCCESS;
     }

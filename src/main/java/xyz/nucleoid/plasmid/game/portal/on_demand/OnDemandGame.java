@@ -26,7 +26,7 @@ public final class OnDemandGame {
     }
 
     public Text getName() {
-        var config = GameConfigs.get(this.gameId);
+        var config = GameConfigs.get().byKey(this.gameId);
         if (config != null) {
             return config.name().copy().formatted(Formatting.AQUA);
         } else {
@@ -47,7 +47,7 @@ public final class OnDemandGame {
     }
 
     private CompletableFuture<GameSpace> openGame(MinecraftServer server) {
-        var config = GameConfigs.get(this.gameId);
+        var config = GameConfigs.get().byKey(this.gameId);
         if (config == null) {
             Plasmid.LOGGER.warn("Missing game config for on-demand game with id '{}'", this.gameId);
 

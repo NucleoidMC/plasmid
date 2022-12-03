@@ -32,7 +32,7 @@ public record GameMenuEntryConfig(Identifier game,
     @Override
     public MenuEntry createEntry() {
         var game = new OnDemandGame(this.game);
-        var gameConfig = GameConfigs.get(this.game);
+        var gameConfig = GameConfigs.get().byKey(this.game);
 
         if (gameConfig == null) {
             return new InvalidMenuEntry(game.getName());

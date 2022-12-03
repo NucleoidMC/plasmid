@@ -70,7 +70,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
         var games = new ArrayList<MenuEntry>(configs.size());
         for (var configEntry : configs) {
             var game = new OnDemandGame(configEntry.game());
-            var gameConfig = GameConfigs.get(configEntry.game());
+            var gameConfig = GameConfigs.get().byKey(configEntry.game());
 
             if (gameConfig != null) {
                 games.add(new GameMenuEntry(

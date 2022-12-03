@@ -24,8 +24,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
-public final class GameConfigs {
+public final class GameConfigs implements GameConfigList {
     private static final ResourceFinder FINDER = ResourceFinder.json("games");
 
     private static GameConfigs instance = new GameConfigs(Map.of());
@@ -86,17 +87,30 @@ public final class GameConfigs {
         return instance;
     }
 
+    /**
+     * @deprecated use {@link GameConfigs#get()} and {@link GameConfigs#byKey(Identifier)}
+     */
     @Nullable
+    @Deprecated
     public static GameConfig<?> get(Identifier identifier) {
         return get().byKey(identifier);
     }
 
+    /**
+     * @deprecated use {@link GameConfigs#get()} and {@link GameConfigs#keys()}
+     */
     public static Set<Identifier> getKeys() {
         return get().configs.keySet();
     }
 
+    @Override
     @Nullable
-    private GameConfig<?> byKey(Identifier key) {
+    public GameConfig<?> byKey(Identifier key) {
         return this.configs.get(key);
+    }
+
+    @Override
+    public Stream<Identifier> keys() {
+        return this.configs.keySet().stream();
     }
 }

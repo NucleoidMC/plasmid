@@ -7,6 +7,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.registry.DynamicRegistryManager;
@@ -20,13 +21,21 @@ import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public final class GameConfigs {
     private static final ResourceFinder FINDER = ResourceFinder.json("games");
 
-    private static final TinyRegistry<GameConfig<?>> CONFIGS = TinyRegistry.create();
+    private static GameConfigs instance = new GameConfigs(Map.of());
+
+    private final Map<Identifier, GameConfig<?>> configs;
     public static DynamicRegistryManager registryManager;
+
+    private GameConfigs(Map<Identifier, GameConfig<?>> configs) {
+        this.configs = configs;
+    }
 
     public static void register() {
         ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
@@ -39,11 +48,10 @@ public final class GameConfigs {
 
             @Override
             public void reload(ResourceManager manager) {
-                CONFIGS.clear();
-
                 DynamicOps<JsonElement> ops = RegistryOps.of(JsonOps.INSTANCE, registryManager);
                 registryManager = null;
 
+                Map<Identifier, GameConfig<?>> configs = new HashMap<>();
                 FINDER.findResources(manager).forEach((path, resource) -> {
                     try {
                         try (var reader = resource.getReader()) {
@@ -55,7 +63,7 @@ public final class GameConfigs {
                             DataResult<GameConfig<?>> result = codec.parse(ops, json);
 
                             result.result().ifPresent(game -> {
-                                CONFIGS.register(identifier, game);
+                                configs.put(identifier, game);
                             });
 
                             result.error().ifPresent(error -> {
@@ -68,16 +76,27 @@ public final class GameConfigs {
                         Plasmid.LOGGER.error("Failed to parse game JSON at {}: {}", path, e);
                     }
                 });
+
+                instance = new GameConfigs(Map.copyOf(configs));
             }
         });
     }
 
+    public static GameConfigs get() {
+        return instance;
+    }
+
     @Nullable
     public static GameConfig<?> get(Identifier identifier) {
-        return CONFIGS.get(identifier);
+        return get().byKey(identifier);
     }
 
     public static Set<Identifier> getKeys() {
-        return CONFIGS.keySet();
+        return get().configs.keySet();
+    }
+
+    @Nullable
+    private GameConfig<?> byKey(Identifier key) {
+        return this.configs.get(key);
     }
 }

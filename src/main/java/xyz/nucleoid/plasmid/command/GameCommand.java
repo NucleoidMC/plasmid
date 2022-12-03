@@ -25,7 +25,7 @@ import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigList;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.config.GameConfigLists;
 import xyz.nucleoid.plasmid.game.config.ListedGameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
@@ -419,7 +419,7 @@ public final class GameCommand {
         var source = context.getSource();
         source.sendFeedback(GameTexts.Command.gameList().formatted(Formatting.BOLD), false);
 
-        GameConfigList list = GameConfigs.get();
+        GameConfigList list = GameConfigLists.composite();
         list.keys().forEach(id -> {
             String command = "/game open " + id;
 

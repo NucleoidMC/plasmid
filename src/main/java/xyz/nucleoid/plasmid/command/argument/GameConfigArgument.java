@@ -12,7 +12,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.config.GameConfigList;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.config.GameConfigLists;
 import xyz.nucleoid.plasmid.game.config.ListedGameConfig;
 
 import java.util.Locale;
@@ -26,7 +26,7 @@ public final class GameConfigArgument {
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((ctx, builder) -> {
-                    GameConfigList list = GameConfigs.get();
+                    GameConfigList list = GameConfigLists.composite();
                     Iterable<Identifier> candidates = list.keys()::iterator;
                     var remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
@@ -41,7 +41,7 @@ public final class GameConfigArgument {
     public static Pair<Identifier, ListedGameConfig> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
         var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
-        var config = GameConfigs.get().byKey(identifier);
+        var config = GameConfigLists.composite().byKey(identifier);
         if (config == null) {
             throw GAME_NOT_FOUND.create(identifier);
         }

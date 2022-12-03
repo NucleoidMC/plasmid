@@ -7,7 +7,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.registry.DynamicRegistryManager;
@@ -18,7 +17,6 @@ import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -78,9 +76,17 @@ public final class GameConfigs implements GameConfigList {
                     }
                 });
 
-                instance = new GameConfigs(Map.copyOf(configs));
+                initialize(configs);
             }
         });
+    }
+
+    private static void initialize(Map<Identifier, GameConfig<?>> configs) {
+        if (instance != null) {
+            GameConfigLists.unregister(instance);
+        }
+        instance = new GameConfigs(Map.copyOf(configs));
+        GameConfigLists.register(instance);
     }
 
     public static GameConfigs get() {

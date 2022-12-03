@@ -56,7 +56,7 @@ public final class GameSpaceManager implements GameSpaceList {
         instance = new GameSpaceManager(server);
         Stimuli.registerSelector(instance.listenerSelector);
 
-        GameSpaceManager.instance = instance;
+        GameSpaceManager.updateInstance(instance);
     }
 
     public static void startClosing() {
@@ -67,11 +67,15 @@ public final class GameSpaceManager implements GameSpaceList {
     }
 
     public static void closeServer() {
-        GameSpaceManager.instance = null;
+        GameSpaceManager.updateInstance(null);
     }
 
     public static GameSpaceManager get() {
         return Preconditions.checkNotNull(instance, "GameSpaceManager not yet initialized");
+    }
+
+    private static void updateInstance(@Nullable GameSpaceManager instance) {
+        GameSpaceManager.instance = instance;
     }
 
     public CompletableFuture<ManagedGameSpace> open(GameConfig<?> config) {

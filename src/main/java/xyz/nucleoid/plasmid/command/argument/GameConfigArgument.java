@@ -11,8 +11,8 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.config.ListedGameConfig;
 
 import java.util.Locale;
 import java.util.function.Function;
@@ -29,13 +29,14 @@ public final class GameConfigArgument {
                     var remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
                     CommandSource.forEachMatching(candidates, remaining, Function.identity(), id -> {
-                        builder.suggest(id.toString(), GameConfigs.get(id).name());
+                        var config = GameConfigs.get(id);
+                        builder.suggest(id.toString(), config.name());
                     });
                     return builder.buildFuture();
                 });
     }
 
-    public static Pair<Identifier, GameConfig<?>> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static Pair<Identifier, ListedGameConfig> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
         var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
         var config = GameConfigs.get(identifier);

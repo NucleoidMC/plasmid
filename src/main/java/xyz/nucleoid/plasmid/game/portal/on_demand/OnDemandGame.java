@@ -10,6 +10,7 @@ import xyz.nucleoid.plasmid.game.GameLifecycle;
 import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.config.ListedGameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 
@@ -18,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public final class OnDemandGame {
     private final Identifier gameId;
 
-    private CompletableFuture<ManagedGameSpace> gameFuture;
+    private CompletableFuture<GameSpace> gameFuture;
 
     public OnDemandGame(Identifier gameId) {
         this.gameId = gameId;
@@ -33,7 +34,7 @@ public final class OnDemandGame {
         }
     }
 
-    public CompletableFuture<ManagedGameSpace> getOrOpen(MinecraftServer server) {
+    public CompletableFuture<GameSpace> getOrOpen(MinecraftServer server) {
         var future = this.gameFuture;
         if (future == null) {
             this.gameFuture = future = this.openGame(server);
@@ -45,19 +46,19 @@ public final class OnDemandGame {
         this.gameFuture = null;
     }
 
-    private CompletableFuture<ManagedGameSpace> openGame(MinecraftServer server) {
+    private CompletableFuture<GameSpace> openGame(MinecraftServer server) {
         var config = GameConfigs.get(this.gameId);
         if (config == null) {
             Plasmid.LOGGER.warn("Missing game config for on-demand game with id '{}'", this.gameId);
 
-            var future = new CompletableFuture<ManagedGameSpace>();
+            var future = new CompletableFuture<GameSpace>();
             var error = Text.translatable("text.plasmid.game_config.game_config_does_not_exist", this.gameId);
             future.completeExceptionally(new GameOpenException(error));
 
             return future;
         }
 
-        return GameSpaceManager.get().open(config).thenApplyAsync(gameSpace -> {
+        return config.open(server).thenApplyAsync(gameSpace -> {
             var lifecycle = gameSpace.getLifecycle();
             lifecycle.addListeners(new LifecycleListeners());
 

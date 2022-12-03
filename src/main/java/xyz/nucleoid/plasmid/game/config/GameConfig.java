@@ -14,12 +14,15 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
+import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameType;
+import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.util.PlasmidCodecs;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -32,7 +35,7 @@ public record GameConfig<C>(
         @Nullable ItemStack icon,
         CustomValuesConfig custom,
         C config
-) {
+) implements ListedGameConfig {
     public static final Codec<GameConfig<?>> CODEC = codecFrom(null);
 
     public static Codec<GameConfig<?>> codecFrom(Identifier source) {
@@ -116,6 +119,11 @@ public record GameConfig<C>(
         } else {
             return null;
         }
+    }
+
+    @Override
+    public CompletableFuture<GameSpace> open(MinecraftServer server) {
+        return GameSpaceManager.get().open(this).thenApply(Function.identity());
     }
 
     static final class ConfigCodec extends MapCodec<GameConfig<?>> {

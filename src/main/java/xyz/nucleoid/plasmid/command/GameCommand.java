@@ -25,6 +25,7 @@ import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.config.ListedGameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.util.Scheduler;
@@ -153,7 +154,7 @@ public final class GameCommand {
         }
     }
 
-    private static int openGame(CommandContext<ServerCommandSource> context, GameConfig<?> config, boolean test) {
+    private static int openGame(CommandContext<ServerCommandSource> context, ListedGameConfig config, boolean test) {
         var source = context.getSource();
         var server = source.getServer();
 
@@ -172,7 +173,7 @@ public final class GameCommand {
                 }
             }
 
-            GameSpaceManager.get().open(config)
+            config.open(server)
                     .handleAsync((gameSpace, throwable) -> {
                         if (throwable == null) {
                             onOpenSuccess(source, gameSpace, player, test);

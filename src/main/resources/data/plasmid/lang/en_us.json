@@ -45,6 +45,7 @@
   "text.plasmid.game.open.join": "Click here to join",
   "text.plasmid.game.open.malformed_config": "Malformed config: %s",
   "text.plasmid.game.open.opened": "%1$s has opened %2$s! ",
+  "text.plasmid.game.open.opened.testing": "%1$s has opened %2$s for testing! ",
   "text.plasmid.game.propose": "%1$s has proposed %2$s! ",
   "text.plasmid.game.start_result.generic_error": "This game cannot be started!",
   "text.plasmid.game.start_result.already_started": "This game has already started!",

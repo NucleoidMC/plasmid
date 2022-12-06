@@ -36,6 +36,14 @@ public interface PlayerOfferResult {
     }
 
     final class Accept implements PlayerOfferResult {
+        public ServerWorld getWorld() {
+            return this.world;
+        }
+
+        public Vec3d getPosition() {
+            return this.position;
+        }
+
         private final ServerWorld world;
         private final Vec3d position;
 
@@ -58,6 +66,11 @@ public interface PlayerOfferResult {
             this.and.forEach(Runnable::run);
 
             return this.world;
+        }
+
+        public void run()
+        {
+            this.and.forEach(Runnable::run);
         }
 
         @Override

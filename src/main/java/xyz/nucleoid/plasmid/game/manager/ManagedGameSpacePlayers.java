@@ -8,6 +8,7 @@ import xyz.nucleoid.plasmid.game.GameSpacePlayers;
 import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
+import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
 
 import java.util.Collection;
@@ -23,6 +24,20 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         this.space = space;
         this.set = new MutablePlayerSet(space.getServer());
         this.teleporter = new IsolatingPlayerTeleporter(space.getServer());
+    }
+
+    @Override
+    public PlayerOfferResult getManualAcceptFor(ServerPlayerEntity player)
+    {
+        var offer = new PlayerOffer(player);
+        return this.space.offerPlayer(offer);
+    }
+
+    @Override
+    public void manualAdd(ServerPlayerEntity player)
+    {
+        this.set.add(player);
+        this.space.onAddPlayer(player);
     }
 
     @Override

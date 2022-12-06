@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.player.PlayerOps;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 
@@ -49,4 +50,14 @@ public interface GameSpacePlayers extends PlayerSet {
      * @return whether the {@link ServerPlayerEntity} was successfully removed
      */
     boolean kick(ServerPlayerEntity player);
+
+    /**
+     * Protein Utilities, this methods shouldn't be called by another mod !
+     *
+     * @param player {@link ServerPlayerEntity} to get the corresponding {@link PlayerOfferResult}
+     * @return {@link PlayerOfferResult}
+     */
+
+    PlayerOfferResult getManualAcceptFor(ServerPlayerEntity player);
+    void manualAdd(ServerPlayerEntity player);
 }

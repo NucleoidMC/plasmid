@@ -2,13 +2,9 @@ package xyz.nucleoid.plasmid.game.manager;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpacePlayers;
-import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
-import xyz.nucleoid.plasmid.game.player.PlayerOffer;
-import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -16,13 +12,11 @@ import java.util.UUID;
 
 public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     private final ManagedGameSpace space;
-    final MutablePlayerSet set;
-    final IsolatingPlayerTeleporter teleporter;
+    private final MutablePlayerSet set;
 
     ManagedGameSpacePlayers(ManagedGameSpace space) {
         this.space = space;
         this.set = new MutablePlayerSet(space.getServer());
-        this.teleporter = new IsolatingPlayerTeleporter(space.getServer());
     }
 
     @Override
@@ -32,75 +26,23 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
 
     @Override
     public GameResult offer(ServerPlayerEntity player) {
-        var result = this.attemptOffer(player);
-
-        if (result.isError()) {
-            this.attemptGarbageCollection();
-        }
-
-        return result;
-    }
-
-    private GameResult attemptOffer(ServerPlayerEntity player) {
-        if (this.set.contains(player)) {
-            return GameResult.error(GameTexts.Join.alreadyJoined());
-        }
-
-        var offer = new PlayerOffer(player);
-        var result = this.space.offerPlayer(offer);
-
-        var reject = result.asReject();
-        if (reject != null) {
-            return GameResult.error(reject.reason());
-        }
-
-        var accept = result.asAccept();
-        if (accept != null) {
-            try {
-                this.teleporter.teleportIn(player, accept::applyJoin);
-                this.set.add(player);
-                this.space.onAddPlayer(player);
-
-                return GameResult.ok();
-            } catch (Throwable throwable) {
-                return GameResult.error(GameTexts.Join.unexpectedError());
-            }
-        } else {
-            return GameResult.error(GameTexts.Join.genericError());
-        }
-    }
-
-    private void attemptGarbageCollection() {
-        if (this.set.isEmpty()) {
-            this.space.close(GameCloseReason.GARBAGE_COLLECTED);
-        }
+        return this.space.offer(player);
     }
 
     @Override
     public boolean kick(ServerPlayerEntity player) {
-        if (this.remove(player)) {
-            this.teleporter.teleportOut(player);
-            return true;
-        } else {
-            return false;
-        }
+        return this.space.kick(player);
+    }
+
+    public void add(ServerPlayerEntity player) {
+        this.set.add(player);
     }
 
     public boolean remove(ServerPlayerEntity player) {
-        if (!this.set.contains(player)) {
-            return false;
-        }
-
-        this.space.onPlayerRemove(player);
-
-        this.set.remove(player);
-
-        this.attemptGarbageCollection();
-
-        return true;
+        return this.set.remove(player);
     }
 
-    void clear() {
+    public void clear() {
         this.set.clear();
     }
 
@@ -123,9 +65,5 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     @Override
     public Iterator<ServerPlayerEntity> iterator() {
         return this.set.iterator();
-    }
-
-    public IsolatingPlayerTeleporter getTeleporter() {
-        return this.teleporter;
     }
 }

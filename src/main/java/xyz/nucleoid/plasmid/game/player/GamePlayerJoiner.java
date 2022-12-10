@@ -44,14 +44,14 @@ public final class GamePlayerJoiner {
     private static Results tryJoinAll(Collection<ServerPlayerEntity> players, ListedGameSpace gameSpace) {
         var results = new Results();
 
-        var screenResult = gameSpace.getPlayers().screenJoins(players);
+        var screenResult = gameSpace.screenJoins(players);
         if (screenResult.isError()) {
             results.globalError = screenResult.error();
             return results;
         }
 
         for (var player : players) {
-            var result = gameSpace.getPlayers().offer(player);
+            var result = gameSpace.offer(player);
             if (result.isError()) {
                 results.playerErrors.put(player, result.error());
             }

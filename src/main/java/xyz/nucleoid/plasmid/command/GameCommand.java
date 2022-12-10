@@ -166,7 +166,7 @@ public final class GameCommand {
                     if (test) {
                         currentGameSpace.close(GameCloseReason.CANCELED);
                     } else {
-                        currentGameSpace.getPlayers().kick(player);
+                        currentGameSpace.kick(player);
                     }
                 }
             }
@@ -290,10 +290,10 @@ public final class GameCommand {
                 .filter(player -> !GameSpaceManager.get().inGame(player))
                 .collect(Collectors.toList());
 
-        var screen = gameSpace.getPlayers().screenJoins(players);
+        var screen = gameSpace.screenJoins(players);
         if (screen.isOk()) {
             for (var player : players) {
-                gameSpace.getPlayers().offer(player);
+                gameSpace.offer(player);
             }
         } else {
             source.sendError(screen.errorCopy().formatted(Formatting.RED));
@@ -337,7 +337,7 @@ public final class GameCommand {
         }
 
         Scheduler.INSTANCE.submit(server -> {
-            gameSpace.getPlayers().kick(player);
+            gameSpace.kick(player);
         });
 
         return Command.SINGLE_SUCCESS;
@@ -445,7 +445,7 @@ public final class GameCommand {
                 playerManager.broadcast(message, false);
 
                 Scheduler.INSTANCE.submit(server -> {
-                    gameSpace.getPlayers().kick(target);
+                    gameSpace.kick(target);
                 });
 
                 successes += 1;

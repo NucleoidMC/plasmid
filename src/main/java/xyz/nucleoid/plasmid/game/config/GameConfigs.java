@@ -9,11 +9,12 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryOps;
+import net.minecraft.resource.ResourceFinder;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.RegistryOps;
-import net.minecraft.util.registry.DynamicRegistryManager;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.util.Set;
 
 public final class GameConfigs {
+    private static final ResourceFinder FINDER = ResourceFinder.json("games");
+
     private static final TinyRegistry<GameConfig<?>> CONFIGS = TinyRegistry.create();
     public static DynamicRegistryManager registryManager;
 
@@ -41,12 +44,12 @@ public final class GameConfigs {
                 DynamicOps<JsonElement> ops = RegistryOps.of(JsonOps.INSTANCE, registryManager);
                 registryManager = null;
 
-                manager.findResources("games", path -> path.getPath().endsWith(".json")).forEach((path, resource) -> {
+                FINDER.findResources(manager).forEach((path, resource) -> {
                     try {
                         try (var reader = resource.getReader()) {
                             JsonElement json = JsonParser.parseReader(reader);
 
-                            Identifier identifier = identifierFromPath(path);
+                            Identifier identifier = FINDER.toResourceId(path);
 
                             Codec<GameConfig<?>> codec = GameConfig.codecFrom(identifier);
                             DataResult<GameConfig<?>> result = codec.parse(ops, json);
@@ -67,12 +70,6 @@ public final class GameConfigs {
                 });
             }
         });
-    }
-
-    private static Identifier identifierFromPath(Identifier location) {
-        String path = location.getPath();
-        path = path.substring("games/".length(), path.length() - ".json".length());
-        return new Identifier(location.getNamespace(), path);
     }
 
     @Nullable

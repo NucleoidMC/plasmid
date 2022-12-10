@@ -27,24 +27,16 @@ public class ShoutCommand {
     public static int sendMessage(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var source = context.getSource();
         var server = source.getServer();
-
-        final MessageArgumentType.SignedMessage argument = MessageArgumentType.getSignedMessage(context, "message");
-
-        try {
-            var hasChatChannel = (HasChatChannel) source.getPlayerOrThrow();
-            argument.decorate(source, message -> {
-                var old = hasChatChannel.getChatChannel();
-                try {
-                    hasChatChannel.setChatChannel(ChatChannel.ALL);
-                    server.getPlayerManager().broadcast(message, source, MessageType.params(MessageType.CHAT, source));
-                } finally {
-                    hasChatChannel.setChatChannel(old);
-                }
-            });
-        } catch (final CommandSyntaxException e) {
-            argument.sendHeader(source);
-            throw e;
-        }
+        var hasChatChannel = (HasChatChannel) source.getPlayerOrThrow();
+        MessageArgumentType.getSignedMessage(context, "message", message -> {
+            var old = hasChatChannel.getChatChannel();
+            try {
+                hasChatChannel.setChatChannel(ChatChannel.ALL);
+                server.getPlayerManager().broadcast(message, source, MessageType.params(MessageType.CHAT, source));
+            } finally {
+                hasChatChannel.setChatChannel(old);
+            }
+        });
 
         return Command.SINGLE_SUCCESS;
     }

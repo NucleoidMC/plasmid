@@ -1,12 +1,11 @@
 package xyz.nucleoid.plasmid.game.world.generator;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.Heightmap;
@@ -17,12 +16,12 @@ import net.minecraft.world.chunk.ProtoChunk;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.Blender;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
+import net.minecraft.world.gen.chunk.placement.StructurePlacementCalculator;
 import net.minecraft.world.gen.noise.NoiseConfig;
 import xyz.nucleoid.map_templates.BlockBounds;
 import xyz.nucleoid.map_templates.MapChunk;
 import xyz.nucleoid.map_templates.MapTemplate;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -31,14 +30,14 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     private final BlockBounds worldBounds;
 
     public TemplateChunkGenerator(MinecraftServer server, MapTemplate template) {
-        super(server.getRegistryManager().get(Registry.STRUCTURE_SET_KEY), Optional.empty(), createBiomeSource(server, template.getBiome()));
+        super(createBiomeSource(server, template.getBiome()));
 
         this.template = template;
         this.worldBounds = template.getBounds();
     }
 
     @Override
-    public void setStructureStarts(DynamicRegistryManager registryManager, NoiseConfig noiseConfig, StructureAccessor structureAccessor, Chunk chunk, StructureTemplateManager structureTemplateManager, long seed) {
+    public void setStructureStarts(DynamicRegistryManager registryManager, StructurePlacementCalculator placementCalculator, StructureAccessor structureAccessor, Chunk chunk, StructureTemplateManager structureTemplateManager) {
     }
 
     @Override
@@ -111,7 +110,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
                         chunk.addLightSource(templatePos);
                     }
 
-                    var blockEntityTag = this.template.getBlockEntityTag(templatePos);
+                    var blockEntityTag = this.template.getBlockEntityNbt(templatePos);
                     if (blockEntityTag != null) {
                         chunk.addPendingBlockEntityNbt(blockEntityTag);
                     }
@@ -136,7 +135,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
 
         for (int sectionY = maxSectionY; sectionY >= minSectionY; sectionY--) {
             this.template.getEntitiesInChunk(chunkPos.x, sectionY, chunkPos.z).forEach(entity -> {
-                var entityTag = entity.createEntityTag(BlockPos.ORIGIN);
+                var entityTag = entity.createEntityNbt(BlockPos.ORIGIN);
                 protoChunk.addEntity(entityTag);
             });
         }

@@ -33,7 +33,6 @@ public final class TeamChat {
             for (var receiver : this.manager.playersIn(team)) {
                 receiver.sendChatMessage(sentMessage, player.shouldFilterMessagesSentTo(receiver), teamMessageType);
             }
-            sentMessage.afterPacketsSent(player.server.getPlayerManager());
 
             return true;
         }

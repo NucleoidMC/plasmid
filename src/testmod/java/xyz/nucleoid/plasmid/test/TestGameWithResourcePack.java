@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.test;
 
-import eu.pb4.polymer.api.utils.PolymerUtils;
-import eu.pb4.polymer.api.x.BlockMapper;
+import eu.pb4.polymer.core.api.block.BlockMapper;
+import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;

@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.game.player.isolation;
 
-import eu.pb4.polymer.api.x.BlockMapper;
+import eu.pb4.polymer.core.api.block.BlockMapper;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.MinecraftServer;
@@ -102,7 +102,7 @@ public final class IsolatingPlayerTeleporter {
                 world.getDimensionKey(), world.getRegistryKey(),
                 BiomeAccess.hashSeed(world.getSeed()),
                 player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(),
-                world.isDebugWorld(), world.isFlat(), false,
+                world.isDebugWorld(), world.isFlat(), PlayerRespawnS2CPacket.KEEP_ALL,
                 player.getLastDeathPos()
         ));
 

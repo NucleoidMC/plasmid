@@ -7,19 +7,15 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.nucleoid.plasmid.chat.PlasmidMessageTypes;
-import xyz.nucleoid.plasmid.command.ChatCommand;
-import xyz.nucleoid.plasmid.command.GameCommand;
-import xyz.nucleoid.plasmid.command.GamePortalCommand;
-import xyz.nucleoid.plasmid.command.GameTestCommand;
-import xyz.nucleoid.plasmid.command.ShoutCommand;
+import xyz.nucleoid.plasmid.command.*;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
@@ -41,7 +37,7 @@ public final class Plasmid implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
+        Registry.register(Registries.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
 
         GameConfigs.register();
         GamePortalManager.register();
@@ -55,8 +51,6 @@ public final class Plasmid implements ModInitializer {
         MenuEntryConfig.register(new Identifier(ID, "portal_gui"), PortalGuiEntryConfig.CODEC);
 
         GameType.register(new Identifier(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
-
-        PlasmidMessageTypes.register();
 
         this.registerCallbacks();
     }

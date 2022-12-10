@@ -2,8 +2,8 @@ package xyz.nucleoid.plasmid.game.player.isolation;
 
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.registry.Registry;
 
 public final class PlayerResetter {
     private final NbtCompound resetNbt;
@@ -22,7 +22,7 @@ public final class PlayerResetter {
 
     private void clearAttributeModifiers(ServerPlayerEntity player) {
         var attributes = player.getAttributes();
-        for (var attribute : Registry.ATTRIBUTE) {
+        for (var attribute : Registries.ATTRIBUTE) {
             if (attributes.hasAttribute(attribute)) {
                 var instance = attributes.getCustomInstance(attribute);
                 if (instance != null) {

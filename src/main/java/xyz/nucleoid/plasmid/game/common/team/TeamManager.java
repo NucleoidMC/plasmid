@@ -394,7 +394,7 @@ public final class TeamManager implements Iterable<GameTeam> {
         if (name == null) {
             name = player.getName();
         }
-        ((PlayerListS2CPacketEntryAccessor) entry).setDisplayName(this.formatPlayerName(player, name));
+        ((PlayerListS2CPacketEntryAccessor) (Object) entry).setDisplayName(this.formatPlayerName(player, name));
 
         return packet;
     }

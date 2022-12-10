@@ -5,8 +5,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameLifecycle;
 import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.config.GameConfigLists;
@@ -33,14 +31,17 @@ public final class OnDemandGame {
 
     public CompletableFuture<GameSpace> getOrOpen(MinecraftServer server) {
         var future = this.gameFuture;
-        if (future == null) {
+        if (future == null || this.isInvalid(future)) {
             this.gameFuture = future = this.openGame(server);
         }
         return future;
     }
 
-    private void onClose() {
-        this.gameFuture = null;
+    private boolean isInvalid(CompletableFuture<GameSpace> gameFuture) {
+        if (gameFuture.isCompletedExceptionally()) {
+            return true;
+        }
+        return gameFuture.isDone() && gameFuture.join().isClosed();
     }
 
     private CompletableFuture<GameSpace> openGame(MinecraftServer server) {
@@ -55,27 +56,15 @@ public final class OnDemandGame {
             return future;
         }
 
-        return config.open(server).thenApplyAsync(gameSpace -> {
-            var lifecycle = gameSpace.getLifecycle();
-            lifecycle.addListeners(new LifecycleListeners());
-
-            return gameSpace;
-        }, server);
+        return config.open(server);
     }
 
     public int getPlayerCount() {
         var future = this.gameFuture;
-        if (future != null && future.isDone() && !future.isCompletedExceptionally()) {
+        if (future != null && future.isDone() && !this.isInvalid(future)) {
             var game = future.join();
             return game.getPlayers().size();
         }
         return 0;
-    }
-
-    private class LifecycleListeners implements GameLifecycle.Listeners {
-        @Override
-        public void onClosing(GameSpace gameSpace, GameCloseReason reason) {
-            OnDemandGame.this.onClose();
-        }
     }
 }

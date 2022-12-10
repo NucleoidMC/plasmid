@@ -14,9 +14,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.event.GameEvents;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameOpenProcedure;
-import xyz.nucleoid.plasmid.game.GameSpaceMetadata;
+import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.stimuli.EventSource;
 import xyz.nucleoid.stimuli.Stimuli;
@@ -26,7 +24,7 @@ import xyz.nucleoid.stimuli.selector.EventListenerSelector;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public final class GameSpaceManager {
+public final class GameSpaceManager implements GameSpaceList {
     private static GameSpaceManager instance;
 
     private final MinecraftServer server;
@@ -55,7 +53,7 @@ public final class GameSpaceManager {
         instance = new GameSpaceManager(server);
         Stimuli.registerSelector(instance.listenerSelector);
 
-        GameSpaceManager.instance = instance;
+        GameSpaceManager.updateInstance(instance);
     }
 
     public static void startClosing() {
@@ -66,11 +64,19 @@ public final class GameSpaceManager {
     }
 
     public static void closeServer() {
-        GameSpaceManager.instance = null;
+        GameSpaceManager.updateInstance(null);
     }
 
     public static GameSpaceManager get() {
         return Preconditions.checkNotNull(instance, "GameSpaceManager not yet initialized");
+    }
+
+    private static void updateInstance(@Nullable GameSpaceManager instance) {
+        if (GameSpaceManager.instance != null) {
+            GameSpaceLists.unregister(GameSpaceManager.instance);
+        }
+        GameSpaceManager.instance = instance;
+        GameSpaceLists.register(instance);
     }
 
     public CompletableFuture<ManagedGameSpace> open(GameConfig<?> config) {
@@ -105,15 +111,18 @@ public final class GameSpaceManager {
         return gameSpace;
     }
 
+    @Override
     public Collection<ManagedGameSpace> getOpenGameSpaces() {
         return this.gameSpaces;
     }
 
+    @Override
     @Nullable
     public ManagedGameSpace byId(UUID id) {
         return this.idToGameSpace.get(id);
     }
 
+    @Override
     @Nullable
     public ManagedGameSpace byUserId(Identifier userId) {
         return this.userIdToGameSpace.get(userId);

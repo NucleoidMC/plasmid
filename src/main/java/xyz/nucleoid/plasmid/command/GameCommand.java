@@ -19,12 +19,11 @@ import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.command.argument.GameConfigArgument;
 import xyz.nucleoid.plasmid.command.argument.GameSpaceArgument;
 import xyz.nucleoid.plasmid.command.ui.GameJoinUi;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameOpenException;
-import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.GameTexts;
+import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.config.GameConfigList;
+import xyz.nucleoid.plasmid.game.config.GameConfigLists;
+import xyz.nucleoid.plasmid.game.config.ListedGameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.util.Scheduler;
@@ -153,7 +152,7 @@ public final class GameCommand {
         }
     }
 
-    private static int openGame(CommandContext<ServerCommandSource> context, GameConfig<?> config, boolean test) {
+    private static int openGame(CommandContext<ServerCommandSource> context, ListedGameConfig config, boolean test) {
         var source = context.getSource();
         var server = source.getServer();
 
@@ -167,12 +166,12 @@ public final class GameCommand {
                     if (test) {
                         currentGameSpace.close(GameCloseReason.CANCELED);
                     } else {
-                        currentGameSpace.getPlayers().kick(player);
+                        currentGameSpace.kick(player);
                     }
                 }
             }
 
-            GameSpaceManager.get().open(config)
+            config.open(server)
                     .handleAsync((gameSpace, throwable) -> {
                         if (throwable == null) {
                             onOpenSuccess(source, gameSpace, player, test);
@@ -186,16 +185,17 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(ServerCommandSource source, GameSpace gameSpace, ServerPlayerEntity player, boolean test) {
+    private static void onOpenSuccess(ServerCommandSource source, ListedGameSpace gameSpace, ServerPlayerEntity player, boolean test) {
         var players = source.getServer().getPlayerManager();
 
         var message = test ? GameTexts.Broadcast.gameOpenedTesting(source, gameSpace) : GameTexts.Broadcast.gameOpened(source, gameSpace);
         players.broadcast(message, false);
 
-        if (test) {
+        // TODO: Handle more explicitly - only allow test command to run on local games
+        if (test && gameSpace instanceof GameSpace localGameSpace) {
             joinAllPlayersToGame(source, gameSpace);
 
-            var startResult = gameSpace.requestStart();
+            var startResult = localGameSpace.requestStart();
 
             if (!startResult.isOk()) {
                 var error = startResult.errorCopy().formatted(Formatting.RED);
@@ -238,7 +238,7 @@ public final class GameCommand {
         return proposeGame(source, gameSpace);
     }
 
-    private static int proposeGame(ServerCommandSource source, GameSpace gameSpace) {
+    private static int proposeGame(ServerCommandSource source, ListedGameSpace gameSpace) {
         var message = GameTexts.Broadcast.propose(source, gameSpace);
 
         var playerManager = source.getServer().getPlayerManager();
@@ -260,7 +260,7 @@ public final class GameCommand {
     }
 
     private static int joinAllGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        GameSpace gameSpace = null;
+        ListedGameSpace gameSpace = null;
 
         var entity = context.getSource().getEntity();
         if (entity instanceof ServerPlayerEntity) {
@@ -283,32 +283,32 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void joinAllPlayersToGame(ServerCommandSource source, GameSpace gameSpace) {
+    private static void joinAllPlayersToGame(ServerCommandSource source, ListedGameSpace gameSpace) {
         var playerManager = source.getServer().getPlayerManager();
 
         var players = playerManager.getPlayerList().stream()
                 .filter(player -> !GameSpaceManager.get().inGame(player))
                 .collect(Collectors.toList());
 
-        var screen = gameSpace.getPlayers().screenJoins(players);
+        var screen = gameSpace.screenJoins(players);
         if (screen.isOk()) {
             for (var player : players) {
-                gameSpace.getPlayers().offer(player);
+                gameSpace.offer(player);
             }
         } else {
             source.sendError(screen.errorCopy().formatted(Formatting.RED));
         }
     }
 
-    private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
+    private static void tryJoinGame(ServerPlayerEntity player, ListedGameSpace gameSpace) {
         player.server.submit(() -> {
             var results = GamePlayerJoiner.tryJoin(player, gameSpace);
             results.sendErrorsTo(player);
         });
     }
 
-    private static GameSpace getJoinableGameSpace() throws CommandSyntaxException {
-        return GameSpaceManager.get().getOpenGameSpaces().stream()
+    private static ListedGameSpace getJoinableGameSpace() throws CommandSyntaxException {
+        return GameSpaceLists.composite().getOpenGameSpaces().stream()
                 .max(Comparator.comparingInt(space -> space.getPlayers().size()))
                 .orElseThrow(NO_GAME_OPEN::create);
     }
@@ -337,7 +337,7 @@ public final class GameCommand {
         }
 
         Scheduler.INSTANCE.submit(server -> {
-            gameSpace.getPlayers().kick(player);
+            gameSpace.kick(player);
         });
 
         return Command.SINGLE_SUCCESS;
@@ -417,14 +417,15 @@ public final class GameCommand {
         var source = context.getSource();
         source.sendFeedback(GameTexts.Command.gameList().formatted(Formatting.BOLD), false);
 
-        for (var id : GameConfigs.getKeys()) {
+        GameConfigList list = GameConfigLists.composite();
+        list.keys().forEach(id -> {
             String command = "/game open " + id;
 
-            var link = GameConfigs.get(id).name().copy()
+            var link = list.byKey(id).name().copy()
                     .setStyle(GameTexts.commandLinkStyle(command));
 
             source.sendFeedback(GameTexts.Command.listEntry(link), false);
-        }
+        });
 
         return Command.SINGLE_SUCCESS;
     }
@@ -444,7 +445,7 @@ public final class GameCommand {
                 playerManager.broadcast(message, false);
 
                 Scheduler.INSTANCE.submit(server -> {
-                    gameSpace.getPlayers().kick(target);
+                    gameSpace.kick(target);
                 });
 
                 successes += 1;

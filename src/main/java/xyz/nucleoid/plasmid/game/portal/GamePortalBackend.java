@@ -7,7 +7,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 import xyz.nucleoid.plasmid.game.portal.GamePortal.GuiProvider;
 
 import java.util.Collections;
@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 public interface GamePortalBackend {
     void populateDisplay(GamePortalDisplay display);
 
-    CompletableFuture<GameSpace> requestJoin(ServerPlayerEntity player);
+    CompletableFuture<ListedGameSpace> requestJoin(ServerPlayerEntity player);
 
     default Text getName() {
         return Text.literal("༼ つ ◕_◕ ༽つ (Unnamed)");

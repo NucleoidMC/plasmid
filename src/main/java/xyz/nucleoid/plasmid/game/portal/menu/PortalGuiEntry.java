@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 import xyz.nucleoid.plasmid.game.portal.GamePortal;
 import xyz.nucleoid.plasmid.game.portal.GamePortal.GuiProvider;
 import xyz.nucleoid.plasmid.util.Guis;
@@ -19,7 +19,7 @@ public record PortalGuiEntry(
         ItemStack icon
 ) implements MenuEntry {
     @Override
-    public void click(ServerPlayerEntity player, CompletableFuture<GameSpace> future) {
+    public void click(ServerPlayerEntity player, CompletableFuture<ListedGameSpace> future) {
         var ui = Guis.createSelectorGui(player, this.name.copy(), true, this.provider.getGuiElements(future));
         ui.open();
     }

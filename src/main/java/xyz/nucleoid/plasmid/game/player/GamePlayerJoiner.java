@@ -9,6 +9,7 @@ import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 
 import java.util.Collection;
 import java.util.Map;
@@ -19,7 +20,7 @@ import java.util.Set;
  * members, screening, and offering players to the {@link GameSpace}.
  */
 public final class GamePlayerJoiner {
-    public static Results tryJoin(ServerPlayerEntity player, GameSpace gameSpace) {
+    public static Results tryJoin(ServerPlayerEntity player, ListedGameSpace gameSpace) {
         try {
             var players = collectPlayersForJoin(player, gameSpace);
             return tryJoinAll(players, gameSpace);
@@ -28,26 +29,29 @@ public final class GamePlayerJoiner {
         }
     }
 
-    private static Set<ServerPlayerEntity> collectPlayersForJoin(ServerPlayerEntity player, GameSpace gameSpace) {
+    private static Set<ServerPlayerEntity> collectPlayersForJoin(ServerPlayerEntity player, ListedGameSpace gameSpace) {
         Set<ServerPlayerEntity> players = new ReferenceOpenHashSet<>();
         players.add(player);
 
-        GameEvents.COLLECT_PLAYERS_FOR_JOIN.invoker().collectPlayersForJoin(gameSpace, player, players);
+        // TODO: We should be able to collect players within a party even in a proxied setup
+        if (gameSpace instanceof GameSpace localGameSpace) {
+            GameEvents.COLLECT_PLAYERS_FOR_JOIN.invoker().collectPlayersForJoin(localGameSpace, player, players);
+        }
 
         return players;
     }
 
-    private static Results tryJoinAll(Collection<ServerPlayerEntity> players, GameSpace gameSpace) {
+    private static Results tryJoinAll(Collection<ServerPlayerEntity> players, ListedGameSpace gameSpace) {
         var results = new Results();
 
-        var screenResult = gameSpace.getPlayers().screenJoins(players);
+        var screenResult = gameSpace.screenJoins(players);
         if (screenResult.isError()) {
             results.globalError = screenResult.error();
             return results;
         }
 
         for (var player : players) {
-            var result = gameSpace.getPlayers().offer(player);
+            var result = gameSpace.offer(player);
             if (result.isError()) {
                 results.playerErrors.put(player, result.error());
             }

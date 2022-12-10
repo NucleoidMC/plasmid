@@ -3,7 +3,7 @@ package xyz.nucleoid.plasmid.game.portal.on_demand;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.GamePortalDisplay;
 
@@ -34,7 +34,7 @@ public final class OnDemandPortalBackend implements GamePortalBackend {
     }
 
     @Override
-    public CompletableFuture<GameSpace> requestJoin(ServerPlayerEntity player) {
+    public CompletableFuture<ListedGameSpace> requestJoin(ServerPlayerEntity player) {
         return this.game.getOrOpen(player.server).thenApply(Function.identity());
     }
 }

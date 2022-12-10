@@ -5,27 +5,24 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameLifecycle;
 import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
-import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
+import xyz.nucleoid.plasmid.game.config.GameConfigLists;
 
 import java.util.concurrent.CompletableFuture;
 
 public final class OnDemandGame {
     private final Identifier gameId;
 
-    private CompletableFuture<ManagedGameSpace> gameFuture;
+    private CompletableFuture<ListedGameSpace> gameFuture;
 
     public OnDemandGame(Identifier gameId) {
         this.gameId = gameId;
     }
 
     public Text getName() {
-        var config = GameConfigs.get(this.gameId);
+        var config = GameConfigLists.composite().byKey(this.gameId);
         if (config != null) {
             return config.name().copy().formatted(Formatting.AQUA);
         } else {
@@ -33,51 +30,42 @@ public final class OnDemandGame {
         }
     }
 
-    public CompletableFuture<ManagedGameSpace> getOrOpen(MinecraftServer server) {
+    public CompletableFuture<ListedGameSpace> getOrOpen(MinecraftServer server) {
         var future = this.gameFuture;
-        if (future == null) {
+        if (future == null || this.isInvalid(future)) {
             this.gameFuture = future = this.openGame(server);
         }
         return future;
     }
 
-    private void onClose() {
-        this.gameFuture = null;
+    private boolean isInvalid(CompletableFuture<ListedGameSpace> gameFuture) {
+        if (gameFuture.isCompletedExceptionally()) {
+            return true;
+        }
+        return gameFuture.isDone() && gameFuture.join().isClosed();
     }
 
-    private CompletableFuture<ManagedGameSpace> openGame(MinecraftServer server) {
-        var config = GameConfigs.get(this.gameId);
+    private CompletableFuture<ListedGameSpace> openGame(MinecraftServer server) {
+        var config = GameConfigLists.composite().byKey(this.gameId);
         if (config == null) {
             Plasmid.LOGGER.warn("Missing game config for on-demand game with id '{}'", this.gameId);
 
-            var future = new CompletableFuture<ManagedGameSpace>();
+            var future = new CompletableFuture<ListedGameSpace>();
             var error = Text.translatable("text.plasmid.game_config.game_config_does_not_exist", this.gameId);
             future.completeExceptionally(new GameOpenException(error));
 
             return future;
         }
 
-        return GameSpaceManager.get().open(config).thenApplyAsync(gameSpace -> {
-            var lifecycle = gameSpace.getLifecycle();
-            lifecycle.addListeners(new LifecycleListeners());
-
-            return gameSpace;
-        }, server);
+        return config.open(server);
     }
 
     public int getPlayerCount() {
         var future = this.gameFuture;
-        if (future != null && future.isDone() && !future.isCompletedExceptionally()) {
+        if (future != null && future.isDone() && !this.isInvalid(future)) {
             var game = future.join();
             return game.getPlayers().size();
         }
         return 0;
-    }
-
-    private class LifecycleListeners implements GameLifecycle.Listeners {
-        @Override
-        public void onClosing(GameSpace gameSpace, GameCloseReason reason) {
-            OnDemandGame.this.onClose();
-        }
     }
 }

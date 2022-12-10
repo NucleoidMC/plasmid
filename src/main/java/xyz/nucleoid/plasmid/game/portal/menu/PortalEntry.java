@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 import xyz.nucleoid.plasmid.game.portal.GamePortal;
 
 public record PortalEntry(
@@ -16,7 +16,7 @@ public record PortalEntry(
         ItemStack icon
 ) implements MenuEntry {
     @Override
-    public void click(ServerPlayerEntity player, CompletableFuture<GameSpace> future) {
+    public void click(ServerPlayerEntity player, CompletableFuture<ListedGameSpace> future) {
         this.portal.requestJoin(player);
     }
 

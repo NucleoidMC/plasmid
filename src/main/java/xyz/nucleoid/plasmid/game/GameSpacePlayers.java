@@ -1,11 +1,13 @@
 package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.server.network.ServerPlayerEntity;
-import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.player.PlayerOps;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.UUID;
 
 /**
  * Represents all {@link ServerPlayerEntity}s in this {@link GameSpace}. This provides utilities to operate on many
@@ -13,40 +15,66 @@ import java.util.Collection;
  *
  * @see PlayerSet
  * @see PlayerOps
+ *
+ * @deprecated {@link ListedGameSpace} should be interacted with directly, or the underlying {@link PlayerSet}
  */
+@Deprecated(forRemoval = true)
 public interface GameSpacePlayers extends PlayerSet {
+    static GameSpacePlayers of(ListedGameSpace gameSpace, PlayerSet playerSet) {
+        return new GameSpacePlayers() {
+            @Override
+            public GameResult screenJoins(Collection<ServerPlayerEntity> players) {
+                return gameSpace.screenJoins(players);
+            }
+
+            @Override
+            public GameResult offer(ServerPlayerEntity player) {
+                return gameSpace.offer(player);
+            }
+
+            @Override
+            public boolean kick(ServerPlayerEntity player) {
+                return gameSpace.kick(player);
+            }
+
+            @Override
+            public boolean contains(UUID id) {
+                return playerSet.contains(id);
+            }
+
+            @Override
+            @Nullable
+            public ServerPlayerEntity getEntity(UUID id) {
+                return playerSet.getEntity(id);
+            }
+
+            @Override
+            public int size() {
+                return playerSet.size();
+            }
+
+            @Override
+            public Iterator<ServerPlayerEntity> iterator() {
+                return playerSet.iterator();
+            }
+        };
+    }
+
     /**
-     * Screens a group of players and returns whether the collective group should be allowed into the game.
-     * <p>
-     * This logic is controlled through the active {@link GameActivity} through {@link GamePlayerEvents#SCREEN_JOINS}.
-     *
-     * @param players the group of players trying to join
-     * @return a {@link GameResult} describing whether this group can join this game, or an error if not
-     * @see GamePlayerEvents#SCREEN_JOINS
-     * @see GameSpacePlayers#offer(ServerPlayerEntity)
-     * @see xyz.nucleoid.plasmid.game.player.GamePlayerJoiner
+     * @deprecated use {@link ListedGameSpace#screenJoins(Collection)}
      */
+    @Deprecated(forRemoval = true)
     GameResult screenJoins(Collection<ServerPlayerEntity> players);
 
     /**
-     * Offers an individual player to join this game. If accepted, they will be teleported into the game, and if not
-     * an error {@link GameResult} will be returned.
-     * <p>
-     * This logic is controlled through the active {@link GameActivity} through {@link GamePlayerEvents#OFFER}.
-     *
-     * @param player the player trying to join
-     * @return a {@link GameResult} describing whether this player joined the game, or an error if not
-     * @see GamePlayerEvents#OFFER
-     * @see xyz.nucleoid.plasmid.game.player.GamePlayerJoiner
+     * @deprecated use {@link ListedGameSpace#offer(ServerPlayerEntity)}
      */
+    @Deprecated(forRemoval = true)
     GameResult offer(ServerPlayerEntity player);
 
     /**
-     * Attempts to remove the given {@link ServerPlayerEntity} from this {@link GameSpace}.
-     * When a player is removed, they will be teleported back to their former location prior to joining.
-     *
-     * @param player {@link ServerPlayerEntity} to remove from this {@link GameSpace}
-     * @return whether the {@link ServerPlayerEntity} was successfully removed
+     * @deprecated use {@link ListedGameSpace#kick(ServerPlayerEntity)}
      */
+    @Deprecated(forRemoval = true)
     boolean kick(ServerPlayerEntity player);
 }

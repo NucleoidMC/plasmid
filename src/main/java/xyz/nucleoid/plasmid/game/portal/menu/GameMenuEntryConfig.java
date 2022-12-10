@@ -10,7 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.codecs.MoreCodecs;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.config.GameConfigLists;
 import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandGame;
 import xyz.nucleoid.plasmid.util.PlasmidCodecs;
 
@@ -32,7 +32,7 @@ public record GameMenuEntryConfig(Identifier game,
     @Override
     public MenuEntry createEntry() {
         var game = new OnDemandGame(this.game);
-        var gameConfig = GameConfigs.get(this.game);
+        var gameConfig = GameConfigLists.composite().byKey(this.game);
 
         if (gameConfig == null) {
             return new InvalidMenuEntry(game.getName());

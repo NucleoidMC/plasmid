@@ -10,9 +10,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
-import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.GameSpaceLists;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.util.Guis;
 
@@ -33,7 +32,7 @@ public class GameJoinUi extends SimpleGui {
         this.updateUi();
     }
 
-    private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
+    private static void tryJoinGame(ServerPlayerEntity player, ListedGameSpace gameSpace) {
         player.server.submit(() -> {
             var results = GamePlayerJoiner.tryJoin(player, gameSpace);
             results.sendErrorsTo(player);
@@ -53,7 +52,7 @@ public class GameJoinUi extends SimpleGui {
         int i = 0;
         int gameI = 0;
 
-        var games = new ArrayList<>(GameSpaceManager.get().getOpenGameSpaces());
+        var games = new ArrayList<>(GameSpaceLists.composite().getOpenGameSpaces());
         games.sort(Comparator.comparingInt(space -> -space.getPlayers().size()));
 
         int limit = this.size;
@@ -66,7 +65,7 @@ public class GameJoinUi extends SimpleGui {
 
         this.page = MathHelper.clamp(this.page, 0, this.pageSize);
 
-        for (ManagedGameSpace gameSpace : games) {
+        for (ListedGameSpace gameSpace : games) {
             if (gameI >= this.page * NAVBAR_POS) {
                 if (i < limit) {
                     this.setSlot(i++, this.createIconFor(gameSpace));
@@ -111,7 +110,7 @@ public class GameJoinUi extends SimpleGui {
         this.updateUi();
     }
 
-    private GuiElementBuilder createIconFor(GameSpace gameSpace) {
+    private GuiElementBuilder createIconFor(ListedGameSpace gameSpace) {
         var sourceConfig = gameSpace.getMetadata().sourceConfig();
         var element = GuiElementBuilder.from(sourceConfig.icon().copy())
                 .setName(sourceConfig.name().copy());

@@ -1,13 +1,13 @@
 package xyz.nucleoid.plasmid.game.portal.menu;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandGame;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public record GameMenuEntry(
         OnDemandGame game,
@@ -16,7 +16,7 @@ public record GameMenuEntry(
         ItemStack icon
 ) implements MenuEntry {
     @Override
-    public void click(ServerPlayerEntity player, CompletableFuture<GameSpace> future) {
+    public void click(ServerPlayerEntity player, CompletableFuture<ListedGameSpace> future) {
         game.getOrOpen(player.getServer()).handle((gameSpace, throwable) -> {
             if (throwable == null) {
                 future.complete(gameSpace);

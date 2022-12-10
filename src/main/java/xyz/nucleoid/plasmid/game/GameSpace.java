@@ -1,12 +1,10 @@
 package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
-import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.resource_packs.ResourcePackStates;
 import xyz.nucleoid.plasmid.game.world.GameSpaceWorlds;
 
@@ -23,15 +21,13 @@ import java.util.function.Consumer;
  * @see GameType
  * @see GameActivity
  */
-public interface GameSpace {
+public interface GameSpace extends ListedGameSpace {
     /**
      * @return the host server of this {@link GameSpace}
      */
     MinecraftServer getServer();
 
-    /**
-     * @return all metadata associated with this {@link GameSpace}
-     */
+    @Override
     GameSpaceMetadata getMetadata();
 
     /**
@@ -72,13 +68,7 @@ public interface GameSpace {
      */
     void close(GameCloseReason reason);
 
-    /**
-     * Returns all {@link ServerPlayerEntity}s in this {@link GameSpace}.
-     *
-     * <p>{@link GameSpacePlayers#contains(ServerPlayerEntity)} can be used to check if a {@link ServerPlayerEntity} is in this {@link GameSpace} instead.
-     *
-     * @return a {@link PlayerSet} that contains all {@link ServerPlayerEntity}s in this {@link GameSpace}
-     */
+    @Override
     GameSpacePlayers getPlayers();
 
     /**
@@ -104,11 +94,6 @@ public interface GameSpace {
      * @return the statistics manager for this {@link GameSpace}
      */
     GameSpaceStatistics getStatistics();
-
-    /**
-     * @return true if this GameSpace is closed, false otherwise
-     */
-    boolean isClosed();
 
     ResourcePackStates getResourcePackStates();
 }

@@ -8,7 +8,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 import xyz.nucleoid.plasmid.game.portal.GamePortal.GuiProvider;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.GamePortalDisplay;
@@ -67,7 +67,7 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
         return count;
     }
 
-    private List<GuiElementInterface> getGuiElements(CompletableFuture<GameSpace> future) {
+    private List<GuiElementInterface> getGuiElements(CompletableFuture<ListedGameSpace> future) {
         List<GuiElementInterface> elements = new ArrayList<>();
 
         for (var entry : this.getEntries()) {
@@ -102,8 +102,8 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
     }
 
     @Override
-    public CompletableFuture<GameSpace> requestJoin(ServerPlayerEntity player) {
-        var future = new CompletableFuture<GameSpace>();
+    public CompletableFuture<ListedGameSpace> requestJoin(ServerPlayerEntity player) {
+        var future = new CompletableFuture<ListedGameSpace>();
 
         var ui = Guis.createSelectorGui(player, this.name.copy(), true, this.getGuiElements(future));
         ui.open();
@@ -111,7 +111,7 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
         return future;
     }
 
-    private GuiElementBuilder createIconFor(MenuEntry entry, CompletableFuture<GameSpace> future) {
+    private GuiElementBuilder createIconFor(MenuEntry entry, CompletableFuture<ListedGameSpace> future) {
             var element = GuiElementBuilder.from(entry.icon().copy())
                 .setName(entry.name().copy());
 

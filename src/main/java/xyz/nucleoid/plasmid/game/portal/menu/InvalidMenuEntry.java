@@ -5,7 +5,7 @@ import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.ListedGameSpace;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +32,7 @@ public record InvalidMenuEntry(Text name) implements MenuEntry {
     }
 
     @Override
-    public void click(ServerPlayerEntity player, CompletableFuture<GameSpace> future) {
+    public void click(ServerPlayerEntity player, CompletableFuture<ListedGameSpace> future) {
         return;
     }
 

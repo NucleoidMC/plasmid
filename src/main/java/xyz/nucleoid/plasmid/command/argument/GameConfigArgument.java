@@ -11,8 +11,9 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.game.config.GameConfig;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.config.GameConfigList;
+import xyz.nucleoid.plasmid.game.config.GameConfigLists;
+import xyz.nucleoid.plasmid.game.config.ListedGameConfig;
 
 import java.util.Locale;
 import java.util.function.Function;
@@ -25,20 +26,22 @@ public final class GameConfigArgument {
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((ctx, builder) -> {
-                    Iterable<Identifier> candidates = GameConfigs.getKeys().stream()::iterator;
+                    GameConfigList list = GameConfigLists.composite();
+                    Iterable<Identifier> candidates = list.keys()::iterator;
                     var remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
                     CommandSource.forEachMatching(candidates, remaining, Function.identity(), id -> {
-                        builder.suggest(id.toString(), GameConfigs.get(id).name());
+                        var config = list.byKey(id);
+                        builder.suggest(id.toString(), config.name());
                     });
                     return builder.buildFuture();
                 });
     }
 
-    public static Pair<Identifier, GameConfig<?>> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static Pair<Identifier, ListedGameConfig> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
         var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
-        var config = GameConfigs.get(identifier);
+        var config = GameConfigLists.composite().byKey(identifier);
         if (config == null) {
             throw GAME_NOT_FOUND.create(identifier);
         }

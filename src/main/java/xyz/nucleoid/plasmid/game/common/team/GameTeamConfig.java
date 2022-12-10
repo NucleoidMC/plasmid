@@ -182,14 +182,14 @@ public final record GameTeamConfig(
     ) {
         private static final Codec<Colors> RECORD_CODEC = RecordCodecBuilder.create(instance -> {
             return instance.group(
-                    MoreCodecs.FORMATTING.optionalFieldOf("chat", Formatting.RESET).forGetter(Colors::chatFormatting),
-                    MoreCodecs.TEXT_COLOR.fieldOf("dye").forGetter(Colors::dyeColor),
-                    MoreCodecs.DYE_COLOR.fieldOf("block_dye").forGetter(Colors::blockDyeColor),
-                    MoreCodecs.TEXT_COLOR.fieldOf("firework").forGetter(Colors::fireworkColor)
+                    Formatting.CODEC.optionalFieldOf("chat", Formatting.RESET).forGetter(Colors::chatFormatting),
+                    TextColor.CODEC.fieldOf("dye").forGetter(Colors::dyeColor),
+                    DyeColor.CODEC.fieldOf("block_dye").forGetter(Colors::blockDyeColor),
+                    TextColor.CODEC.fieldOf("firework").forGetter(Colors::fireworkColor)
             ).apply(instance, Colors::new);
         });
 
-        public static final Codec<Colors> CODEC = Codec.either(MoreCodecs.DYE_COLOR, RECORD_CODEC).xmap(
+        public static final Codec<Colors> CODEC = Codec.either(DyeColor.CODEC, RECORD_CODEC).xmap(
                 either -> either.map(Colors::from, Function.identity()),
                 Either::right
         );

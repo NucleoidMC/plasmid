@@ -13,6 +13,7 @@ import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
@@ -27,7 +28,7 @@ public final class ManagedGameSpace implements GameSpace {
 
     private final GameSpaceMetadata metadata;
 
-    private final ManagedGameSpacePlayers players;
+    private final MutablePlayerSet players;
     private final ManagedGameSpaceWorlds worlds;
 
     private final GameLifecycle lifecycle = new GameLifecycle();
@@ -48,7 +49,7 @@ public final class ManagedGameSpace implements GameSpace {
 
         this.metadata = metadata;
 
-        this.players = new ManagedGameSpacePlayers(this);
+        this.players = new MutablePlayerSet(server);
         this.worlds = new ManagedGameSpaceWorlds(this);
 
         this.openTime = server.getOverworld().getTime();
@@ -140,7 +141,7 @@ public final class ManagedGameSpace implements GameSpace {
 
     @Override
     public GameSpacePlayers getPlayers() {
-        return this.players;
+        return GameSpacePlayers.of(this, this.players);
     }
 
     @Override

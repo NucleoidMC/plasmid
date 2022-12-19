@@ -109,6 +109,7 @@ public final class IsolatingPlayerTeleporter {
         networkHandler.sendPacket(new DifficultyS2CPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
         networkHandler.sendPacket(new PlayerAbilitiesS2CPacket(player.getAbilities()));
         networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(player.getInventory().selectedSlot));
+        networkHandler.sendPacket(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_GAME_MODE, player));
 
         player.closeHandledScreen();
 

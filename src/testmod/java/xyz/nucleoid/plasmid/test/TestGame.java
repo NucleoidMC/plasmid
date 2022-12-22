@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.test;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.screen.ScreenTexts;
@@ -8,7 +9,6 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Unit;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
@@ -39,8 +39,8 @@ public final class TestGame {
                     .build()
     );
 
-    public static GameOpenProcedure open(GameOpenContext<Unit> context) {
-        var template = TestGame.generateMapTemplate();
+    public static GameOpenProcedure open(GameOpenContext<TestConfig> context) {
+        var template = TestGame.generateMapTemplate(context.game().config().state());
 
         var worldConfig = new RuntimeWorldConfig()
                 .setGenerator(new TemplateChunkGenerator(context.server(), template))
@@ -124,11 +124,11 @@ public final class TestGame {
         return GameResult.ok();
     }
 
-    private static MapTemplate generateMapTemplate() {
+    private static MapTemplate generateMapTemplate(BlockState state) {
         var template = MapTemplate.createEmpty();
 
         for (var pos : BlockBounds.of(-5, 64, -5, 5, 64, 5)) {
-            template.setBlockState(pos, Blocks.BLUE_STAINED_GLASS.getDefaultState());
+            template.setBlockState(pos, state);
         }
 
         return template;

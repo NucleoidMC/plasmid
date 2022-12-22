@@ -43,7 +43,7 @@ public final class TestGameWithResourcePack {
                     .build()
     );
 
-    public static GameOpenProcedure open(GameOpenContext<Unit> context) {
+    public static GameOpenProcedure open(GameOpenContext<TestConfig> context) {
         var template = generateMapTemplate();
 
         var worldConfig = new RuntimeWorldConfig()

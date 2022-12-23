@@ -8,6 +8,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.ResourceReloadListenerKeys;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryOps;
@@ -20,6 +21,8 @@ import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public final class GameConfigs {
@@ -68,6 +71,11 @@ public final class GameConfigs {
                         Plasmid.LOGGER.error("Failed to parse game JSON at {}: {}", path, e);
                     }
                 });
+            }
+
+            @Override
+            public Collection<Identifier> getFabricDependencies() {
+                return List.of(ResourceReloadListenerKeys.TAGS);
             }
         });
     }

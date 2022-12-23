@@ -16,6 +16,7 @@ import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,6 +47,11 @@ public final class GamePortalManager {
             @Override
             public void reload(ResourceManager manager) {
                 INSTANCE.reload(manager);
+            }
+
+            @Override
+            public Collection<Identifier> getFabricDependencies() {
+                return List.of(new Identifier(Plasmid.ID, "games"));
             }
         });
     }

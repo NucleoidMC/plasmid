@@ -7,8 +7,10 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -39,9 +41,6 @@ public final class Plasmid implements ModInitializer {
     public void onInitialize() {
         Registry.register(Registries.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
 
-        GameConfigs.register();
-        GamePortalManager.register();
-
         GamePortalConfig.register(new Identifier(ID, "on_demand"), OnDemandPortalConfig.CODEC);
         GamePortalConfig.register(new Identifier(ID, "menu"), MenuPortalConfig.CODEC);
         GamePortalConfig.register(new Identifier(ID, "advanced_menu"), AdvancedMenuPortalConfig.CODEC);
@@ -53,6 +52,11 @@ public final class Plasmid implements ModInitializer {
         GameType.register(new Identifier(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
 
         this.registerCallbacks();
+    }
+
+    private void loadData(DynamicRegistryManager registryManager, ResourceManager manager) {
+        GameConfigs.reload(registryManager, manager);
+        GamePortalManager.INSTANCE.reload(manager);
     }
 
     private void registerCallbacks() {
@@ -99,6 +103,7 @@ public final class Plasmid implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             GameSpaceManager.openServer(server);
             GamePortalManager.INSTANCE.setup(server);
+            loadData(server.getRegistryManager(), server.getResourceManager());
             PlasmidConfig.get().webServerConfig().ifPresent(config -> {
                 httpServer = PlasmidWebServer.start(server, config);
             });
@@ -115,6 +120,10 @@ public final class Plasmid implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             GameSpaceManager.closeServer();
         });
+
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(((server, resourceManager, success) -> {
+            loadData(server.getRegistryManager(), resourceManager);
+        }));
 
         // For games to debug their statistic collection without needing to setup a backend
         if (Boolean.getBoolean("plasmid.debug_statistics")) {

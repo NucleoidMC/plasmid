@@ -1,4 +1,4 @@
 {
   "type": "testmod:test",
-  "items": ["minecraft:tnt"]
+  "items": "#minecraft:slabs"
 }

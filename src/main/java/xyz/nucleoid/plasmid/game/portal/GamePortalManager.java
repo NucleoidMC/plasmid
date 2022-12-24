@@ -7,9 +7,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.ResourceType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
@@ -36,26 +36,6 @@ public final class GamePortalManager {
     private GamePortalManager() {
     }
 
-    public static void register() {
-        ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
-        serverData.registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-            @Override
-            public Identifier getFabricId() {
-                return new Identifier(Plasmid.ID, "game_portals");
-            }
-
-            @Override
-            public void reload(ResourceManager manager) {
-                INSTANCE.reload(manager);
-            }
-
-            @Override
-            public Collection<Identifier> getFabricDependencies() {
-                return List.of(new Identifier(Plasmid.ID, "games"));
-            }
-        });
-    }
-
     public void setup(MinecraftServer server) {
         this.server = server;
 
@@ -74,7 +54,8 @@ public final class GamePortalManager {
         }
     }
 
-    private void reload(ResourceManager manager) {
+    @ApiStatus.Internal
+    public void reload(ResourceManager manager) {
         this.portals.clear();
 
         var configs = this.loadConfigs(manager);

@@ -105,7 +105,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
     }
 
     private GuiElementBuilder createIconFor(MenuEntry entry, CompletableFuture<GameSpace> future) {
-            var element = GuiElementBuilder.from(entry.icon().copy())
+            var element = GuiElementBuilder.from(entry.icon().copy()).hideFlags()
                 .setName(entry.name().copy());
 
         for (var line : entry.description()) {

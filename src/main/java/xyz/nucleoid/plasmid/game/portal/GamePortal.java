@@ -8,12 +8,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
-import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -70,20 +68,7 @@ public final class GamePortal {
     }
 
     public void requestJoin(ServerPlayerEntity player) {
-        CompletableFuture.supplyAsync(() -> this.backend.requestJoin(player))
-                .thenCompose(Function.identity())
-                .handleAsync((gameSpace, throwable) -> {
-                    GamePlayerJoiner.Results results;
-                    if (gameSpace != null) {
-                        results = GamePlayerJoiner.tryJoin(player, gameSpace);
-                    } else {
-                        results = GamePlayerJoiner.handleJoinException(throwable);
-                    }
-
-                    results.sendErrorsTo(player);
-
-                    return null;
-                }, this.server);
+        this.backend.applyTo(player);
     }
 
     public boolean addInterface(GamePortalInterface itf) {
@@ -131,8 +116,12 @@ public final class GamePortal {
         this.currentDisplay.clear();
     }
 
+    public void provideGameSpaces(Consumer<GameSpace> consumer) {
+        this.backend.provideGameSpaces(consumer);
+    }
+
     @FunctionalInterface
     public interface GuiProvider {
-        List<GuiElementInterface> getGuiElements(CompletableFuture<GameSpace> future);
+        List<GuiElementInterface> getGuiElements();
     }
 }

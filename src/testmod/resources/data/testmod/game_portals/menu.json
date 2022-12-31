@@ -18,6 +18,10 @@
     {
       "type": "plasmid:game",
       "game": "testmod:test"
+    },
+    {
+      "type": "plasmid:game",
+      "game": "testmod:e"
     }
   ]
 }

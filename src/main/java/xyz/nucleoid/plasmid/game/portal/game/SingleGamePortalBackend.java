@@ -1,6 +1,7 @@
-package xyz.nucleoid.plasmid.game.portal.on_demand;
+package xyz.nucleoid.plasmid.game.portal.game;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -12,18 +13,58 @@ import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
+import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
+import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-public final class OnDemandGame {
+public final class SingleGamePortalBackend implements GamePortalBackend {
     private final Identifier gameId;
-
     private CompletableFuture<ManagedGameSpace> gameFuture;
 
-    public OnDemandGame(Identifier gameId) {
+    public SingleGamePortalBackend(Identifier gameId) {
         this.gameId = gameId;
     }
 
+    @Override
+    public int getPlayerCount() {
+        var future = this.gameFuture;
+        if (future != null && future.isDone() && !future.isCompletedExceptionally()) {
+            var game = future.join();
+            return game.getPlayers().size();
+        }
+        return 0;
+    }
+
+    @Override
+    public void provideGameSpaces(Consumer<GameSpace> consumer) {
+        var future = this.gameFuture;
+        if (future != null && future.isDone() && !future.isCompletedExceptionally()) {
+            consumer.accept(future.join());
+        }
+    }
+
+    @Override
+    public void applyTo(ServerPlayerEntity player) {
+        CompletableFuture.supplyAsync(() -> this.getOrOpen(player.server))
+                .thenCompose(Function.identity())
+                .handleAsync((gameSpace, throwable) -> {
+                    GamePlayerJoiner.Results results;
+                    if (gameSpace != null) {
+                        results = GamePlayerJoiner.tryJoin(player, gameSpace);
+                    } else {
+                        results = GamePlayerJoiner.handleJoinException(throwable);
+                    }
+
+                    results.sendErrorsTo(player);
+
+                    return null;
+                }, player.server);
+    }
+
+    @Override
     public Text getName() {
         var config = GameConfigs.get(this.gameId);
         if (config != null) {
@@ -65,19 +106,10 @@ public final class OnDemandGame {
         }, server);
     }
 
-    public int getPlayerCount() {
-        var future = this.gameFuture;
-        if (future != null && future.isDone() && !future.isCompletedExceptionally()) {
-            var game = future.join();
-            return game.getPlayers().size();
-        }
-        return 0;
-    }
-
     private class LifecycleListeners implements GameLifecycle.Listeners {
         @Override
         public void onClosing(GameSpace gameSpace, GameCloseReason reason) {
-            OnDemandGame.this.onClose();
+            SingleGamePortalBackend.this.onClose();
         }
     }
 }

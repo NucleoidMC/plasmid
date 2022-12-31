@@ -1,0 +1,6 @@
+{
+  "type": "plasmid:random",
+  "games": [
+    "testmod:test"
+  ]
+}

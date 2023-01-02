@@ -30,6 +30,7 @@ import xyz.nucleoid.plasmid.game.portal.GamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.GamePortalInterface;
 import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
 import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalConfig;
+import xyz.nucleoid.plasmid.game.portal.game.LegacyOnDemandPortalConfig;
 import xyz.nucleoid.plasmid.game.portal.game.NewGamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.*;
 import xyz.nucleoid.plasmid.game.portal.game.SingleGamePortalConfig;
@@ -48,7 +49,7 @@ public final class Plasmid implements ModInitializer {
         GamePortalConfig.register(new Identifier(ID, "single_game"), SingleGamePortalConfig.CODEC);
         GamePortalConfig.register(new Identifier(ID, "new_game"), NewGamePortalConfig.CODEC);
         GamePortalConfig.register(new Identifier(ID, "concurrent_game"), ConcurrentGamePortalConfig.CODEC);
-        GamePortalConfig.register(new Identifier(ID, "on_demand"), Codecs.createLazy(() -> ConcurrentGamePortalConfig.CODEC)); // old one
+        GamePortalConfig.register(new Identifier(ID, "on_demand"), LegacyOnDemandPortalConfig.CODEC); // old one
 
         GamePortalConfig.register(new Identifier(ID, "menu"), MenuPortalConfig.CODEC);
         GamePortalConfig.register(new Identifier(ID, "advanced_menu"), AdvancedMenuPortalConfig.CODEC);

@@ -78,7 +78,7 @@ public final class GameSpaceManager {
                 () -> config.openProcedure(this.server),
                 Util.getMainWorkerExecutor()
         ).thenApplyAsync(
-                procedure -> this.addGameSpace(config, procedure),
+                procedure -> this.addGameSpace(procedure.configOverride() != null ? procedure.configOverride() : config, procedure),
                 this.server
         );
     }

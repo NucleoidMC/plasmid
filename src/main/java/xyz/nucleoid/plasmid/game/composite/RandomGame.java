@@ -16,6 +16,6 @@ public final class RandomGame {
             throw new GameOpenException(Text.translatable("text.plasmid.random.empty_composite_game_config"));
         }
 
-        return game.openProcedure(context.server());
+        return GameOpenProcedure.withOverride(game.openProcedure(context.server()), game);
     }
 }

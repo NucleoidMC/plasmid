@@ -11,7 +11,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
-import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandGame;
+import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalBackend;
 import xyz.nucleoid.plasmid.util.PlasmidCodecs;
 
 public record GameMenuEntryConfig(Identifier game,
@@ -31,7 +31,7 @@ public record GameMenuEntryConfig(Identifier game,
 
     @Override
     public MenuEntry createEntry() {
-        var game = new OnDemandGame(this.game);
+        var game = new ConcurrentGamePortalBackend(this.game);
         var gameConfig = GameConfigs.get(this.game);
 
         if (gameConfig == null) {

@@ -15,6 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.dynamic.Codecs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nucleoid.plasmid.command.*;
@@ -28,8 +29,10 @@ import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.portal.GamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.GamePortalInterface;
 import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
+import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalConfig;
+import xyz.nucleoid.plasmid.game.portal.game.NewGamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.*;
-import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandPortalConfig;
+import xyz.nucleoid.plasmid.game.portal.game.SingleGamePortalConfig;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 
 public final class Plasmid implements ModInitializer {
@@ -41,7 +44,12 @@ public final class Plasmid implements ModInitializer {
     public void onInitialize() {
         Registry.register(Registries.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
 
-        GamePortalConfig.register(new Identifier(ID, "on_demand"), OnDemandPortalConfig.CODEC);
+
+        GamePortalConfig.register(new Identifier(ID, "single_game"), SingleGamePortalConfig.CODEC);
+        GamePortalConfig.register(new Identifier(ID, "new_game"), NewGamePortalConfig.CODEC);
+        GamePortalConfig.register(new Identifier(ID, "concurrent_game"), ConcurrentGamePortalConfig.CODEC);
+        GamePortalConfig.register(new Identifier(ID, "on_demand"), Codecs.createLazy(() -> ConcurrentGamePortalConfig.CODEC)); // old one
+
         GamePortalConfig.register(new Identifier(ID, "menu"), MenuPortalConfig.CODEC);
         GamePortalConfig.register(new Identifier(ID, "advanced_menu"), AdvancedMenuPortalConfig.CODEC);
 

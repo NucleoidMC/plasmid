@@ -68,7 +68,9 @@ public abstract class EntityMixin implements GamePortalInterface {
         var playerCount = display.get(GamePortalDisplay.PLAYER_COUNT);
         if (name != null && playerCount != null) {
             hologram.addElement(new StaticTextHologramElement(name));
-            hologram.addElement(new StaticTextHologramElement(Text.translatable("text.plasmid.game.portal.player_count", playerCount)));
+            if (playerCount > -1) {
+                hologram.addElement(new StaticTextHologramElement(Text.translatable("text.plasmid.game.portal.player_count", playerCount)));
+            }
         }
     }
 

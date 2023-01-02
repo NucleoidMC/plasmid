@@ -1,4 +1,4 @@
 {
-  "type": "plasmid:on_demand",
+  "type": "plasmid:single_game",
   "game": "testmod:test"
 }

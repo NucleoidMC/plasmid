@@ -12,12 +12,15 @@ import xyz.nucleoid.plasmid.game.portal.GamePortal.GuiProvider;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public interface GamePortalBackend {
-    void populateDisplay(GamePortalDisplay display);
+    default void populateDisplay(GamePortalDisplay display) {
+        display.set(GamePortalDisplay.NAME, this.getName());
+        display.set(GamePortalDisplay.PLAYER_COUNT, this.getPlayerCount());
+    }
 
-    CompletableFuture<GameSpace> requestJoin(ServerPlayerEntity player);
+    void applyTo(ServerPlayerEntity player);
 
     default Text getName() {
         return Text.literal("༼ つ ◕_◕ ༽つ (Unnamed)");
@@ -32,8 +35,9 @@ public interface GamePortalBackend {
     }
 
     default int getPlayerCount() {
-        return 0;
+        return -1;
     }
+    default void provideGameSpaces(Consumer<GameSpace> consumer) {}
 
     @Nullable
     default GuiProvider getGuiProvider() {

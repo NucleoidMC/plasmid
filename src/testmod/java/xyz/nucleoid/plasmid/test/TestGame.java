@@ -114,11 +114,11 @@ public final class TestGame {
                 return ActionResult.FAIL;
             });
 
-            activity.listen(GamePlayerEvents.OFFER, offer -> {
+            /*activity.listen(GamePlayerEvents.OFFER, offer -> {
                 var player = offer.player();
                 return offer.accept(gameSpace.getWorlds().iterator().next(), new Vec3d(0.0, 65.0, 0.0))
                         .and(() -> player.changeGameMode(GameMode.ADVENTURE));
-            });
+            });*/
         });
 
         return GameResult.ok();

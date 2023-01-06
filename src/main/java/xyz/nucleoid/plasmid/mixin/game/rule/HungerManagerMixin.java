@@ -1,9 +1,9 @@
 package xyz.nucleoid.plasmid.mixin.game.rule;
 
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerEntity;
@@ -14,15 +14,15 @@ import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 
 @Mixin(HungerManager.class)
 public class HungerManagerMixin {
-    @Inject(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;heal(F)V", shift = At.Shift.BEFORE, ordinal = 0), cancellable = true)
-    private void attemptRegeneration(PlayerEntity player, CallbackInfo ci) {
-        if (!(player instanceof ServerPlayerEntity)) {
-            return;
+    @Redirect(method = "update", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/HungerManager;saturationLevel:F", opcode = Opcodes.GETFIELD, ordinal = 2))
+    private float attemptSaturatedRegeneration(HungerManager manager, PlayerEntity player) {
+        if (player instanceof ServerPlayerEntity) {
+            var gameSpace = GameSpaceManager.get().byPlayer(player);
+            if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.SATURATED_REGENERATION) == ActionResult.FAIL) {
+                return 0;
+            }
         }
 
-        var gameSpace = GameSpaceManager.get().byPlayer(player);
-        if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.SATURATED_REGENERATION) == ActionResult.FAIL) {
-            ci.cancel();
-        }
+        return manager.getSaturationLevel();
     }
 }

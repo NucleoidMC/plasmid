@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.game.player.isolation;
 
-import eu.pb4.polymer.api.x.BlockMapper;
+import eu.pb4.polymer.core.api.block.BlockMapper;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.MinecraftServer;
@@ -102,22 +102,25 @@ public final class IsolatingPlayerTeleporter {
                 world.getDimensionKey(), world.getRegistryKey(),
                 BiomeAccess.hashSeed(world.getSeed()),
                 player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(),
-                world.isDebugWorld(), world.isFlat(), false,
+                world.isDebugWorld(), world.isFlat(), (byte) 0,
                 player.getLastDeathPos()
         ));
 
-        networkHandler.sendPacket(new DifficultyS2CPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
-        networkHandler.sendPacket(new PlayerAbilitiesS2CPacket(player.getAbilities()));
-        networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(player.getInventory().selectedSlot));
-
         player.closeHandledScreen();
 
-        playerManager.sendCommandTree(player);
-        player.getRecipeBook().sendInitRecipesPacket(player);
         BlockMapper.resetMapper(player);
 
         world.onPlayerTeleport(player);
         networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
+
+        networkHandler.sendPacket(new DifficultyS2CPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
+        networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(player.getInventory().selectedSlot));
+        networkHandler.sendPacket(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_GAME_MODE, player));
+        networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(player.getId(), player.getDataTracker().getChangedEntries()));
+        networkHandler.sendPacket(new EntityAttributesS2CPacket(player.getId(), player.getAttributes().getAttributesToSend()));
+        networkHandler.sendPacket(new PlayerAbilitiesS2CPacket(player.getAbilities()));
+        playerManager.sendCommandTree(player);
+        player.getRecipeBook().sendInitRecipesPacket(player);
 
         this.server.getBossBarManager().onPlayerConnect(player);
 

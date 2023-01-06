@@ -10,6 +10,7 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
@@ -84,6 +85,12 @@ public final class GameCommand {
                             .executes(GameCommand::stopGameConfirmed)
                         )
                 )
+                .then(literal("kick")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(argument("targets", EntityArgumentType.players())
+                        .executes(GameCommand::kickPlayers)
+                    )
+                )
                 .then(literal("join")
                     .executes(GameCommand::joinGame)
                     .then(GameSpaceArgument.argument("game_space")
@@ -108,9 +115,13 @@ public final class GameCommand {
     // @formatter:on
 
     private static int openGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return openGame(context, false);
+    }
+
+    protected static int openGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
         try {
             var game = GameConfigArgument.get(context, "game_config");
-            return openGame(context, game.getSecond());
+            return openGame(context, game.getSecond(), test);
         } catch (CommandSyntaxException e) {
             throw e;
         } catch (Exception e) {
@@ -121,15 +132,19 @@ public final class GameCommand {
     }
 
     private static int openAnonymousGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return openAnonymousGame(context, false);
+    }
+
+    protected static int openAnonymousGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
         try {
             var configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
-            var result = GameConfig.CODEC.parse(NbtOps.INSTANCE, configNbt);
+            var result = GameConfig.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, context.getSource().getRegistryManager()), configNbt);
             if (result.error().isPresent()) {
                 throw MALFORMED_CONFIG.create(result.error().get());
             }
 
             var game = result.result().get();
-            return openGame(context, game);
+            return openGame(context, game, test);
         } catch (CommandSyntaxException e) {
             throw e;
         } catch (Exception e) {
@@ -139,7 +154,7 @@ public final class GameCommand {
         }
     }
 
-    private static int openGame(CommandContext<ServerCommandSource> context, GameConfig<?> config) {
+    private static int openGame(CommandContext<ServerCommandSource> context, GameConfig<?> config, boolean test) {
         var source = context.getSource();
         var server = source.getServer();
 
@@ -150,17 +165,18 @@ public final class GameCommand {
             if (player != null) {
                 var currentGameSpace = GameSpaceManager.get().byPlayer(player);
                 if (currentGameSpace != null) {
-                    currentGameSpace.getPlayers().kick(player);
+                    if (test) {
+                        currentGameSpace.close(GameCloseReason.CANCELED);
+                    } else {
+                        currentGameSpace.getPlayers().kick(player);
+                    }
                 }
             }
 
             GameSpaceManager.get().open(config)
                     .handleAsync((gameSpace, throwable) -> {
                         if (throwable == null) {
-                            if (player != null) {
-                                tryJoinGame(player, gameSpace);
-                            }
-                            onOpenSuccess(source, gameSpace);
+                            onOpenSuccess(source, gameSpace, player, test);
                         } else {
                             onOpenError(source, throwable);
                         }
@@ -171,11 +187,24 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(ServerCommandSource source, GameSpace gameSpace) {
+    private static void onOpenSuccess(ServerCommandSource source, GameSpace gameSpace, ServerPlayerEntity player, boolean test) {
         var players = source.getServer().getPlayerManager();
 
-        var message = GameTexts.Broadcast.gameOpened(source, gameSpace);
+        var message = test ? GameTexts.Broadcast.gameOpenedTesting(source, gameSpace) : GameTexts.Broadcast.gameOpened(source, gameSpace);
         players.broadcast(message, false);
+
+        if (test) {
+            joinAllPlayersToGame(source, gameSpace);
+
+            var startResult = gameSpace.requestStart();
+
+            if (!startResult.isOk()) {
+                var error = startResult.errorCopy().formatted(Formatting.RED);
+                gameSpace.getPlayers().sendMessage(error);
+            }
+        } else if (player != null) {
+            tryJoinGame(player, gameSpace);
+        }
     }
 
     private static void onOpenError(ServerCommandSource source, Throwable throwable) {
@@ -243,20 +272,20 @@ public final class GameCommand {
             gameSpace = getJoinableGameSpace();
         }
 
-        joinAllPlayersToGame(context, gameSpace);
+        joinAllPlayersToGame(context.getSource(), gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
     private static int joinAllQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var gameSpace = GameSpaceArgument.get(context, "game_space");
-        joinAllPlayersToGame(context, gameSpace);
+        joinAllPlayersToGame(context.getSource(), gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void joinAllPlayersToGame(CommandContext<ServerCommandSource> context, GameSpace gameSpace) {
-        var playerManager = context.getSource().getServer().getPlayerManager();
+    private static void joinAllPlayersToGame(ServerCommandSource source, GameSpace gameSpace) {
+        var playerManager = source.getServer().getPlayerManager();
 
         var players = playerManager.getPlayerList().stream()
                 .filter(player -> !GameSpaceManager.get().inGame(player))
@@ -268,7 +297,7 @@ public final class GameCommand {
                 gameSpace.getPlayers().offer(player);
             }
         } else {
-            context.getSource().sendError(screen.errorCopy().formatted(Formatting.RED));
+            source.sendError(screen.errorCopy().formatted(Formatting.RED));
         }
     }
 
@@ -399,5 +428,30 @@ public final class GameCommand {
         }
 
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static int kickPlayers(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        var source = context.getSource();
+        var playerManager = source.getServer().getPlayerManager();
+
+        var targets = EntityArgumentType.getPlayers(context, "targets");
+
+        int successes = 0;
+
+        for (var target : targets) {
+            var gameSpace = GameSpaceManager.get().byPlayer(target);
+            if (gameSpace != null) {
+                var message = GameTexts.Kick.kick(source, target).formatted(Formatting.GRAY);
+                playerManager.broadcast(message, false);
+
+                Scheduler.INSTANCE.submit(server -> {
+                    gameSpace.getPlayers().kick(target);
+                });
+
+                successes += 1;
+            }
+        }
+
+        return successes;
     }
 }

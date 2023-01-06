@@ -6,6 +6,7 @@ import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
+import net.minecraft.registry.Registries;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -80,7 +81,7 @@ public abstract class ServerPlayNetworkHandlerMixin {
                 if (!packet.getStack().isEmpty()) {
                     // this.player.playSound didn't appear to work, but a packet did.
                     this.sendPacket(new PlaySoundS2CPacket(
-                            SoundEvents.ENTITY_VILLAGER_NO, SoundCategory.MASTER,
+                            Registries.SOUND_EVENT.getEntry(SoundEvents.ENTITY_VILLAGER_NO), SoundCategory.MASTER,
                             this.player.getX(), this.player.getY(), this.player.getZ(),
                             1.0f, 1.0f,
                             this.player.getRandom().nextLong()

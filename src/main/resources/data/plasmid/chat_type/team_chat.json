@@ -1,0 +1,10 @@
+{
+  "chat": {
+    "parameters": ["target", "sender", "content"],
+    "translation_key": "[%s] <%s> %s"
+  },
+  "narration": {
+    "parameters": ["sender", "content"],
+    "translation_key": "chat.type.text.narrate"
+  }
+}

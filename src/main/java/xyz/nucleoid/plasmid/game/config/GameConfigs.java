@@ -7,13 +7,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryOps;
+import net.minecraft.resource.ResourceFinder;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.RegistryOps;
-import net.minecraft.util.registry.DynamicRegistryManager;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
@@ -22,57 +20,39 @@ import java.io.IOException;
 import java.util.Set;
 
 public final class GameConfigs {
+    private static final ResourceFinder FINDER = ResourceFinder.json("games");
+
     private static final TinyRegistry<GameConfig<?>> CONFIGS = TinyRegistry.create();
-    public static DynamicRegistryManager registryManager;
 
-    public static void register() {
-        ResourceManagerHelper serverData = ResourceManagerHelper.get(ResourceType.SERVER_DATA);
+    public static void reload(DynamicRegistryManager registryManager, ResourceManager manager) {
+        CONFIGS.clear();
 
-        serverData.registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-            @Override
-            public Identifier getFabricId() {
-                return new Identifier(Plasmid.ID, "games");
-            }
+        DynamicOps<JsonElement> ops = RegistryOps.of(JsonOps.INSTANCE, registryManager);
 
-            @Override
-            public void reload(ResourceManager manager) {
-                CONFIGS.clear();
+        FINDER.findResources(manager).forEach((path, resource) -> {
+            try {
+                try (var reader = resource.getReader()) {
+                    JsonElement json = JsonParser.parseReader(reader);
 
-                DynamicOps<JsonElement> ops = RegistryOps.of(JsonOps.INSTANCE, registryManager);
-                registryManager = null;
+                    Identifier identifier = FINDER.toResourceId(path);
 
-                manager.findResources("games", path -> path.getPath().endsWith(".json")).forEach((path, resource) -> {
-                    try {
-                        try (var reader = resource.getReader()) {
-                            JsonElement json = JsonParser.parseReader(reader);
+                    Codec<GameConfig<?>> codec = GameConfig.codecFrom(identifier);
+                    DataResult<GameConfig<?>> result = codec.parse(ops, json);
 
-                            Identifier identifier = identifierFromPath(path);
+                    result.result().ifPresent(game -> {
+                        CONFIGS.register(identifier, game);
+                    });
 
-                            Codec<GameConfig<?>> codec = GameConfig.codecFrom(identifier);
-                            DataResult<GameConfig<?>> result = codec.parse(ops, json);
-
-                            result.result().ifPresent(game -> {
-                                CONFIGS.register(identifier, game);
-                            });
-
-                            result.error().ifPresent(error -> {
-                                Plasmid.LOGGER.error("Failed to parse game at {}: {}", path, error.toString());
-                            });
-                        }
-                    } catch (IOException e) {
-                        Plasmid.LOGGER.error("Failed to read configured game at {}", path, e);
-                    } catch (JsonParseException e) {
-                        Plasmid.LOGGER.error("Failed to parse game JSON at {}: {}", path, e);
-                    }
-                });
+                    result.error().ifPresent(error -> {
+                        Plasmid.LOGGER.error("Failed to parse game at {}: {}", path, error);
+                    });
+                }
+            } catch (IOException e) {
+                Plasmid.LOGGER.error("Failed to read configured game at {}", path, e);
+            } catch (JsonParseException e) {
+                Plasmid.LOGGER.error("Failed to parse game JSON at {}: {}", path, e);
             }
         });
-    }
-
-    private static Identifier identifierFromPath(Identifier location) {
-        String path = location.getPath();
-        path = path.substring("games/".length(), path.length() - ".json".length());
-        return new Identifier(location.getNamespace(), path);
     }
 
     @Nullable

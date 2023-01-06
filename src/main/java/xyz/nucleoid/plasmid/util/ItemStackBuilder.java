@@ -9,9 +9,9 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
-import net.minecraft.tag.TagKey;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
-import net.minecraft.util.registry.Registry;
 
 public final class ItemStackBuilder {
     private final ItemStack stack;
@@ -59,7 +59,7 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder addCanDestroy(Block block) {
-        var blockId = Registry.BLOCK.getId(block);
+        var blockId = Registries.BLOCK.getId(block);
         return this.addCanDestroy(blockId.toString());
     }
 
@@ -68,7 +68,7 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder addCanPlaceOn(Block block) {
-        var blockId = Registry.BLOCK.getId(block);
+        var blockId = Registries.BLOCK.getId(block);
         return this.addCanPlaceOn(blockId.toString());
     }
 

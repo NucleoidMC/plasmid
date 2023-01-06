@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.game.portal.menu;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -16,12 +16,17 @@ public record PortalEntry(
         ItemStack icon
 ) implements MenuEntry {
     @Override
-    public void click(ServerPlayerEntity player, CompletableFuture<GameSpace> future) {
+    public void click(ServerPlayerEntity player) {
         this.portal.requestJoin(player);
     }
 
     @Override
     public int getPlayerCount() {
         return this.portal.getPlayerCount();
+    }
+
+    @Override
+    public void provideGameSpaces(Consumer<GameSpace> consumer) {
+        portal.provideGameSpaces(consumer);
     }
 }

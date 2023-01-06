@@ -2,7 +2,7 @@ package xyz.nucleoid.plasmid.game.resource_packs;
 
 import com.google.common.hash.Hashing;
 import com.google.gson.JsonObject;
-import eu.pb4.polymer.api.resourcepack.ResourcePackCreator;
+import eu.pb4.polymer.resourcepack.api.ResourcePackCreator;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;

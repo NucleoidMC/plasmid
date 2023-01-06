@@ -1,19 +1,20 @@
 package xyz.nucleoid.plasmid.test;
 
 import com.mojang.serialization.Codec;
-import eu.pb4.polymer.api.resourcepack.ResourcePackCreator;
-import eu.pb4.polymer.ext.blocks.api.BlockModelType;
-import eu.pb4.polymer.ext.blocks.api.BlockResourceCreator;
-import eu.pb4.polymer.ext.blocks.api.PolymerBlockModel;
+import eu.pb4.polymer.blocks.api.BlockModelType;
+import eu.pb4.polymer.blocks.api.BlockResourceCreator;
+import eu.pb4.polymer.blocks.api.PolymerBlockModel;
+import eu.pb4.polymer.resourcepack.api.ResourcePackCreator;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
-import net.minecraft.util.registry.Registry;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.common.GameResourcePack;
 
@@ -39,10 +40,11 @@ public class TestInitializer implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        GameType.register(new Identifier(ID, "test"), Codec.unit(Unit.INSTANCE), TestGame::open);
-        GameType.register(new Identifier(ID, "test_rp"), Codec.unit(Unit.INSTANCE), TestGameWithResourcePack::open);
-        Registry.register(Registry.BLOCK, id("test_block"), TEST_BLOCK);
-        Registry.register(Registry.ITEM, id("test_item"), TEST_ITEM);
+        GameType.register(new Identifier(ID, "test"), TestConfig.CODEC, TestGame::open);
+        GameType.register(new Identifier(ID, "no_join"), TestConfig.CODEC, PlayerlessGame::open);
+        GameType.register(new Identifier(ID, "test_rp"), TestConfig.CODEC, TestGameWithResourcePack::open);
+        Registry.register(Registries.BLOCK, id("test_block"), TEST_BLOCK);
+        Registry.register(Registries.ITEM, id("test_item"), TEST_ITEM);
 
 
         CREATOR.addAssetSource("plasmid-test-mod");

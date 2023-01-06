@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.mixin.game.space;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -17,8 +16,8 @@ import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin extends PlayerEntity {
-    private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile, PlayerPublicKey publicKey) {
-        super(world, pos, yaw, profile, publicKey);
+    private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
+        super(world, pos, yaw, profile);
     }
 
     @Inject(method = "teleport", at = @At("HEAD"), cancellable = true)

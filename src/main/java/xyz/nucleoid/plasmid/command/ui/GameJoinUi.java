@@ -113,7 +113,7 @@ public class GameJoinUi extends SimpleGui {
 
     private GuiElementBuilder createIconFor(GameSpace gameSpace) {
         var sourceConfig = gameSpace.getMetadata().sourceConfig();
-        var element = GuiElementBuilder.from(sourceConfig.icon().copy())
+        var element = GuiElementBuilder.from(sourceConfig.icon().copy()).hideFlags()
                 .setName(sourceConfig.name().copy());
 
         for (var line : sourceConfig.description()) {

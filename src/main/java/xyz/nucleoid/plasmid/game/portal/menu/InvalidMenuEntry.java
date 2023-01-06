@@ -32,12 +32,11 @@ public record InvalidMenuEntry(Text name) implements MenuEntry {
     }
 
     @Override
-    public void click(ServerPlayerEntity player, CompletableFuture<GameSpace> future) {
-        return;
+    public void click(ServerPlayerEntity player) {
     }
 
     @Override
     public int getPlayerCount() {
-        return 0;
+        return -1;
     }
 }

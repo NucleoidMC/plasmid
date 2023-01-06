@@ -4,12 +4,10 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.structure.StructureSet;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntryList;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.Heightmap;
@@ -29,7 +27,6 @@ import net.minecraft.world.gen.noise.NoiseConfig;
 import xyz.nucleoid.fantasy.util.VoidChunkGenerator;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -47,17 +44,17 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
         }
     };
 
-    public GameChunkGenerator(Registry<StructureSet> structureRegistry, Optional<RegistryEntryList<StructureSet>> structures, BiomeSource biomeSource) {
-        super(structureRegistry, structures, biomeSource);
+    public GameChunkGenerator(BiomeSource biomeSource) {
+        super(biomeSource);
     }
 
     public GameChunkGenerator(MinecraftServer server) {
-        this(server.getRegistryManager().get(Registry.STRUCTURE_SET_KEY), Optional.empty(), createBiomeSource(server, BiomeKeys.THE_VOID));
+        this(createBiomeSource(server, BiomeKeys.THE_VOID));
     }
 
     protected static FixedBiomeSource createBiomeSource(MinecraftServer server, RegistryKey<Biome> biome) {
         var registryManager = server.getRegistryManager();
-        return new FixedBiomeSource(registryManager.get(Registry.BIOME_KEY).getEntry(biome).get());
+        return new FixedBiomeSource(registryManager.get(RegistryKeys.BIOME).getEntry(biome).get());
     }
 
     @Override

@@ -38,6 +38,13 @@ public final class GameTexts {
                     .append(GameTexts.Join.link(gameSpace));
         }
 
+        public static MutableText gameOpenedTesting(ServerCommandSource source, GameSpace gameSpace) {
+            var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
+
+            return Text.translatable("text.plasmid.game.open.opened.testing", source.getDisplayName(), gameName)
+                    .append(GameTexts.Join.link(gameSpace));
+        }
+
         public static MutableText propose(ServerCommandSource source, GameSpace gameSpace) {
             var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
 
@@ -143,6 +150,20 @@ public final class GameTexts {
                             "/game leave"
                     )
             );
+        }
+    }
+
+    public static final class Kick {
+        public static MutableText kick(ServerCommandSource source, ServerPlayerEntity target) {
+            return source.isExecutedByPlayer() ? kickBy(source.getPlayer(), target) : kick(target);
+        }
+
+        public static MutableText kickBy(ServerPlayerEntity source, ServerPlayerEntity target) {
+            return Text.translatable("text.plasmid.game.kick.by", target.getDisplayName(), source.getDisplayName());
+        }
+
+        public static MutableText kick(ServerPlayerEntity target) {
+            return Text.translatable("text.plasmid.game.kick", target.getDisplayName());
         }
     }
 }

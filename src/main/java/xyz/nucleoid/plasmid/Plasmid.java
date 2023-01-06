@@ -6,18 +6,19 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.util.dynamic.Codecs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.nucleoid.plasmid.chat.PlasmidMessageTypes;
-import xyz.nucleoid.plasmid.command.ChatCommand;
-import xyz.nucleoid.plasmid.command.GameCommand;
-import xyz.nucleoid.plasmid.command.GamePortalCommand;
-import xyz.nucleoid.plasmid.command.ShoutCommand;
+import xyz.nucleoid.plasmid.command.*;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
@@ -28,8 +29,11 @@ import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.portal.GamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.GamePortalInterface;
 import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
+import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalConfig;
+import xyz.nucleoid.plasmid.game.portal.game.LegacyOnDemandPortalConfig;
+import xyz.nucleoid.plasmid.game.portal.game.NewGamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.*;
-import xyz.nucleoid.plasmid.game.portal.on_demand.OnDemandPortalConfig;
+import xyz.nucleoid.plasmid.game.portal.game.SingleGamePortalConfig;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 
 public final class Plasmid implements ModInitializer {
@@ -39,12 +43,14 @@ public final class Plasmid implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Registry.register(Registry.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
+        Registry.register(Registries.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
 
-        GameConfigs.register();
-        GamePortalManager.register();
 
-        GamePortalConfig.register(new Identifier(ID, "on_demand"), OnDemandPortalConfig.CODEC);
+        GamePortalConfig.register(new Identifier(ID, "single_game"), SingleGamePortalConfig.CODEC);
+        GamePortalConfig.register(new Identifier(ID, "new_game"), NewGamePortalConfig.CODEC);
+        GamePortalConfig.register(new Identifier(ID, "concurrent_game"), ConcurrentGamePortalConfig.CODEC);
+        GamePortalConfig.register(new Identifier(ID, "on_demand"), LegacyOnDemandPortalConfig.CODEC); // old one
+
         GamePortalConfig.register(new Identifier(ID, "menu"), MenuPortalConfig.CODEC);
         GamePortalConfig.register(new Identifier(ID, "advanced_menu"), AdvancedMenuPortalConfig.CODEC);
 
@@ -54,9 +60,12 @@ public final class Plasmid implements ModInitializer {
 
         GameType.register(new Identifier(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
 
-        PlasmidMessageTypes.register();
-
         this.registerCallbacks();
+    }
+
+    private void loadData(DynamicRegistryManager registryManager, ResourceManager manager) {
+        GameConfigs.reload(registryManager, manager);
+        GamePortalManager.INSTANCE.reload(manager);
     }
 
     private void registerCallbacks() {
@@ -65,6 +74,10 @@ public final class Plasmid implements ModInitializer {
             GamePortalCommand.register(dispatcher);
             ChatCommand.register(dispatcher);
             ShoutCommand.register(dispatcher);
+
+            if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+                GameTestCommand.register(dispatcher);
+            }
         });
 
         UseEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
@@ -99,6 +112,7 @@ public final class Plasmid implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             GameSpaceManager.openServer(server);
             GamePortalManager.INSTANCE.setup(server);
+            loadData(server.getRegistryManager(), server.getResourceManager());
             PlasmidConfig.get().webServerConfig().ifPresent(config -> {
                 httpServer = PlasmidWebServer.start(server, config);
             });
@@ -115,6 +129,10 @@ public final class Plasmid implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             GameSpaceManager.closeServer();
         });
+
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(((server, resourceManager, success) -> {
+            loadData(server.getRegistryManager(), resourceManager);
+        }));
 
         // For games to debug their statistic collection without needing to setup a backend
         if (Boolean.getBoolean("plasmid.debug_statistics")) {

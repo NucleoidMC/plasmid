@@ -5,6 +5,7 @@ import com.mojang.serialization.Dynamic;
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,7 +14,6 @@ import net.minecraft.stat.ServerStatHandler;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.dimension.DimensionType;
@@ -149,7 +149,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             var overworld = this.server.getOverworld();
             var profile = new GameProfile(Util.NIL_UUID, "null");
 
-            var player = new ServerPlayerEntity(this.server, overworld, profile, null);
+            var player = new ServerPlayerEntity(this.server, overworld, profile);
             this.statisticsMap.remove(Util.NIL_UUID);
             this.advancementTrackers.remove(Util.NIL_UUID);
 

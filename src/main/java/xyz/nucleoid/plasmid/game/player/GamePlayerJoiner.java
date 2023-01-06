@@ -74,6 +74,7 @@ public final class GamePlayerJoiner {
     public static final class Results {
         public Text globalError;
         public final Map<ServerPlayerEntity, Text> playerErrors = new Reference2ObjectOpenHashMap<>();
+        public boolean isSuccessful;
 
         public void sendErrorsTo(ServerPlayerEntity player) {
             if (this.globalError != null) {

@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.game.common;
 
-import eu.pb4.polymer.api.resourcepack.ResourcePackCreator;
+import eu.pb4.polymer.resourcepack.api.ResourcePackCreator;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.ApiStatus;

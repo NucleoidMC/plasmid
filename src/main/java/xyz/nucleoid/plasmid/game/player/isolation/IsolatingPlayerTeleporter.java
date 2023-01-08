@@ -92,6 +92,8 @@ public final class IsolatingPlayerTeleporter {
             playerManagerAccess.plasmid$loadIntoPlayer(player);
         }
 
+        player.server.getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_GAME_MODE, player));
+
         var world = recreate.apply(player);
         player.setWorld(world);
 
@@ -112,13 +114,10 @@ public final class IsolatingPlayerTeleporter {
 
         world.onPlayerTeleport(player);
         networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
-
         networkHandler.sendPacket(new DifficultyS2CPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
         networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(player.getInventory().selectedSlot));
-        networkHandler.sendPacket(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_GAME_MODE, player));
-        networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(player.getId(), player.getDataTracker().getChangedEntries()));
         networkHandler.sendPacket(new EntityAttributesS2CPacket(player.getId(), player.getAttributes().getAttributesToSend()));
-        networkHandler.sendPacket(new PlayerAbilitiesS2CPacket(player.getAbilities()));
+        player.sendAbilitiesUpdate();
         playerManager.sendCommandTree(player);
         player.getRecipeBook().sendInitRecipesPacket(player);
 

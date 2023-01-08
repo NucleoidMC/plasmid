@@ -41,13 +41,13 @@ public record MenuPortalConfig(
     @Override
     public GamePortalBackend createBackend(MinecraftServer server, Identifier id) {
         Text name;
-        if (this.name != null) {
+        if (this.name != null && this.name != ScreenTexts.EMPTY) {
             name = this.name;
         } else {
             name = Text.literal(id.toString());
         }
 
-        return new MenuPortalBackend(name, this.games);
+        return new MenuPortalBackend(name, this.description, this.icon, this.games);
     }
 
     @Override

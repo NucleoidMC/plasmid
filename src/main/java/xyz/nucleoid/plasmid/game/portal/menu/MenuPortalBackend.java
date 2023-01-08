@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.portal.menu;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
+import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
@@ -18,7 +19,6 @@ import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalBackend;
 import xyz.nucleoid.plasmid.util.Guis;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -26,9 +26,13 @@ public final class MenuPortalBackend implements GamePortalBackend {
     private final Text name;
     private final List<MenuEntry> games;
     private final MutableText hologramName;
+    private final List<Text> description;
+    private final ItemStack icon;
 
-    MenuPortalBackend(Text name, List<MenuPortalConfig.Entry> games) {
+    MenuPortalBackend(Text name, List<Text> description, ItemStack icon, List<MenuPortalConfig.Entry> games) {
         this.name = name;
+        this.description = description;
+        this.icon = icon;
         var hologramName = name.copy();
 
         if (hologramName.getStyle().getColor() == null) {
@@ -42,6 +46,16 @@ public final class MenuPortalBackend implements GamePortalBackend {
     @Override
     public Text getName() {
         return this.name;
+    }
+
+    @Override
+    public List<Text> getDescription() {
+        return this.description;
+    }
+
+    @Override
+    public ItemStack getIcon() {
+        return this.icon;
     }
 
     @Override

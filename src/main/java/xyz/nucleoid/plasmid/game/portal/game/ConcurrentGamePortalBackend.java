@@ -1,5 +1,7 @@
 package xyz.nucleoid.plasmid.game.portal.game;
 
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -14,6 +16,8 @@ import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -46,6 +50,26 @@ public final class ConcurrentGamePortalBackend implements GamePortalBackend {
             }
         }
         return count;
+    }
+
+    @Override
+    public List<Text> getDescription() {
+        var config = GameConfigs.get(this.gameId);
+        if (config != null) {
+            return config.description();
+        }
+
+        return Collections.emptyList();
+    }
+
+    @Override
+    public ItemStack getIcon() {
+        var config = GameConfigs.get(this.gameId);
+        if (config != null) {
+            return config.icon();
+        }
+
+        return Items.BARRIER.getDefaultStack();
     }
 
     @Override

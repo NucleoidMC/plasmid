@@ -30,7 +30,7 @@ public class ArmorAndElytraItemMixin {
             var stack = user.getStackInHand(hand);
             ci.setReturnValue(TypedActionResult.fail(stack));
 
-            user.playSound(SoundEvents.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0F, 1.0F);
+            //user.playSound(SoundEvents.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0F, 1.0F);
         }
     }
 }

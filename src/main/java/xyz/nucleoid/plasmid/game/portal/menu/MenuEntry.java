@@ -9,11 +9,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public interface MenuEntry {
-    public Text name();
-    public List<Text> description();
-    public ItemStack icon();
+    Text name();
+    List<Text> description();
+    ItemStack icon();
 
-    public void click(ServerPlayerEntity player);
+    void click(ServerPlayerEntity player);
     default int getPlayerCount() {
         return -1;
     }

@@ -62,6 +62,7 @@ public final class GamePortal {
         return this.backend.getPlayerCount();
     }
 
+    @Deprecated(forRemoval = true)
     @Nullable
     public GuiProvider getGuiProvider() {
         return this.backend.getGuiProvider();

@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game.portal;
 
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -28,20 +29,21 @@ public interface GamePortalInterface {
 
     @Nullable
     default Identifier deserializePortalId(NbtCompound root) {
-        if (root.contains(NBT_KEY, NbtType.STRING)) {
+        if (root.contains(NBT_KEY, NbtElement.STRING_TYPE)) {
             return new Identifier(root.getString(NBT_KEY));
         }
         return null;
     }
 
-    default void tryConnectTo(Identifier portalId) {
+    default boolean tryConnectTo(Identifier portalId) {
         var portal = GamePortalManager.INSTANCE.byId(portalId);
         if (portal == null) {
-            Plasmid.LOGGER.warn("Loaded channel endpoint with invalid portal id: '{}'", portalId);
-            return;
+            //Plasmid.LOGGER.warn("Loaded channel endpoint with invalid portal id: '{}'", portalId);
+            return false;
         }
 
         portal.addInterface(this);
+        return true;
     }
 
     default void invalidatePortal() {

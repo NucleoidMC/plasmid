@@ -12,6 +12,7 @@ import xyz.nucleoid.plasmid.game.portal.GamePortal;
 import xyz.nucleoid.plasmid.game.portal.GamePortal.GuiProvider;
 import xyz.nucleoid.plasmid.util.Guis;
 
+@Deprecated(forRemoval = true)
 public record PortalGuiEntry(
         GamePortal portal,
         GuiProvider provider,

@@ -13,6 +13,7 @@ import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
 import xyz.nucleoid.plasmid.util.PlasmidCodecs;
 
+@Deprecated
 public record PortalGuiEntryConfig(
         Identifier portal,
         Optional<Text> name,

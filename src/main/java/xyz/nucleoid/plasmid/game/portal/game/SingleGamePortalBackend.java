@@ -72,7 +72,7 @@ public final class SingleGamePortalBackend implements GamePortalBackend {
     public Text getName() {
         var config = GameConfigs.get(this.gameId);
         if (config != null) {
-            return config.name().copy().formatted(Formatting.AQUA);
+            return config.name();
         } else {
             return Text.literal(this.gameId.toString()).formatted(Formatting.RED);
         }

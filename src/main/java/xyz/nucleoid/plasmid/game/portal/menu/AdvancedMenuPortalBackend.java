@@ -24,7 +24,6 @@ import java.util.function.Consumer;
 
 public final class AdvancedMenuPortalBackend implements GamePortalBackend {
     private final Text name;
-    private final MutableText hologramName;
 
     private final List<Text> description;
     private final ItemStack icon;
@@ -34,13 +33,7 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
 
     AdvancedMenuPortalBackend(Text name, List<Text> description, ItemStack icon, List<MenuEntryConfig> entryConfigs) {
         this.name = name;
-        var hologramName = name.copy();
 
-        if (hologramName.getStyle().getColor() == null) {
-            hologramName.setStyle(hologramName.getStyle().withColor(Formatting.AQUA));
-        }
-
-        this.hologramName = hologramName;
         this.description = description;
         this.icon = icon;
 
@@ -84,7 +77,7 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
         List<GuiElementInterface> elements = new ArrayList<>();
 
         for (var entry : this.getEntries()) {
-            var uiEntry = this.createIconFor(entry).build();
+            var uiEntry = entry.createGuiElement();
             elements.add(uiEntry);
         }
 
@@ -108,47 +101,8 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
     }
 
     @Override
-    public void populateDisplay(GamePortalDisplay display) {
-        display.set(GamePortalDisplay.NAME, this.hologramName);
-
-        display.set(GamePortalDisplay.PLAYER_COUNT, this.getPlayerCount());
-    }
-
-    @Override
     public void applyTo(ServerPlayerEntity player) {
         var ui = Guis.createSelectorGui(player, this.name.copy(), true, this.getGuiElements());
         ui.open();
-    }
-
-    private GuiElementBuilder createIconFor(MenuEntry entry) {
-            var element = GuiElementBuilder.from(entry.icon().copy()).hideFlags()
-                .setName(entry.name().copy());
-
-        for (var line : entry.description()) {
-            var text = line.copy();
-
-            if (line.getStyle().getColor() == null) {
-                text.setStyle(line.getStyle().withColor(Formatting.GRAY));
-            }
-
-            element.addLoreLine(text);
-        }
-
-        var playerCount = entry.getPlayerCount();
-
-        if (playerCount > -1) {
-            element.addLoreLine(ScreenTexts.EMPTY);
-            element.addLoreLine(Text.empty()
-                    .append(Text.literal("» ").formatted(Formatting.DARK_GRAY))
-                    .append(Text.translatable("text.plasmid.ui.game_join.players",
-                            Text.literal(playerCount + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
-            );
-        }
-
-        element.setCallback((a, b, c, gui) -> {
-            entry.click(gui.getPlayer());
-        });
-
-        return element;
     }
 }

@@ -47,6 +47,11 @@ public record NewGamePortalBackend(Identifier gameId) implements GamePortalBacke
     }
 
     @Override
+    public ActionType getActionType() {
+        return ActionType.PLAY;
+    }
+
+    @Override
     public void applyTo(ServerPlayerEntity player) {
         CompletableFuture.supplyAsync(() -> this.openGame(player.server))
                 .thenCompose(Function.identity())

@@ -73,6 +73,11 @@ public final class ConcurrentGamePortalBackend implements GamePortalBackend {
     }
 
     @Override
+    public ActionType getActionType() {
+        return ActionType.PLAY;
+    }
+
+    @Override
     public void applyTo(ServerPlayerEntity player) {
         var gameConfig = GameConfigs.get(this.gameId);
         for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {

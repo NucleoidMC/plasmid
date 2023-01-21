@@ -121,6 +121,10 @@ public final class GamePortal {
         this.backend.provideGameSpaces(consumer);
     }
 
+    public GamePortalBackend getBackend() {
+        return this.backend;
+    }
+
     @FunctionalInterface
     public interface GuiProvider {
         List<GuiElementInterface> getGuiElements();

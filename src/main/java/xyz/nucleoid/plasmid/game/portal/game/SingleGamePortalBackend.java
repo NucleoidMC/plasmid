@@ -79,6 +79,11 @@ public final class SingleGamePortalBackend implements GamePortalBackend {
     }
 
     @Override
+    public ActionType getActionType() {
+        return ActionType.PLAY;
+    }
+
+    @Override
     public List<Text> getDescription() {
         var config = GameConfigs.get(this.gameId);
         if (config != null) {

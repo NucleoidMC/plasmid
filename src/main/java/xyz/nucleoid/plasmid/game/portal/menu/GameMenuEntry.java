@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalBackend;
 
 public record GameMenuEntry(
@@ -23,6 +24,11 @@ public record GameMenuEntry(
     @Override
     public int getPlayerCount() {
         return this.game.getPlayerCount();
+    }
+
+    @Override
+    public GamePortalBackend.ActionType getActionType() {
+        return this.game.getActionType();
     }
 
     @Override

@@ -27,6 +27,10 @@ public interface MenuEntry {
         return -1;
     }
 
+    default int getSpectatorCount() {
+        return -1;
+    }
+
     default GamePortalBackend.ActionType getActionType() {
         return GamePortalBackend.ActionType.NONE;
     }
@@ -50,7 +54,7 @@ public interface MenuEntry {
         }
 
         var playerCount = this.getPlayerCount();
-        var spectatorCount = this.getPlayerCount();
+        var spectatorCount = this.getSpectatorCount();
         boolean allowSpace = true;
 
         if (playerCount > -1) {

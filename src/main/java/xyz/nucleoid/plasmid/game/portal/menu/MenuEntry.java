@@ -6,6 +6,7 @@ import jdk.jfr.Experimental;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.game.GameSpace;
@@ -41,13 +42,13 @@ public interface MenuEntry {
 
     default GuiElement createGuiElement() {
         var element = GuiElementBuilder.from(this.icon().copy()).hideFlags()
-                .setName(this.name().copy());
+                .setName(Text.empty().append(this.name()));
 
         for (var line : this.description()) {
             var text = line.copy();
 
             if (line.getStyle().getColor() == null) {
-                text.setStyle(line.getStyle().withColor(Formatting.GRAY));
+                text.setStyle(line.getStyle().withFormatting(Formatting.GRAY));
             }
 
             element.addLoreLine(text);
@@ -85,14 +86,9 @@ public interface MenuEntry {
         var actionType = this.getActionType();
 
         if (actionType != GamePortalBackend.ActionType.NONE) {
-            if (allowSpace) {
-                element.addLoreLine(ScreenTexts.EMPTY);
-                allowSpace = false;
-            }
-
-            element.addLoreLine(Text.empty()
-                    .append(Text.literal("» ").formatted(Formatting.DARK_GRAY))
-                    .append(actionType.text()));
+            element.addLoreLine(Text.empty().append(Text.literal(" [ ").formatted(Formatting.GRAY))
+                    .append(actionType.text())
+                    .append(Text.literal(" ]").formatted(Formatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));
         }
 
         element.setCallback((a, b, c, gui) -> {

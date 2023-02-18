@@ -77,5 +77,14 @@
   "text.plasmid.map.join.success": "Liitusid kaardiga \"%s\"! Algkohale pöördumiseks kasuta %s",
   "text.plasmid.game.not_in_game": "Sa ei ole hetkel mõnes mängus!",
   "text.plasmid.map.open.map_already_exists": "Kaart IDga \"%s\" juba eksisteerib!",
-  "text.plasmid.map.region.bounds.get": "%s kuni %s"
+  "text.plasmid.map.region.bounds.get": "%s kuni %s",
+  "text.plasmid.game.kick.by": "%s visati %s poolt mängust välja!",
+  "text.plasmid.game.open.opened.testing": "%1$s avas testimiseks %2$s! ",
+  "text.plasmid.map_workspace.workspace_not_found": "Kaarti IDga \"%s\" ei leitud!",
+  "text.plasmid.shop.cost.custom": "%s %s",
+  "text.plasmid.ui.game_join.spectators": "Hetkel vaatled: %s",
+  "text.plasmid.game.kick": "%s visati mängust välja!",
+  "text.plasmid.ui.game_join.action.play": "Klõpsa mängimiseks!",
+  "text.plasmid.ui.game_join.action.spectate": "Klõpsa vaatlemiseks!",
+  "text.plasmid.map.join.leave_command": "/map leave"
 }

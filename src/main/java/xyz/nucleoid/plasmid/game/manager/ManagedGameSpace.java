@@ -179,6 +179,16 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     GameResult screenJoins(Collection<ServerPlayerEntity> players) {
+        var result = this.attemptScreenJoins(players);
+
+        if (result.isError()) {
+            this.players.attemptGarbageCollection();
+        }
+
+        return result;
+    }
+
+    private GameResult attemptScreenJoins(Collection<ServerPlayerEntity> players) {
         if (this.closed) {
             return GameResult.error(GameTexts.Join.gameClosed());
         }

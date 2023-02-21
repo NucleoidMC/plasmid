@@ -70,7 +70,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         }
     }
 
-    private void attemptGarbageCollection() {
+    protected void attemptGarbageCollection() {
         if (this.set.isEmpty()) {
             this.space.close(GameCloseReason.GARBAGE_COLLECTED);
         }

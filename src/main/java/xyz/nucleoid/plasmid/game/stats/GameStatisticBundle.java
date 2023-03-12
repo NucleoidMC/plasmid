@@ -23,7 +23,7 @@ public class GameStatisticBundle {
             string -> {
                 for (char c : string.toCharArray()) {
                     if (!validateNamespaceChar(c)) {
-                        return DataResult.error(NAMESPACE_ERROR_MESSAGE);
+                        return DataResult.error(() -> NAMESPACE_ERROR_MESSAGE);
                     }
                 }
                 return DataResult.success(string);

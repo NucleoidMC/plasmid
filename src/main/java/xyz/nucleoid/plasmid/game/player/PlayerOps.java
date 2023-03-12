@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.game.player;
 
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;

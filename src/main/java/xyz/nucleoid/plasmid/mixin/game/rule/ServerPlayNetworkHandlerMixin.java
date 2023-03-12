@@ -1,9 +1,7 @@
 package xyz.nucleoid.plasmid.mixin.game.rule;
 
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.registry.Registries;
@@ -30,36 +28,11 @@ public abstract class ServerPlayNetworkHandlerMixin {
     public abstract void sendPacket(Packet<?> packet);
 
     @Inject(
-            method = "onPlayerMove",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/server/network/ServerPlayerEntity;updatePositionAndAngles(DDDFF)V",
-                    ordinal = 0,
-                    shift = At.Shift.BEFORE
-            )
-    )
-    private void onPlayerMoveInVehicle(PlayerMoveC2SPacket packet, CallbackInfo ci) {
-        // test if this packet contains position data
-        if (Double.isNaN(packet.getX(Double.NaN))) {
-            return;
-        }
-
-        // we're in a vehicle and the player tried to change their position!
-
-        var gameSpace = GameSpaceManager.get().byPlayer(this.player);
-        if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.DISMOUNT_VEHICLE) == ActionResult.FAIL) {
-            /* the player is probably desynchronized: update them with the vehicle passengers */
-            var vehicle = this.player.getVehicle();
-            this.sendPacket(new EntityPassengersSetS2CPacket(vehicle));
-        }
-    }
-
-    @Inject(
             method = "onClickSlot",
             cancellable = true,
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/server/world/ServerWorld;)V",
+                    target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/server/world/ServerWorld;)V",
                     shift = At.Shift.AFTER
             )
     )

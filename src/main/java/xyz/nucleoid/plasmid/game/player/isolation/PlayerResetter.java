@@ -15,7 +15,7 @@ public final class PlayerResetter {
     public void apply(ServerPlayerEntity player) {
         this.clearAttributeModifiers(player);
         player.clearStatusEffects();
-        player.getScoreboardTags().clear();
+        player.getCommandTags().clear();
 
         player.readNbt(this.resetNbt);
     }

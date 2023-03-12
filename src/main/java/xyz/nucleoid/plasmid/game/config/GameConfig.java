@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.game.config;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import fr.catcore.server.translations.api.ServerTranslations;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
@@ -16,6 +15,8 @@ import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.util.PlasmidCodecs;
+import xyz.nucleoid.server.translations.api.language.ServerLanguage;
+import xyz.nucleoid.server.translations.api.language.ServerLanguageDefinition;
 
 import java.util.Collections;
 import java.util.List;
@@ -106,7 +107,8 @@ public record GameConfig<C>(
     }
 
     private static boolean hasTranslationFor(String translationKey) {
-        return ServerTranslations.INSTANCE.getDefaultLanguage().local().contains(translationKey);
+        var language = ServerLanguage.getLanguage(ServerLanguageDefinition.DEFAULT);
+        return language.serverTranslations().contains(translationKey);
     }
 
     @Nullable

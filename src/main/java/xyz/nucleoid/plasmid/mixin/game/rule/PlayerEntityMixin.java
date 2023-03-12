@@ -4,6 +4,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +22,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
     @Inject(method = "damage", at = @At(value = "RETURN", ordinal = 3), cancellable = true)
     private void damage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (!this.world.isClient() && source.isProjectile()) {
+        if (!this.world.isClient() && source.isIn(DamageTypeTags.IS_PROJECTILE)) {
             var gameSpace = GameSpaceManager.get().byPlayer((PlayerEntity) (Object) this);
             if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.PLAYER_PROJECTILE_KNOCKBACK) == ActionResult.SUCCESS) {
                 cir.setReturnValue(super.damage(source, amount));

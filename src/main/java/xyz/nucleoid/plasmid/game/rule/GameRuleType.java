@@ -5,6 +5,7 @@ import net.minecraft.block.TntBlock;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.TypedActionResult;
 import xyz.nucleoid.stimuli.event.EventRegistrar;
@@ -61,7 +62,7 @@ public final class GameRuleType {
 
     public static final GameRuleType FALL_DAMAGE = GameRuleType.create()
             .enforces(PlayerDamageEvent.EVENT, result -> (player, source, amount) -> {
-                if (source == DamageSource.FALL) {
+                if (source.isIn(DamageTypeTags.IS_FALL)) {
                     return result;
                 } else {
                     return ActionResult.PASS;

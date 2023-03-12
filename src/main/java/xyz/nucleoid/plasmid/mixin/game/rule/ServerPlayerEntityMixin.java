@@ -34,8 +34,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         }
     }
 
-    @Inject(method = "stopRiding", at = @At("HEAD"), cancellable = true)
-    private void stopRiding(CallbackInfo ci) {
+    @Inject(method = "requestTeleportAndDismount", at = @At("HEAD"), cancellable = true)
+    private void requestTeleportAndDismount(CallbackInfo ci) {
         var vehicle = this.getVehicle();
         if (vehicle == null) {
             // how did we get here?

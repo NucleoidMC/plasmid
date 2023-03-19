@@ -1,11 +1,8 @@
 package xyz.nucleoid.plasmid.game.portal.game;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
@@ -16,12 +13,8 @@ import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
-import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class SingleGamePortalBackend implements GameConfigGamePortalBackend {

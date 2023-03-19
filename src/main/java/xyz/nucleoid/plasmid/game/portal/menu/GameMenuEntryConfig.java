@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.codecs.MoreCodecs;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalBackend;
 import xyz.nucleoid.plasmid.util.PlasmidCodecs;
@@ -39,7 +40,7 @@ public record GameMenuEntryConfig(Identifier game,
         } else {
             return new GameMenuEntry(
                     game,
-                    this.name.orElse(gameConfig.name()),
+                    this.name.orElse(GameConfig.name(gameConfig)),
                     this.description.orElse(gameConfig.description()),
                     this.icon.orElse(gameConfig.icon())
             );

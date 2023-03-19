@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game;
 
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 
@@ -12,18 +13,17 @@ import java.util.UUID;
 public record GameSpaceMetadata(
         UUID id,
         Identifier userId,
-        GameConfig<?> sourceConfig,
-        GameConfig<?> originalSourceConfig
+        RegistryEntry<GameConfig<?>> sourceConfig,
+        RegistryEntry<GameConfig<?>> originalSourceConfig
 ) {
-
-
     public GameSpaceMetadata(
             UUID id,
             Identifier userId,
-            GameConfig<?> sourceConfig
+            RegistryEntry<GameConfig<?>> sourceConfig
     ) {
         this(id, userId, sourceConfig, sourceConfig);
     }
+
     /**
      * @return the globally unique ID for this {@link GameSpace}
      */
@@ -46,12 +46,11 @@ public record GameSpaceMetadata(
     /**
      * @return the {@link GameConfig} that was responsible for creating this {@link GameSpace}
      */
-    @Override
-    public GameConfig<?> sourceConfig() {
+    public RegistryEntry<GameConfig<?>> sourceConfig() {
         return this.sourceConfig;
     }
 
-    public boolean isSourceConfig(GameConfig<?> gameConfig) {
-        return this.sourceConfig == gameConfig || this.originalSourceConfig == gameConfig;
+    public boolean isSourceConfig(RegistryEntry<GameConfig<?>> gameConfig) {
+        return this.sourceConfig.equals(gameConfig) || this.originalSourceConfig.equals(gameConfig);
     }
 }

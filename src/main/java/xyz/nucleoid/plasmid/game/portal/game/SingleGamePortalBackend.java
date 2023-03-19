@@ -1,15 +1,12 @@
 package xyz.nucleoid.plasmid.game.portal.game;
 
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameLifecycle;
-import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
@@ -18,11 +15,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public final class SingleGamePortalBackend implements GameConfigGamePortalBackend {
-    private final Identifier gameId;
+    private final RegistryEntry<GameConfig<?>> game;
     private CompletableFuture<ManagedGameSpace> gameFuture;
 
-    public SingleGamePortalBackend(Identifier gameId) {
-        this.gameId = gameId;
+    public SingleGamePortalBackend(RegistryEntry<GameConfig<?>> game) {
+        this.game = game;
     }
 
     @Override
@@ -56,18 +53,7 @@ public final class SingleGamePortalBackend implements GameConfigGamePortalBacken
     }
 
     private CompletableFuture<ManagedGameSpace> openGame(MinecraftServer server) {
-        var config = GameConfigs.get(this.gameId);
-        if (config == null) {
-            Plasmid.LOGGER.warn("Missing game config for on-demand game with id '{}'", this.gameId);
-
-            var future = new CompletableFuture<ManagedGameSpace>();
-            var error = Text.translatable("text.plasmid.game_config.game_config_does_not_exist", this.gameId);
-            future.completeExceptionally(new GameOpenException(error));
-
-            return future;
-        }
-
-        return GameSpaceManager.get().open(config).thenApplyAsync(gameSpace -> {
+        return GameSpaceManager.get().open(this.game).thenApplyAsync(gameSpace -> {
             var lifecycle = gameSpace.getLifecycle();
             lifecycle.addListeners(new LifecycleListeners());
 
@@ -76,8 +62,8 @@ public final class SingleGamePortalBackend implements GameConfigGamePortalBacken
     }
 
     @Override
-    public Identifier gameId() {
-        return this.gameId;
+    public RegistryEntry<GameConfig<?>> game() {
+        return this.game;
     }
 
     private class LifecycleListeners implements GameLifecycle.Listeners {

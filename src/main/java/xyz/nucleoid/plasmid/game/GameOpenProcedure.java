@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game;
 
+import net.minecraft.registry.entry.RegistryEntry;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 
 /**
@@ -8,7 +9,7 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
  * @see GameOpenContext
  */
 public interface GameOpenProcedure {
-    static GameOpenProcedure withOverride(GameOpenProcedure procedure, GameConfig<?> game) {
+    static GameOpenProcedure withOverride(GameOpenProcedure procedure, RegistryEntry<GameConfig<?>> game) {
         return new GameOpenProcedure() {
             @Override
             public void apply(GameSpace context) {
@@ -16,7 +17,7 @@ public interface GameOpenProcedure {
             }
 
             @Override
-            public GameConfig<?> configOverride() {
+            public RegistryEntry<GameConfig<?>> configOverride() {
                 return game;
             }
         };
@@ -24,7 +25,7 @@ public interface GameOpenProcedure {
 
     void apply(GameSpace gameSpace);
 
-    default GameConfig<?> configOverride() {
+    default RegistryEntry<GameConfig<?>> configOverride() {
         return null;
     }
 }

@@ -11,6 +11,7 @@ import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryOps;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
@@ -121,7 +122,7 @@ public final class GameCommand {
     protected static int openGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
         try {
             var game = GameConfigArgument.get(context, "game_config");
-            return openGame(context, game.getSecond(), test);
+            return openGame(context, game, test);
         } catch (CommandSyntaxException e) {
             throw e;
         } catch (Exception e) {
@@ -138,13 +139,13 @@ public final class GameCommand {
     protected static int openAnonymousGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
         try {
             var configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
-            var result = GameConfig.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, context.getSource().getRegistryManager()), configNbt);
+            var result = GameConfig.DIRECT_CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, context.getSource().getRegistryManager()), configNbt);
             if (result.error().isPresent()) {
                 throw MALFORMED_CONFIG.create(result.error().get());
             }
 
             var game = result.result().get();
-            return openGame(context, game, test);
+            return openGame(context, RegistryEntry.of(game), test);
         } catch (CommandSyntaxException e) {
             throw e;
         } catch (Exception e) {
@@ -154,7 +155,7 @@ public final class GameCommand {
         }
     }
 
-    private static int openGame(CommandContext<ServerCommandSource> context, GameConfig<?> config, boolean test) {
+    private static int openGame(CommandContext<ServerCommandSource> context, RegistryEntry<GameConfig<?>> config, boolean test) {
         var source = context.getSource();
         var server = source.getServer();
 
@@ -414,19 +415,21 @@ public final class GameCommand {
     }
 
     private static int listGames(CommandContext<ServerCommandSource> context) {
+        var registry = context.getSource().getRegistryManager().get(GameConfigs.REGISTRY_KEY);
         var source = context.getSource();
         source.sendFeedback(() -> GameTexts.Command.gameList().formatted(Formatting.BOLD), false);
 
-        for (var id : GameConfigs.getKeys()) {
+        registry.streamEntries().forEach(game -> {
+            var id = game.registryKey().getValue();
             source.sendFeedback(() -> {
                 String command = "/game open " + id;
 
-                var link = GameConfig.name(GameConfigs.get(id)).copy()
+                var link = GameConfig.name(game).copy()
                         .setStyle(GameTexts.commandLinkStyle(command));
 
                 return GameTexts.Command.listEntry(link);
             }, false);
-        }
+        });
 
         return Command.SINGLE_SUCCESS;
     }

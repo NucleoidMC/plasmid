@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
@@ -15,7 +16,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.Codecs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nucleoid.plasmid.command.*;
@@ -23,6 +23,7 @@ import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameType;
 import xyz.nucleoid.plasmid.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.game.composite.RandomGameConfig;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
@@ -32,8 +33,8 @@ import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
 import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.game.LegacyOnDemandPortalConfig;
 import xyz.nucleoid.plasmid.game.portal.game.NewGamePortalConfig;
-import xyz.nucleoid.plasmid.game.portal.menu.*;
 import xyz.nucleoid.plasmid.game.portal.game.SingleGamePortalConfig;
+import xyz.nucleoid.plasmid.game.portal.menu.*;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 
 public final class Plasmid implements ModInitializer {
@@ -43,8 +44,9 @@ public final class Plasmid implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Registry.register(Registries.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
+        DynamicRegistries.register(GameConfigs.REGISTRY_KEY, GameConfig.DIRECT_CODEC);
 
+        Registry.register(Registries.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
 
         GamePortalConfig.register(new Identifier(ID, "single_game"), SingleGamePortalConfig.CODEC);
         GamePortalConfig.register(new Identifier(ID, "new_game"), NewGamePortalConfig.CODEC);
@@ -64,8 +66,7 @@ public final class Plasmid implements ModInitializer {
     }
 
     private void loadData(DynamicRegistryManager registryManager, ResourceManager manager) {
-        GameConfigs.reload(registryManager, manager);
-        GamePortalManager.INSTANCE.reload(manager);
+        GamePortalManager.INSTANCE.reload(registryManager, manager);
     }
 
     private void registerCallbacks() {

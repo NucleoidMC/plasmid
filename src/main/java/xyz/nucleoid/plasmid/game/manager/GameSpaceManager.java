@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -79,13 +80,12 @@ public final class GameSpaceManager {
         }
     }
 
-    public CompletableFuture<ManagedGameSpace> open(GameConfig<?> config) {
+    public CompletableFuture<ManagedGameSpace> open(RegistryEntry<GameConfig<?>> config) {
         if (this.server == null) {
             return CompletableFuture.failedFuture(new RuntimeException("Not initialized yet!"));
         }
-
         return CompletableFuture.supplyAsync(
-                () -> config.openProcedure(this.server),
+                () -> config.value().openProcedure(this.server),
                 Util.getMainWorkerExecutor()
         ).thenApplyAsync(
                 procedure -> this.addGameSpace(procedure.configOverride() != null ? procedure.configOverride() : config, procedure),
@@ -93,13 +93,13 @@ public final class GameSpaceManager {
         );
     }
 
-    private ManagedGameSpace addGameSpace(GameConfig<?> config, GameOpenProcedure procedure) {
+    private ManagedGameSpace addGameSpace(RegistryEntry<GameConfig<?>> config, GameOpenProcedure procedure) {
         if (this.server == null) {
             throw new RuntimeException("Not initialized yet!");
         }
         var id = UUID.randomUUID();
 
-        var userId = this.userIds.acquire(config);
+        var userId = this.userIds.acquire(config.value());
         Preconditions.checkState(!this.userIdToGameSpace.containsKey(userId), "duplicate GameSpace user id acquired");
 
         var metadata = new GameSpaceMetadata(id, userId, config);

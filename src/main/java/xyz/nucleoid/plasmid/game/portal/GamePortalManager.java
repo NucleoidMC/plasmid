@@ -4,8 +4,8 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
@@ -16,7 +16,6 @@ import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,10 +54,10 @@ public final class GamePortalManager {
     }
 
     @ApiStatus.Internal
-    public void reload(ResourceManager manager) {
+    public void reload(DynamicRegistryManager registryManager, ResourceManager manager) {
         this.portals.clear();
 
-        var configs = this.loadConfigs(manager);
+        var configs = this.loadConfigs(registryManager, manager);
         if (this.server != null) {
             this.loadPortalsFrom(this.server, configs);
         } else {
@@ -78,7 +77,7 @@ public final class GamePortalManager {
         }
     }
 
-    private Map<Identifier, GamePortalConfig> loadConfigs(ResourceManager manager) {
+    private Map<Identifier, GamePortalConfig> loadConfigs(DynamicRegistryManager registryManager, ResourceManager manager) {
         var configs = new Object2ObjectOpenHashMap<Identifier, GamePortalConfig>();
 
         manager.findResources(PATH, path -> path.getPath().endsWith(".json")).forEach((path, resource) -> {
@@ -87,7 +86,7 @@ public final class GamePortalManager {
                     var json = JsonParser.parseReader(reader);
                     var identifier = identifierFromPath(path);
 
-                    var result = GamePortalConfig.CODEC.parse(JsonOps.INSTANCE, json);
+                    var result = GamePortalConfig.CODEC.parse(RegistryOps.of(JsonOps.INSTANCE, registryManager), json);
 
                     result.result().ifPresent(config -> {
                         configs.put(identifier, config);

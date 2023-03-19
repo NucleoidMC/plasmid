@@ -8,7 +8,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.portal.GamePortal.GuiProvider;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalBackend;
@@ -85,19 +84,14 @@ public final class MenuPortalBackend implements GamePortalBackend {
     private List<MenuEntry> buildGames(List<MenuPortalConfig.Entry> configs) {
         var games = new ArrayList<MenuEntry>(configs.size());
         for (var configEntry : configs) {
-            var game = new ConcurrentGamePortalBackend(configEntry.game());
-            var gameConfig = GameConfigs.get(configEntry.game());
-
-            if (gameConfig != null) {
-                games.add(new GameMenuEntry(
-                        game,
-                        configEntry.name().orElse(GameConfig.name(gameConfig)),
-                        configEntry.description().orElse(gameConfig.description()),
-                        configEntry.icon().orElse(gameConfig.icon())
-                ));
-            } else {
-                games.add(new InvalidMenuEntry(game.getName()));
-            }
+            var config = configEntry.game();
+            var game = new ConcurrentGamePortalBackend(config);
+            games.add(new GameMenuEntry(
+                    game,
+                    configEntry.name().orElse(GameConfig.name(config)),
+                    configEntry.description().orElse(config.value().description()),
+                    configEntry.icon().orElse(config.value().icon())
+            ));
         }
 
         return games;

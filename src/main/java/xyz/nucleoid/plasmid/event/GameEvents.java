@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.event;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.GameActivity;
@@ -75,7 +76,7 @@ public final class GameEvents {
          * @param game The game and its configuration
          * @param gameSpace The {@link GameSpace} the game is running in.
          */
-        void onGameSpaceOpened(GameConfig<?> game, GameSpace gameSpace);
+        void onGameSpaceOpened(RegistryEntry<GameConfig<?>> game, GameSpace gameSpace);
     }
 
     public interface CreateActivity {

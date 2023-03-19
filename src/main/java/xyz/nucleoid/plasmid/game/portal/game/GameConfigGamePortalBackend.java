@@ -2,9 +2,9 @@ package xyz.nucleoid.plasmid.game.portal.game;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
@@ -16,13 +16,12 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public interface GameConfigGamePortalBackend extends GamePortalBackend {
-    Identifier gameId();
+    RegistryEntry<GameConfig<?>> game();
 
     @Override
     default void provideGameSpaces(Consumer<GameSpace> consumer) {
-        var gameConfig = GameConfigs.get(this.gameId());
         for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
-            if (gameSpace.getMetadata().isSourceConfig(gameConfig)) {
+            if (gameSpace.getMetadata().isSourceConfig(this.game())) {
                 consumer.accept(gameSpace);
             }
         }
@@ -31,9 +30,8 @@ public interface GameConfigGamePortalBackend extends GamePortalBackend {
     @Override
     default int getPlayerCount() {
         int count = 0;
-        var gameConfig = GameConfigs.get(this.gameId());
         for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
-            if (gameSpace.getMetadata().isSourceConfig(gameConfig)) {
+            if (gameSpace.getMetadata().isSourceConfig(this.game())) {
                 count += gameSpace.getPlayers().size();
             }
         }
@@ -42,32 +40,17 @@ public interface GameConfigGamePortalBackend extends GamePortalBackend {
 
     @Override
     default List<Text> getDescription() {
-        var config = GameConfigs.get(this.gameId());
-        if (config != null) {
-            return config.description();
-        }
-
-        return Collections.emptyList();
+        return this.game().value().description();
     }
 
     @Override
     default ItemStack getIcon() {
-        var config = GameConfigs.get(this.gameId());
-        if (config != null) {
-            return config.icon();
-        }
-
-        return Items.BARRIER.getDefaultStack();
+        return this.game().value().icon();
     }
 
     @Override
     default Text getName() {
-        var config = GameConfigs.get(this.gameId());
-        if (config != null) {
-            return GameConfig.name(config);
-        } else {
-            return Text.literal(this.gameId().toString()).formatted(Formatting.RED);
-        }
+        return GameConfig.name(this.game());
     }
 
     @Override

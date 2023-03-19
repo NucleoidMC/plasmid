@@ -5,9 +5,10 @@ import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.entry.RegistryElementCodec;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.codecs.MoreCodecs;
@@ -25,7 +26,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public record GameConfig<C>(
-        @Nullable Identifier source,
         GameType<C> type,
         @Nullable Text name,
         @Nullable Text shortName,
@@ -34,11 +34,8 @@ public record GameConfig<C>(
         CustomValuesConfig custom,
         C config
 ) {
-    public static final Codec<GameConfig<?>> CODEC = codecFrom(null);
-
-    public static Codec<GameConfig<?>> codecFrom(Identifier source) {
-        return new ConfigCodec(source).codec();
-    }
+    public static final Codec<GameConfig<?>> DIRECT_CODEC = new ConfigCodec().codec();
+    public static final Codec<RegistryEntry<GameConfig<?>>> CODEC = RegistryElementCodec.of(GameConfigs.REGISTRY_KEY, DIRECT_CODEC);
 
     public GameOpenProcedure openProcedure(MinecraftServer server) {
         var context = new GameOpenContext<C>(server, this);
@@ -48,42 +45,34 @@ public record GameConfig<C>(
     /**
      * @return the source location that this config was loaded from, if loaded from a file.
      */
-    @Override
-    @Nullable
-    public Identifier source() {
-        return this.source;
-    }
-
-    /**
-     * @return the source location that this config was loaded from, if loaded from a file.
-     */
-    public static String sourceName(GameConfig<?> config) {
-        return Optional.ofNullable(config.source).map(Identifier::toString).orElse("[unknown source]");
+    public static String sourceName(RegistryEntry<GameConfig<?>> config) {
+        return config.getKey().map(e -> e.getValue().toString()).orElse("[unknown source]");
     }
 
     /**
      * @return the name for this game config, defaulted to the game type name if none is specified
      */
-    public static Text name(final GameConfig<?> config) {
-        var name = config.name;
+    public static Text name(final RegistryEntry<GameConfig<?>> config) {
+        var name = config.value().name;
         if (name != null) {
             return name;
         }
 
-        var translationKey = config.translationKey();
-        if (translationKey != null && hasTranslationFor(translationKey)) {
-            return Text.translatable(translationKey);
+        var translationKey = config.getKey().map(key -> Util.createTranslationKey("game", key.getValue()))
+                .filter(GameConfig::hasTranslationFor);
+        if (translationKey.isPresent()) {
+            return Text.translatable(translationKey.get());
         }
 
-        return config.type.name();
+        return config.value().type.name();
     }
 
     /**
      * @return shortened version of the name, defaulted to standard name
      */
-    public static Text shortName(final GameConfig<?> config) {
-        if (config.shortName != null) {
-            return config.shortName;
+    public static Text shortName(final RegistryEntry<GameConfig<?>> config) {
+        if (config.value().shortName != null) {
+            return config.value().shortName;
         }
         return name(config);
     }
@@ -116,22 +105,7 @@ public record GameConfig<C>(
         return language.serverTranslations().contains(translationKey);
     }
 
-    @Nullable
-    public String translationKey() {
-        if (this.source != null) {
-            return Util.createTranslationKey("game", this.source);
-        } else {
-            return null;
-        }
-    }
-
     static final class ConfigCodec extends MapCodec<GameConfig<?>> {
-        private final Identifier source;
-
-        ConfigCodec(@Nullable Identifier source) {
-            this.source = source;
-        }
-
         @Override
         public <T> Stream<T> keys(DynamicOps<T> ops) {
             return Stream.concat(Stream.of(ops.createString("type"), ops.createString("config")), Metadata.MAP_CODEC.keys(ops));
@@ -161,7 +135,7 @@ public record GameConfig<C>(
         @SuppressWarnings("unchecked")
         private <C> GameConfig<C> createConfigUnchecked(GameType<C> type, Metadata metadata, Object config) {
             return new GameConfig<>(
-                    this.source, type,
+                    type,
                     metadata.name.orElse(null), metadata.shortName.orElse(null), metadata.description.orElse(null),
                     metadata.icon, metadata.custom,
                     (C) config

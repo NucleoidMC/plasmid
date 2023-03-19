@@ -93,7 +93,7 @@ public final class GameWaitingLobby {
         activity.listen(GamePlayerEvents.REMOVE, lobby::onRemovePlayer);
 
 
-        lobby.setSidebarLines(sourceConfig.description());
+        lobby.setSidebarLines(sourceConfig.value().description());
         var title = GameConfig.shortName(sourceConfig).copy();
 
         if (title.getStyle().getColor() == null) {

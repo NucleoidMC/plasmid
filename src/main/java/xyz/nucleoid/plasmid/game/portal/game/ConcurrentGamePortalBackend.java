@@ -1,12 +1,9 @@
 package xyz.nucleoid.plasmid.game.portal.game;
 
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import xyz.nucleoid.plasmid.Plasmid;
-import xyz.nucleoid.plasmid.game.GameOpenException;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
@@ -15,23 +12,22 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBackend {
-    private final Identifier gameId;
+    private final RegistryEntry<GameConfig<?>> game;
     private CompletableFuture<ManagedGameSpace> gameFuture;
 
-    public ConcurrentGamePortalBackend(Identifier gameId) {
-        this.gameId = gameId;
+    public ConcurrentGamePortalBackend(RegistryEntry<GameConfig<?>> game) {
+        this.game = game;
     }
 
     @Override
-    public Identifier gameId() {
-        return this.gameId;
+    public RegistryEntry<GameConfig<?>> game() {
+        return this.game;
     }
 
     @Override
     public void applyTo(ServerPlayerEntity player) {
-        var gameConfig = GameConfigs.get(this.gameId);
         for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
-            if (gameSpace.getMetadata().sourceConfig() == gameConfig) {
+            if (gameSpace.getMetadata().sourceConfig().equals(this.game)) {
                 var results = GamePlayerJoiner.tryJoin(player, gameSpace);
 
                 if (results.globalError == null && results.playerErrors.get(player) == null) {
@@ -66,17 +62,6 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
     }
 
     private CompletableFuture<ManagedGameSpace> openGame(MinecraftServer server) {
-        var config = GameConfigs.get(this.gameId);
-        if (config == null) {
-            Plasmid.LOGGER.warn("Missing game config for concurent game with id '{}'", this.gameId);
-
-            var future = new CompletableFuture<ManagedGameSpace>();
-            var error = Text.translatable("text.plasmid.game_config.game_config_does_not_exist", this.gameId);
-            future.completeExceptionally(new GameOpenException(error));
-
-            return future;
-        }
-
-        return GameSpaceManager.get().open(config);
+        return GameSpaceManager.get().open(this.game);
     }
 }

@@ -55,6 +55,13 @@ public record GameConfig<C>(
     }
 
     /**
+     * @return the source location that this config was loaded from, if loaded from a file.
+     */
+    public static String sourceName(GameConfig<?> config) {
+        return Optional.ofNullable(config.source).map(Identifier::toString).orElse("[unknown source]");
+    }
+
+    /**
      * @return the name for this game config, defaulted to the game type name if none is specified
      */
     public static Text name(final GameConfig<?> config) {

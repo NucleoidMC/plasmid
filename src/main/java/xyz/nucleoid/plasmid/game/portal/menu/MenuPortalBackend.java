@@ -1,20 +1,16 @@
 package xyz.nucleoid.plasmid.game.portal.menu;
 
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.portal.GamePortal.GuiProvider;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
-import xyz.nucleoid.plasmid.game.portal.GamePortalDisplay;
 import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalBackend;
 import xyz.nucleoid.plasmid.util.Guis;
 
@@ -95,7 +91,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
             if (gameConfig != null) {
                 games.add(new GameMenuEntry(
                         game,
-                        configEntry.name().orElse(gameConfig.name()),
+                        configEntry.name().orElse(GameConfig.name(gameConfig)),
                         configEntry.description().orElse(gameConfig.description()),
                         configEntry.icon().orElse(gameConfig.icon())
                 ));

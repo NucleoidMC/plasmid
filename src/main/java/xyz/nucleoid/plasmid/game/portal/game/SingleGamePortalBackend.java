@@ -12,6 +12,7 @@ import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameLifecycle;
 import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
@@ -72,7 +73,7 @@ public final class SingleGamePortalBackend implements GamePortalBackend {
     public Text getName() {
         var config = GameConfigs.get(this.gameId);
         if (config != null) {
-            return config.name();
+            return GameConfig.name(config);
         } else {
             return Text.literal(this.gameId.toString()).formatted(Formatting.RED);
         }

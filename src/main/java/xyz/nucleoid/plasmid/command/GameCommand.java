@@ -421,7 +421,7 @@ public final class GameCommand {
             source.sendFeedback(() -> {
                 String command = "/game open " + id;
 
-                var link = GameConfigs.get(id).name().copy()
+                var link = GameConfig.name(GameConfigs.get(id)).copy()
                         .setStyle(GameTexts.commandLinkStyle(command));
 
                 return GameTexts.Command.listEntry(link);

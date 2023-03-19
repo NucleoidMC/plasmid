@@ -17,6 +17,7 @@ import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
 import xyz.nucleoid.plasmid.game.common.widget.BossBarWidget;
 import xyz.nucleoid.plasmid.game.common.widget.SidebarWidget;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
@@ -93,7 +94,7 @@ public final class GameWaitingLobby {
 
 
         lobby.setSidebarLines(sourceConfig.description());
-        var title = sourceConfig.shortName().copy();
+        var title = GameConfig.shortName(sourceConfig).copy();
 
         if (title.getStyle().getColor() == null) {
             title.setStyle(title.getStyle().withColor(Formatting.GOLD));

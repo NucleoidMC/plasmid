@@ -57,19 +57,36 @@ public record GameConfig<C>(
     /**
      * @return the name for this game config, defaulted to the game type name if none is specified
      */
-    @Override
-    public Text name() {
-        var name = this.name;
+    public static Text name(final GameConfig<?> config) {
+        var name = config.name;
         if (name != null) {
             return name;
         }
 
-        var translationKey = this.translationKey();
+        var translationKey = config.translationKey();
         if (translationKey != null && hasTranslationFor(translationKey)) {
             return Text.translatable(translationKey);
         }
 
-        return this.type.name();
+        return config.type.name();
+    }
+
+    /**
+     * @return the name for this game config, defaulted to the game type name if none is specified
+     */
+    @Override
+    public Text name() {
+        return name(this);
+    }
+
+    /**
+     * @return shortened version of the name, defaulted to standard name
+     */
+    public static Text shortName(final GameConfig<?> config) {
+        if (config.shortName != null) {
+            return config.shortName;
+        }
+        return name(config);
     }
 
     /**
@@ -77,10 +94,7 @@ public record GameConfig<C>(
      */
     @Override
     public Text shortName() {
-        if (this.shortName != null) {
-            return this.shortName;
-        }
-        return this.name();
+        return shortName(this);
     }
 
     /**

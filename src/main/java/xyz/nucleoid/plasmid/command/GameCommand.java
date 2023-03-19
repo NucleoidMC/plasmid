@@ -100,7 +100,7 @@ public final class GameCommand {
                 .then(literal("joinall")
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(GameCommand::joinAllGame)
-                    .then(GameConfigArgument.argument("game_config")
+                    .then(GameSpaceArgument.argument("game_space")
                         .executes(GameCommand::joinAllQualifiedGame)
                     )
                 )

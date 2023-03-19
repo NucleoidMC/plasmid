@@ -104,7 +104,7 @@ public final class IsolatingPlayerTeleporter {
                 world.getDimensionKey(), world.getRegistryKey(),
                 BiomeAccess.hashSeed(world.getSeed()),
                 player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(),
-                world.isDebugWorld(), world.isFlat(), (byte) 0,
+                world.isDebugWorld(), world.isFlat(), PlayerRespawnS2CPacket.KEEP_ALL,
                 player.getLastDeathPos()
         ));
 
@@ -116,7 +116,6 @@ public final class IsolatingPlayerTeleporter {
         networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
         networkHandler.sendPacket(new DifficultyS2CPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
         networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(player.getInventory().selectedSlot));
-        networkHandler.sendPacket(new EntityAttributesS2CPacket(player.getId(), player.getAttributes().getAttributesToSend()));
         player.sendAbilitiesUpdate();
         playerManager.sendCommandTree(player);
         player.getRecipeBook().sendInitRecipesPacket(player);

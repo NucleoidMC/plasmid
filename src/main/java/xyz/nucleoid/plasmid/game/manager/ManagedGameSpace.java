@@ -11,6 +11,7 @@ import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.*;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
@@ -107,7 +108,7 @@ public final class ManagedGameSpace implements GameSpace {
 
         var players = Lists.newArrayList(this.players);
 
-        Plasmid.LOGGER.info("Game space {} (source: {}) closing for reason {}", this.metadata.id(), this.metadata.sourceConfig().source(), reason);
+        Plasmid.LOGGER.info("Game space {} (source: {}) closing for reason {}", this.metadata.id(), GameConfig.sourceName(this.metadata.sourceConfig()), reason);
         GameEvents.CLOSING.invoker().onGameSpaceClosing(this, reason);
         this.lifecycle.onClosing(this, reason);
 

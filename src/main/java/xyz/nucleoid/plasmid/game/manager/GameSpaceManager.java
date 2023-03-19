@@ -110,7 +110,7 @@ public final class GameSpaceManager {
         this.idToGameSpace.put(id, gameSpace);
         this.userIdToGameSpace.put(userId, gameSpace);
 
-        Plasmid.LOGGER.info("Game space {} (source: {}) opened", id, config.source());
+        Plasmid.LOGGER.info("Game space {} (source: {}) opened", id, GameConfig.sourceName(config));
         GameEvents.OPENED.invoker().onGameSpaceOpened(config, gameSpace);
 
         procedure.apply(gameSpace);

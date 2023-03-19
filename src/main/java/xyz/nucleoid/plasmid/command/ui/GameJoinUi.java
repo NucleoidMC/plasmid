@@ -11,6 +11,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
@@ -114,7 +115,7 @@ public class GameJoinUi extends SimpleGui {
     private GuiElementBuilder createIconFor(GameSpace gameSpace) {
         var sourceConfig = gameSpace.getMetadata().sourceConfig();
         var element = GuiElementBuilder.from(sourceConfig.icon().copy()).hideFlags()
-                .setName(sourceConfig.name().copy());
+                .setName(GameConfig.name(sourceConfig).copy());
 
         for (var line : sourceConfig.description()) {
             var text = line.copy();

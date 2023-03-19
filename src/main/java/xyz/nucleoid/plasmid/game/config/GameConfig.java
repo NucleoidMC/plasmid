@@ -72,14 +72,6 @@ public record GameConfig<C>(
     }
 
     /**
-     * @return the name for this game config, defaulted to the game type name if none is specified
-     */
-    @Override
-    public Text name() {
-        return name(this);
-    }
-
-    /**
      * @return shortened version of the name, defaulted to standard name
      */
     public static Text shortName(final GameConfig<?> config) {
@@ -87,14 +79,6 @@ public record GameConfig<C>(
             return config.shortName;
         }
         return name(config);
-    }
-
-    /**
-     * @return shortened version of the name, defaulted to standard name
-     */
-    @Override
-    public Text shortName() {
-        return shortName(this);
     }
 
     /**

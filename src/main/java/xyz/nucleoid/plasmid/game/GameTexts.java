@@ -4,6 +4,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 
 /**
  * Utility class containing various functions that supply {@link Text} instances.
@@ -32,21 +33,21 @@ public final class GameTexts {
 
     public static final class Broadcast {
         public static MutableText gameOpened(ServerCommandSource source, GameSpace gameSpace) {
-            var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
+            var gameName = GameConfig.name(gameSpace.getMetadata().sourceConfig()).copy().formatted(Formatting.GRAY);
 
             return Text.translatable("text.plasmid.game.open.opened", source.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
         }
 
         public static MutableText gameOpenedTesting(ServerCommandSource source, GameSpace gameSpace) {
-            var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
+            var gameName = GameConfig.name(gameSpace.getMetadata().sourceConfig()).copy().formatted(Formatting.GRAY);
 
             return Text.translatable("text.plasmid.game.open.opened.testing", source.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
         }
 
         public static MutableText propose(ServerCommandSource source, GameSpace gameSpace) {
-            var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
+            var gameName = GameConfig.name(gameSpace.getMetadata().sourceConfig()).copy().formatted(Formatting.GRAY);
 
             return Text.translatable("text.plasmid.game.propose", source.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
@@ -59,7 +60,7 @@ public final class GameTexts {
 
     public static final class Command {
         public static MutableText located(ServerPlayerEntity player, GameSpace gameSpace) {
-            var gameName = gameSpace.getMetadata().sourceConfig().name().copy().formatted(Formatting.GRAY);
+            var gameName = GameConfig.name(gameSpace.getMetadata().sourceConfig()).copy().formatted(Formatting.GRAY);
 
             return Text.translatable("text.plasmid.game.locate.located", player.getDisplayName(), gameName)
                     .append(GameTexts.Join.link(gameSpace));
@@ -112,7 +113,7 @@ public final class GameTexts {
         }
 
         public static MutableText link(GameSpace gameSpace) {
-            var hover = Text.translatable("text.plasmid.join_link_hover", gameSpace.getMetadata().sourceConfig().name());
+            var hover = Text.translatable("text.plasmid.join_link_hover", GameConfig.name(gameSpace.getMetadata().sourceConfig()));
 
             return Text.translatable("text.plasmid.game.open.join")
                     .setStyle(commandLinkStyle("/game join " + gameSpace.getMetadata().userId(), hover));

@@ -6,6 +6,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
@@ -63,7 +64,7 @@ public interface GameConfigGamePortalBackend extends GamePortalBackend {
     default Text getName() {
         var config = GameConfigs.get(this.gameId());
         if (config != null) {
-            return config.name();
+            return GameConfig.name(config);
         } else {
             return Text.literal(this.gameId().toString()).formatted(Formatting.RED);
         }

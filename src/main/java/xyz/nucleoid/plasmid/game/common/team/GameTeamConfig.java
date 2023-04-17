@@ -29,6 +29,7 @@ public final record GameTeamConfig(
         Text name,
         Colors colors,
         boolean friendlyFire,
+        boolean indirectFriendlyFire,
         AbstractTeam.CollisionRule collision,
         AbstractTeam.VisibilityRule nameTagVisibility,
         Text prefix,
@@ -42,6 +43,7 @@ public final record GameTeamConfig(
                 PlasmidCodecs.TEXT.fieldOf("name").forGetter(GameTeamConfig::name),
                 Colors.CODEC.optionalFieldOf("color", Colors.NONE).forGetter(GameTeamConfig::colors),
                 Codec.BOOL.optionalFieldOf("friendly_fire", true).forGetter(GameTeamConfig::friendlyFire),
+                Codec.BOOL.optionalFieldOf("indirect_friendly_fire", true).forGetter(GameTeamConfig::indirectFriendlyFire),
                 COLLISION_CODEC.optionalFieldOf("collision", AbstractTeam.CollisionRule.ALWAYS).forGetter(GameTeamConfig::collision),
                 VISIBILITY_CODEC.optionalFieldOf("name_tag_visibility", AbstractTeam.VisibilityRule.ALWAYS).forGetter(GameTeamConfig::nameTagVisibility),
                 PlasmidCodecs.TEXT.optionalFieldOf("prefix", ScreenTexts.EMPTY).forGetter(GameTeamConfig::prefix),
@@ -53,14 +55,19 @@ public final record GameTeamConfig(
 
     public static final GameTeamConfig DEFAULT = GameTeamConfig.builder().build();
 
-    public GameTeamConfig(Text name, Colors colors, boolean friendlyFire, AbstractTeam.CollisionRule collision, AbstractTeam.VisibilityRule nameTagVisibility, Text prefix, Text suffix) {
+    public GameTeamConfig(Text name, Colors colors, boolean friendlyFire, boolean indirectFriendlyFire, AbstractTeam.CollisionRule collision, AbstractTeam.VisibilityRule nameTagVisibility, Text prefix, Text suffix) {
         this.name = name.copy().styled(style -> style.getColor() == null ? style.withColor(colors.chatFormatting()) : style);
         this.colors = colors;
         this.friendlyFire = friendlyFire;
+        this.indirectFriendlyFire = indirectFriendlyFire;
         this.collision = collision;
         this.nameTagVisibility = nameTagVisibility;
         this.prefix = prefix;
         this.suffix = suffix;
+    }
+
+    public GameTeamConfig(Text name, Colors colors, boolean friendlyFire, AbstractTeam.CollisionRule collision, AbstractTeam.VisibilityRule nameTagVisibility, Text prefix, Text suffix) {
+        this(name, colors, friendlyFire, false, collision, nameTagVisibility, prefix, suffix);
     }
 
     public static Builder builder() {

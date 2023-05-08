@@ -121,7 +121,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Adds given player to the given team, and removes them from any previous team they were apart of.
+     * Adds given player to the given team, and removes them from any previous team they were apart from.
      *
      * @param player {@link PlayerRef} to add
      * @param team the team to add the player to
@@ -150,7 +150,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Adds given player to the given team, and removes them from any previous team they were apart of.
+     * Adds given player to the given team, and removes them from any previous team they were apart from.
      *
      * @param player {@link ServerPlayerEntity} to add
      * @param team the team to add the player to
@@ -194,7 +194,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Removes the given player from any team they are apart of.
+     * Removes the given player from any team they are apart from.
      *
      * @param player the {@link ServerPlayerEntity} of the player to remove
      * @return the team that the player was removed from, or {@code null}
@@ -205,7 +205,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Removes the given player from any team they are apart of.
+     * Removes the given player from any team they are apart from.
      *
      * @param player the {@link PlayerRef} of the player to remove
      * @return the team that the player was removed from, or {@code null}
@@ -220,7 +220,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Returns the team that the given player is apart of.
+     * Returns the team that the given player is apart from.
      *
      * @param player the player to query
      * @return the player's {@link GameTeamKey} or {@code null}
@@ -231,7 +231,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     /**
-     * Returns the team that the given player is apart of.
+     * Returns the team that the given player is apart from.
      *
      * @param player the player to query
      * @return the player's {@link GameTeamKey} or {@code null}
@@ -313,11 +313,10 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     private void onRemovePlayer(ServerPlayerEntity player) {
-        var team = this.teamFor(player);
-        if (team != null) {
-            var state = this.teamState(team);
-            this.removeOnlinePlayer(player, state);
-        }
+        this.teamToState.values().forEach(state -> {
+            if(state.onlinePlayers.contains(player))
+                this.removeOnlinePlayer(player, state);
+        });
 
         if (!player.isDisconnected()) {
             this.sendRemoveTeamsForPlayer(player);

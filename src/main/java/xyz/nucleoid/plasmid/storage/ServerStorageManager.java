@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.PersistentState;
 import xyz.nucleoid.plasmid.Plasmid;
 
+@Deprecated
 public final class ServerStorageManager extends PersistentState {
     private static final String KEY = Plasmid.ID + "_storage";
     private static boolean loaded = false;

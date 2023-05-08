@@ -12,7 +12,9 @@ import java.util.UUID;
 
 /**
  * A simple class for storing the scores of players.
+ * use patbox's player data api instead, data stored here will not be sync across servers
  */
+@Deprecated
 public class PlayerScoreStorage implements ServerStorage {
     public final Object2IntMap<UUID> scoreMap = new Object2IntArrayMap<>();
 

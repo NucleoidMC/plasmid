@@ -11,7 +11,10 @@ import java.util.Map;
  * This interface is useful for storing data about games, e.g. player scores.
  *
  * @see {@link net.minecraft.world.PersistentState}
+ *
+ *
  */
+@Deprecated
 public interface ServerStorage {
     Map<Identifier, ServerStorage> STORAGES = new HashMap<>();
 

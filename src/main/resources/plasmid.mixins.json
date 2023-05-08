@@ -6,6 +6,7 @@
   "mixins": [
     "chat.PlayerEntityMixin",
     "chat.PlayerListS2CPacketEntryAccessor",
+    "containerisation.PlayerManagerMixin",
     "chat.ServerPlayerEntityMixin",
     "game.portal.EntityMixin",
     "game.portal.SignBlockEntityMixin",
@@ -15,11 +16,13 @@
     "game.rule.ServerPlayerEntityMixin",
     "game.rule.ServerPlayNetworkHandlerMixin",
     "game.rule.TridentEntityMixin",
-    "game.space.IntegratedPlayerManagerMixin",
     "game.space.PlayerManagerMixin",
     "game.space.ScreenHandlerMixin",
     "game.space.ServerPlayerEntityMixin",
     "storage.ServerWorldMixin"
+  ],
+  "client": [
+    "game.space.IntegratedPlayerManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

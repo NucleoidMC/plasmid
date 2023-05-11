@@ -69,12 +69,12 @@ dependencies {
   modApi include('xyz.nucleoid:more-codecs:0.3.1+1.19.4')
   modApi include('xyz.nucleoid:stimuli:0.4.4+1.19.4-rc2')
   modApi include('xyz.nucleoid:map-templates:0.1.7+1.19.4-rc2')
-  modApi include('eu.pb4:polymer-core:0.4.7+1.19.4')
-  modApi 'eu.pb4:polymer-common:0.4.7+1.19.4'
-  modApi 'eu.pb4:polymer-networking:0.4.7+1.19.4'
-  modApi include('eu.pb4:polymer-resource-pack:0.4.7+1.19.4')
-  modApi include('eu.pb4:polymer-blocks:0.4.7+1.19.4')
-  modApi include('eu.pb4:polymer-virtual-entity:0.4.7+1.19.4')
+  modApi include('eu.pb4:polymer-core:0.4.8+1.19.4')
+  modApi 'eu.pb4:polymer-common:0.4.8+1.19.4'
+  modApi 'eu.pb4:polymer-networking:0.4.8+1.19.4'
+  modApi include('eu.pb4:polymer-resource-pack:0.4.8+1.19.4')
+  modApi include('eu.pb4:polymer-blocks:0.4.8+1.19.4')
+  modApi include('eu.pb4:polymer-virtual-entity:0.4.8+1.19.4')
   modApi include('eu.pb4:hologram-api:0.2.3+1.19.3')
   modApi include('eu.pb4:sgui:1.2.1+1.19.3')
   modApi include('eu.pb4:sidebar-api:0.1.2+1.19.3')

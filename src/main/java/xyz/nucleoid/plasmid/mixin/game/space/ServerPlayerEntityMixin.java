@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 
 @Mixin(ServerPlayerEntity.class)
@@ -22,33 +23,24 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
     @Inject(method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V", at = @At("HEAD"), cancellable = true)
     private void onTeleport(ServerWorld targetWorld, double x, double y, double z, float yaw, float pitch, CallbackInfo ci) {
-        if (this.world != targetWorld && !this.tryTeleportTo(targetWorld)) {
+        if (this.world != targetWorld && !this.allowTeleport(targetWorld)) {
+            Plasmid.LOGGER.error("Player {} tried to teleport to a world they are not allowed to be in", this.getGameProfile().getName());
+            Plasmid.LOGGER.error("consider removing the player or adding them to the correct game space before teleporting them");
             ci.cancel();
         }
     }
 
     @Inject(method = "moveToWorld", at = @At("HEAD"), cancellable = true)
     private void onMoveWorld(ServerWorld targetWorld, CallbackInfoReturnable<Entity> ci) {
-        if (this.world != targetWorld && !this.tryTeleportTo(targetWorld)) {
+        if (this.world != targetWorld && !this.allowTeleport(targetWorld)) {
             ci.setReturnValue(this);
         }
     }
 
-    private boolean tryTeleportTo(ServerWorld targetWorld) {
+    private boolean allowTeleport(ServerWorld targetWorld) {
         var gameSpaceManager = GameSpaceManager.get();
         var playerGameSpace = gameSpaceManager.byPlayer(this);
         var targetGameSpace = gameSpaceManager.byWorld(targetWorld);
-        if (playerGameSpace == targetGameSpace) {
-            return true;
-        }
-
-        if (playerGameSpace != null && targetGameSpace == null) {
-            var self = (ServerPlayerEntity) (Object) this;
-            playerGameSpace.getPlayers().remove(self);
-            playerGameSpace.getPlayers().getTeleporter().teleportOutTo(self, targetWorld);
-            return true;
-        } else {
-            return false;
-        }
+        return playerGameSpace == targetGameSpace;
     }
 }

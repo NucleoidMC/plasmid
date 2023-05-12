@@ -21,8 +21,7 @@ import java.util.Optional;
 public record PlasmidConfig(
         Optional<String> userFacingPackAddress,
         Optional<PlasmidWebServer.Config> webServerConfig,
-        boolean containerizedChat,
-        boolean loadGamePortals
+        boolean containerizedChat
 ) {
     private static final Path PATH = Paths.get("config/plasmid.json");
 
@@ -32,8 +31,7 @@ public record PlasmidConfig(
         instance.group(
                 Codec.STRING.optionalFieldOf("resource_pack_address").forGetter(PlasmidConfig::userFacingPackAddress),
                 PlasmidWebServer.Config.CODEC.optionalFieldOf("web_server").forGetter(PlasmidConfig::webServerConfig),
-                Codec.BOOL.fieldOf("containerized_chat").forGetter(PlasmidConfig::containerizedChat),
-                Codec.BOOL.fieldOf("load_game_portals").forGetter(PlasmidConfig::loadGamePortals)
+                Codec.BOOL.fieldOf("containerized_chat").forGetter(PlasmidConfig::containerizedChat)
         ).apply(instance, PlasmidConfig::new)
     );
 
@@ -43,8 +41,7 @@ public record PlasmidConfig(
         this(
                 Optional.of("http://127.0.0.1:25566/" + PlasmidWebServer.RESOURCE_PACKS_ENDPOINT),
                 Optional.of(new PlasmidWebServer.Config(25566)),
-                false,
-                true
+                false
         );
     }
 

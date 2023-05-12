@@ -66,6 +66,8 @@
   "text.plasmid.join_result.game_full": "Game is already full!",
   "text.plasmid.join_result.in_other_game": "You must %s before joining another game!",
   "text.plasmid.join_result.in_other_game.leave_this_game": "leave this game",
+  "text.plasmid.join_result.world_not_set": "No world to join was set!",
+  "text.plasmid.join_result.player_instance_already_exists" : "[internal error] could not register this player instance since it already exists!",
   "text.plasmid.map_workspace.workspace_not_found": "Map with id '%s' was not found!",
   "text.plasmid.map.bounds.get": "The bounds for the workspace are %s to %s",
   "text.plasmid.map.bounds.set": "Updated bounds for workspace",

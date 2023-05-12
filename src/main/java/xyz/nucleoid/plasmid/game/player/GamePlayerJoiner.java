@@ -8,10 +8,14 @@ import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameOpenException;
 import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.GameSpacePlayers;
 import xyz.nucleoid.plasmid.game.GameTexts;
+import xyz.nucleoid.plasmid.game.player.isolation.PlayerManagerAccess;
+import xyz.nucleoid.plasmid.mixin.game.space.PlayerEntityAccessor;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -47,13 +51,48 @@ public final class GamePlayerJoiner {
         }
 
         for (var player : players) {
-            var result = gameSpace.getPlayers().offer(player);
+            var result = gameSpace.getPlayers().offer( getContext(player) );
             if (result.isError()) {
                 results.playerErrors.put(player, result.error());
             }
         }
 
         return results;
+    }
+
+    public static GameSpacePlayers.OfferContext getContext(ServerPlayerEntity actualPlayer) {
+        var MODEL_PARTS = ((PlayerEntityAccessor)actualPlayer).playerModelParts();
+        var newPlayer = new ServerPlayerEntity(actualPlayer.server, actualPlayer.getWorld(), actualPlayer.getGameProfile());
+        var playerManager = (PlayerManagerAccess) Objects.requireNonNull(actualPlayer.getServer()).getPlayerManager();
+
+        return new GameSpacePlayers.OfferContext(newPlayer,
+                () -> { //executed when the player joins the game space
+                    playerManager.plasmid$savePlayerData(actualPlayer); //save the player data
+                    playerManager.plasmid$removePlayer(actualPlayer);
+
+                    var handler = actualPlayer.networkHandler;
+                    handler.player = newPlayer; //change the player in the network handler
+                    newPlayer.networkHandler = handler; //copy the network handler
+
+                    newPlayer.setId(actualPlayer.getId()); //copy the id
+                    newPlayer.setMainArm(actualPlayer.getMainArm()); //copy the main arm
+
+                    newPlayer.getDataTracker().set(MODEL_PARTS, actualPlayer.getDataTracker().get(MODEL_PARTS)); //copy skin layers
+
+            }, false,
+
+
+                (oldPlayer) -> { //executed when the player leaves the game space
+                    playerManager.plasmid$removePlayer(oldPlayer);
+                    actualPlayer.unsetRemoved();
+
+                    var handler = oldPlayer.networkHandler; //reset the network handler for the old player
+                    handler.player = actualPlayer; //change the player in the network handler
+                    actualPlayer.networkHandler = handler; //copy the network handler
+
+                    actualPlayer.getDataTracker().set(MODEL_PARTS, oldPlayer.getDataTracker().get(MODEL_PARTS), true); //copy skin layers, true to make it dirty and force a sync
+                    playerManager.plasmid$AddPlayerAndSendDefaultJoinPacket(actualPlayer,false);
+        });
     }
 
     public static Results handleJoinException(Throwable throwable) {
@@ -74,8 +113,6 @@ public final class GamePlayerJoiner {
     public static final class Results {
         public Text globalError;
         public final Map<ServerPlayerEntity, Text> playerErrors = new Reference2ObjectOpenHashMap<>();
-        public boolean isSuccessful;
-
         public void sendErrorsTo(ServerPlayerEntity player) {
             if (this.globalError != null) {
                 player.sendMessage(this.globalError.copy().formatted(Formatting.RED), false);

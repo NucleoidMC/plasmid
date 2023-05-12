@@ -4,6 +4,7 @@ import com.google.common.collect.AbstractIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.util.PlayerRef;
 
@@ -56,7 +57,7 @@ public final class MutablePlayerSet implements PlayerSet {
     }
 
     @Override
-    public Iterator<ServerPlayerEntity> iterator() {
+    public @NotNull Iterator<ServerPlayerEntity> iterator() {
         var playerManager = this.server.getPlayerManager();
         var ids = this.players.iterator();
 

@@ -1,6 +1,8 @@
 package xyz.nucleoid.plasmid.game.world;
 
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.plasmid.game.GameSpace;
@@ -33,4 +35,12 @@ public interface GameSpaceWorlds extends Iterable<ServerWorld> {
     @NotNull
     @Override
     Iterator<ServerWorld> iterator();
+
+    /**
+     * Checks if this {@link GameSpaceWorlds} contains a world with the given dimension.
+     *
+     * @param dimension the dimension to check
+     * @return true if this {@link GameSpaceWorlds} contains a world with the given dimension
+     */
+    boolean contains(RegistryKey<World> dimension);
 }

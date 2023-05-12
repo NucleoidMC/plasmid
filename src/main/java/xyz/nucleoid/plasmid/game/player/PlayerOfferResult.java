@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public interface PlayerOfferResult {
     @Nullable
@@ -36,14 +38,19 @@ public interface PlayerOfferResult {
     }
 
     final class Accept implements PlayerOfferResult {
-        private final ServerWorld world;
-        private final Vec3d position;
-
+        private final Consumer<ServerPlayerEntity> joinConsumer;
         private final List<Runnable> and = new ArrayList<>();
 
         Accept(ServerWorld world, Vec3d position) {
-            this.world = world;
-            this.position = position;
+            this(player -> {
+                player.setWorld(world);
+                player.setPosition(position.x, position.y, position.z);
+            });
+        }
+
+        Accept(Consumer<ServerPlayerEntity> joinProcessor)
+        {
+            this.joinConsumer = joinProcessor;
         }
 
         public PlayerOfferResult.Accept and(Runnable and) {
@@ -51,13 +58,9 @@ public interface PlayerOfferResult {
             return this;
         }
 
-        public ServerWorld applyJoin(ServerPlayerEntity player) {
-            player.changeGameMode(GameMode.SURVIVAL);
-            player.refreshPositionAndAngles(this.position.x, this.position.y, this.position.z, 0.0F, 0.0F);
-
+        public void applyJoin(ServerPlayerEntity player) {
+            this.joinConsumer.accept(player);
             this.and.forEach(Runnable::run);
-
-            return this.world;
         }
 
         @Override

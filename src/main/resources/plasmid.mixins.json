@@ -6,20 +6,18 @@
   "mixins": [
     "chat.PlayerEntityMixin",
     "chat.PlayerListS2CPacketEntryAccessor",
-    "containerisation.PlayerManagerMixin",
     "chat.ServerPlayerEntityMixin",
-    "game.portal.EntityMixin",
-    "game.portal.SignBlockEntityMixin",
+    "containerisation.PlayerManagerMixin",
     "game.rule.ArmorAndElytraItemMixin",
     "game.rule.HungerManagerMixin",
     "game.rule.PlayerEntityMixin",
     "game.rule.ServerPlayerEntityMixin",
     "game.rule.ServerPlayNetworkHandlerMixin",
     "game.rule.TridentEntityMixin",
+    "game.space.PlayerEntityAccessor",
     "game.space.PlayerManagerMixin",
-    "game.space.ScreenHandlerMixin",
     "game.space.ServerPlayerEntityMixin",
-    "storage.ServerWorldMixin"
+    "game.space.ServerPlayNetworkHandlerMixin"
   ],
   "client": [
     "game.space.IntegratedPlayerManagerMixin"

@@ -80,8 +80,8 @@ dependencies {
   modApi include('eu.pb4:sidebar-api:0.1.2+1.19.3')
   modApi include("eu.pb4:placeholder-api:2.1.0+1.19.4")
   modApi include("eu.pb4:map-canvas-api:0.2.2+1.19.4")
-  modApi include("eu.pb4:eu.pb4:player-data-api:0.2.2+1.19.3")
-  modApi include("eu.pb4:eu.pb4:predicate-api:0.1.1+1.19.4")
+  modApi include("eu.pb4:player-data-api:0.2.2+1.19.3")
+  modApi include("eu.pb4:predicate-api:0.1.1+1.19.4")
 
   modCompileOnly('xyz.nucleoid:disguiselib-fabric:1.3.2')
   modCompileOnly('maven.modrinth:afkdisplay:1.0.1+1.19')

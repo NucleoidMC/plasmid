@@ -1,8 +1,10 @@
 package xyz.nucleoid.plasmid.mixin.game.space;
 
+import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.advancement.PlayerAdvancementTracker;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryKey;
@@ -136,11 +138,12 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
                 .orElse(World.OVERWORLD);
     }
 
-    @Inject(method = "savePlayerData", at = @At("HEAD"), cancellable = true)
-    private void savePlayerData(ServerPlayerEntity player, CallbackInfo ci) {
-        if (GameSpaceManager.get().inGame(player)) {
-            ci.cancel();
-        }
+    @WrapWithCondition(
+            method = "savePlayerData",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldSaveHandler;savePlayerData(Lnet/minecraft/entity/player/PlayerEntity;)V")
+    )
+    private boolean savePlayerData(WorldSaveHandler handler, PlayerEntity player) {
+        return !GameSpaceManager.get().inGame(player);
     }
 
     @Override

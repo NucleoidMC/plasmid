@@ -16,6 +16,7 @@
     "game.rule.TridentEntityMixin",
     "game.space.PlayerEntityAccessor",
     "game.space.PlayerManagerMixin",
+    "game.space.ServerPlayerEntityAccessor",
     "game.space.ServerPlayerEntityMixin",
     "game.space.ServerPlayNetworkHandlerMixin"
   ],

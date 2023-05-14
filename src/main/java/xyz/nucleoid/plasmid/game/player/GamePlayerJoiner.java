@@ -13,6 +13,7 @@ import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.player.isolation.PlayerManagerAccess;
 import xyz.nucleoid.plasmid.mixin.game.space.PlayerEntityAccessor;
+import xyz.nucleoid.plasmid.mixin.game.space.ServerPlayerEntityAccessor;
 
 import java.util.Collection;
 import java.util.Map;
@@ -80,6 +81,7 @@ public final class GamePlayerJoiner {
                     newPlayer.setId(actualPlayer.getId()); //copy the id
                     newPlayer.setMainArm(actualPlayer.getMainArm()); //copy the main arm
 
+                    ((ServerPlayerEntityAccessor)newPlayer).setSession(((ServerPlayerEntityAccessor)actualPlayer).getSession()); //copy the session, this is needed for chat encryption
                     newPlayer.getDataTracker().set(MODEL_PARTS, actualPlayer.getDataTracker().get(MODEL_PARTS)); //copy skin layers
 
                 }, false,
@@ -94,6 +96,7 @@ public final class GamePlayerJoiner {
                     actualPlayer.networkHandler = handler; //copy the network handler
 
                     actualPlayer.getDataTracker().set(MODEL_PARTS, oldPlayer.getDataTracker().get(MODEL_PARTS), true); //copy skin layers, true to make it dirty and force a sync
+
                     playerManager.plasmid$AddPlayerAndSendDefaultJoinPacket(actualPlayer,false);
             });
 
@@ -108,6 +111,7 @@ public final class GamePlayerJoiner {
 
                     newPlayer.setId(actualPlayer.getId()); //copy the id
                     newPlayer.setMainArm(actualPlayer.getMainArm()); //copy the main arm
+                    ((ServerPlayerEntityAccessor)newPlayer).setSession(((ServerPlayerEntityAccessor)actualPlayer).getSession()); //copy the session, this is needed for chat encryption
 
                     newPlayer.getDataTracker().set(MODEL_PARTS, actualPlayer.getDataTracker().get(MODEL_PARTS)); //copy skin layers
 

@@ -158,16 +158,6 @@ public final class GameCommand {
         var player = entity instanceof ServerPlayerEntity ? (ServerPlayerEntity) entity : null;
 
         server.submit(() -> {
-            if (player != null) {
-                var currentGameSpace = GameSpaceManager.get().byPlayer(player);
-                if (currentGameSpace != null) {
-                    if (test) {
-                        currentGameSpace.close(GameCloseReason.CANCELED);
-                    } else {
-                        currentGameSpace.getPlayers().kick(player);
-                    }
-                }
-            }
 
             GameSpaceManager.get().open(config)
                     .handleAsync((gameSpace, throwable) -> {

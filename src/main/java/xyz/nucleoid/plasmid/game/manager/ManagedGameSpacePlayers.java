@@ -100,11 +100,11 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
 
-    public boolean remove(ServerPlayerEntity player) {
+    public Consumer<ServerPlayerEntity> remove(ServerPlayerEntity player) {
         if (!this.set.contains(player)) {
-            return false;
+            return null;
         }
-        this.leaveHandlers.remove(player);
+        var leaveHandler = this.leaveHandlers.remove(player);
 
         this.space.onPlayerRemove(player);
 
@@ -112,7 +112,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
 
         this.attemptGarbageCollection();
 
-        return true;
+        return leaveHandler;
     }
 
     void clear() {

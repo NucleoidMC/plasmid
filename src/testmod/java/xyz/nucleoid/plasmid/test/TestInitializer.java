@@ -43,6 +43,7 @@ public class TestInitializer implements ModInitializer {
         GameType.register(new Identifier(ID, "test"), TestConfig.CODEC, TestGame::open);
         GameType.register(new Identifier(ID, "no_join"), TestConfig.CODEC, PlayerlessGame::open);
         GameType.register(new Identifier(ID, "test_rp"), TestConfig.CODEC, TestGameWithResourcePack::open);
+        GameType.register(new Identifier(ID, "jank"), TestConfig.CODEC, JankGame::open);
         Registry.register(Registries.BLOCK, id("test_block"), TEST_BLOCK);
         Registry.register(Registries.ITEM, id("test_item"), TEST_ITEM);
 

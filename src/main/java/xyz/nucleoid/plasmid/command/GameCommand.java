@@ -280,7 +280,7 @@ public final class GameCommand {
         var screen = gameSpace.getPlayers().screenJoins(players);
         if (screen.isOk()) {
             for (var player : players) {
-                gameSpace.getPlayers().offer(GamePlayerJoiner.getContext(player));
+                gameSpace.getPlayers().offer(GamePlayerJoiner.getContext(player, gameSpace));
             }
         } else {
             source.sendError(screen.errorCopy().formatted(Formatting.RED));

@@ -53,7 +53,7 @@ public final class GamePlayerJoiner {
         }
 
         for (var player : players) {
-            var result = gameSpace.getPlayers().offer( getContext(player) );
+            var result = gameSpace.getPlayers().offer( getContext(player, gameSpace) );
             if (result.isError()) {
                 results.playerErrors.put(player, result.error());
             }
@@ -62,9 +62,9 @@ public final class GamePlayerJoiner {
         return results;
     }
 
-    public static GameSpacePlayers.OfferContext getContext(ServerPlayerEntity actualPlayer) {
+    public static GameSpacePlayers.OfferContext getContext(ServerPlayerEntity actualPlayer, GameSpace targetGameSpace) {
         var MODEL_PARTS = ((PlayerEntityAccessor)actualPlayer).playerModelParts();
-        var newPlayer = new ServerPlayerEntity(actualPlayer.server, actualPlayer.getWorld(), actualPlayer.getGameProfile());
+        var newPlayer = new ServerPlayerEntity(actualPlayer.server, targetGameSpace.getWorlds().iterator().next(), actualPlayer.getGameProfile());
         var playerManager = (PlayerManagerAccess) Objects.requireNonNull(actualPlayer.getServer()).getPlayerManager();
 
         var oldGameSpace = GameSpaceManager.get().byPlayer(actualPlayer);
@@ -99,9 +99,11 @@ public final class GamePlayerJoiner {
 
                     playerManager.plasmid$AddPlayerAndSendDefaultJoinPacket(actualPlayer,false);
             });
-
+        else if (oldGameSpace == targetGameSpace)
+            return new GameSpacePlayers.OfferContext(actualPlayer, () -> {}, false, ($) -> {}); //if the player is already in the game space, we only need to pass the player trigger the already added security, ugly, but it works
+        else
         //if the player is already in a game space, we need to remove them from it
-        return new GameSpacePlayers.OfferContext(newPlayer,
+            return new GameSpacePlayers.OfferContext(newPlayer,
                 () -> { //executed when the player joins the game space
                     playerManager.plasmid$removePlayer(actualPlayer);
                     //no save since the player comes from another game space

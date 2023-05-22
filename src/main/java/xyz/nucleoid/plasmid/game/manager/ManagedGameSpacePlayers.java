@@ -93,8 +93,8 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     @Override
     public boolean kick(ServerPlayerEntity player) {
         if (this.set.contains(player)) {
-            this.set.remove(player);
             this.space.onPlayerRemove(player);
+            this.set.remove(player);
             this.leaveHandlers.remove(player).accept(player);
             this.attemptGarbageCollection();
             return true;
@@ -108,8 +108,8 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         if (!this.set.contains(player)) {
             return null;
         }
-        this.set.remove(player);
         this.space.onPlayerRemove(player);
+        this.set.remove(player);
         this.attemptGarbageCollection();
 
         return this.leaveHandlers.remove(player);

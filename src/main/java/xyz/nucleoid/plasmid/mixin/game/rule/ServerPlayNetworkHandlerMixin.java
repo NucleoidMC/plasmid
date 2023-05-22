@@ -51,17 +51,6 @@ public abstract class ServerPlayNetworkHandlerMixin {
                     || (isArmor && modifyArmor == ActionResult.FAIL)) {
                 var stack = screenHandler.getSlot(packet.getSlot()).getStack();
 
-                // I feel any sounds/etc should be handled by games, not plasmid. Keeping the code so it's easier to revert if needed
-                /*if (!packet.getStack().isEmpty()) {
-                    // this.player.playSound didn't appear to work, but a packet did.
-                    this.sendPacket(new PlaySoundS2CPacket(
-                            Registries.SOUND_EVENT.getEntry(SoundEvents.ENTITY_VILLAGER_NO), SoundCategory.MASTER,
-                            this.player.getX(), this.player.getY(), this.player.getZ(),
-                            1.0f, 1.0f,
-                            this.player.getRandom().nextLong()
-                    ));
-                }*/
-
                 this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(packet.getSyncId(), screenHandler.nextRevision(), packet.getSlot(), stack));
                 this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(ScreenHandlerSlotUpdateS2CPacket.UPDATE_CURSOR_SYNC_ID, screenHandler.nextRevision(), -1, screenHandler.getCursorStack()));
 

@@ -1,0 +1,9 @@
+{
+  "type": "testmod:jank",
+  "icon": "diamond",
+  "description": [
+    "Lorem ipsum minigamum",
+    "Example description"
+  ],
+  "items": "#minecraft:slabs"
+}

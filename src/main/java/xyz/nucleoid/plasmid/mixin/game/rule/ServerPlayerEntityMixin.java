@@ -15,9 +15,6 @@ import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin extends PlayerEntity {
-    @Shadow
-    public ServerPlayNetworkHandler networkHandler;
-
     private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
         super(world, pos, yaw, profile);
     }

@@ -11,6 +11,14 @@ import net.minecraft.registry.ServerDynamicRegistryType;
 import net.minecraft.registry.tag.TagPacketSerializer;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.scoreboard.ServerScoreboard;
+import com.llamalad7.mixinextras.injector.WrapWithCondition;
+import com.mojang.authlib.GameProfile;
+import com.mojang.serialization.Dynamic;
+import net.minecraft.advancement.PlayerAdvancementTracker;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.ServerMetadata;
@@ -210,6 +218,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         //may/must restore vehicle here, concurrently vehicle is not restored, and we can say it's a bug
     }
 
+
     /**
      * return the list of player that are in the targetPlayer's game space or players that aren't in any game space
      */
@@ -220,6 +229,15 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             return gameSpace.getPlayers();
 
         return GameSpaceManager.get().getPlayersNotInGame();
+    }
+
+    @WrapWithCondition(
+            method = "savePlayerData",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldSaveHandler;savePlayerData(Lnet/minecraft/entity/player/PlayerEntity;)V")
+    )
+    private boolean savePlayerData(WorldSaveHandler handler, PlayerEntity player) 
+    {
+        return !GameSpaceManager.get().inGame(player);
     }
 
     /**

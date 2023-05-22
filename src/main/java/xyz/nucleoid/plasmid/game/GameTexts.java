@@ -138,6 +138,14 @@ public final class GameTexts {
             return Text.translatable("text.plasmid.join_result.game_full");
         }
 
+        public static MutableText worldNotSet() {
+            return Text.translatable("text.plasmid.join_result.world_not_set");
+        }
+        public static MutableText playerAlreadyExist() {
+            return Text.translatable("text.plasmid.join_result.player_instance_already_exists");
+        }
+
+
         public static MutableText alreadyJoined() {
             return Text.translatable("text.plasmid.join_result.already_joined");
         }

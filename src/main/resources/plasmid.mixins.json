@@ -7,19 +7,21 @@
     "chat.PlayerEntityMixin",
     "chat.PlayerListS2CPacketEntryAccessor",
     "chat.ServerPlayerEntityMixin",
-    "game.portal.EntityMixin",
-    "game.portal.SignBlockEntityMixin",
+    "chat.PlayerManagerMixin",
     "game.rule.ArmorAndElytraItemMixin",
     "game.rule.HungerManagerMixin",
     "game.rule.PlayerEntityMixin",
     "game.rule.ServerPlayerEntityMixin",
     "game.rule.ServerPlayNetworkHandlerMixin",
     "game.rule.TridentEntityMixin",
-    "game.space.IntegratedPlayerManagerMixin",
+    "game.space.PlayerEntityAccessor",
     "game.space.PlayerManagerMixin",
-    "game.space.ScreenHandlerMixin",
+    "game.space.ServerPlayerEntityAccessor",
     "game.space.ServerPlayerEntityMixin",
-    "storage.ServerWorldMixin"
+    "game.space.ServerPlayNetworkHandlerMixin"
+  ],
+  "client": [
+    "game.space.IntegratedPlayerManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

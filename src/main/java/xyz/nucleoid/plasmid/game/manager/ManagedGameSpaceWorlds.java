@@ -63,6 +63,11 @@ public final class ManagedGameSpaceWorlds implements GameSpaceWorlds {
         return Iterators.transform(this.worlds.values().iterator(), RuntimeWorldHandle::asWorld);
     }
 
+    @Override
+    public boolean contains(RegistryKey<World> dimension) {
+        return this.worlds.containsKey(dimension);
+    }
+
     private static void applyDefaultsTo(RuntimeWorldConfig worldConfig) {
         var rules = worldConfig.getGameRules();
 

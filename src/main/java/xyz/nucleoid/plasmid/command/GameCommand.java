@@ -45,13 +45,9 @@ public final class GameCommand {
             Text.translatable("text.plasmid.game.not_in_game")
     );
 
-    public static final DynamicCommandExceptionType MALFORMED_CONFIG = new DynamicCommandExceptionType(error -> {
-        return Text.translatable("text.plasmid.game.open.malformed_config", error);
-    });
+    public static final DynamicCommandExceptionType MALFORMED_CONFIG = new DynamicCommandExceptionType(error -> Text.translatable("text.plasmid.game.open.malformed_config", error));
 
-    public static final DynamicCommandExceptionType PLAYER_NOT_IN_GAME = new DynamicCommandExceptionType(player -> {
-        return Text.translatable("text.plasmid.game.locate.player_not_in_game", player);
-    });
+    public static final DynamicCommandExceptionType PLAYER_NOT_IN_GAME = new DynamicCommandExceptionType(player -> Text.translatable("text.plasmid.game.locate.player_not_in_game", player));
 
     // @formatter:off
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -118,7 +114,7 @@ public final class GameCommand {
         return openGame(context, false);
     }
 
-    protected static int openGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
+    static int openGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
         try {
             var game = GameConfigArgument.get(context, "game_config");
             return openGame(context, game.getSecond(), test);
@@ -135,7 +131,7 @@ public final class GameCommand {
         return openAnonymousGame(context, false);
     }
 
-    protected static int openAnonymousGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
+    static int openAnonymousGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
         try {
             var configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
             var result = GameConfig.CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, context.getSource().getRegistryManager()), configNbt);
@@ -162,16 +158,6 @@ public final class GameCommand {
         var player = entity instanceof ServerPlayerEntity ? (ServerPlayerEntity) entity : null;
 
         server.submit(() -> {
-            if (player != null) {
-                var currentGameSpace = GameSpaceManager.get().byPlayer(player);
-                if (currentGameSpace != null) {
-                    if (test) {
-                        currentGameSpace.close(GameCloseReason.CANCELED);
-                    } else {
-                        currentGameSpace.getPlayers().kick(player);
-                    }
-                }
-            }
 
             GameSpaceManager.get().open(config)
                     .handleAsync((gameSpace, throwable) -> {
@@ -248,7 +234,7 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int joinGame(CommandContext<ServerCommandSource> context) {
         new GameJoinUi(context.getSource().getPlayer()).open();
         return Command.SINGLE_SUCCESS;
     }
@@ -294,7 +280,7 @@ public final class GameCommand {
         var screen = gameSpace.getPlayers().screenJoins(players);
         if (screen.isOk()) {
             for (var player : players) {
-                gameSpace.getPlayers().offer(player);
+                gameSpace.getPlayers().offer(GamePlayerJoiner.getContext(player, gameSpace));
             }
         } else {
             source.sendError(screen.errorCopy().formatted(Formatting.RED));

@@ -6,6 +6,7 @@ import xyz.nucleoid.plasmid.game.player.PlayerOps;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
 /**
  * Represents all {@link ServerPlayerEntity}s in this {@link GameSpace}. This provides utilities to operate on many
@@ -23,7 +24,7 @@ public interface GameSpacePlayers extends PlayerSet {
      * @param players the group of players trying to join
      * @return a {@link GameResult} describing whether this group can join this game, or an error if not
      * @see GamePlayerEvents#SCREEN_JOINS
-     * @see GameSpacePlayers#offer(ServerPlayerEntity)
+     * @see GameSpacePlayers#offer(OfferContext)
      * @see xyz.nucleoid.plasmid.game.player.GamePlayerJoiner
      */
     GameResult screenJoins(Collection<ServerPlayerEntity> players);
@@ -39,14 +40,26 @@ public interface GameSpacePlayers extends PlayerSet {
      * @see GamePlayerEvents#OFFER
      * @see xyz.nucleoid.plasmid.game.player.GamePlayerJoiner
      */
-    GameResult offer(ServerPlayerEntity player);
+    GameResult offer(OfferContext player);
 
     /**
      * Attempts to remove the given {@link ServerPlayerEntity} from this {@link GameSpace}.
-     * When a player is removed, they will be teleported back to their former location prior to joining.
+     * When a player is removed, his resetter will be called.
      *
      * @param player {@link ServerPlayerEntity} to remove from this {@link GameSpace}
      * @return whether the {@link ServerPlayerEntity} was successfully removed
      */
     boolean kick(ServerPlayerEntity player);
+
+
+    /**
+     * Represents a context for a player trying to join a {@link GameSpace}.
+     * <p>
+     * This is used to provide additional information to the {@link GameActivity} when a player is trying to join.
+     * <p>
+     * On the default implementation, it's created through {@link xyz.nucleoid.plasmid.game.player.GamePlayerJoiner#getContext(ServerPlayerEntity)}.
+     */
+    record OfferContext(ServerPlayerEntity player, Runnable onApply, boolean sendFirstJoinPacket, Consumer<ServerPlayerEntity> leaveHandler) {}
+
+
 }

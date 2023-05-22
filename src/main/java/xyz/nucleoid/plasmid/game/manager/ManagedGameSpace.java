@@ -114,7 +114,7 @@ public final class ManagedGameSpace implements GameSpace {
             for (var player : players) {
                 this.lifecycle.onRemovePlayer(this, player);
 
-                this.players.teleporter.teleportOut(player);
+                this.players.kick(player);
             }
         } finally {
             for (var player : this.players) {

@@ -12,19 +12,14 @@ import net.minecraft.registry.tag.TagPacketSerializer;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.scoreboard.ServerScoreboard;
 import com.llamalad7.mixinextras.injector.WrapWithCondition;
-import com.mojang.authlib.GameProfile;
-import com.mojang.serialization.Dynamic;
-import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.ServerMetadata;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.biome.source.BiomeAccess;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -235,7 +230,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             method = "savePlayerData",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldSaveHandler;savePlayerData(Lnet/minecraft/entity/player/PlayerEntity;)V")
     )
-    private boolean savePlayerData(WorldSaveHandler handler, PlayerEntity player) 
+    private boolean savePlayerData(WorldSaveHandler handler, PlayerEntity player)
     {
         return !GameSpaceManager.get().inGame(player);
     }

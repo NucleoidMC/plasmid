@@ -29,8 +29,6 @@ public class ArmorAndElytraItemMixin {
         if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.MODIFY_ARMOR) == ActionResult.FAIL) {
             var stack = user.getStackInHand(hand);
             ci.setReturnValue(TypedActionResult.fail(stack));
-
-            //user.playSound(SoundEvents.ENTITY_VILLAGER_NO, SoundCategory.MASTER, 1.0F, 1.0F);
         }
     }
 }

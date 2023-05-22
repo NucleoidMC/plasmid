@@ -67,22 +67,26 @@ dependencies {
   modApi include('xyz.nucleoid:packet-tweaker:0.3.1+23w06a')
   modApi include('xyz.nucleoid:fantasy:0.4.10+1.19.4')
   modApi include('xyz.nucleoid:more-codecs:0.3.1+1.19.4')
-  modApi include('xyz.nucleoid:stimuli:0.4.4+1.19.4-rc2')
+  modApi include('xyz.nucleoid:stimuli:0.4.5+1.19.4')
   modApi include('xyz.nucleoid:map-templates:0.1.7+1.19.4-rc2')
-  modApi include('eu.pb4:polymer-core:0.4.8+1.19.4')
-  modApi 'eu.pb4:polymer-common:0.4.8+1.19.4'
-  modApi 'eu.pb4:polymer-networking:0.4.8+1.19.4'
-  modApi include('eu.pb4:polymer-resource-pack:0.4.8+1.19.4')
-  modApi include('eu.pb4:polymer-blocks:0.4.8+1.19.4')
-  modApi include('eu.pb4:polymer-virtual-entity:0.4.8+1.19.4')
+  modApi include('eu.pb4:polymer-core:0.4.9+1.19.4')
+  modApi 'eu.pb4:polymer-common:0.4.9+1.19.4'
+  modApi 'eu.pb4:polymer-networking:0.4.9+1.19.4'
+  modApi include('eu.pb4:polymer-resource-pack:0.4.9+1.19.4')
+  modApi include('eu.pb4:polymer-blocks:0.4.9+1.19.4')
+  modApi include('eu.pb4:polymer-virtual-entity:0.4.9+1.19.4')
   modApi include('eu.pb4:hologram-api:0.2.3+1.19.3')
   modApi include('eu.pb4:sgui:1.2.1+1.19.3')
   modApi include('eu.pb4:sidebar-api:0.1.2+1.19.3')
   modApi include("eu.pb4:placeholder-api:2.1.0+1.19.4")
   modApi include("eu.pb4:map-canvas-api:0.2.2+1.19.4")
+  modApi include("eu.pb4:player-data-api:0.2.2+1.19.3")
+  modApi include("eu.pb4:predicate-api:0.1.1+1.19.4")
 
   modCompileOnly('xyz.nucleoid:disguiselib-fabric:1.3.2')
   modCompileOnly('maven.modrinth:afkdisplay:1.0.1+1.19')
+
+  include(implementation(annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}")))
 
   testmodImplementation sourceSets.main.output
 }

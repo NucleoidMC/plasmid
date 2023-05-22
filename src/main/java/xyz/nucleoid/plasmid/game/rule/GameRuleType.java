@@ -14,6 +14,7 @@ import xyz.nucleoid.stimuli.event.block.BlockBreakEvent;
 import xyz.nucleoid.stimuli.event.block.BlockDropItemsEvent;
 import xyz.nucleoid.stimuli.event.block.BlockPlaceEvent;
 import xyz.nucleoid.stimuli.event.block.BlockUseEvent;
+import xyz.nucleoid.stimuli.event.block.CoralDeathEvent;
 import xyz.nucleoid.stimuli.event.block.DispenserActivateEvent;
 import xyz.nucleoid.stimuli.event.entity.EntityUseEvent;
 import xyz.nucleoid.stimuli.event.item.ItemCraftEvent;
@@ -109,6 +110,8 @@ public final class GameRuleType {
             .enforces(FluidFlowEvent.EVENT, result -> (world, fluidPos, fluidBlock, flowDirection, flowTo, flowToBlock) -> result);
     public static final GameRuleType ICE_MELT = GameRuleType.create()
             .enforces(IceMeltEvent.EVENT, result -> (world, pos) -> result);
+    public static final GameRuleType CORAL_DEATH = GameRuleType.create()
+            .enforces(CoralDeathEvent.EVENT, result -> (world, pos, from, to) -> result);
 
     public static final GameRuleType DISMOUNT_VEHICLE = GameRuleType.create();
     public static final GameRuleType PLAYER_PROJECTILE_KNOCKBACK = GameRuleType.create();

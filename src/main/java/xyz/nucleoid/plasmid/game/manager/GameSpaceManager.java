@@ -18,6 +18,7 @@ import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.game.GameSpaceMetadata;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
+import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.stimuli.EventSource;
 import xyz.nucleoid.stimuli.Stimuli;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
@@ -204,5 +205,50 @@ public final class GameSpaceManager {
 
             return null;
         }
+    }
+
+    /**
+        * @return A set of players that are not in any game space. This set does not update itself and need to be generated again if a player joins a game space
+     */
+
+    public PlayerSet getPlayersNotInGame()
+    {
+        var playerManager = this.server.getPlayerManager();
+        return new PlayerSet()
+        {
+            private List<ServerPlayerEntity> get()
+            {
+                var playerList = new ArrayList<ServerPlayerEntity>();
+                for(var player : playerManager.getPlayerList())
+                {
+                    var gameSpace = GameSpaceManager.get().byPlayer(player);
+                    if(gameSpace == null) playerList.add(player);
+                }
+                return playerList;
+            }
+            @Override
+            public boolean contains(UUID id) {
+                return this.getEntity(id) != null;
+            }
+
+            @Override
+            public @Nullable ServerPlayerEntity getEntity(UUID id) {
+                for(var player : this.get())
+                {
+                    if(player.getUuid().equals(id)) return player;
+                }
+                return null;
+            }
+
+            @Override
+            public int size() {
+                return this.get().size();
+            }
+
+            @Override
+            public Iterator<ServerPlayerEntity> iterator() {
+                return this.get().iterator();
+            }
+        };
     }
 }

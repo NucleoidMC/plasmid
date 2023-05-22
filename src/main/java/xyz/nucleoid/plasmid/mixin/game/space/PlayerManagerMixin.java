@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.mixin.game.space;
 
 import io.netty.buffer.Unpooled;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.*;
@@ -22,17 +23,18 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.game.player.isolation.PlayerManagerAccess;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static net.minecraft.entity.Entity.RemovalReason.CHANGED_DIMENSION;
 
+//consider splitting this into two mixins, one for player management and one for player list isolation
 @Mixin(PlayerManager.class)
 public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     @Shadow
@@ -57,8 +59,6 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     @Shadow
     protected abstract void sendScoreboard(ServerScoreboard scoreboard, ServerPlayerEntity player);
     @Shadow
-    public abstract void sendToAll(Packet<?> packet);
-    @Shadow
     public abstract void sendWorldInfo(ServerPlayerEntity player, ServerWorld world);
     @Shadow
     public abstract void sendPlayerStatus(ServerPlayerEntity player);
@@ -81,7 +81,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         var gameSpace = GameSpaceManager.get().byPlayer(player);
 
         if (gameSpace == null) return;
-        assert gameSpace.getWorlds().contains(player.getSpawnPointDimension()) : "Player respawned in a world that is not part of the game space, this should never happened";
+        assert gameSpace.getWorlds().contains(player.getSpawnPointDimension()) : "Player respawned in a world that is not part of the game space, this should never happened"; //see ServerPlayNetworkHandler#respawnPlayer mixin
         gameSpace.getPlayers().kick(player);
     }
 
@@ -98,13 +98,18 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         }
     }
 
+    /**
+     * remove the player from the player manager and his world, it can be added again with the addPlayer method after calling entity#unsetRemoved
+     */
     @Override
-    public void plasmid$removePlayer(ServerPlayerEntity player)
+    public void plasmid$removePlayer(ServerPlayerEntity player, PlayerSet watcher)
     {
         this.players.remove(player); //disable the old player
         var world = player.getWorld();
         world.removePlayer(player, CHANGED_DIMENSION);
-        world.sendEntityStatus(player, (byte)3);
+        world.getChunkManager().sendToOtherNearbyPlayers(player, new EntitiesDestroyS2CPacket(player.getId()));
+        //world.sendEntityStatus(player, (byte)3);
+        watcher.sendPacket(new PlayerRemoveS2CPacket(List.of(player.getUuid())));
     }
 
     @Override
@@ -113,10 +118,11 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         return this.players.contains(player);
     }
 
-
-    //send default packets and properly set the player in the player manager
+    /**
+     * send default packets and properly set the player in the player manager
+     */
     @Override
-    public void plasmid$AddPlayerAndSendDefaultJoinPacket(ServerPlayerEntity player, boolean firstSpawn)
+    public void plasmid$AddPlayerAndSendDefaultJoinPacket(ServerPlayerEntity player, PlayerSet watchers, boolean firstSpawn)
     {
         assert !this.playerMap.containsKey(player.getUuid()) : "Player " + player + " is already added or wasn't removed from the player manager";
         //this is based on the code just after the constructor of ServerPlayNetworkHandler in the onPlayerConnect method
@@ -154,6 +160,12 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         }
         else
         {
+            var list = new ArrayList<UUID>(this.players.size());
+            for (var serverPlayerEntity : this.players) {
+                list.add(serverPlayerEntity.getUuid());
+            }
+
+            serverPlayNetworkHandler.sendPacket(new PlayerRemoveS2CPacket(list));
             serverPlayNetworkHandler.sendPacket(new PlayerRespawnS2CPacket(player.world.getDimensionKey(), player.world.getRegistryKey(), BiomeAccess.hashSeed(player.getWorld().getSeed()), player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(), player.getWorld().isDebugWorld(), player.getWorld().isFlat(), (byte)1, player.getLastDeathPos()));
         }
 
@@ -177,9 +189,12 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             player.sendServerMetadata(serverMetadata);
         }
 
+        player.networkHandler.sendPacket(PlayerListS2CPacket.entryFromPlayer(watchers.stream().toList()));
+
         this.players.add(player); //add player to the server
         this.playerMap.put(player.getUuid(), player);
-        this.sendToAll(PlayerListS2CPacket.entryFromPlayer(List.of(player)));
+
+        watchers.sendPacket(PlayerListS2CPacket.entryFromPlayer(List.of(player)));
         this.sendWorldInfo(player, world);
         world.onPlayerConnected(player); //same as world.onRespawnPlayer or onTeleport...
         this.server.getBossBarManager().onPlayerConnect(player);
@@ -189,9 +204,65 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
 
         var entries = player.getDataTracker().getDirtyEntries();
         if(entries != null && !entries.isEmpty())
-            this.sendToAll(new EntityTrackerUpdateS2CPacket(player.getId(), entries));
+            watchers.sendPacket(new EntityTrackerUpdateS2CPacket(player.getId(), entries));
 
         player.onSpawn();
         //may/must restore vehicle here, concurrently vehicle is not restored, and we can say it's a bug
     }
+
+    /**
+     * return the list of player that are in the targetPlayer's game space or players that aren't in any game space
+     */
+    private PlayerSet getPlayerSetFor(ServerPlayerEntity targetPlayer)
+    {
+        var gameSpace = GameSpaceManager.get().byPlayer(targetPlayer);
+        if(gameSpace != null)
+            return gameSpace.getPlayers();
+
+        return GameSpaceManager.get().getPlayersNotInGame();
+    }
+
+    /**
+     * send to all player in the same game space as the targetPlayer or to all player that aren't in any game space
+     */
+    @Override
+    public void plasmid$sendToAllFrom(Packet<?> packet, ServerPlayerEntity player)
+    {
+        this.getPlayerSetFor(player).sendPacket(packet);
+    }
+
+
+    //every redirection linked to the playerList:
+    @Redirect(method = "onPlayerConnect", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAll(Lnet/minecraft/network/packet/Packet;)V"))
+    void sendToAllInOnPlayerConnect(PlayerManager playerManager, Packet<?> packet, ClientConnection connection, ServerPlayerEntity player)
+    {
+        this.plasmid$sendToAllFrom(packet, player);
+    }
+
+    @Redirect(method = "onPlayerConnect", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket;entryFromPlayer(Ljava/util/Collection;)Lnet/minecraft/network/packet/s2c/play/PlayerListS2CPacket;"))
+    PlayerListS2CPacket entryFromPlayer(Collection<ServerPlayerEntity> players, ClientConnection connection, ServerPlayerEntity player)
+    {
+        return PlayerListS2CPacket.entryFromPlayer(this.getPlayerSetFor(player).stream().toList());
+    }
+
+    @Redirect(method = "remove", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAll(Lnet/minecraft/network/packet/Packet;)V"))
+    void sendToAllInRemove(PlayerManager playerManager, Packet<?> packet, ServerPlayerEntity player)
+    {
+        this.plasmid$sendToAllFrom(packet, player);
+    }
+
+    @Redirect(method = "updatePlayerLatency", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAll(Lnet/minecraft/network/packet/Packet;)V"))
+    void updatePlayerLatency(PlayerManager instance, Packet<?> packet)
+    {
+        for(var game : GameSpaceManager.get().getOpenGameSpaces())
+        {
+            var playerSet = game.getPlayers();
+            var playerList = playerSet.stream().toList();
+            playerSet.sendPacket(new PlayerListS2CPacket(EnumSet.of(PlayerListS2CPacket.Action.UPDATE_LATENCY), playerList));
+        }
+
+        var set = GameSpaceManager.get().getPlayersNotInGame();
+        set.sendPacket(new PlayerListS2CPacket(EnumSet.of(PlayerListS2CPacket.Action.UPDATE_LATENCY), set.stream().toList()));
+    }
+
 }

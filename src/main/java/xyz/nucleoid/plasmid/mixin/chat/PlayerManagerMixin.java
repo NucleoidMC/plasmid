@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.mixin.containerisation;
+package xyz.nucleoid.plasmid.mixin.chat;
 
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import xyz.nucleoid.plasmid.PlasmidConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import java.util.List;
 import java.util.function.Predicate;
@@ -30,10 +29,9 @@ public class PlayerManagerMixin {
         at = @At(value = "FIELD", target = "Lnet/minecraft/server/PlayerManager;players:Ljava/util/List;"))
     private List<ServerPlayerEntity> sendMessage(PlayerManager instance, SignedMessage message, Predicate<ServerPlayerEntity> shouldSendFiltered, @Nullable ServerPlayerEntity sender, MessageType.Parameters params)
     {
-        if(!PlasmidConfig.get().containerizedChat()) return this.players;
         if(sender == null) return this.players;
         var gameSpace = GameSpaceManager.get().byPlayer(sender);
-        if(gameSpace == null) return this.players;
+        if(gameSpace == null) return GameSpaceManager.get().getPlayersNotInGame().stream().toList();
         return gameSpace.getPlayers().stream().toList();
     }
 }

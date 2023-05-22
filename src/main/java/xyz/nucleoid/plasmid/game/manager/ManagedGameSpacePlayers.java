@@ -58,21 +58,25 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         var accept = result.asAccept();
         if (accept != null) {
             try {
-                accept.applyJoin(player); //this must set all the player's properties, including world and position
                 var playerManager = (PlayerManagerAccess)this.space.getServer().getPlayerManager();
                 if(!this.space.getWorlds().contains(player.getWorld().getRegistryKey()))
                     return GameResult.error(GameTexts.Join.worldNotSet()); //ensure the player is in the correct world
                 if(playerManager.plasmid$playerInstanceAlreadyExists(player))
                     return GameResult.error(GameTexts.Join.playerAlreadyExist()); //ensure the player instance we are using is not already in the player manager
 
+                accept.applyAccept(player); //this must set all the player's properties, including world and position
                 context.onApply().run(); //in the default implementation, it removes the player from the world where the player was before joining
-                playerManager.plasmid$AddPlayerAndSendDefaultJoinPacket(player, context.sendFirstJoinPacket()); //add the player to the player manager and send the default join packet
-                this.leaveHandlers.put(player, context.leaveHandler());
+                accept.applyJoin();
                 this.set.add(player);
                 this.space.onAddPlayer(player);
+                playerManager.plasmid$AddPlayerAndSendDefaultJoinPacket(player, this, context.sendFirstJoinPacket()); //add the player to the player manager and send the default join packet
+                this.leaveHandlers.put(player, context.leaveHandler());
+
+
 
                 return GameResult.ok();
             } catch (Throwable throwable) {
+                throwable.printStackTrace();
                 return GameResult.error(GameTexts.Join.unexpectedError());
             }
         } else {
@@ -89,9 +93,9 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     @Override
     public boolean kick(ServerPlayerEntity player) {
         if (this.set.contains(player)) {
-            this.leaveHandlers.remove(player).accept(player);
-            this.space.onPlayerRemove(player);
             this.set.remove(player);
+            this.space.onPlayerRemove(player);
+            this.leaveHandlers.remove(player).accept(player);
             this.attemptGarbageCollection();
             return true;
         } else {
@@ -104,15 +108,11 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         if (!this.set.contains(player)) {
             return null;
         }
-        var leaveHandler = this.leaveHandlers.remove(player);
-
-        this.space.onPlayerRemove(player);
-
         this.set.remove(player);
-
+        this.space.onPlayerRemove(player);
         this.attemptGarbageCollection();
 
-        return leaveHandler;
+        return this.leaveHandlers.remove(player);
     }
 
     void clear() {

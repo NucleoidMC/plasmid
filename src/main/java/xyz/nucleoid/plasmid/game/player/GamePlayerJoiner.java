@@ -72,7 +72,7 @@ public final class GamePlayerJoiner {
             return new GameSpacePlayers.OfferContext(newPlayer,
                 () -> { //executed when the player joins the game space
                     playerManager.plasmid$savePlayerData(actualPlayer); //save the player data
-                    playerManager.plasmid$removePlayer(actualPlayer);
+                    playerManager.plasmid$removePlayer(actualPlayer, GameSpaceManager.get().getPlayersNotInGame());
 
                     var handler = actualPlayer.networkHandler;
                     handler.player = newPlayer; //change the player in the network handler
@@ -88,7 +88,7 @@ public final class GamePlayerJoiner {
 
 
                 (oldPlayer) -> { //executed when the player leaves the game space
-                    playerManager.plasmid$removePlayer(oldPlayer);
+                    playerManager.plasmid$removePlayer(oldPlayer, targetGameSpace.getPlayers());
                     actualPlayer.unsetRemoved();
 
                     var handler = oldPlayer.networkHandler; //reset the network handler for the old player
@@ -97,15 +97,15 @@ public final class GamePlayerJoiner {
 
                     actualPlayer.getDataTracker().set(MODEL_PARTS, oldPlayer.getDataTracker().get(MODEL_PARTS), true); //copy skin layers, true to make it dirty and force a sync
 
-                    playerManager.plasmid$AddPlayerAndSendDefaultJoinPacket(actualPlayer,false);
+                    playerManager.plasmid$AddPlayerAndSendDefaultJoinPacket(actualPlayer, GameSpaceManager.get().getPlayersNotInGame(), false);
             });
         else if (oldGameSpace == targetGameSpace)
             return new GameSpacePlayers.OfferContext(actualPlayer, () -> {}, false, ($) -> {}); //if the player is already in the game space, we only need to pass the player trigger the already added security, ugly, but it works
-        else
+        else //the player where in another game space
         //if the player is already in a game space, we need to remove them from it
             return new GameSpacePlayers.OfferContext(newPlayer,
                 () -> { //executed when the player joins the game space
-                    playerManager.plasmid$removePlayer(actualPlayer);
+                    playerManager.plasmid$removePlayer(actualPlayer, oldGameSpace.getPlayers());
                     //no save since the player comes from another game space
                     var handler = actualPlayer.networkHandler;
                     handler.player = newPlayer; //change the player in the network handler

@@ -4,13 +4,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameMode;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public interface PlayerOfferResult {
     @Nullable
@@ -58,9 +56,12 @@ public interface PlayerOfferResult {
             return this;
         }
 
-        public void applyJoin(ServerPlayerEntity player) {
-            this.joinConsumer.accept(player);
+        public void applyJoin() {
             this.and.forEach(Runnable::run);
+        }
+
+        public void applyAccept(ServerPlayerEntity player) {
+            this.joinConsumer.accept(player);
         }
 
         @Override

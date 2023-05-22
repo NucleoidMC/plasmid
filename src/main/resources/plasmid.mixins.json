@@ -7,7 +7,7 @@
     "chat.PlayerEntityMixin",
     "chat.PlayerListS2CPacketEntryAccessor",
     "chat.ServerPlayerEntityMixin",
-    "containerisation.PlayerManagerMixin",
+    "chat.PlayerManagerMixin",
     "game.rule.ArmorAndElytraItemMixin",
     "game.rule.HungerManagerMixin",
     "game.rule.PlayerEntityMixin",

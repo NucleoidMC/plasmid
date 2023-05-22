@@ -20,8 +20,7 @@ import java.util.Optional;
 
 public record PlasmidConfig(
         Optional<String> userFacingPackAddress,
-        Optional<PlasmidWebServer.Config> webServerConfig,
-        boolean containerizedChat
+        Optional<PlasmidWebServer.Config> webServerConfig
 ) {
     private static final Path PATH = Paths.get("config/plasmid.json");
 
@@ -30,8 +29,7 @@ public record PlasmidConfig(
     private static final Codec<PlasmidConfig> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
                 Codec.STRING.optionalFieldOf("resource_pack_address").forGetter(PlasmidConfig::userFacingPackAddress),
-                PlasmidWebServer.Config.CODEC.optionalFieldOf("web_server").forGetter(PlasmidConfig::webServerConfig),
-                Codec.BOOL.fieldOf("containerized_chat").forGetter(PlasmidConfig::containerizedChat)
+                PlasmidWebServer.Config.CODEC.optionalFieldOf("web_server").forGetter(PlasmidConfig::webServerConfig)
         ).apply(instance, PlasmidConfig::new)
     );
 
@@ -40,8 +38,7 @@ public record PlasmidConfig(
     private PlasmidConfig() {
         this(
                 Optional.of("http://127.0.0.1:25566/" + PlasmidWebServer.RESOURCE_PACKS_ENDPOINT),
-                Optional.of(new PlasmidWebServer.Config(25566)),
-                false
+                Optional.of(new PlasmidWebServer.Config(25566))
         );
     }
 

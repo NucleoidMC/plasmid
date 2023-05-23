@@ -111,7 +111,10 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         var world = player.getWorld();
         world.removePlayer(player, CHANGED_DIMENSION);
         world.getChunkManager().sendToOtherNearbyPlayers(player, new EntitiesDestroyS2CPacket(player.getId()));
-        //world.sendEntityStatus(player, (byte)3);
+
+        var list = new ArrayList<UUID>(watcher.size());
+        watcher.forEach(i -> list.add(i.getUuid()));
+        player.networkHandler.sendPacket(new PlayerRemoveS2CPacket(list));
         watcher.sendPacket(new PlayerRemoveS2CPacket(List.of(player.getUuid())));
     }
 
@@ -163,12 +166,6 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         }
         else
         {
-            var list = new ArrayList<UUID>(this.players.size());
-            for (var serverPlayerEntity : this.players) {
-                list.add(serverPlayerEntity.getUuid());
-            }
-
-            serverPlayNetworkHandler.sendPacket(new PlayerRemoveS2CPacket(list));
             serverPlayNetworkHandler.sendPacket(new PlayerRespawnS2CPacket(player.world.getDimensionKey(), player.world.getRegistryKey(), BiomeAccess.hashSeed(player.getWorld().getSeed()), player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(), player.getWorld().isDebugWorld(), player.getWorld().isFlat(), (byte)1, player.getLastDeathPos()));
         }
 

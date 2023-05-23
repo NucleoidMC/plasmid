@@ -6,7 +6,7 @@ import xyz.nucleoid.plasmid.game.player.PlayerOps;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 
 import java.util.Collection;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * Represents all {@link ServerPlayerEntity}s in this {@link GameSpace}. This provides utilities to operate on many
@@ -57,9 +57,9 @@ public interface GameSpacePlayers extends PlayerSet {
      * <p>
      * This is used to provide additional information to the {@link GameActivity} when a player is trying to join.
      * <p>
-     * On the default implementation, it's created through {@link xyz.nucleoid.plasmid.game.player.GamePlayerJoiner#getContext(ServerPlayerEntity)}.
+     * On the default implementation, it's created through {@link xyz.nucleoid.plasmid.game.player.GamePlayerJoiner#getContext(ServerPlayerEntity, GameSpace)}.
      */
-    record OfferContext(ServerPlayerEntity player, Runnable onApply, boolean sendFirstJoinPacket, Consumer<ServerPlayerEntity> leaveHandler) {}
+    record OfferContext(ServerPlayerEntity player, Runnable onApply, boolean sendFirstJoinPacket, BiConsumer<ServerPlayerEntity, GameSpace> leaveHandler) {}
 
 
 }

@@ -87,8 +87,8 @@ public final class GamePlayerJoiner {
                 }, false,
 
 
-                (oldPlayer) -> { //executed when the player leaves the game space
-                    playerManager.plasmid$removePlayer(oldPlayer, targetGameSpace.getPlayers());
+                (oldPlayer, leavingGameSpace) -> { //executed when the player leaves the game space
+                    playerManager.plasmid$removePlayer(oldPlayer, leavingGameSpace.getPlayers());
                     actualPlayer.unsetRemoved();
 
                     var handler = oldPlayer.networkHandler; //reset the network handler for the old player
@@ -100,7 +100,7 @@ public final class GamePlayerJoiner {
                     playerManager.plasmid$AddPlayerAndSendDefaultJoinPacket(actualPlayer, GameSpaceManager.get().getPlayersNotInGame(), false);
             });
         else if (oldGameSpace == targetGameSpace)
-            return new GameSpacePlayers.OfferContext(actualPlayer, () -> {}, false, ($) -> {}); //if the player is already in the game space, we only need to pass the player trigger the already added security, ugly, but it works
+            return new GameSpacePlayers.OfferContext(actualPlayer, () -> {}, false, ($, $2) -> {}); //if the player is already in the game space, we only need to pass the player trigger the already added security, ugly, but it works
         else //the player where in another game space
         //if the player is already in a game space, we need to remove them from it
             return new GameSpacePlayers.OfferContext(newPlayer,

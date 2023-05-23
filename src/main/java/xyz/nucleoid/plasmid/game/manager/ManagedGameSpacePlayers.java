@@ -3,21 +3,18 @@ package xyz.nucleoid.plasmid.game.manager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameResult;
-import xyz.nucleoid.plasmid.game.GameSpacePlayers;
-import xyz.nucleoid.plasmid.game.GameTexts;
+import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.isolation.PlayerManagerAccess;
 
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     private final ManagedGameSpace space;
     final MutablePlayerSet set;
-    private final Map<ServerPlayerEntity, Consumer<ServerPlayerEntity>> leaveHandlers = new HashMap<>();
+    private final Map<ServerPlayerEntity, BiConsumer<ServerPlayerEntity, GameSpace>> leaveHandlers = new HashMap<>();
 
     ManagedGameSpacePlayers(ManagedGameSpace space) {
         this.space = space;
@@ -95,7 +92,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         if (this.set.contains(player)) {
             this.space.onPlayerRemove(player);
             this.set.remove(player);
-            this.leaveHandlers.remove(player).accept(player);
+            this.leaveHandlers.remove(player).accept(player, this.space);
             this.attemptGarbageCollection();
             return true;
         } else {
@@ -104,7 +101,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
 
-    public Consumer<ServerPlayerEntity> remove(ServerPlayerEntity player) {
+    public BiConsumer<ServerPlayerEntity, GameSpace> remove(ServerPlayerEntity player) {
         if (!this.set.contains(player)) {
             return null;
         }

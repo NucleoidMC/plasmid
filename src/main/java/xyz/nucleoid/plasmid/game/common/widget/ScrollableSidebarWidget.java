@@ -14,7 +14,7 @@ import java.util.function.Predicate;
  *
  * @see xyz.nucleoid.plasmid.game.common.GlobalWidgets
  */
-public final class ScrollableSidebarWidget extends ScrollableSidebar implements GameWidget {
+public class ScrollableSidebarWidget extends ScrollableSidebar implements GameWidget {
     private final Predicate<ServerPlayerEntity> playerChecker;
 
     public ScrollableSidebarWidget(int ticksPerLine) {

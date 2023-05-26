@@ -12,7 +12,7 @@ import java.util.function.Predicate;
  *
  * @see xyz.nucleoid.plasmid.game.common.GlobalWidgets
  */
-public final class SidebarWidget extends Sidebar implements GameWidget {
+public class SidebarWidget extends Sidebar implements GameWidget {
     private final Predicate<ServerPlayerEntity> playerChecker;
 
     public SidebarWidget() {

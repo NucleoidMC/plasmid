@@ -1,10 +1,12 @@
 package xyz.nucleoid.plasmid.mixin.game.portal;
 
-import eu.pb4.holograms.api.Holograms;
-import eu.pb4.holograms.api.elements.text.StaticTextHologramElement;
 import eu.pb4.holograms.api.holograms.AbstractHologram;
-import eu.pb4.holograms.api.holograms.EntityHologram;
+import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment;
+import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.decoration.Brightness;
+import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -14,6 +16,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -31,7 +34,8 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Shadow
     public abstract Vec3d getPos();
 
-    private EntityHologram hologram;
+    private TextDisplayElement textDisplayElement;
+    private ElementHolder hologram;
     private GamePortal portal;
     private Identifier loadedPortalId;
 
@@ -60,35 +64,47 @@ public abstract class EntityMixin implements GamePortalInterface {
 
     @Override
     public void setDisplay(GamePortalDisplay display) {
-        var hologram = this.getOrCreateHologram();
+        var hologram = this.getOrCreateTextElement();
 
-        hologram.clearElements();
+        var text = Text.empty();
 
         var name = display.get(GamePortalDisplay.NAME);
         var playerCount = display.get(GamePortalDisplay.PLAYER_COUNT);
         if (name != null && playerCount != null) {
-            hologram.addElement(new StaticTextHologramElement(name));
+            text.append(name);
             if (playerCount > -1) {
-                hologram.addElement(new StaticTextHologramElement(Text.translatable("text.plasmid.game.portal.player_count", playerCount)));
+                text.append("\n").append(Text.translatable("text.plasmid.game.portal.player_count", playerCount));
             }
+        }
+        hologram.setText(text);
+
+        if (hologram.isDirty()) {
+            hologram.tick();
         }
     }
 
-    private EntityHologram getOrCreateHologram() {
-        var hologram = this.hologram;
-        if (hologram != null) {
-            return hologram;
+    @Unique
+    private TextDisplayElement getOrCreateTextElement() {
+        if (this.hologram != null) {
+            return textDisplayElement;
         }
 
         var entity = (Entity) (Object) this;
         var offset = new Vec3d(0.0, DisguiseLibCompatibility.getEntityHeight(entity) + 0.2, 0.0);
 
-        this.hologram = hologram = Holograms.create(entity, offset, new Text[0]);
-        hologram.setAlignment(AbstractHologram.VerticalAlign.TOP);
+        this.hologram = new ElementHolder();
+        this.textDisplayElement = new TextDisplayElement();
+        this.textDisplayElement.setOffset(offset);
+        this.textDisplayElement.setBrightness(new Brightness(15, 15));
+        this.textDisplayElement.setBillboardMode(DisplayEntity.BillboardMode.CENTER);
+        this.textDisplayElement.setDisplayWidth(5);
+        this.textDisplayElement.setDisplayHeight(1);
+        this.textDisplayElement.setViewRange(0.5f);
+        this.hologram.addElement(this.textDisplayElement);
 
-        hologram.show();
+        EntityAttachment.of(this.hologram, (Entity) (Object) this);
 
-        return hologram;
+        return this.textDisplayElement;
     }
 
     private void removeHologram() {
@@ -96,7 +112,8 @@ public abstract class EntityMixin implements GamePortalInterface {
         this.hologram = null;
 
         if (hologram != null) {
-            hologram.hide();
+            hologram.destroy();
+            this.textDisplayElement = null;
         }
     }
 

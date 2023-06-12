@@ -106,10 +106,6 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
                     oceanFloor.trackUpdate(x, worldY, z, state);
                     worldSurface.trackUpdate(x, worldY, z, state);
 
-                    if (state.getLuminance() != 0) {
-                        chunk.addLightSource(templatePos);
-                    }
-
                     var blockEntityTag = this.template.getBlockEntityNbt(templatePos);
                     if (blockEntityTag != null) {
                         chunk.addPendingBlockEntityNbt(blockEntityTag);

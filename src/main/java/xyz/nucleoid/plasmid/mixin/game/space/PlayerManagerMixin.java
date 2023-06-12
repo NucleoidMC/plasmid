@@ -90,7 +90,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             gameSpace.getPlayers().remove(oldPlayer);
 
             this.plasmid$loadIntoPlayer(respawnedPlayer);
-            respawnedPlayer.setWorld(respawnWorld);
+            respawnedPlayer.setServerWorld(respawnWorld);
 
             // this is later used to apply back to the respawned player, and we want to maintain that
             var interactionManager = respawnedPlayer.interactionManager;
@@ -125,8 +125,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             world = this.server.getOverworld();
         }
 
-        player.setWorld(world);
-        player.interactionManager.setWorld(world);
+        player.setServerWorld(world);
 
         player.setGameMode(playerData);
     }

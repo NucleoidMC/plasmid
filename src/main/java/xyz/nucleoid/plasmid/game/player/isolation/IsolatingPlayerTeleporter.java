@@ -95,7 +95,7 @@ public final class IsolatingPlayerTeleporter {
         player.server.getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_GAME_MODE, player));
 
         var world = recreate.apply(player);
-        player.setWorld(world);
+        player.setServerWorld(world);
 
         var worldProperties = world.getLevelProperties();
 

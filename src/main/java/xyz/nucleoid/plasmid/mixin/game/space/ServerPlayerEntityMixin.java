@@ -22,14 +22,14 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
     @Inject(method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V", at = @At("HEAD"), cancellable = true)
     private void onTeleport(ServerWorld targetWorld, double x, double y, double z, float yaw, float pitch, CallbackInfo ci) {
-        if (this.world != targetWorld && !this.tryTeleportTo(targetWorld)) {
+        if (this.getWorld() != targetWorld && !this.tryTeleportTo(targetWorld)) {
             ci.cancel();
         }
     }
 
     @Inject(method = "moveToWorld", at = @At("HEAD"), cancellable = true)
     private void onMoveWorld(ServerWorld targetWorld, CallbackInfoReturnable<Entity> ci) {
-        if (this.world != targetWorld && !this.tryTeleportTo(targetWorld)) {
+        if (this.getWorld() != targetWorld && !this.tryTeleportTo(targetWorld)) {
             ci.setReturnValue(this);
         }
     }

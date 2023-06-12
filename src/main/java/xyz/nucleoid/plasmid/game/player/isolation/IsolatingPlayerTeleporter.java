@@ -66,7 +66,7 @@ public final class IsolatingPlayerTeleporter {
      * @param player the player to teleport
      */
     public void teleportOut(ServerPlayerEntity player) {
-        this.teleportOut(player, ServerPlayerEntity::getWorld);
+        this.teleportOut(player, ServerPlayerEntity::getServerWorld);
     }
 
     private void teleport(ServerPlayerEntity player, Function<ServerPlayerEntity, ServerWorld> recreate, boolean in) {
@@ -83,7 +83,7 @@ public final class IsolatingPlayerTeleporter {
         player.getAdvancementTracker().clearCriteria();
         this.server.getBossBarManager().onPlayerDisconnect(player);
 
-        player.getWorld().removePlayer(player, Entity.RemovalReason.CHANGED_DIMENSION);
+        player.getServerWorld().removePlayer(player, Entity.RemovalReason.CHANGED_DIMENSION);
         player.unsetRemoved();
 
         playerManagerAccess.plasmid$getPlayerResetter().apply(player);
@@ -105,7 +105,7 @@ public final class IsolatingPlayerTeleporter {
                 BiomeAccess.hashSeed(world.getSeed()),
                 player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(),
                 world.isDebugWorld(), world.isFlat(), PlayerRespawnS2CPacket.KEEP_ALL,
-                player.getLastDeathPos()
+                player.getLastDeathPos(), player.getPortalCooldown()
         ));
 
         player.closeHandledScreen();

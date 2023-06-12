@@ -126,7 +126,7 @@ public final class GameCommand {
             throw e;
         } catch (Exception e) {
             e.printStackTrace();
-            context.getSource().sendFeedback(Text.translatable("text.plasmid.game.open.error").formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.plasmid.game.open.error").formatted(Formatting.RED), false);
             return 0;
         }
     }
@@ -149,7 +149,7 @@ public final class GameCommand {
             throw e;
         } catch (Exception e) {
             e.printStackTrace();
-            context.getSource().sendFeedback(Text.translatable("text.plasmid.game.open.error").formatted(Formatting.RED), false);
+            context.getSource().sendFeedback(() -> Text.translatable("text.plasmid.game.open.error").formatted(Formatting.RED), false);
             return 0;
         }
     }
@@ -322,8 +322,7 @@ public final class GameCommand {
             throw PLAYER_NOT_IN_GAME.create(player.getEntityName());
         }
 
-        var message = GameTexts.Command.located(player, gameSpace);
-        context.getSource().sendFeedback(message, false);
+        context.getSource().sendFeedback(() -> GameTexts.Command.located(player, gameSpace), false);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -381,7 +380,7 @@ public final class GameCommand {
             stopGameConfirmed(context);
         } else {
             source.sendFeedback(
-                    GameTexts.Stop.confirmStop().formatted(Formatting.GOLD),
+                    () -> GameTexts.Stop.confirmStop().formatted(Formatting.GOLD),
                     false
             );
         }
@@ -416,15 +415,17 @@ public final class GameCommand {
 
     private static int listGames(CommandContext<ServerCommandSource> context) {
         var source = context.getSource();
-        source.sendFeedback(GameTexts.Command.gameList().formatted(Formatting.BOLD), false);
+        source.sendFeedback(() -> GameTexts.Command.gameList().formatted(Formatting.BOLD), false);
 
         for (var id : GameConfigs.getKeys()) {
-            String command = "/game open " + id;
+            source.sendFeedback(() -> {
+                String command = "/game open " + id;
 
-            var link = GameConfigs.get(id).name().copy()
-                    .setStyle(GameTexts.commandLinkStyle(command));
+                var link = GameConfigs.get(id).name().copy()
+                        .setStyle(GameTexts.commandLinkStyle(command));
 
-            source.sendFeedback(GameTexts.Command.listEntry(link), false);
+                return GameTexts.Command.listEntry(link);
+            }, false);
         }
 
         return Command.SINGLE_SUCCESS;

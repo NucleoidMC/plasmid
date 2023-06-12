@@ -65,8 +65,10 @@ public final class GamePortalCommand {
                 throw INTERFACE_ALREADY_CONNECTED.create();
             }
 
-            var message = Text.translatable("text.plasmid.game.portal.connect.entity", portal.getId(), entity.getEntityName());
-            context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
+            context.getSource().sendFeedback(() -> {
+                var message = Text.translatable("text.plasmid.game.portal.connect.entity", portal.getId(), entity.getEntityName());
+                return message.formatted(Formatting.GRAY);
+            }, false);
 
             return Command.SINGLE_SUCCESS;
         } else {
@@ -87,8 +89,10 @@ public final class GamePortalCommand {
                 throw INTERFACE_ALREADY_CONNECTED.create();
             }
 
-            var message = Text.translatable("text.plasmid.game.portal.connect.block", portal.getId(), pos.getX(), pos.getY(), pos.getZ());
-            source.sendFeedback(message.formatted(Formatting.GRAY), false);
+            source.sendFeedback(() -> {
+                var message = Text.translatable("text.plasmid.game.portal.connect.block", portal.getId(), pos.getX(), pos.getY(), pos.getZ());
+                return message.formatted(Formatting.GRAY);
+            }, false);
 
             return Command.SINGLE_SUCCESS;
         } else {
@@ -102,8 +106,10 @@ public final class GamePortalCommand {
         if (entity instanceof GamePortalInterface portalInterface) {
             portalInterface.invalidatePortal();
 
-            var message = Text.translatable("text.plasmid.game.portal.disconnect.entity", entity.getEntityName());
-            context.getSource().sendFeedback(message.formatted(Formatting.GRAY), false);
+            context.getSource().sendFeedback(() -> {
+                var message = Text.translatable("text.plasmid.game.portal.disconnect.entity", entity.getEntityName());
+                return message.formatted(Formatting.GRAY);
+            }, false);
 
             return Command.SINGLE_SUCCESS;
         } else {
@@ -121,8 +127,10 @@ public final class GamePortalCommand {
         if (blockEntity instanceof GamePortalInterface portalInterface) {
             portalInterface.invalidatePortal();
 
-            var message = Text.translatable("text.plasmid.game.portal.disconnect.block", pos.getX(), pos.getY(), pos.getZ());
-            source.sendFeedback(message.formatted(Formatting.GRAY), false);
+            source.sendFeedback(() -> {
+                var message = Text.translatable("text.plasmid.game.portal.disconnect.block", pos.getX(), pos.getY(), pos.getZ());
+                return message.formatted(Formatting.GRAY);
+            }, false);
 
             return Command.SINGLE_SUCCESS;
         } else {

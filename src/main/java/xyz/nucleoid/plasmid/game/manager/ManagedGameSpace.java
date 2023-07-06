@@ -18,6 +18,8 @@ import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.resource_packs.ResourcePackStates;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public final class ManagedGameSpace implements GameSpace {
@@ -38,6 +40,7 @@ public final class ManagedGameSpace implements GameSpace {
     private boolean closed;
 
     private final GameSpaceStatistics statistics = new GameSpaceStatistics();
+    private final Map<String, Object> attachments = new HashMap<>();
 
     ManagedGameSpace(MinecraftServer server, GameSpaceManager manager, GameSpaceMetadata metadata) {
         this.server = server;
@@ -172,6 +175,21 @@ public final class ManagedGameSpace implements GameSpace {
     @Override
     public ResourcePackStates getResourcePackStates() {
         return this.resourcePackStateManager;
+    }
+
+    @Override
+    public <T> T getAttachment(String key) {
+        //noinspection unchecked
+        return (T) this.attachments.get(key);
+    }
+
+    @Override
+    public void setAttachment(String key, Object obj) {
+        if (obj == null) {
+            this.attachments.remove(key);
+        } else {
+            this.attachments.put(key, obj);
+        }
     }
 
     public GameBehavior getBehavior() {

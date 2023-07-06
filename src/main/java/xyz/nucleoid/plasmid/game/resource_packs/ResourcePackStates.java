@@ -1,6 +1,8 @@
 package xyz.nucleoid.plasmid.game.resource_packs;
 
+import eu.pb4.polymer.autohost.api.ResourcePackDataProvider;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +15,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class ResourcePackStates {
+    private static final boolean IS_AUTOHOST_PRESENT = FabricLoader.getInstance().isModLoaded("polymer-autohost");
+
     private Map<UUID, GameResourcePack> resourcePacks = new Object2ObjectOpenHashMap<>();
     private Map<UUID, GameResourcePack> oldResourcePacks = new Object2ObjectOpenHashMap<>();
     private boolean active = false;
@@ -57,6 +61,15 @@ public final class ResourcePackStates {
     }
 
     private static void resetPack(ServerPlayerEntity player) {
+        if (IS_AUTOHOST_PRESENT) {
+            var current = ResourcePackDataProvider.getActive();
+
+            if (current != null && current.isReady()) {
+                player.sendResourcePackUrl(current.getAddress(), current.getHash(), true, null);
+                return;
+            }
+        }
+
         player.getServer().getResourcePackProperties().ifPresentOrElse(
                 properties -> player.sendResourcePackUrl(properties.url(), properties.hash(), true, properties.prompt()),
                 () -> GameResourcePackManager.emptyPack().ifPresent(pack -> pack.sendTo(player))

@@ -2,6 +2,8 @@ package xyz.nucleoid.plasmid.test;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -71,6 +73,8 @@ public final class TestGame {
     }
 
     private static GameResult startGame(GameSpace gameSpace) {
+        gameSpace.setAttachment("test", Items.POTATO);
+
         gameSpace.setActivity((activity) -> {
             long currentTime = gameSpace.getTime();
             activity.deny(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
@@ -78,6 +82,8 @@ public final class TestGame {
             activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
 
             activity.deny(GameRuleType.INTERACTION).allow(GameRuleType.USE_BLOCKS);
+
+            Item potato = gameSpace.getAttachment("test");
 
             var teamManager = TeamManager.addTo(activity);
             teamManager.addTeam(TEAM);

@@ -1,6 +1,7 @@
 plugins {
   id 'fabric-loom' version '1.1.+'
   id 'maven-publish'
+  id "com.modrinth.minotaur" version "2.+"
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -81,10 +82,10 @@ dependencies {
   modApi include('xyz.nucleoid:more-codecs:0.3.2+1.20')
   modApi include('xyz.nucleoid:stimuli:0.4.6+1.20')
   modApi include('xyz.nucleoid:map-templates:0.1.8+1.20')
-  modApi include('eu.pb4:polymer-core:0.5.6+1.20.1')
-  modApi include('eu.pb4:polymer-resource-pack:0.5.6+1.20.1')
-  modApi include('eu.pb4:polymer-blocks:0.5.6+1.20.1')
-  modApi include('eu.pb4:polymer-virtual-entity:0.5.6+1.20.1')
+  modApi 'eu.pb4:polymer-core:0.5.6+1.20.1'
+  modApi 'eu.pb4:polymer-resource-pack:0.5.6+1.20.1'
+  modApi 'eu.pb4:polymer-blocks:0.5.6+1.20.1'
+  modApi 'eu.pb4:polymer-virtual-entity:0.5.6+1.20.1'
   modApi include('eu.pb4:hologram-api:0.2.4+1.20')
   modApi include('eu.pb4:sgui:1.2.2+1.20')
   modApi include('eu.pb4:sidebar-api:0.1.2+1.19.3')
@@ -122,6 +123,26 @@ java {
 jar {
   from("LICENSE") {
     rename { "${it}_${project.archivesBaseName}"}
+  }
+}
+
+if (System.getenv("MODRINTH")) {
+  modrinth {
+    token = System.getenv("MODRINTH")
+    projectId = 'xUvfRSZh'// The ID of your modrinth project, slugs will not work.
+    versionNumber = "" + version // The version of the mod to upload.
+    versionType = isStable ? "release" : "beta"
+    uploadFile = remapJar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
+    gameVersions = [((String) project.minecraft_version)]
+    changelog = System.getenv("CHANGELOG")
+    dependencies {
+      required.project 'polymer'
+    }
+    loaders = ["fabric", "quilt"]
+  }
+
+  remapJar {
+    finalizedBy project.tasks.modrinth
   }
 }
 

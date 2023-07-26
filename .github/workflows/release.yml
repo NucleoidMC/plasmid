@@ -41,6 +41,7 @@ jobs:
           workflow_name: 'minor_version'
           version_key: ${{ steps.read_version.outputs.value }}
           gist_token: ${{ secrets.GIST_TOKEN }}
+          skip_bump: true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -54,6 +55,15 @@ jobs:
           GITHUB_ACTIONS: true
           SNAPSHOT: false
           MINOR_VERSION: ${{ steps.minor_version.outputs.version_build_number }}
+          MODRINTH: ${{ secrets.MODRINTH_KEY }}
+          CHANGELOG: ${{ github.event.release.body }}
+      - name: Bump build number
+        uses: zyborg/gh-action-buildnum@v1
+        id: 'justbump'
+        with:
+          workflow_name: 'minor_version'
+          version_key: ${{ steps.read_version.outputs.value }}
+          gist_token: ${{ secrets.GIST_TOKEN }}
       - uses: actions/upload-artifact@v2
         with:
           name: artifacts

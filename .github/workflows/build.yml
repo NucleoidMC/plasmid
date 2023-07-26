@@ -1,7 +1,6 @@
 name: Build
 
-on:
-  push:
+on: push
 
 jobs:
   build:
@@ -24,6 +23,30 @@ jobs:
         with:
           java-version: 17
 
+      - name: Read mod version from Gradle
+        id: read_version
+        uses: christian-draeger/read-properties@1.0.1
+        with:
+          path: './gradle.properties'
+          property: 'mod_version'
+
+      - name: Generate build number
+          uses: zyborg/gh-action-buildnum@v1
+          id: 'minor_version'
+          with:
+            workflow_name: 'minor_version'
+            version_key: ${{ steps.read_version.outputs.value }}
+            gist_token: ${{ secrets.GIST_TOKEN }}
+            skip_bump: true
+
+      - name: Generate build number
+          uses: zyborg/gh-action-buildnum@v1
+          id: 'build_number'
+          with:
+            workflow_name: 'build_number'
+            version_key: ${{ format('{0}.{1}', steps.read_version.outputs.value, steps.minor_version.version_build_number) }}
+            gist_token: ${{ secrets.GIST_TOKEN }}
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -34,6 +57,8 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           GITHUB_ACTIONS: true
+          MINOR_VERSION: ${{ steps.minor_version.version_build_number }}
+          BUILD_NUMBER: ${{ steps.build_number.version_build_number }}
 
       - uses: actions/upload-artifact@v2
         with:

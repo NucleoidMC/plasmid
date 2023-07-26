@@ -58,6 +58,7 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           GITHUB_ACTIONS: true
+          SNAPSHOT: true
           MINOR_VERSION: ${{ steps.minor_version.version_build_number }}
           BUILD_NUMBER: ${{ steps.build_number.version_build_number }}
 

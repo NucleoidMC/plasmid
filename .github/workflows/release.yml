@@ -35,12 +35,12 @@ jobs:
           property: 'mod_version'
 
       - name: Generate build number
-          uses: zyborg/gh-action-buildnum@v1
-          id: 'minor_version'
-          with:
-            workflow_name: 'minor_version'
-            version_key: ${{ steps.read_version.outputs.value }}
-            gist_token: ${{ secrets.GIST_TOKEN }}
+        uses: zyborg/gh-action-buildnum@v1
+        id: 'minor_version'
+        with:
+          workflow_name: 'minor_version'
+          version_key: ${{ steps.read_version.outputs.value }}
+          gist_token: ${{ secrets.GIST_TOKEN }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew

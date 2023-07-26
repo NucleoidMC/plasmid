@@ -1,6 +1,7 @@
 name: Build
 
-on: push
+on:
+  push:
 
 jobs:
   build:
@@ -31,21 +32,21 @@ jobs:
           property: 'mod_version'
 
       - name: Generate build number
-          uses: zyborg/gh-action-buildnum@v1
-          id: 'minor_version'
-          with:
-            workflow_name: 'minor_version'
-            version_key: ${{ steps.read_version.outputs.value }}
-            gist_token: ${{ secrets.GIST_TOKEN }}
-            skip_bump: true
+        uses: zyborg/gh-action-buildnum@v1
+        id: 'minor_version'
+        with:
+          workflow_name: 'minor_version'
+          version_key: ${{ steps.read_version.outputs.value }}
+          gist_token: ${{ secrets.GIST_TOKEN }}
+          skip_bump: true
 
       - name: Generate build number
-          uses: zyborg/gh-action-buildnum@v1
-          id: 'build_number'
-          with:
-            workflow_name: 'build_number'
-            version_key: ${{ format('{0}.{1}', steps.read_version.outputs.value, steps.minor_version.version_build_number) }}
-            gist_token: ${{ secrets.GIST_TOKEN }}
+        uses: zyborg/gh-action-buildnum@v1
+        id: 'build_number'
+        with:
+          workflow_name: 'build_number'
+          version_key: ${{ format('{0}.{1}', steps.read_version.outputs.value, steps.minor_version.version_build_number) }}
+          gist_token: ${{ secrets.GIST_TOKEN }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew

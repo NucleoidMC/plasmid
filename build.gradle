@@ -45,7 +45,6 @@ def versionGame = version;
 
 def build = env.get("BUILD_NUMBER")
 
-
 if (minor == null) {
   version += "-local"
   versionGame += "-local"

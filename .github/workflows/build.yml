@@ -45,7 +45,7 @@ jobs:
         id: 'build_number'
         with:
           workflow_name: 'build_number'
-          version_key: ${{ format('{0}.{1}', steps.read_version.outputs.value, steps.minor_version.version_build_number) }}
+          version_key: ${{ format('{0}.{1}', steps.read_version.outputs.value, steps.minor_version.outputs.version_build_number) }}
           gist_token: ${{ secrets.GIST_TOKEN }}
 
       - name: Grant execute permission for gradlew
@@ -59,8 +59,8 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           GITHUB_ACTIONS: true
           SNAPSHOT: true
-          MINOR_VERSION: ${{ steps.minor_version.version_build_number }}
-          BUILD_NUMBER: ${{ steps.build_number.version_build_number }}
+          MINOR_VERSION: ${{ steps.minor_version.outputs.version_build_number }}
+          BUILD_NUMBER: ${{ steps.build_number.outputs.version_build_number }}
 
       - uses: actions/upload-artifact@v2
         with:

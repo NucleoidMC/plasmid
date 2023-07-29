@@ -27,8 +27,10 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public final class GameSpaceManager {
+    private static final GameSpaceManager FALLBACK = new GameSpaceManager(null);
     private static GameSpaceManager instance;
 
+    @Nullable
     private final MinecraftServer server;
 
     private final GameSpaceUserIdManager userIds = new GameSpaceUserIdManager();
@@ -42,7 +44,7 @@ public final class GameSpaceManager {
 
     private final ListenerSelector listenerSelector = new ListenerSelector();
 
-    private GameSpaceManager(MinecraftServer server) {
+    private GameSpaceManager(@Nullable MinecraftServer server) {
         this.server = server;
     }
 
@@ -70,10 +72,18 @@ public final class GameSpaceManager {
     }
 
     public static GameSpaceManager get() {
-        return Preconditions.checkNotNull(instance, "GameSpaceManager not yet initialized");
+        if (instance != null) {
+            return instance;
+        } else {
+            return FALLBACK;
+        }
     }
 
     public CompletableFuture<ManagedGameSpace> open(GameConfig<?> config) {
+        if (this.server == null) {
+            return CompletableFuture.failedFuture(new RuntimeException("Not initialized yet!"));
+        }
+
         return CompletableFuture.supplyAsync(
                 () -> config.openProcedure(this.server),
                 Util.getMainWorkerExecutor()
@@ -84,6 +94,9 @@ public final class GameSpaceManager {
     }
 
     private ManagedGameSpace addGameSpace(GameConfig<?> config, GameOpenProcedure procedure) {
+        if (this.server == null) {
+            throw new RuntimeException("Not initialized yet!");
+        }
         var id = UUID.randomUUID();
 
         var userId = this.userIds.acquire(config);

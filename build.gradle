@@ -80,8 +80,9 @@ dependencies {
   modApi include('xyz.nucleoid:packet-tweaker:0.4.0+1.19.4')
   modApi include('xyz.nucleoid:fantasy:0.4.11+1.20-rc1')
   modApi include('xyz.nucleoid:more-codecs:0.3.2+1.20')
-  modApi include('xyz.nucleoid:stimuli:0.4.6+1.20')
+  modApi include('xyz.nucleoid:stimuli:0.4.7+1.20.1')
   modApi include('xyz.nucleoid:map-templates:0.1.8+1.20')
+  modApi include('xyz.nucleoid:substrate:0.2.1+1.19.4')
   modApi 'eu.pb4:polymer-core:0.5.6+1.20.1'
   modApi 'eu.pb4:polymer-resource-pack:0.5.6+1.20.1'
   modApi 'eu.pb4:polymer-blocks:0.5.6+1.20.1'
@@ -98,7 +99,7 @@ dependencies {
   modCompileOnly('maven.modrinth:afkdisplay:1.1.0')
   modCompileOnly('eu.pb4:polymer-autohost:0.5.6+1.20.1')
 
-  include(implementation(annotationProcessor("com.github.llamalad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}")))
+  include(implementation(annotationProcessor("com.llamalad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}")))
 
   testmodImplementation sourceSets.main.output
 }

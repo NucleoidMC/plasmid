@@ -124,29 +124,47 @@ public final class GameSpaceManager {
 
     @Nullable
     public ManagedGameSpace byId(UUID id) {
+        if (this.server == null) {
+            return null;
+        }
         return this.idToGameSpace.get(id);
     }
 
     @Nullable
     public ManagedGameSpace byUserId(Identifier userId) {
+        if (this.server == null) {
+            return null;
+        }
         return this.userIdToGameSpace.get(userId);
     }
 
     @Nullable
     public ManagedGameSpace byWorld(World world) {
+        if (this.server == null) {
+            return null;
+        }
         return this.dimensionToGameSpace.get(world.getRegistryKey());
     }
 
     @Nullable
     public ManagedGameSpace byPlayer(PlayerEntity player) {
+        if (this.server == null) {
+            return null;
+        }
         return this.playerToGameSpace.get(player.getUuid());
     }
 
     public boolean hasGame(World world) {
+        if (this.server == null) {
+            return false;
+        }
         return this.dimensionToGameSpace.containsKey(world.getRegistryKey());
     }
 
     public boolean inGame(PlayerEntity player) {
+        if (this.server == null) {
+            return false;
+        }
         return this.playerToGameSpace.containsKey(player.getUuid());
     }
 

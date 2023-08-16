@@ -35,6 +35,7 @@ import xyz.nucleoid.plasmid.game.portal.game.NewGamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.*;
 import xyz.nucleoid.plasmid.game.portal.game.SingleGamePortalConfig;
 import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
+import xyz.nucleoid.plasmid.util.compatibility.TrinketsCompatibility;
 
 public final class Plasmid implements ModInitializer {
     public static final String ID = "plasmid";
@@ -61,6 +62,10 @@ public final class Plasmid implements ModInitializer {
         GameType.register(new Identifier(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
 
         this.registerCallbacks();
+
+        if (FabricLoader.getInstance().isModLoaded("trinkets")) {
+            TrinketsCompatibility.onInitialize();
+        }
     }
 
     private void loadData(DynamicRegistryManager registryManager, ResourceManager manager) {

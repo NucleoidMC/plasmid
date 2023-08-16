@@ -47,8 +47,8 @@ def versionGame = version;
 def build = env.get("BUILD_NUMBER")
 
 if (minor == null) {
-  version += "-local"
-  versionGame += "-local"
+  version += ".9999-local"
+  versionGame += ".9999-local"
 } else {
   version += ".${minor}"
   versionGame += ".${minor}"
@@ -66,6 +66,14 @@ repositories {
   maven { url = "https://maven.gegy.dev/" }
   maven { url = "https://api.modrinth.com/maven/" }
   maven { url 'https://jitpack.io' }
+  maven {
+    name = "TerraformersMC"
+    url = "https://maven.terraformersmc.com/"
+  }
+  maven {
+    name = "Ladysnake Libs"
+    url = 'https://maven.ladysnake.org/releases'
+  }
 }
 
 
@@ -98,6 +106,7 @@ dependencies {
   modCompileOnly('xyz.nucleoid:disguiselib-fabric:1.3.2')
   modCompileOnly('maven.modrinth:afkdisplay:1.1.0')
   modCompileOnly('eu.pb4:polymer-autohost:0.5.6+1.20.1')
+  modCompileOnly("dev.emi:trinkets:3.7.1")
 
   include(implementation(annotationProcessor("com.llamalad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}")))
 

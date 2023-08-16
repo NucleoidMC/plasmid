@@ -4,6 +4,7 @@ import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
+import xyz.nucleoid.plasmid.util.InventoryUtil;
 
 public final class PlayerResetter {
     private final NbtCompound resetNbt;
@@ -16,7 +17,7 @@ public final class PlayerResetter {
         this.clearAttributeModifiers(player);
         player.clearStatusEffects();
         player.getCommandTags().clear();
-
+        InventoryUtil.clear(player);
         player.readNbt(this.resetNbt);
     }
 

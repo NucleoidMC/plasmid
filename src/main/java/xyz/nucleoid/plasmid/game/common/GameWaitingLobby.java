@@ -318,7 +318,7 @@ public final class GameWaitingLobby {
 
         // if there are no players outside of a game on the server
         for (var world : server.getWorlds()) {
-            if (!hasActivePlayer(world) && !GameSpaceManager.get().hasGame(world)) {
+            if (hasActivePlayer(world) && !GameSpaceManager.get().hasGame(world)) {
                 return false;
             }
         }

@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.game.resource_packs;
 import eu.pb4.polymer.autohost.api.ResourcePackDataProvider;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -65,13 +66,13 @@ public final class ResourcePackStates {
             var current = ResourcePackDataProvider.getActive();
 
             if (current != null && current.isReady()) {
-                player.sendResourcePackUrl(current.getAddress(), current.getHash(), true, null);
+                player.networkHandler.sendPacket(new ResourcePackSendS2CPacket(current.getAddress(), current.getHash(), true, null));
                 return;
             }
         }
 
         player.getServer().getResourcePackProperties().ifPresentOrElse(
-                properties -> player.sendResourcePackUrl(properties.url(), properties.hash(), true, properties.prompt()),
+                properties -> player.networkHandler.sendPacket(new ResourcePackSendS2CPacket(properties.url(), properties.hash(), true, properties.prompt())),
                 () -> GameResourcePackManager.emptyPack().ifPresent(pack -> pack.sendTo(player))
         );
     }

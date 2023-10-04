@@ -99,14 +99,15 @@ public final class IsolatingPlayerTeleporter {
 
         var worldProperties = world.getLevelProperties();
 
+        var spawnInfo = new CommonPlayerSpawnInfo(
+            world.getDimensionKey(), world.getRegistryKey(),
+            BiomeAccess.hashSeed(world.getSeed()),
+            player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(),
+            world.isDebugWorld(), world.isFlat(), player.getLastDeathPos(), player.getPortalCooldown()
+        );
+
         var networkHandler = player.networkHandler;
-        networkHandler.sendPacket(new PlayerRespawnS2CPacket(
-                world.getDimensionKey(), world.getRegistryKey(),
-                BiomeAccess.hashSeed(world.getSeed()),
-                player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(),
-                world.isDebugWorld(), world.isFlat(), PlayerRespawnS2CPacket.KEEP_ALL,
-                player.getLastDeathPos(), player.getPortalCooldown()
-        ));
+        networkHandler.sendPacket(new PlayerRespawnS2CPacket(spawnInfo, PlayerRespawnS2CPacket.KEEP_ALL));
 
         player.closeHandledScreen();
 

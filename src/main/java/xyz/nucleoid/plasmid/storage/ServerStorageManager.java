@@ -16,7 +16,13 @@ public final class ServerStorageManager extends PersistentState {
     }
 
     public static ServerStorageManager get(ServerWorld world) {
-        return world.getPersistentStateManager().getOrCreate(ServerStorageManager::readNbt, ServerStorageManager::new, KEY);
+        var type = new PersistentState.Type<>(
+                ServerStorageManager::new, 
+                ServerStorageManager::readNbt,
+                null
+        );
+
+        return world.getPersistentStateManager().getOrCreate(type, KEY);
     }
 
     public static boolean isLoaded() {

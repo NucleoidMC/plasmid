@@ -1,6 +1,5 @@
 package xyz.nucleoid.plasmid.game.player.isolation;
 
-import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -27,15 +26,9 @@ public final class PlayerResetter {
             if (attributes.hasAttribute(attribute)) {
                 var instance = attributes.getCustomInstance(attribute);
                 if (instance != null) {
-                    this.clearModifiers(instance);
+                    instance.clearModifiers();
                 }
             }
-        }
-    }
-
-    private void clearModifiers(EntityAttributeInstance instance) {
-        for (var modifier : instance.getModifiers()) {
-            instance.removeModifier(modifier);
         }
     }
 }

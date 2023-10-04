@@ -7,6 +7,7 @@ import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
@@ -95,6 +96,8 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             // this is later used to apply back to the respawned player, and we want to maintain that
             var interactionManager = respawnedPlayer.interactionManager;
             oldPlayer.interactionManager.setGameMode(interactionManager.getGameMode(), interactionManager.getPreviousGameMode());
+
+            respawnedPlayer.setClientOptions(oldPlayer.getClientOptions());
         }
     }
 
@@ -151,7 +154,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             var overworld = this.server.getOverworld();
             var profile = new GameProfile(Util.NIL_UUID, "null");
 
-            var player = new ServerPlayerEntity(this.server, overworld, profile);
+            var player = new ServerPlayerEntity(this.server, overworld, profile, SyncedClientOptions.createDefault());
             this.statisticsMap.remove(Util.NIL_UUID);
             this.advancementTrackers.remove(Util.NIL_UUID);
 

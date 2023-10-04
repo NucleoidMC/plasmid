@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game.common;
 
 import eu.pb4.polymer.resourcepack.api.ResourcePackCreator;
+import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.ApiStatus;
@@ -65,7 +66,7 @@ public final class GameResourcePack {
 
     @ApiStatus.Internal
     public void sendTo(ServerPlayerEntity player) {
-        player.sendResourcePackUrl(this.url, this.hash, this.required, this.prompt);
+        player.networkHandler.sendPacket(new ResourcePackSendS2CPacket(this.url, this.hash, this.required, this.prompt));
     }
 
     public static Optional<GameResourcePack> tryRegister(ResourcePackCreator creator) {

@@ -20,8 +20,8 @@
   "depends": {
     "fabricloader": ">=0.14",
     "fabric": "*",
+    "minecraft": ">=1.20.2-",
     "polymer-core": "*",
-    "minecraft": ">=1.20",
     "java": ">=17"
   }
 }

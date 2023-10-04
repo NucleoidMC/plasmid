@@ -126,7 +126,7 @@ This may look like:
 }
 ```
 
-`name` and `description` can also reference translation keys due to being [JSON Text Components](https://minecraft.fandom.com/wiki/Raw_JSON_text_format). For example, this may instead be: `"name": {"translation": "game.plasmid_example.hello_world_example"}`.
+`name` and `description` can also reference translation keys due to being [JSON Text Components](https://minecraft.wiki/w/Raw_JSON_text_format). For example, this may instead be: `"name": {"translation": "game.plasmid_example.hello_world_example"}`.
 
 #### A note on translations
 Translations are a bit non-standard in Plasmid due to it being entirely server-side! Usually translations are stored with the game client, and the server simply sends over _translation keys_ which are then turned into relevant readable text on the client-side. Here, however, we need to instead handle translations by changing the packets that get sent to players such that they are correctly translated _before_ the client even receives it. This is a lot of work! Luckily, this is handled by [Server Translations](https://github.com/arthurbambou/Server-Translations), and we do not need to worry about it!

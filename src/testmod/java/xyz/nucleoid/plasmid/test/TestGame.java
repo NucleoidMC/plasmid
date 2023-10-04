@@ -1,7 +1,8 @@
 package xyz.nucleoid.plasmid.test;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import net.minecraft.block.LeavesBlock;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.scoreboard.AbstractTeam;
@@ -11,6 +12,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
@@ -29,9 +31,16 @@ import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 import xyz.nucleoid.plasmid.game.stats.StatisticKey;
 import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
+import xyz.nucleoid.plasmid.util.WoodType;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+
 public final class TestGame {
+    private static final List<Method> WOOD_TYPE_BLOCK_FIELDS = Arrays.stream(WoodType.class.getMethods()).filter(x -> x.getReturnType() == Block.class).toList();
     private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(new Identifier(Plasmid.ID, "test"));
 
     private static final GameTeam TEAM = new GameTeam(
@@ -136,6 +145,25 @@ public final class TestGame {
         for (var pos : BlockBounds.of(-5, 64, -5, 5, 64, 5)) {
             template.setBlockState(pos, state);
         }
+
+        try {
+            var mut = new BlockPos.Mutable();
+            mut.setZ(16);
+            int y = 66 + WoodType.values().length;
+            for (var type : WoodType.values()) {
+                int x = 0;
+                mut.setY(y);
+                for (var field : WOOD_TYPE_BLOCK_FIELDS) {
+                    state = ((Block) field.invoke(type)).getDefaultState().withIfExists(LeavesBlock.PERSISTENT, true);
+                    template.setBlockState(mut.setX(x), state);
+                    x++;
+                }
+                y--;
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
 
         return template;
     }

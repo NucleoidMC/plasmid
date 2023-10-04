@@ -90,7 +90,7 @@ dependencies {
   modApi include('xyz.nucleoid:more-codecs:0.3.3+1.20.2')
   modApi include('xyz.nucleoid:stimuli:0.4.9+1.20.2')
   modApi include('xyz.nucleoid:map-templates:0.1.8+1.20')
-  modApi include('xyz.nucleoid:substrate:0.2.1+1.19.4')
+  modApi include('xyz.nucleoid:substrate:0.2.2+1.20.1')
   modApi 'eu.pb4:polymer-core:0.6.0+1.20.2'
   modApi 'eu.pb4:polymer-resource-pack:0.6.0+1.20.2'
   modApi 'eu.pb4:polymer-blocks:0.6.0+1.20.2'
@@ -108,7 +108,7 @@ dependencies {
   modCompileOnly('eu.pb4:polymer-autohost:0.6.0+1.20.2')
   modCompileOnly("dev.emi:trinkets:3.7.1")
 
-  include(implementation(annotationProcessor("com.llamalad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}")))
+  implementation(annotationProcessor("com.github.LlamaLad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}"))
 
   testmodImplementation sourceSets.main.output
 }
@@ -147,6 +147,10 @@ if (System.getenv("MODRINTH")) {
     changelog = System.getenv("CHANGELOG")
     dependencies {
       required.project 'polymer'
+      required.project 'fabric-api'
+      optional.project 'afkdisplay'
+      optional.project 'disguiselib'
+      embedded.project 'placeholder-api'
     }
     loaders = ["fabric", "quilt"]
   }

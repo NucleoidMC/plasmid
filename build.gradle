@@ -90,25 +90,25 @@ dependencies {
   modApi include('xyz.nucleoid:more-codecs:0.3.2+1.20')
   modApi include('xyz.nucleoid:stimuli:0.4.7+1.20.1')
   modApi include('xyz.nucleoid:map-templates:0.1.8+1.20')
-  modApi include('xyz.nucleoid:substrate:0.2.1+1.19.4')
-  modApi 'eu.pb4:polymer-core:0.5.6+1.20.1'
-  modApi 'eu.pb4:polymer-resource-pack:0.5.6+1.20.1'
-  modApi 'eu.pb4:polymer-blocks:0.5.6+1.20.1'
-  modApi 'eu.pb4:polymer-virtual-entity:0.5.6+1.20.1'
+  modApi include('xyz.nucleoid:substrate:0.2.2+1.20.1')
+  modApi 'eu.pb4:polymer-core:0.5.15+1.20.1'
+  modApi 'eu.pb4:polymer-resource-pack:0.5.15+1.20.1'
+  modApi 'eu.pb4:polymer-blocks:0.5.15+1.20.1'
+  modApi 'eu.pb4:polymer-virtual-entity:0.5.15+1.20.1'
   modApi include('eu.pb4:hologram-api:0.2.4+1.20')
   modApi include('eu.pb4:sgui:1.2.2+1.20')
   modApi include('eu.pb4:sidebar-api:0.1.2+1.19.3')
-  modApi include("eu.pb4:placeholder-api:2.1.2+1.20.1")
+  modApi include("eu.pb4:placeholder-api:2.1.3+1.20.1")
   modApi include("eu.pb4:map-canvas-api:0.2.2+1.19.4")
   modApi include("eu.pb4:player-data-api:0.2.2+1.19.3")
-  modApi include("eu.pb4:predicate-api:0.1.2+1.20")
+  modApi include("eu.pb4:predicate-api:0.2.1+1.20.1")
 
   modCompileOnly('xyz.nucleoid:disguiselib-fabric:1.3.2')
   modCompileOnly('maven.modrinth:afkdisplay:1.1.0')
   modCompileOnly('eu.pb4:polymer-autohost:0.5.6+1.20.1')
   modCompileOnly("dev.emi:trinkets:3.7.1")
 
-  include(implementation(annotationProcessor("com.llamalad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}")))
+  implementation(annotationProcessor("com.github.LlamaLad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}"))
 
   testmodImplementation sourceSets.main.output
 }
@@ -147,6 +147,10 @@ if (System.getenv("MODRINTH")) {
     changelog = System.getenv("CHANGELOG")
     dependencies {
       required.project 'polymer'
+      required.project 'fabric-api'
+      optional.project 'afkdisplay'
+      optional.project 'disguiselib'
+      embedded.project 'placeholder-api'
     }
     loaders = ["fabric", "quilt"]
   }

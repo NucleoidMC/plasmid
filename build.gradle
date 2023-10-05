@@ -108,7 +108,7 @@ dependencies {
   modCompileOnly('eu.pb4:polymer-autohost:0.6.0+1.20.2')
   modCompileOnly("dev.emi:trinkets:3.7.1")
 
-  implementation(annotationProcessor("com.github.LlamaLad7.mixinextras:mixinextras-fabric:${project.mixin_extras_version}"))
+  implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${project.mixin_extras_version}"))
 
   testmodImplementation sourceSets.main.output
 }

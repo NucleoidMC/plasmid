@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game.manager;
 
 import com.google.common.collect.Lists;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -219,6 +220,8 @@ public final class ManagedGameSpace implements GameSpace {
             return offer.reject(GameTexts.Join.gameClosed());
         } else if (this.manager.inGame(offer.player())) {
             return offer.reject(GameTexts.Join.inOtherGame());
+        } else if (!Permissions.check(offer.player(), "plasmid.join_game", true)) {
+            return offer.reject(GameTexts.Join.notAllowed());
         }
 
         return this.state.invoker(GamePlayerEvents.OFFER).onOfferPlayer(offer);

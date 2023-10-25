@@ -152,6 +152,10 @@ public final class GameTexts {
                     )
             );
         }
+
+        public static MutableText notAllowed() {
+            return Text.translatable("text.plasmid.join_result.not_allowed");
+        }
     }
 
     public static final class Kick {

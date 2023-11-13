@@ -78,12 +78,12 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
 
     @NotNull
     private Text getDisplayLine(GamePortalDisplay display, int line) {
-        if (line == 0) {
+        if (line == 1) {
             var name = display.get(GamePortalDisplay.NAME);
             if (name != null) {
                 return name;
             }
-        } else if (line == 1) {
+        } else if (line == 2) {
             var playerCount = display.get(GamePortalDisplay.PLAYER_COUNT);
             if (playerCount != null) {
                 return Text.translatable("text.plasmid.game.portal.player_count", playerCount);

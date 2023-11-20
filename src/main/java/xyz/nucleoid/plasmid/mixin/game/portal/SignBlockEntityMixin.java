@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -44,7 +45,9 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
         super(type, pos, state);
     }
 
+    @Unique
     private GamePortal portal;
+    @Unique
     private Identifier loadedPortalId;
 
     @Override
@@ -126,6 +129,11 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
             this.tryConnectTo(this.loadedPortalId);
             this.loadedPortalId = null;
         }
+    }
+
+    @Override
+    public boolean updatePortalImmediately() {
+        return this.loadedPortalId == null;
     }
 
     @Override

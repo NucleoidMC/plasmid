@@ -53,4 +53,8 @@ public interface GamePortalInterface {
             this.setPortal(null);
         }
     }
+
+    default boolean updatePortalImmediately() {
+        return false;
+    };
 }

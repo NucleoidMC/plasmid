@@ -34,9 +34,13 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Shadow
     public abstract Vec3d getPos();
 
+    @Unique
     private TextDisplayElement textDisplayElement;
+    @Unique
     private ElementHolder hologram;
+    @Unique
     private GamePortal portal;
+    @Unique
     private Identifier loadedPortalId;
 
     @Override

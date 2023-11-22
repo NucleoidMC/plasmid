@@ -55,6 +55,6 @@ public interface GamePortalInterface {
     }
 
     default boolean updatePortalImmediately() {
-        return false;
+        return true;
     };
 }

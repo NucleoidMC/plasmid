@@ -22,35 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public record NewGamePortalBackend(Identifier gameId) implements GamePortalBackend {
-
-    @Override
-    public void provideGameSpaces(Consumer<GameSpace> consumer) {
-        var gameConfig = GameConfigs.get(this.gameId);
-        for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
-            if (gameSpace.getMetadata().sourceConfig() == gameConfig) {
-                consumer.accept(gameSpace);
-            }
-        }
-    }
-
-    @Override
-    public int getPlayerCount() {
-        int count = 0;
-        var gameConfig = GameConfigs.get(this.gameId);
-        for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
-            if (gameSpace.getMetadata().sourceConfig() == gameConfig) {
-                count += gameSpace.getPlayers().size();
-            }
-        }
-        return count;
-    }
-
-    @Override
-    public ActionType getActionType() {
-        return ActionType.PLAY;
-    }
-
+public record NewGamePortalBackend(Identifier gameId) implements GameConfigGamePortalBackend {
     @Override
     public void applyTo(ServerPlayerEntity player) {
         CompletableFuture.supplyAsync(() -> this.openGame(player.server))
@@ -67,36 +39,6 @@ public record NewGamePortalBackend(Identifier gameId) implements GamePortalBacke
 
                     return null;
                 }, player.server);
-    }
-
-    @Override
-    public Text getName() {
-        var config = GameConfigs.get(this.gameId);
-        if (config != null) {
-            return config.name();
-        } else {
-            return Text.literal(this.gameId.toString()).formatted(Formatting.RED);
-        }
-    }
-
-    @Override
-    public List<Text> getDescription() {
-        var config = GameConfigs.get(this.gameId);
-        if (config != null) {
-            return config.description();
-        }
-
-        return Collections.emptyList();
-    }
-
-    @Override
-    public ItemStack getIcon() {
-        var config = GameConfigs.get(this.gameId);
-        if (config != null) {
-            return config.icon();
-        }
-
-        return Items.BARRIER.getDefaultStack();
     }
 
     private CompletableFuture<ManagedGameSpace> openGame(MinecraftServer server) {

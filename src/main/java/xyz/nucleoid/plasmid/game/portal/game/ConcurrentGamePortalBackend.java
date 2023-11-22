@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public final class ConcurrentGamePortalBackend implements GamePortalBackend {
+public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBackend {
     private final Identifier gameId;
     private CompletableFuture<ManagedGameSpace> gameFuture;
 
@@ -31,50 +31,8 @@ public final class ConcurrentGamePortalBackend implements GamePortalBackend {
     }
 
     @Override
-    public void provideGameSpaces(Consumer<GameSpace> consumer) {
-        var gameConfig = GameConfigs.get(this.gameId);
-        for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
-            if (gameSpace.getMetadata().sourceConfig() == gameConfig) {
-                consumer.accept(gameSpace);
-            }
-        }
-    }
-
-    @Override
-    public int getPlayerCount() {
-        int count = 0;
-        var gameConfig = GameConfigs.get(this.gameId);
-        for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
-            if (gameSpace.getMetadata().sourceConfig() == gameConfig) {
-                count += gameSpace.getPlayers().size();
-            }
-        }
-        return count;
-    }
-
-    @Override
-    public List<Text> getDescription() {
-        var config = GameConfigs.get(this.gameId);
-        if (config != null) {
-            return config.description();
-        }
-
-        return Collections.emptyList();
-    }
-
-    @Override
-    public ItemStack getIcon() {
-        var config = GameConfigs.get(this.gameId);
-        if (config != null) {
-            return config.icon();
-        }
-
-        return Items.BARRIER.getDefaultStack();
-    }
-
-    @Override
-    public ActionType getActionType() {
-        return ActionType.PLAY;
+    public Identifier gameId() {
+        return this.gameId;
     }
 
     @Override
@@ -107,15 +65,7 @@ public final class ConcurrentGamePortalBackend implements GamePortalBackend {
                 }, player.server);
     }
 
-    @Override
-    public Text getName() {
-        var config = GameConfigs.get(this.gameId);
-        if (config != null) {
-            return config.name();
-        } else {
-            return Text.literal(this.gameId.toString()).formatted(Formatting.RED);
-        }
-    }
+
 
     public CompletableFuture<ManagedGameSpace> getOrOpenNew(MinecraftServer server) {
         var future = this.gameFuture;

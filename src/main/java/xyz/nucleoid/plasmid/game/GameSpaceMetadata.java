@@ -12,8 +12,18 @@ import java.util.UUID;
 public record GameSpaceMetadata(
         UUID id,
         Identifier userId,
-        GameConfig<?> sourceConfig
+        GameConfig<?> sourceConfig,
+        GameConfig<?> originalSourceConfig
 ) {
+
+
+    public GameSpaceMetadata(
+            UUID id,
+            Identifier userId,
+            GameConfig<?> sourceConfig
+    ) {
+        this(id, userId, sourceConfig, sourceConfig);
+    }
     /**
      * @return the globally unique ID for this {@link GameSpace}
      */
@@ -39,5 +49,9 @@ public record GameSpaceMetadata(
     @Override
     public GameConfig<?> sourceConfig() {
         return this.sourceConfig;
+    }
+
+    public boolean isSourceConfig(GameConfig<?> gameConfig) {
+        return this.sourceConfig == gameConfig || this.originalSourceConfig == gameConfig;
     }
 }

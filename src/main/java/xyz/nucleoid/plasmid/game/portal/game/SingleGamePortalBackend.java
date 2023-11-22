@@ -24,30 +24,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public final class SingleGamePortalBackend implements GamePortalBackend {
+public final class SingleGamePortalBackend implements GameConfigGamePortalBackend {
     private final Identifier gameId;
     private CompletableFuture<ManagedGameSpace> gameFuture;
 
     public SingleGamePortalBackend(Identifier gameId) {
         this.gameId = gameId;
-    }
-
-    @Override
-    public int getPlayerCount() {
-        var future = this.gameFuture;
-        if (future != null && future.isDone() && !future.isCompletedExceptionally()) {
-            var game = future.join();
-            return game.getPlayers().size();
-        }
-        return 0;
-    }
-
-    @Override
-    public void provideGameSpaces(Consumer<GameSpace> consumer) {
-        var future = this.gameFuture;
-        if (future != null && future.isDone() && !future.isCompletedExceptionally()) {
-            consumer.accept(future.join());
-        }
     }
 
     @Override
@@ -66,41 +48,6 @@ public final class SingleGamePortalBackend implements GamePortalBackend {
 
                     return null;
                 }, player.server);
-    }
-
-    @Override
-    public Text getName() {
-        var config = GameConfigs.get(this.gameId);
-        if (config != null) {
-            return config.name();
-        } else {
-            return Text.literal(this.gameId.toString()).formatted(Formatting.RED);
-        }
-    }
-
-    @Override
-    public ActionType getActionType() {
-        return ActionType.PLAY;
-    }
-
-    @Override
-    public List<Text> getDescription() {
-        var config = GameConfigs.get(this.gameId);
-        if (config != null) {
-            return config.description();
-        }
-
-        return Collections.emptyList();
-    }
-
-    @Override
-    public ItemStack getIcon() {
-        var config = GameConfigs.get(this.gameId);
-        if (config != null) {
-            return config.icon();
-        }
-
-        return Items.BARRIER.getDefaultStack();
     }
 
     public CompletableFuture<ManagedGameSpace> getOrOpen(MinecraftServer server) {
@@ -133,6 +80,11 @@ public final class SingleGamePortalBackend implements GamePortalBackend {
 
             return gameSpace;
         }, server);
+    }
+
+    @Override
+    public Identifier gameId() {
+        return this.gameId;
     }
 
     private class LifecycleListeners implements GameLifecycle.Listeners {

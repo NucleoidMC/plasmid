@@ -88,12 +88,12 @@ public final class GameSpaceManager {
                 () -> config.openProcedure(this.server),
                 Util.getMainWorkerExecutor()
         ).thenApplyAsync(
-                procedure -> this.addGameSpace(procedure.configOverride() != null ? procedure.configOverride() : config, procedure),
+                procedure -> this.addGameSpace(procedure.configOverride() != null ? procedure.configOverride() : config, config, procedure),
                 this.server
         );
     }
 
-    private ManagedGameSpace addGameSpace(GameConfig<?> config, GameOpenProcedure procedure) {
+    private ManagedGameSpace addGameSpace(GameConfig<?> config, GameConfig<?> sourceConfig, GameOpenProcedure procedure) {
         if (this.server == null) {
             throw new RuntimeException("Not initialized yet!");
         }
@@ -102,7 +102,7 @@ public final class GameSpaceManager {
         var userId = this.userIds.acquire(config);
         Preconditions.checkState(!this.userIdToGameSpace.containsKey(userId), "duplicate GameSpace user id acquired");
 
-        var metadata = new GameSpaceMetadata(id, userId, config);
+        var metadata = new GameSpaceMetadata(id, userId, config, sourceConfig);
 
         var gameSpace = new ManagedGameSpace(this.server, this, metadata);
 

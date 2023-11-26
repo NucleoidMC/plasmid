@@ -27,7 +27,7 @@ public final class GamePortalManager {
 
     private static final String PATH = "game_portals";
 
-    private final TinyRegistry<GamePortal> portals = TinyRegistry.create();
+    private final TinyRegistry<GamePortal> portals = TinyRegistry.create(PATH);
     private Map<Identifier, GamePortalConfig> portalQueue;
 
     private MinecraftServer server;
@@ -76,6 +76,8 @@ public final class GamePortalManager {
 
             this.portals.register(identifier, portal);
         }
+        this.portals.finalizeTags();
+
     }
 
     private Map<Identifier, GamePortalConfig> loadConfigs(ResourceManager manager) {
@@ -104,6 +106,7 @@ public final class GamePortalManager {
             }
         });
 
+        this.portals.loadTagsDefinitions(manager);
         return configs;
     }
 

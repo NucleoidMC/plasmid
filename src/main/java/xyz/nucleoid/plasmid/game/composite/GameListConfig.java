@@ -7,26 +7,17 @@ import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.registry.TinyEntry;
+import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
-public record GameListConfig(List<Identifier> games) {
-    public static final Codec<GameListConfig> CODEC = MoreCodecs.listOrUnit(Identifier.CODEC)
+public record GameListConfig(TinyEntry<TinyRegistry.EntryKey<?>, Collection<GameConfig<?>>> games) {
+    public static final Codec<GameListConfig> CODEC = GameConfigs.getEntryCodec()
             .xmap(GameListConfig::new, config -> config.games);
 
     public List<GameConfig<?>> collectGames() {
-        var games = new ArrayList<GameConfig<?>>(this.games.size());
-        for (var gameId : this.games) {
-            var game = GameConfigs.get(gameId);
-            if (game == null) {
-                Plasmid.LOGGER.warn("Missing game config by id '{}'!", gameId);
-                continue;
-            }
-            games.add(game);
-        }
-        return games;
+        return List.copyOf(this.games.orElse(List::of));
     }
 
     @Nullable
@@ -39,6 +30,6 @@ public record GameListConfig(List<Identifier> games) {
     }
 
     public boolean isEmpty() {
-        return this.games.isEmpty();
+        return this.games.orElse(List::of).isEmpty();
     }
 }

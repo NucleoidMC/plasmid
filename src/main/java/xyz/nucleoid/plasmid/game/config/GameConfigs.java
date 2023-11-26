@@ -14,16 +14,21 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.registry.TinyEntry;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Set;
 
 public final class GameConfigs {
     private static final ResourceFinder FINDER = ResourceFinder.json("games");
 
-    private static final TinyRegistry<GameConfig<?>> CONFIGS = TinyRegistry.create();
+    private static final TinyRegistry<GameConfig<?>> CONFIGS = TinyRegistry.create("games");
 
+    public static Codec<TinyEntry<TinyRegistry.EntryKey<?>, Collection<GameConfig<?>>>> getEntryCodec() {
+        return CONFIGS.getEntryCodec();
+    }
     public static void reload(DynamicRegistryManager registryManager, ResourceManager manager) {
         CONFIGS.clear();
 
@@ -53,6 +58,8 @@ public final class GameConfigs {
                 Plasmid.LOGGER.error("Failed to parse game JSON at {}: {}", path, e);
             }
         });
+
+        CONFIGS.loadTags(manager);
     }
 
     @Nullable

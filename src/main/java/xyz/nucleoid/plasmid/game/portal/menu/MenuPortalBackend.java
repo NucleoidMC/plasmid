@@ -17,6 +17,7 @@ import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.GamePortalDisplay;
 import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalBackend;
 import xyz.nucleoid.plasmid.util.Guis;
+import xyz.nucleoid.plasmid.util.IdentityHashStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +56,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
     @Override
     public int getPlayerCount() {
         int count = 0;
-        var list = new ObjectOpenCustomHashSet<GameSpace>(Util.identityHashStrategy());
+        var list = new ObjectOpenCustomHashSet<GameSpace>(IdentityHashStrategy.INSTANCE);
         provideGameSpaces(list::add);
         for (var entry : list) {
             count += Math.max(0, entry.getPlayers().size());

@@ -363,7 +363,7 @@ public final class TeamManager implements Iterable<GameTeam> {
 
     private void addOnlinePlayer(ServerPlayerEntity player, State state) {
         state.onlinePlayers.add(player);
-        state.scoreboardTeam.getPlayerList().add(player.getEntityName());
+        state.scoreboardTeam.getPlayerList().add(player.getNameForScoreboard());
 
         this.sendPacketToAll(this.changePlayerTeam(player, state, TeamS2CPacket.Operation.ADD));
         this.sendPacketToAll(this.resetPlayerName(player));
@@ -371,7 +371,7 @@ public final class TeamManager implements Iterable<GameTeam> {
 
     private void removeOnlinePlayer(ServerPlayerEntity player, State state) {
         state.onlinePlayers.remove(player);
-        state.scoreboardTeam.getPlayerList().remove(player.getEntityName());
+        state.scoreboardTeam.getPlayerList().remove(player.getNameForScoreboard());
 
         this.sendPacketToAll(this.changePlayerTeam(player, state, TeamS2CPacket.Operation.REMOVE));
         this.sendPacketToAll(this.resetPlayerName(player));

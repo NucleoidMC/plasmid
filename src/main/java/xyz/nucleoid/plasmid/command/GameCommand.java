@@ -319,7 +319,7 @@ public final class GameCommand {
 
         var gameSpace = GameSpaceManager.get().byPlayer(player);
         if (gameSpace == null) {
-            throw PLAYER_NOT_IN_GAME.create(player.getEntityName());
+            throw PLAYER_NOT_IN_GAME.create(player.getName());
         }
 
         context.getSource().sendFeedback(() -> GameTexts.Command.located(player, gameSpace), false);

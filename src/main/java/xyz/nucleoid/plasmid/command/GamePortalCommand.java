@@ -66,7 +66,7 @@ public final class GamePortalCommand {
             }
 
             context.getSource().sendFeedback(() -> {
-                var message = Text.translatable("text.plasmid.game.portal.connect.entity", portal.getId(), entity.getEntityName());
+                var message = Text.translatable("text.plasmid.game.portal.connect.entity", portal.getId(), entity.getName());
                 return message.formatted(Formatting.GRAY);
             }, false);
 
@@ -107,7 +107,7 @@ public final class GamePortalCommand {
             portalInterface.invalidatePortal();
 
             context.getSource().sendFeedback(() -> {
-                var message = Text.translatable("text.plasmid.game.portal.disconnect.entity", entity.getEntityName());
+                var message = Text.translatable("text.plasmid.game.portal.disconnect.entity", entity.getName());
                 return message.formatted(Formatting.GRAY);
             }, false);
 

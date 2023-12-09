@@ -15,7 +15,6 @@ import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
-import xyz.nucleoid.plasmid.game.resource_packs.ResourcePackStates;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,7 +35,6 @@ public final class ManagedGameSpace implements GameSpace {
     private final long openTime;
 
     private final GameActivityState state = new GameActivityState(this);
-    private final ResourcePackStates resourcePackStateManager = new ResourcePackStates(this);
     private boolean closed;
 
     private final GameSpaceStatistics statistics = new GameSpaceStatistics();
@@ -171,12 +169,6 @@ public final class ManagedGameSpace implements GameSpace {
     public boolean isClosed() {
         return this.closed;
     }
-
-    @Override
-    public ResourcePackStates getResourcePackStates() {
-        return this.resourcePackStateManager;
-    }
-
     @Override
     public <T> T getAttachment(String key) {
         //noinspection unchecked

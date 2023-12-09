@@ -36,7 +36,7 @@ public class TestInitializer implements ModInitializer {
             CREATOR.requestModel(Items.NOTE_BLOCK, id("block/chair"))
     );
 
-    public static Optional<GameResourcePack> resourcePack = Optional.empty();
+    public static Optional<GameResourcePack> resourcePack;
 
     @Override
     public void onInitialize() {
@@ -49,7 +49,8 @@ public class TestInitializer implements ModInitializer {
 
 
         CREATOR.addAssetSource("plasmid-test-mod");
-        resourcePack = GameResourcePack.tryRegister(CREATOR);
+        resourcePack = GameResourcePack.from(new Identifier(ID, "test"), CREATOR);
+
     }
 
     private static final Identifier id(String path) {

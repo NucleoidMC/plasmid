@@ -131,7 +131,7 @@ public final class ItemStackBuilder {
             display.put("Lore", loreList);
         }
 
-        loreList.add(NbtString.of(Text.Serializer.toJson(text)));
+        loreList.add(NbtString.of(Text.Serialization.toJsonString(text)));
 
         return this;
     }

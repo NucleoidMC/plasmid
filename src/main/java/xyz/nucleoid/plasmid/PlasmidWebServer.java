@@ -6,18 +6,30 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
-import org.apache.commons.io.IOUtils;
+import net.minecraft.util.Util;
 import org.apache.http.HttpStatus;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.game.resource_packs.GameResourcePackManager;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 
 public class PlasmidWebServer {
     public static final String RESOURCE_PACKS_ENDPOINT = "resource-packs";
+
+    private static final Map<String, Path> RESOURCE_PACKS = new HashMap<>();
+
+    private static final String WEB_URL = Util.make(() -> {
+        var path = PlasmidConfig.get().userFacingPackAddress().orElse("");
+        return path.endsWith("/") ? path : path + "/";
+
+    });
 
     @Nullable
     public static HttpServer start(MinecraftServer minecraftServer, Config config) {
@@ -46,35 +58,40 @@ public class PlasmidWebServer {
         }
     }
 
+    public static String registerResourcePack(String s, Path path) {
+        RESOURCE_PACKS.put(s, path);
+        return WEB_URL + s;
+    }
+
     private record ResourcePacksHandler(String endpoint) implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             try (exchange) {
-                var resourcePacks = GameResourcePackManager.get();
-                if (resourcePacks.isEmpty() || !this.tryHandle(exchange, resourcePacks.get())) {
+                if (!this.tryHandle(exchange)) {
                     exchange.sendResponseHeaders(HttpStatus.SC_NOT_FOUND, 0);
                 }
             }
         }
 
-        private boolean tryHandle(HttpExchange exchange, GameResourcePackManager resourcePacks) throws IOException {
+        private boolean tryHandle(HttpExchange exchange) throws IOException {
             if ("GET".equals(exchange.getRequestMethod())) {
-                return this.tryHandleGet(exchange, resourcePacks);
+                return this.tryHandleGet(exchange);
             }
             return false;
         }
 
-        private boolean tryHandleGet(HttpExchange exchange, GameResourcePackManager resourcePacks) throws IOException {
+        private boolean tryHandleGet(HttpExchange exchange) throws IOException {
             var path = exchange.getRequestURI().getPath().substring(this.endpoint.length() + 2);
-            var pack = resourcePacks.load(path);
+            var pack = RESOURCE_PACKS.get(path);
             if (pack != null) {
+                var size = Files.size(pack);
                 try (
-                        var input = pack.openInputStream();
+                        var input = Files.newInputStream(pack);
                         var output = exchange.getResponseBody()
                 ) {
                     exchange.getResponseHeaders().add("Server", "plasmid");
                     exchange.getResponseHeaders().add("Content-Type", "application/zip");
-                    exchange.sendResponseHeaders(HttpStatus.SC_OK, pack.getSize());
+                    exchange.sendResponseHeaders(HttpStatus.SC_OK, size);
 
                     input.transferTo(output);
                     output.flush();

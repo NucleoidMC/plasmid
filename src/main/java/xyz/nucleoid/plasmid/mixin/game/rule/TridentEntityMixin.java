@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.mixin.game.rule;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.TridentEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,8 +19,8 @@ public abstract class TridentEntityMixin extends PersistentProjectileEntity {
     @Shadow
     private boolean dealtDamage;
 
-    private TridentEntityMixin(EntityType<? extends PersistentProjectileEntity> type, World world) {
-        super(type, world);
+    protected TridentEntityMixin(EntityType<? extends PersistentProjectileEntity> type, World world, ItemStack stack) {
+        super(type, world, stack);
     }
 
     @Inject(method = "tick", at = @At("HEAD"))

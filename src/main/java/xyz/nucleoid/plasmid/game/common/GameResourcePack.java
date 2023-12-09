@@ -1,18 +1,26 @@
 package xyz.nucleoid.plasmid.game.common;
 
+import com.google.common.hash.Hashing;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.resourcepack.api.ResourcePackCreator;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.network.packet.s2c.common.ResourcePackRemoveS2CPacket;
 import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import org.jetbrains.annotations.ApiStatus;
+import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.Plasmid;
+import xyz.nucleoid.plasmid.PlasmidConfig;
+import xyz.nucleoid.plasmid.PlasmidWebServer;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
-import xyz.nucleoid.plasmid.game.resource_packs.GameResourcePackManager;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Optional;
-
-// TODO: prevent resource-pack soft-lock
+import java.util.UUID;
 
 /**
  * A very simple utility to apply a resource pack for all players within a {@link GameActivity}.
@@ -20,14 +28,40 @@ import java.util.Optional;
  * @see GameResourcePack#addTo(GameActivity)
  */
 public final class GameResourcePack {
+    private static final Path RESOURCE_PACKS_ROOT = FabricLoader.getInstance().getGameDir()
+            .resolve("plasmid-generated/resource-packs");
+    private final UUID uuid;
+
     private final String url;
     private final String hash;
     private boolean required;
     private Text prompt;
 
+    private boolean isLocal;
+
     public GameResourcePack(String url, String hash) {
         this.url = url;
+        this.uuid = UUID.nameUUIDFromBytes(hash.getBytes());
         this.hash = hash;
+        this.isLocal = false;
+    }
+
+    public GameResourcePack(UUID uuid, String url, String hash) {
+        this.url = url;
+        this.uuid = uuid;
+        this.hash = hash;
+        this.isLocal = false;
+    }
+
+    private GameResourcePack(UUID uuid, String url, String hash, Void unused) {
+        this.url = url;
+        this.uuid = uuid;
+        this.hash = hash;
+        this.isLocal = true;
+    }
+
+    public boolean isLocal() {
+        return this.isLocal;
     }
 
     /**
@@ -57,26 +91,32 @@ public final class GameResourcePack {
      * @param activity the activity to add to
      */
     public void addTo(GameActivity activity) {
-        var gameSpace = activity.getGameSpace();
-
-        activity.listen(GamePlayerEvents.ADD, player -> {
-            gameSpace.getResourcePackStates().setFor(player, this);
-        });
+        activity.listen(GamePlayerEvents.ADD, this::sendTo);
+        activity.listen(GamePlayerEvents.REMOVE, this::unload);
     }
 
-    @ApiStatus.Internal
-    public void sendTo(ServerPlayerEntity player) {
-        player.networkHandler.sendPacket(new ResourcePackSendS2CPacket(this.url, this.hash, this.required, this.prompt));
+    private void sendTo(ServerPlayerEntity player) {
+        player.networkHandler.sendPacket(new ResourcePackSendS2CPacket(this.uuid, this.url, this.hash, this.required, this.prompt));
     }
 
-    public static Optional<GameResourcePack> tryRegister(ResourcePackCreator creator) {
-        return GameResourcePackManager.get().flatMap(packs -> {
-            try {
-                return Optional.of(packs.register(creator));
-            } catch (Exception e) {
-                Plasmid.LOGGER.error("Failed to generate resource pack", e);
-                return Optional.empty();
-            }
-        });
+    private void unload(ServerPlayerEntity player) {
+        player.networkHandler.sendPacket(new ResourcePackRemoveS2CPacket(Optional.of(this.uuid)));
+    }
+
+    public static Optional<GameResourcePack> from(Identifier identifier, ResourcePackCreator creator) {
+        try {
+            var relative = identifier.getNamespace() + "/" + identifier.getPath() + ".zip";
+            var path = RESOURCE_PACKS_ROOT.resolve(relative);
+            Files.createDirectories(path.getParent());
+            creator.build(path);
+
+            var hash = com.google.common.io.Files.asByteSource(path.toFile()).hash(Hashing.sha1()).toString();
+
+            var url = PlasmidWebServer.registerResourcePack(relative, path);
+            return Optional.of(new GameResourcePack(UUID.nameUUIDFromBytes(hash.getBytes(StandardCharsets.UTF_8)), url, hash, null));
+        } catch (Throwable e) {
+            Plasmid.LOGGER.error("Failed to create a resource pack '" + identifier + "'!", e);
+            return Optional.empty();
+        }
     }
 }

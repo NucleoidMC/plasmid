@@ -89,7 +89,7 @@ dependencies {
   modApi include('xyz.nucleoid:fantasy:0.5.0+1.20.4')
   modApi include('xyz.nucleoid:more-codecs:0.3.3+1.20.2')
   modApi include('xyz.nucleoid:stimuli:0.4.10+1.20.4')
-  modApi include('xyz.nucleoid:map-templates:0.1.8+1.20')
+  modApi include('xyz.nucleoid:map-templates:0.1.9+1.20.4')
   modApi include('xyz.nucleoid:substrate:0.2.2+1.20.1')
   modApi 'eu.pb4:polymer-core:0.7.1+1.20.4'
   modApi 'eu.pb4:polymer-resource-pack:0.7.1+1.20.4'

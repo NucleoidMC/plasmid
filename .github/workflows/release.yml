@@ -35,7 +35,7 @@ jobs:
           property: 'mod_version'
 
       - name: Generate build number
-        uses: zyborg/gh-action-buildnum@v1
+        uses: kNoAPP/gh-action-buildnum@95ff0793ae82a79441ec674ed370adf14134559e
         id: 'minor_version'
         with:
           workflow_name: 'minor_version'
@@ -58,7 +58,7 @@ jobs:
           MODRINTH: ${{ secrets.MODRINTH_KEY }}
           CHANGELOG: ${{ github.event.release.body }}
       - name: Bump build number
-        uses: zyborg/gh-action-buildnum@v1
+        uses: kNoAPP/gh-action-buildnum@95ff0793ae82a79441ec674ed370adf14134559e
         id: 'justbump'
         with:
           workflow_name: 'minor_version'

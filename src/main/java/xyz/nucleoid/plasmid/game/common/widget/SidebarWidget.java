@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game.common.widget;
 
 import eu.pb4.sidebars.api.Sidebar;
+import net.minecraft.scoreboard.number.BlankNumberFormat;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
@@ -17,26 +18,29 @@ public class SidebarWidget extends Sidebar implements GameWidget {
 
     public SidebarWidget() {
         super(Priority.MEDIUM);
+        this.setDefaultNumberFormat(BlankNumberFormat.INSTANCE);
         this.playerChecker = SidebarWidget::alwaysTrue;
         this.show();
     }
 
     public SidebarWidget(Predicate<ServerPlayerEntity> playerChecker) {
         super(Priority.MEDIUM);
+        this.setDefaultNumberFormat(BlankNumberFormat.INSTANCE);
         this.playerChecker = playerChecker;
         this.show();
     }
 
     public SidebarWidget(Text title) {
         super(title, Priority.MEDIUM);
+        this.setDefaultNumberFormat(BlankNumberFormat.INSTANCE);
         this.playerChecker = SidebarWidget::alwaysTrue;
         this.show();
     }
 
     public SidebarWidget(Text title, Predicate<ServerPlayerEntity> playerChecker) {
         super(title, Priority.MEDIUM);
+        this.setDefaultNumberFormat(BlankNumberFormat.INSTANCE);
         this.playerChecker = playerChecker;
-
         this.show();
     }
 

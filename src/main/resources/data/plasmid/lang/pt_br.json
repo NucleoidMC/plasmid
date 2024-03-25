@@ -135,5 +135,13 @@
   "statistic.plasmid.blocks_broken": "Blocos quebrados",
   "statistic.plasmid.points": "Pontos",
   "statistic.plasmid.quickest_time": "Tempo mais curto",
-  "statistic.plasmid.longest_time": "Tempo mais longo"
+  "statistic.plasmid.longest_time": "Tempo mais longo",
+  "text.plasmid.ui.game_join.spectators": "Atualmente espectando: %s",
+  "text.plasmid.game.kick.by": "%s foi expulso do jogo por %s!",
+  "text.plasmid.ui.game_join.invalid.description": "Nenhum jogo ou menu está ligado a esta entrada",
+  "text.plasmid.game.open.opened.testing": "%1$s abriu %2$s para testes! ",
+  "text.plasmid.ui.game_join.action.spectate": "Clique pra espectar!",
+  "text.plasmid.game.kick": "%s foi expulso do jogo!",
+  "text.plasmid.ui.game_join.invalid.name": "Entrada inválida no menu",
+  "text.plasmid.ui.game_join.action.play": "Clique pra jogar!"
 }

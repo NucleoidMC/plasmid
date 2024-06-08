@@ -108,28 +108,28 @@ public record GameConfig<C>(
     static final class ConfigCodec extends MapCodec<GameConfig<?>> {
         @Override
         public <T> Stream<T> keys(DynamicOps<T> ops) {
-            return Stream.concat(Stream.of(ops.createString("type"), ops.createString("config")), Metadata.MAP_CODEC.keys(ops));
+            return Stream.concat(Stream.of(ops.createString("type")), Metadata.MAP_CODEC.keys(ops));
         }
 
         @Override
         public <T> DataResult<GameConfig<?>> decode(DynamicOps<T> ops, MapLike<T> input) {
+            if (ops.compressMaps()) {
+                return DataResult.error(() -> "Does not support compressed ops");
+            }
+
             var typeResult = GameType.REGISTRY.decode(ops, input.get("type")).map(Pair::getFirst);
 
-            return typeResult.flatMap(type -> {
-                return Metadata.MAP_CODEC.decode(ops, input).flatMap(metadata -> {
-                    return this.decodeConfig(ops, input, type.configCodec()).map(config -> {
-                        return this.createConfigUnchecked(type, metadata, config);
-                    });
-                });
-            });
+            return typeResult.flatMap(type ->
+                    Metadata.MAP_CODEC.decode(ops, input).flatMap(metadata ->
+                            this.decodeConfig(ops, input, type.configCodec()).map(config ->
+                                    this.createConfigUnchecked(type, metadata, config)
+                            )
+                    )
+            );
         }
 
-        private <T> DataResult<?> decodeConfig(DynamicOps<T> ops, MapLike<T> input, Codec<?> configCodec) {
-            if (configCodec instanceof MapCodecCodec<?> mapCodec) {
-                return mapCodec.codec().decode(ops, input).map(Function.identity());
-            } else {
-                return configCodec.decode(ops, input.get("config")).map(Pair::getFirst);
-            }
+        private <T> DataResult<?> decodeConfig(DynamicOps<T> ops, MapLike<T> input, MapCodec<?> configCodec) {
+            return configCodec.decode(ops, input).map(Function.identity());
         }
 
         @SuppressWarnings("unchecked")
@@ -148,13 +148,7 @@ public record GameConfig<C>(
         }
 
         private <T, C> RecordBuilder<T> encodeUnchecked(GameConfig<C> game, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-            var codec = game.type.configCodec();
-            if (codec instanceof MapCodecCodec<C> mapCodec) {
-                prefix = mapCodec.codec().encode(game.config, ops, prefix);
-            } else {
-                prefix.add("config", codec.encodeStart(ops, game.config));
-            }
-
+            prefix = game.type.configCodec().encode(game.config, ops, prefix);
             prefix.add("type", GameType.REGISTRY.encodeStart(ops, game.type));
 
             var metadata = new Metadata(
@@ -167,18 +161,16 @@ public record GameConfig<C>(
         }
     }
 
-    static final record Metadata(
+    record Metadata(
             Optional<Text> name, Optional<Text> shortName, Optional<List<Text>> description,
             ItemStack icon, CustomValuesConfig custom
     ) {
-        static final MapCodec<Metadata> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> {
-            return instance.group(
-                    PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(Metadata::name),
-                    PlasmidCodecs.TEXT.optionalFieldOf("short_name").forGetter(Metadata::shortName),
-                    MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(Metadata::description),
-                    MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(Metadata::icon),
-                    CustomValuesConfig.CODEC.fieldOf("custom").orElseGet(CustomValuesConfig::empty).forGetter(Metadata::custom)
-            ).apply(instance, Metadata::new);
-        });
+        static final MapCodec<Metadata> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(Metadata::name),
+                PlasmidCodecs.TEXT.optionalFieldOf("short_name").forGetter(Metadata::shortName),
+                MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(Metadata::description),
+                MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(Metadata::icon),
+                CustomValuesConfig.CODEC.fieldOf("custom").orElseGet(CustomValuesConfig::empty).forGetter(Metadata::custom)
+        ).apply(i, Metadata::new));
     }
 }

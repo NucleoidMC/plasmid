@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game.portal.menu;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -30,7 +31,7 @@ public record MenuPortalConfig(
         CustomValuesConfig custom
 ) implements GamePortalConfig {
 
-    public static final Codec<MenuPortalConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final MapCodec<MenuPortalConfig> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             PlasmidCodecs.TEXT.optionalFieldOf("name", ScreenTexts.EMPTY).forGetter(MenuPortalConfig::name),
             MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description", Collections.emptyList()).forGetter(MenuPortalConfig::description),
             MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(MenuPortalConfig::icon),
@@ -51,7 +52,7 @@ public record MenuPortalConfig(
     }
 
     @Override
-    public Codec<? extends GamePortalConfig> codec() {
+    public MapCodec<MenuPortalConfig> codec() {
         return CODEC;
     }
 

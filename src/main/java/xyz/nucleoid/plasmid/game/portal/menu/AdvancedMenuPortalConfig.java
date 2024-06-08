@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.game.portal.menu;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -24,16 +24,13 @@ public record AdvancedMenuPortalConfig(
         List<MenuEntryConfig> entries,
         CustomValuesConfig custom
 ) implements GamePortalConfig {
-
-    public static final Codec<AdvancedMenuPortalConfig> CODEC = RecordCodecBuilder.create(instance -> {
-        return instance.group(
-                PlasmidCodecs.TEXT.optionalFieldOf("name", ScreenTexts.EMPTY).forGetter(AdvancedMenuPortalConfig::name),
-                MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description", Collections.emptyList()).forGetter(AdvancedMenuPortalConfig::description),
-                MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(AdvancedMenuPortalConfig::icon),
-                MenuEntryConfig.CODEC.listOf().fieldOf("entries").forGetter(AdvancedMenuPortalConfig::entries),
-                CustomValuesConfig.CODEC.optionalFieldOf("custom", CustomValuesConfig.empty()).forGetter(config -> config.custom)
-        ).apply(instance, AdvancedMenuPortalConfig::new);
-    });
+    public static final MapCodec<AdvancedMenuPortalConfig> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            PlasmidCodecs.TEXT.optionalFieldOf("name", ScreenTexts.EMPTY).forGetter(AdvancedMenuPortalConfig::name),
+            MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description", List.of()).forGetter(AdvancedMenuPortalConfig::description),
+            MoreCodecs.ITEM_STACK.optionalFieldOf("icon", new ItemStack(Items.GRASS_BLOCK)).forGetter(AdvancedMenuPortalConfig::icon),
+            MenuEntryConfig.CODEC.listOf().fieldOf("entries").forGetter(AdvancedMenuPortalConfig::entries),
+            CustomValuesConfig.CODEC.optionalFieldOf("custom", CustomValuesConfig.empty()).forGetter(config -> config.custom)
+    ).apply(i, AdvancedMenuPortalConfig::new));
 
     @Override
     public GamePortalBackend createBackend(MinecraftServer server, Identifier id) {
@@ -48,7 +45,7 @@ public record AdvancedMenuPortalConfig(
     }
 
     @Override
-    public Codec<? extends GamePortalConfig> codec() {
+    public MapCodec<AdvancedMenuPortalConfig> codec() {
         return CODEC;
     }
 }

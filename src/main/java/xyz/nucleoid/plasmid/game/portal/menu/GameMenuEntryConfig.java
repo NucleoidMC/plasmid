@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.game.portal.menu;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -19,7 +19,7 @@ public record GameMenuEntryConfig(
         Optional<List<Text>> description,
         Optional<ItemStack> icon
 ) implements MenuEntryConfig {
-    public static final Codec<GameMenuEntryConfig> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final MapCodec<GameMenuEntryConfig> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             GameConfig.CODEC.fieldOf("game").forGetter(GameMenuEntryConfig::game),
             PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(GameMenuEntryConfig::name),
             MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(GameMenuEntryConfig::description),
@@ -38,7 +38,7 @@ public record GameMenuEntryConfig(
     }
 
     @Override
-    public Codec<? extends MenuEntryConfig> codec() {
+    public MapCodec<GameMenuEntryConfig> codec() {
         return CODEC;
     }
 }

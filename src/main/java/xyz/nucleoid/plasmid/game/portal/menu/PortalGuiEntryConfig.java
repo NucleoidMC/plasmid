@@ -1,17 +1,16 @@
 package xyz.nucleoid.plasmid.game.portal.menu;
 
-import java.util.List;
-import java.util.Optional;
-
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
 import xyz.nucleoid.plasmid.util.PlasmidCodecs;
+
+import java.util.List;
+import java.util.Optional;
 
 @Deprecated
 public record PortalGuiEntryConfig(
@@ -21,14 +20,12 @@ public record PortalGuiEntryConfig(
         Optional<ItemStack> icon
 ) implements MenuEntryConfig {
 
-    public static final Codec<PortalGuiEntryConfig> CODEC = RecordCodecBuilder.create(instance -> {
-        return instance.group(
-                Identifier.CODEC.fieldOf("portal").forGetter(PortalGuiEntryConfig::portal),
-                PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(PortalGuiEntryConfig::name),
-                MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(PortalGuiEntryConfig::description),
-                MoreCodecs.ITEM_STACK.optionalFieldOf("icon").forGetter(PortalGuiEntryConfig::icon)
-        ).apply(instance, PortalGuiEntryConfig::new);
-    });
+    public static final MapCodec<PortalGuiEntryConfig> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            Identifier.CODEC.fieldOf("portal").forGetter(PortalGuiEntryConfig::portal),
+            PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(PortalGuiEntryConfig::name),
+            MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(PortalGuiEntryConfig::description),
+            MoreCodecs.ITEM_STACK.optionalFieldOf("icon").forGetter(PortalGuiEntryConfig::icon)
+    ).apply(i, PortalGuiEntryConfig::new));
 
     @Override
     public MenuEntry createEntry() {
@@ -51,7 +48,7 @@ public record PortalGuiEntryConfig(
     }
 
     @Override
-    public Codec<? extends MenuEntryConfig> codec() {
+    public MapCodec<PortalGuiEntryConfig> codec() {
         return CODEC;
     }
 }

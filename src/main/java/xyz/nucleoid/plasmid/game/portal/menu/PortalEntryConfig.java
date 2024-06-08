@@ -1,17 +1,16 @@
 package xyz.nucleoid.plasmid.game.portal.menu;
 
-import java.util.List;
-import java.util.Optional;
-
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.game.portal.GamePortalManager;
 import xyz.nucleoid.plasmid.util.PlasmidCodecs;
+
+import java.util.List;
+import java.util.Optional;
 
 public record PortalEntryConfig(
         Identifier portal,
@@ -20,14 +19,12 @@ public record PortalEntryConfig(
         Optional<ItemStack> icon
 ) implements MenuEntryConfig {
 
-    public static final Codec<PortalEntryConfig> CODEC = RecordCodecBuilder.create(instance -> {
-        return instance.group(
-                Identifier.CODEC.fieldOf("portal").forGetter(PortalEntryConfig::portal),
-                PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(PortalEntryConfig::name),
-                MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(PortalEntryConfig::description),
-                MoreCodecs.ITEM_STACK.optionalFieldOf("icon").forGetter(PortalEntryConfig::icon)
-        ).apply(instance, PortalEntryConfig::new);
-    });
+    public static final MapCodec<PortalEntryConfig> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            Identifier.CODEC.fieldOf("portal").forGetter(PortalEntryConfig::portal),
+            PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(PortalEntryConfig::name),
+            MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(PortalEntryConfig::description),
+            MoreCodecs.ITEM_STACK.optionalFieldOf("icon").forGetter(PortalEntryConfig::icon)
+    ).apply(i, PortalEntryConfig::new));
 
     @Override
     public MenuEntry createEntry() {
@@ -46,7 +43,7 @@ public record PortalEntryConfig(
     }
 
     @Override
-    public Codec<? extends MenuEntryConfig> codec() {
+    public MapCodec<PortalEntryConfig> codec() {
         return CODEC;
     }
 }

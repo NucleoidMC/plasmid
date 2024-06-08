@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game.stats;
 
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.Util;
@@ -18,7 +19,6 @@ import net.minecraft.util.Util;
 public record StatisticKey<T extends Number>(
         Identifier id,
         ValueType valueType,
-        StorageType storageType,
         boolean hidden
 ) {
     public StatisticKey {
@@ -32,14 +32,10 @@ public record StatisticKey<T extends Number>(
 
     public JsonObject encodeValue(T value) {
         JsonObject obj = new JsonObject();
-        obj.addProperty("type", this.encodeType());
+        obj.addProperty("type", this.valueType.asString());
         obj.addProperty("value", value);
         obj.addProperty("hidden", this.hidden);
         return obj;
-    }
-
-    private String encodeType() {
-        return this.valueType.asString() + "_" + this.storageType.asString();
     }
 
     public String getTranslationKey() {
@@ -47,67 +43,19 @@ public record StatisticKey<T extends Number>(
     }
 
     public static StatisticKey<Integer> intKey(Identifier id) {
-        return new StatisticKey<>(id, ValueType.INT, StorageType.TOTAL, false);
+        return new StatisticKey<>(id, ValueType.INT, false);
     }
 
     public static StatisticKey<Float> floatKey(Identifier id) {
-        return new StatisticKey<>(id, ValueType.FLOAT, StorageType.TOTAL, false);
+        return new StatisticKey<>(id, ValueType.FLOAT, false);
     }
 
     public static StatisticKey<Double> doubleKey(Identifier id) {
-        return new StatisticKey<>(id, ValueType.FLOAT, StorageType.TOTAL, false);
+        return new StatisticKey<>(id, ValueType.FLOAT, false);
     }
 
     public StatisticKey<T> hidden(boolean hidden) {
-        return new StatisticKey<>(this.id, this.valueType, this.storageType, hidden);
-    }
-
-    /**
-     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#intKey(Identifier)}
-     */
-    @Deprecated
-    public static StatisticKey<Integer> intKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.INT, storageType, false);
-    }
-
-    /**
-     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#floatKey(Identifier)}
-     */
-    @Deprecated
-    public static StatisticKey<Float> floatKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.FLOAT, storageType, false);
-    }
-
-    /**
-     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#doubleKey(Identifier)}
-     */
-    @Deprecated
-    public static StatisticKey<Double> doubleKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.FLOAT, storageType, false);
-    }
-
-    /**
-     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#intKey(Identifier)}
-     */
-    @Deprecated
-    public static StatisticKey<Integer> hiddenIntKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.INT, storageType, true);
-    }
-
-    /**
-     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#floatKey(Identifier)}
-     */
-    @Deprecated
-    public static StatisticKey<Float> hiddenFloatKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.FLOAT, storageType, true);
-    }
-
-    /**
-     * @deprecated {@link StorageType} is not used, instead use {@link StatisticKey#doubleKey(Identifier)}
-     */
-    @Deprecated
-    public static StatisticKey<Double> hiddenDoubleKey(Identifier id, StorageType storageType) {
-        return new StatisticKey<>(id, ValueType.FLOAT, storageType, true);
+        return new StatisticKey<>(this.id, this.valueType, hidden);
     }
 
     /**
@@ -122,30 +70,15 @@ public record StatisticKey<T extends Number>(
     }
 
     public enum ValueType implements StringIdentifiable {
-        INT("int"),
-        FLOAT("float"),
+        INT("int_total"),
+        FLOAT("float_total"),
         ;
+
+        public static final Codec<ValueType> CODEC = StringIdentifiable.createCodec(ValueType::values);
+
         private final String name;
 
         ValueType(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String asString() {
-            return this.name;
-        }
-    }
-
-    public enum StorageType implements StringIdentifiable {
-        TOTAL("total"),
-        ROLLING_AVERAGE("rolling_average"),
-        MIN("min"),
-        MAX("max"),
-        ;
-        private final String name;
-
-        StorageType(String name) {
             this.name = name;
         }
 

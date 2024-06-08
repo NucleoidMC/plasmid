@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.game.portal.menu;
 
 import eu.pb4.sgui.api.elements.GuiElementInterface;
-import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -10,7 +10,6 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalBackend;
 import xyz.nucleoid.plasmid.util.Guis;
-import xyz.nucleoid.plasmid.util.IdentityHashStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +48,9 @@ public final class MenuPortalBackend implements GamePortalBackend {
     @Override
     public int getPlayerCount() {
         int count = 0;
-        var list = new ObjectOpenCustomHashSet<GameSpace>(IdentityHashStrategy.INSTANCE);
-        provideGameSpaces(list::add);
-        for (var entry : list) {
+        var uniqueGameSpaces = new ReferenceOpenHashSet<GameSpace>();
+        provideGameSpaces(uniqueGameSpaces::add);
+        for (var entry : uniqueGameSpaces) {
             count += Math.max(0, entry.getPlayers().size());
         }
         return count;

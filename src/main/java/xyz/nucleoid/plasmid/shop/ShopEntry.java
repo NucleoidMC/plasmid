@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.shop;
 
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.GuiInterface;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -51,7 +52,7 @@ public final class ShopEntry implements GuiElementInterface {
             name.append(costText);
         }
 
-        icon.setCustomName(name);
+        icon.set(DataComponentTypes.ITEM_NAME, name);
 
         return icon;
     }
@@ -75,7 +76,7 @@ public final class ShopEntry implements GuiElementInterface {
 
         var count = Text.literal(stack.getCount() + "x ");
         var name = icon.getName().copy().formatted(Formatting.BOLD);
-        icon.setCustomName(count.append(name));
+        icon.set(DataComponentTypes.ITEM_NAME, count.append(name));
 
         return new ShopEntry(icon).onBuy((player) -> player.getInventory().offerOrDrop(stack.copy()));
     }
@@ -85,7 +86,7 @@ public final class ShopEntry implements GuiElementInterface {
 
         var count = Text.literal(stack.getCount() + "x ");
         var name = icon.getName().copy().formatted(Formatting.BOLD);
-        icon.setCustomName(count.append(name));
+        icon.set(DataComponentTypes.ITEM_NAME, count.append(name));
 
         return new ShopEntry(icon).onBuy((player) -> player.getInventory().offerOrDrop(stack.copy())).withCost(cost);
     }
@@ -173,7 +174,7 @@ public final class ShopEntry implements GuiElementInterface {
                 sound = SoundEvents.ENTITY_VILLAGER_NO;
             }
 
-            gui.getPlayer().playSound(sound, SoundCategory.MASTER, 1.0F, 1.0F);
+            gui.getPlayer().playSoundToPlayer(sound, SoundCategory.MASTER, 1.0F, 1.0F);
         };
     }
 }

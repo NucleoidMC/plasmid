@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public final class GamePortal {
-    private final MinecraftServer server;
     private final Identifier id;
     private final GamePortalBackend backend;
     private CustomValuesConfig custom = CustomValuesConfig.empty();
@@ -26,7 +25,6 @@ public final class GamePortal {
     private GamePortalDisplay currentDisplay = new GamePortalDisplay();
 
     public GamePortal(MinecraftServer server, Identifier id, GamePortalBackend.Factory backendFactory) {
-        this.server = server;
         this.id = id;
         this.backend = backendFactory.create(server, id);
     }

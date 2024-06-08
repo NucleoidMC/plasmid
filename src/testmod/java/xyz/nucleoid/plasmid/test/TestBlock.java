@@ -12,12 +12,6 @@ public class TestBlock extends Block implements PolymerTexturedBlock {
         this.visualState = state;
     }
 
-
-    @Override
-    public Block getPolymerBlock(BlockState state) {
-        return this.visualState.getBlock();
-    }
-
     @Override
     public BlockState getPolymerBlockState(BlockState state) {
         return this.visualState;

@@ -8,6 +8,7 @@ import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.block.entity.SignText;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -111,12 +112,12 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     }
 
     @Inject(method = "writeNbt", at = @At("RETURN"))
-    private void writeNbt(NbtCompound root, CallbackInfo ci) {
+    private void writeNbt(NbtCompound root, RegistryWrapper.WrapperLookup registryLookup, CallbackInfo ci) {
         this.serializePortal(root);
     }
 
     @Inject(method = "readNbt", at = @At("RETURN"))
-    private void readNbt(NbtCompound root, CallbackInfo ci) {
+    private void readNbt(NbtCompound root, RegistryWrapper.WrapperLookup registryLookup, CallbackInfo ci) {
         this.loadedPortalId = this.deserializePortalId(root);
     }
 

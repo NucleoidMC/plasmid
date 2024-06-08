@@ -7,7 +7,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
-import xyz.nucleoid.plasmid.game.portal.GamePortal.GuiProvider;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.game.portal.game.ConcurrentGamePortalBackend;
 import xyz.nucleoid.plasmid.util.Guis;

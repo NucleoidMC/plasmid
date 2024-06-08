@@ -1,17 +1,13 @@
 package xyz.nucleoid.plasmid.game.portal.game;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
-import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 

@@ -1,11 +1,10 @@
 package xyz.nucleoid.plasmid.game.world.generator;
 
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ChunkRegion;
@@ -31,18 +30,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public abstract class GameChunkGenerator extends ChunkGenerator {
-    public static final Codec<? extends ChunkGenerator> CODEC = new Codec<>() {
-        @Override
-        public <T> DataResult<Pair<ChunkGenerator, T>> decode(DynamicOps<T> ops, T input) {
-            return Biome.REGISTRY_CODEC.decode(ops, ops.createString(BiomeKeys.THE_VOID.getValue().toString()))
-                    .map(pair -> pair.mapFirst(VoidChunkGenerator::new));
-        }
-
-        @Override
-        public <T> DataResult<T> encode(ChunkGenerator input, DynamicOps<T> ops, T prefix) {
-            return DataResult.success(prefix);
-        }
-    };
+    public static final MapCodec<? extends ChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            RegistryOps.getEntryCodec(BiomeKeys.THE_VOID)
+    ).apply(i, VoidChunkGenerator::new));
 
     public GameChunkGenerator(BiomeSource biomeSource) {
         super(biomeSource);
@@ -108,7 +98,7 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    protected final Codec<? extends ChunkGenerator> getCodec() {
+    protected final MapCodec<? extends ChunkGenerator> getCodec() {
         return CODEC;
     }
 

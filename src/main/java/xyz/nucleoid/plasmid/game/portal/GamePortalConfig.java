@@ -7,9 +7,11 @@ import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
 import xyz.nucleoid.plasmid.registry.TinyRegistry;
 
+import java.util.function.Function;
+
 public interface GamePortalConfig {
     TinyRegistry<MapCodec<? extends GamePortalConfig>> REGISTRY = TinyRegistry.create();
-    Codec<GamePortalConfig> CODEC = REGISTRY.dispatchStable(GamePortalConfig::codec, MapCodec::codec);
+    Codec<GamePortalConfig> CODEC = REGISTRY.dispatchStable(GamePortalConfig::codec, Function.identity());
 
     static void register(Identifier key, MapCodec<? extends GamePortalConfig> codec) {
         REGISTRY.register(key, codec);

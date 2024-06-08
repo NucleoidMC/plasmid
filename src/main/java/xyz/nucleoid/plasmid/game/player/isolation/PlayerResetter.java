@@ -22,7 +22,7 @@ public final class PlayerResetter {
 
     private void clearAttributeModifiers(ServerPlayerEntity player) {
         var attributes = player.getAttributes();
-        for (var attribute : Registries.ATTRIBUTE) {
+        for (var attribute : Registries.ATTRIBUTE.getIndexedEntries()) {
             if (attributes.hasAttribute(attribute)) {
                 var instance = attributes.getCustomInstance(attribute);
                 if (instance != null) {

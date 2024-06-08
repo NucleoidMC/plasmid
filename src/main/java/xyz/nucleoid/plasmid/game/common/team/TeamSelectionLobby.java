@@ -1,9 +1,12 @@
 package xyz.nucleoid.plasmid.game.common.team;
 
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMaps;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -81,9 +84,9 @@ public final class TeamSelectionLobby {
                     .formatted(Formatting.BOLD, config.chatFormatting());
 
             var stack = new ItemStack(ColoredBlocks.wool(config.blockDyeColor()));
-            stack.setCustomName(name);
+            stack.set(DataComponentTypes.ITEM_NAME, name);
 
-            stack.getOrCreateNbt().putString(TEAM_KEY, team.key().id());
+            stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT.with(Codec.STRING.fieldOf(TEAM_KEY), team.key().id()).getOrThrow());
 
             player.getInventory().setStack(index++, stack);
         }
@@ -93,8 +96,8 @@ public final class TeamSelectionLobby {
         var stack = player.getStackInHand(hand);
 
         if (stack.isIn(ItemTags.WOOL)) {
-            var tag = stack.getOrCreateNbt();
-            var key = new GameTeamKey(tag.getString(TEAM_KEY));
+            var key = new GameTeamKey(stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT)
+                    .get(Codec.STRING.fieldOf(TEAM_KEY)).getOrThrow());
 
             var team = this.teams.byKey(key);
             if (team != null) {

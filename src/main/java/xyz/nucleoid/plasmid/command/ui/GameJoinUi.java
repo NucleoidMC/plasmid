@@ -24,12 +24,14 @@ public class GameJoinUi extends SimpleGui {
     private static final GuiElementInterface EMPTY = new GuiElementBuilder(Items.GRAY_STAINED_GLASS_PANE).setName(Text.empty()).build();
 
     private static final int NAVBAR_POS = 81;
+    private final ServerPlayerEntity player;
     private int tick;
     private int page = 0;
     private int pageSize;
 
     public GameJoinUi(ServerPlayerEntity player) {
         super(ScreenHandlerType.GENERIC_9X6, player, true);
+        this.player = player;
         this.setTitle(Text.translatable("text.plasmid.ui.game_join.title"));
         this.updateUi();
     }
@@ -93,9 +95,10 @@ public class GameJoinUi extends SimpleGui {
             );
             int pageValue = this.page + 1;
 
-            this.setSlot(NAVBAR_POS + 3, Guis.getNumericBanner(pageValue / 100));
-            this.setSlot(NAVBAR_POS + 4, Guis.getNumericBanner(pageValue / 10));
-            this.setSlot(NAVBAR_POS + 5, Guis.getNumericBanner(pageValue));
+            var registries = this.player.getRegistryManager().createRegistryLookup();
+            this.setSlot(NAVBAR_POS + 3, Guis.getNumericBanner(registries, pageValue / 100));
+            this.setSlot(NAVBAR_POS + 4, Guis.getNumericBanner(registries, pageValue / 10));
+            this.setSlot(NAVBAR_POS + 5, Guis.getNumericBanner(registries, pageValue));
 
             this.setSlot(NAVBAR_POS + 6, new GuiElementBuilder(hasNext ? Items.LIME_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE)
                     .setName(Text.translatable("spectatorMenu.next_page").formatted(hasNext ? Formatting.GOLD : Formatting.DARK_GRAY))
@@ -114,7 +117,7 @@ public class GameJoinUi extends SimpleGui {
 
     private GuiElementBuilder createIconFor(GameSpace gameSpace) {
         var sourceConfig = gameSpace.getMetadata().sourceConfig();
-        var element = GuiElementBuilder.from(sourceConfig.value().icon().copy()).hideFlags()
+        var element = GuiElementBuilder.from(sourceConfig.value().icon().copy()).hideDefaultTooltip()
                 .setName(GameConfig.name(sourceConfig).copy());
 
         for (var line : sourceConfig.value().description()) {
@@ -133,7 +136,7 @@ public class GameJoinUi extends SimpleGui {
                         Text.literal(gameSpace.getPlayers().size() + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
         );
 
-        element.hideFlags();
+        element.hideDefaultTooltip();
         element.setCallback((a, b, c, d) -> tryJoinGame(this.getPlayer(), gameSpace));
 
         return element;

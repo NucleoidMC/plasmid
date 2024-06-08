@@ -11,7 +11,6 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -143,7 +142,7 @@ public final class GameCommand {
     protected static int openAnonymousGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
         try {
             var configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
-            var result = GameConfig.DIRECT_CODEC.parse(RegistryOps.of(NbtOps.INSTANCE, context.getSource().getRegistryManager()), configNbt);
+            var result = GameConfig.DIRECT_CODEC.parse(context.getSource().getRegistryManager().getOps(NbtOps.INSTANCE), configNbt);
             if (result.error().isPresent()) {
                 throw MALFORMED_CONFIG.create(result.error().get());
             }

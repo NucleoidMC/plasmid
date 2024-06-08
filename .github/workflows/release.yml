@@ -25,7 +25,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 17
+          java-version: 21
 
       - name: Read mod version from Gradle
         id: read_version
@@ -35,7 +35,7 @@ jobs:
           property: 'mod_version'
 
       - name: Generate build number
-        uses: kNoAPP/gh-action-buildnum@95ff0793ae82a79441ec674ed370adf14134559e
+        uses: kNoAPP/gh-action-buildnum@7952ffa54bc2c37e2c33bbb3d7226473274cce3e
         id: 'minor_version'
         with:
           workflow_name: 'minor_version'
@@ -58,7 +58,7 @@ jobs:
           MODRINTH: ${{ secrets.MODRINTH_KEY }}
           CHANGELOG: ${{ github.event.release.body }}
       - name: Bump build number
-        uses: kNoAPP/gh-action-buildnum@95ff0793ae82a79441ec674ed370adf14134559e
+        uses: kNoAPP/gh-action-buildnum@7952ffa54bc2c37e2c33bbb3d7226473274cce3e
         id: 'justbump'
         with:
           workflow_name: 'minor_version'

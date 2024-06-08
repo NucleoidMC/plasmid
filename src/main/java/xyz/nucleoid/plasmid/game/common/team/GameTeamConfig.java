@@ -4,7 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.item.FireworkRocketItem;
+import net.minecraft.component.type.FireworkExplosionComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.Team;
@@ -71,7 +71,7 @@ public final record GameTeamConfig(
         return new Builder(config);
     }
 
-    public ItemStack createFirework(int flight, FireworkRocketItem.Type type) {
+    public ItemStack createFirework(int flight, FireworkExplosionComponent.Type type) {
         var color = this.fireworkColor().getRgb();
         return ItemStackBuilder.firework(color, flight, type).build();
     }

@@ -1,10 +1,12 @@
 package xyz.nucleoid.plasmid.game.common;
 
-import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.*;
+import net.minecraft.registry.entry.RegistryEntry;
 
 import java.util.UUID;
 
@@ -14,8 +16,8 @@ import java.util.UUID;
  * This works by modifying the damage and attack speed attributes to match their 1.8 levels.
  */
 public final class OldCombat {
-    private static final EntityAttribute DAMAGE_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_DAMAGE;
-    private static final EntityAttribute SPEED_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_SPEED;
+    private static final RegistryEntry<EntityAttribute> DAMAGE_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_DAMAGE;
+    private static final RegistryEntry<EntityAttribute> SPEED_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_SPEED;
 
     private static final UUID DAMAGE_ID = Item.ATTACK_DAMAGE_MODIFIER_ID;
     private static final UUID SPEED_ID = Item.ATTACK_SPEED_MODIFIER_ID;
@@ -28,36 +30,37 @@ public final class OldCombat {
 
     public static ItemStack applyTo(ItemStack stack) {
         var item = stack.getItem();
-        if (!(item instanceof ToolItem)) {
+        if (!(item instanceof ToolItem toolItem)) {
             return stack;
         }
 
-        var material = ((ToolItem) item).getMaterial();
+        var material = toolItem.getMaterial();
 
-        var defaultModifiers = item.getAttributeModifiers(EquipmentSlot.MAINHAND);
+        var defaultModifiers = item.getAttributeModifiers();
 
-        if (defaultModifiers.containsKey(SPEED_ATTRIBUTE)) {
+        {
             EntityAttributeModifier modifier = createSpeedModifier();
-            stack.addAttributeModifier(SPEED_ATTRIBUTE, modifier, EquipmentSlot.MAINHAND);
+            defaultModifiers = defaultModifiers.with(SPEED_ATTRIBUTE, modifier, AttributeModifierSlot.MAINHAND);
         }
 
-        if (defaultModifiers.containsKey(DAMAGE_ATTRIBUTE)) {
+        {
             float attackDamage = material.getAttackDamage();
             int baseDamage = getBaseDamage(stack);
 
             EntityAttributeModifier modifier = createDamageModifier(attackDamage + baseDamage);
-            stack.addAttributeModifier(DAMAGE_ATTRIBUTE, modifier, EquipmentSlot.MAINHAND);
+            defaultModifiers = defaultModifiers.with(DAMAGE_ATTRIBUTE, modifier, AttributeModifierSlot.MAINHAND);
         }
 
+        stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, defaultModifiers);
         return stack;
     }
 
     private static EntityAttributeModifier createSpeedModifier() {
-        return new EntityAttributeModifier(SPEED_ID, "Weapon modifier", 10000.0F, EntityAttributeModifier.Operation.ADDITION);
+        return new EntityAttributeModifier(SPEED_ID, "Weapon modifier", 10000.0F, EntityAttributeModifier.Operation.ADD_VALUE);
     }
 
     private static EntityAttributeModifier createDamageModifier(double damage) {
-        return new EntityAttributeModifier(DAMAGE_ID, "Weapon modifier", damage, EntityAttributeModifier.Operation.ADDITION);
+        return new EntityAttributeModifier(DAMAGE_ID, "Weapon modifier", damage, EntityAttributeModifier.Operation.ADD_VALUE);
     }
 
     private static int getBaseDamage(ItemStack stack) {

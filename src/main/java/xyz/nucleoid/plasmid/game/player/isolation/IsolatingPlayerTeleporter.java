@@ -100,7 +100,7 @@ public final class IsolatingPlayerTeleporter {
         var worldProperties = world.getLevelProperties();
 
         var spawnInfo = new CommonPlayerSpawnInfo(
-            world.getDimensionKey(), world.getRegistryKey(),
+            world.getDimensionEntry(), world.getRegistryKey(),
             BiomeAccess.hashSeed(world.getSeed()),
             player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(),
             world.isDebugWorld(), world.isFlat(), player.getLastDeathPos(), player.getPortalCooldown()
@@ -130,7 +130,7 @@ public final class IsolatingPlayerTeleporter {
         ((ScreenHandlerAccess) player.playerScreenHandler).plasmid$resetTrackedState();
 
         for (var effect : player.getStatusEffects()) {
-            networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getId(), effect));
+            networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getId(), effect, true));
         }
     }
 }

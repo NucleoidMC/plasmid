@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.storage;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.PersistentState;
@@ -17,7 +18,7 @@ public final class ServerStorageManager extends PersistentState {
 
     public static ServerStorageManager get(ServerWorld world) {
         var type = new PersistentState.Type<>(
-                ServerStorageManager::new, 
+                ServerStorageManager::new,
                 ServerStorageManager::readNbt,
                 null
         );
@@ -30,7 +31,7 @@ public final class ServerStorageManager extends PersistentState {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
+    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
         var storageList = new NbtList();
         ServerStorage.STORAGES.forEach((key, value) -> {
             var storageTag = value.toTag();
@@ -41,7 +42,7 @@ public final class ServerStorageManager extends PersistentState {
         return nbt;
     }
 
-    private static ServerStorageManager readNbt(NbtCompound nbt) {
+    private static ServerStorageManager readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
         loaded = true;
 
         var storageTags = nbt.getList("storages", NbtType.COMPOUND);

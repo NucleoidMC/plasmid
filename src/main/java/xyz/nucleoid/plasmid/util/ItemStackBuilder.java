@@ -1,17 +1,20 @@
 package xyz.nucleoid.plasmid.util;
 
-import net.fabricmc.fabric.api.util.NbtType;
-import net.minecraft.block.Block;
+import it.unimi.dsi.fastutil.ints.IntList;
+import net.minecraft.component.DataComponentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.*;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.*;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.item.ItemConvertible;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public final class ItemStackBuilder {
     private final ItemStack stack;
@@ -28,22 +31,12 @@ public final class ItemStackBuilder {
         return new ItemStackBuilder(stack.copy());
     }
 
-    public static ItemStackBuilder firework(int color, int flight, FireworkRocketItem.Type type) {
+    public static ItemStackBuilder firework(int color, int flight, FireworkExplosionComponent.Type type) {
         var rocket = new ItemStack(Items.FIREWORK_ROCKET, 1);
 
-        var star = new ItemStack(Items.FIREWORK_STAR);
-        var explosion = star.getOrCreateSubNbt("Explosion");
-
-        explosion.putIntArray("Colors", new int[] { color });
-        explosion.putByte("Type", (byte) type.getId());
-
-        var fireworks = rocket.getOrCreateSubNbt("Fireworks");
-
-        var explosions = new NbtList();
-        explosions.add(explosion);
-        fireworks.put("Explosions", explosions);
-
-        fireworks.putByte("Flight", (byte) flight);
+        rocket.set(DataComponentTypes.FIREWORKS, new FireworksComponent(flight, List.of(
+                new FireworkExplosionComponent(type, IntList.of(color), IntList.of(), false, false)
+        )));
 
         return new ItemStackBuilder(rocket);
     }
@@ -58,91 +51,39 @@ public final class ItemStackBuilder {
         return this;
     }
 
-    public ItemStackBuilder addCanDestroy(Block block) {
-        var blockId = Registries.BLOCK.getId(block);
-        return this.addCanDestroy(blockId.toString());
-    }
-
-    public ItemStackBuilder addCanDestroy(TagKey<Block> block) {
-        return this.addCanDestroy("#" + block.id());
-    }
-
-    public ItemStackBuilder addCanPlaceOn(Block block) {
-        var blockId = Registries.BLOCK.getId(block);
-        return this.addCanPlaceOn(blockId.toString());
-    }
-
-    public ItemStackBuilder addCanPlaceOn(TagKey<Block> block) {
-        return this.addCanPlaceOn("#" + block.id());
-    }
-
-    private ItemStackBuilder addCanDestroy(String predicate) {
-        return this.addPredicate("CanDestroy", predicate);
-    }
-
-    private ItemStackBuilder addCanPlaceOn(String predicate) {
-        return this.addPredicate("CanPlaceOn", predicate);
-    }
-
-    private ItemStackBuilder addPredicate(String key, String predicate) {
-        var tag = this.stack.getOrCreateNbt();
-
-        NbtList predicateList;
-
-        if (tag.contains(key, NbtType.LIST)) {
-            predicateList = tag.getList(key, NbtType.STRING);
-        } else {
-            predicateList = new NbtList();
-            tag.put(key, predicateList);
-        }
-
-        predicateList.add(NbtString.of(predicate));
-
+    public <T> ItemStackBuilder set(DataComponentType<T> type, @Nullable T value) {
+        this.stack.set(type,value);
         return this;
     }
 
     public ItemStackBuilder setUnbreakable() {
-        var tag = this.stack.getOrCreateNbt();
-        tag.putBoolean("Unbreakable", true);
+        this.stack.set(DataComponentTypes.UNBREAKABLE, new UnbreakableComponent(true));
         return this;
     }
 
     public ItemStackBuilder setDyeColor(int color) {
-        var item = this.stack.getItem();
-        if (item instanceof DyeableItem dyeable) {
-            dyeable.setColor(this.stack, color);
-        }
+        this.stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color, true));
         return this;
     }
 
     public ItemStackBuilder setName(Text text) {
-        this.stack.setCustomName(text);
+        this.stack.set(DataComponentTypes.ITEM_NAME, text);
         return this;
     }
 
     public ItemStackBuilder addLore(Text text) {
-        var display = this.stack.getOrCreateSubNbt("display");
-
-        NbtList loreList;
-        if (display.contains("Lore", 9)) {
-            loreList = display.getList("Lore", 8);
-        } else {
-            loreList = new NbtList();
-            display.put("Lore", loreList);
-        }
-
-        loreList.add(NbtString.of(Text.Serialization.toJsonString(text)));
-
+        this.stack.apply(DataComponentTypes.LORE, LoreComponent.DEFAULT, x -> x.with(text));
         return this;
     }
 
-    public ItemStackBuilder addModifier(EntityAttribute attribute, EntityAttributeModifier modifier, EquipmentSlot slot) {
-        this.stack.addAttributeModifier(attribute, modifier, slot);
+    public ItemStackBuilder addModifier(RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier, AttributeModifierSlot slot) {
+        this.stack.apply(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT,
+                x -> x.with(attribute, modifier, slot));
         return this;
     }
 
     public ItemStackBuilder setRepairCost(int repairCost) {
-        this.stack.setRepairCost(repairCost);
+        this.stack.set(DataComponentTypes.REPAIR_COST, repairCost);
         return this;
     }
 
@@ -150,22 +91,6 @@ public final class ItemStackBuilder {
         this.stack.setDamage(damage);
         return this;
     }
-
-    public ItemStackBuilder hideFlags() {
-        this.stack.getOrCreateNbt().putByte("HideFlags", (byte) 127);
-        return this;
-    }
-
-    public ItemStackBuilder hideFlag(ItemStack.TooltipSection section) {
-        this.stack.getOrCreateNbt().putByte("HideFlags", (byte) (this.stack.getOrCreateNbt().getByte("HideFlags") | section.getFlag()) );
-        return this;
-    }
-
-    public ItemStackBuilder hideFlags(byte value) {
-        this.stack.getOrCreateNbt().putByte("HideFlags", value);
-        return this;
-    }
-
 
     public ItemStack build() {
         return this.stack.copy();

@@ -86,7 +86,7 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayerEntity> 
     @Override
     default void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch) {
         for (var player : this) {
-            player.playSound(sound, category, volume, pitch);
+            player.playSoundToPlayer(sound, category, volume, pitch);
         }
     }
 

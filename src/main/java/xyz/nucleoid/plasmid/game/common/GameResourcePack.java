@@ -96,7 +96,7 @@ public final class GameResourcePack {
     }
 
     private void sendTo(ServerPlayerEntity player) {
-        player.networkHandler.sendPacket(new ResourcePackSendS2CPacket(this.uuid, this.url, this.hash, this.required, this.prompt));
+        player.networkHandler.sendPacket(new ResourcePackSendS2CPacket(this.uuid, this.url, this.hash, this.required, Optional.ofNullable(this.prompt)));
     }
 
     private void unload(ServerPlayerEntity player) {

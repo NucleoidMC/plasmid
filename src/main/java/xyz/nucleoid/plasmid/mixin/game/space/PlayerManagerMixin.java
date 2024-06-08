@@ -118,7 +118,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             playerData = userData;
             player.readNbt(userData);
         } else {
-            playerData = this.saveHandler.loadPlayerData(player);
+            playerData = this.saveHandler.loadPlayerData(player).orElse(null);
         }
 
         var dimension = playerData != null ? this.getDimensionFromData(playerData) : null;
@@ -130,7 +130,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
 
         player.setServerWorld(world);
 
-        player.setGameMode(playerData);
+        player.readGameModeNbt(playerData);
     }
 
     @Unique

@@ -86,7 +86,7 @@ public final class GamePortalManager {
                     var json = JsonParser.parseReader(reader);
                     var identifier = identifierFromPath(path);
 
-                    var result = GamePortalConfig.CODEC.parse(RegistryOps.of(JsonOps.INSTANCE, registryManager), json);
+                    var result = GamePortalConfig.CODEC.parse(registryManager.getOps(JsonOps.INSTANCE), json);
 
                     result.result().ifPresent(config -> {
                         configs.put(identifier, config);

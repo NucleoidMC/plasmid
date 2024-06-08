@@ -13,7 +13,7 @@ import java.util.function.Function;
 public interface MenuEntryConfig {
     TinyRegistry<MapCodec<? extends MenuEntryConfig>> REGISTRY = TinyRegistry.create();
 
-    Codec<MenuEntryConfig> CODEC_OBJECT = REGISTRY.dispatchStable(MenuEntryConfig::codec, MapCodec::codec);
+    Codec<MenuEntryConfig> CODEC_OBJECT = REGISTRY.dispatchStable(MenuEntryConfig::codec, Function.identity());
     Codec<MenuEntryConfig> CODEC = Codec.either(GameConfig.CODEC, CODEC_OBJECT).xmap(either -> {
         return either.map((game) -> new GameMenuEntryConfig(game, Optional.empty(), Optional.empty(), Optional.empty()), Function.identity());
     }, Either::right);

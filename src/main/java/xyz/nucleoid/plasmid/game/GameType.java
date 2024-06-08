@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.game;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -24,10 +24,10 @@ public final class GameType<C> {
     public static final TinyRegistry<GameType<?>> REGISTRY = TinyRegistry.create();
 
     private final Identifier id;
-    private final Codec<C> configCodec;
+    private final MapCodec<C> configCodec;
     private final Open<C> open;
 
-    private GameType(Identifier id, Codec<C> configCodec, Open<C> open) {
+    private GameType(Identifier id, MapCodec<C> configCodec, Open<C> open) {
         this.id = id;
         this.configCodec = configCodec;
         this.open = open;
@@ -37,14 +37,14 @@ public final class GameType<C> {
      * Registers a new {@link GameType} with the given id, codec to parse a config, and function to set up the game.
      *
      * @param identifier a unique identifier to register this game type with
-     * @param configCodec a {@link Codec} that can deserialize
+     * @param configCodec a {@link MapCodec} that can deserialize
      * @param open a function that describes how the game should be set up, given a configuration
      * @param <C> the type of config that should be loadedS
      * @return the registered {@link GameType} instance
-     * @see Codec
+     * @see MapCodec
      * @see com.mojang.serialization.codecs.RecordCodecBuilder
      */
-    public static <C> GameType<C> register(Identifier identifier, Codec<C> configCodec, Open<C> open) {
+    public static <C> GameType<C> register(Identifier identifier, MapCodec<C> configCodec, Open<C> open) {
         var type = new GameType<>(identifier, configCodec, open);
         REGISTRY.register(identifier, type);
         return type;
@@ -58,7 +58,7 @@ public final class GameType<C> {
         return this.id;
     }
 
-    public Codec<C> configCodec() {
+    public MapCodec<C> configCodec() {
         return this.configCodec;
     }
 

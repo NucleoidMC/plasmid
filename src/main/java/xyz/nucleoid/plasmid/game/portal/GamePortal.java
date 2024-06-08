@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.portal;
 
+import eu.pb4.sgui.api.elements.GuiElementInterface;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
@@ -12,10 +13,6 @@ import xyz.nucleoid.plasmid.game.config.CustomValuesConfig;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-
-import org.jetbrains.annotations.Nullable;
-
-import eu.pb4.sgui.api.elements.GuiElementInterface;
 
 public final class GamePortal {
     private final MinecraftServer server;
@@ -60,12 +57,6 @@ public final class GamePortal {
 
     public int getPlayerCount() {
         return this.backend.getPlayerCount();
-    }
-
-    @Deprecated(forRemoval = true)
-    @Nullable
-    public GuiProvider getGuiProvider() {
-        return this.backend.getGuiProvider();
     }
 
     public void requestJoin(ServerPlayerEntity player) {

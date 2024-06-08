@@ -49,12 +49,6 @@ public interface GamePortalBackend {
 
     default void provideGameSpaces(Consumer<GameSpace> consumer) {}
 
-    @Deprecated(forRemoval = true)
-    @Nullable
-    default GuiProvider getGuiProvider() {
-        return null;
-    }
-
     interface Factory {
         GamePortalBackend create(MinecraftServer server, Identifier id);
     }

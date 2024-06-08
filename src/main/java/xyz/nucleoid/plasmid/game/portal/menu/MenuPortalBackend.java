@@ -76,11 +76,6 @@ public final class MenuPortalBackend implements GamePortalBackend {
         return elements;
     }
 
-    @Override
-    public GuiProvider getGuiProvider() {
-        return this::getGuiElements;
-    }
-
     private List<MenuEntry> buildGames(List<MenuPortalConfig.Entry> configs) {
         var games = new ArrayList<MenuEntry>(configs.size());
         for (var configEntry : configs) {

@@ -59,7 +59,6 @@ public final class Plasmid implements ModInitializer {
 
         MenuEntryConfig.register(new Identifier(ID, "game"), GameMenuEntryConfig.CODEC);
         MenuEntryConfig.register(new Identifier(ID, "portal"), PortalEntryConfig.CODEC);
-        MenuEntryConfig.register(new Identifier(ID, "portal_gui"), PortalGuiEntryConfig.CODEC);
 
         GameType.register(new Identifier(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
 

@@ -1,26 +1,17 @@
 package xyz.nucleoid.plasmid.game.portal.menu;
 
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
 import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.portal.GamePortal.GuiProvider;
 import xyz.nucleoid.plasmid.game.portal.GamePortalBackend;
-import xyz.nucleoid.plasmid.game.portal.GamePortalDisplay;
 import xyz.nucleoid.plasmid.util.Guis;
 import xyz.nucleoid.plasmid.util.IdentityHashStrategy;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public final class AdvancedMenuPortalBackend implements GamePortalBackend {
@@ -83,11 +74,6 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
         }
 
         return elements;
-    }
-
-    @Override
-    public GuiProvider getGuiProvider() {
-        return this::getGuiElements;
     }
 
     private List<MenuEntry> getEntries() {

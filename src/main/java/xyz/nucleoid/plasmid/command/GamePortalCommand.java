@@ -66,7 +66,7 @@ public final class GamePortalCommand {
             }
 
             context.getSource().sendFeedback(() -> {
-                var message = Text.translatable("text.plasmid.game.portal.connect.entity", portal.getId(), entity.getName());
+                var message = Text.translatable("text.plasmid.game.portal.connect.entity", Text.of(portal.getId()), entity.getName());
                 return message.formatted(Formatting.GRAY);
             }, false);
 
@@ -90,7 +90,7 @@ public final class GamePortalCommand {
             }
 
             source.sendFeedback(() -> {
-                var message = Text.translatable("text.plasmid.game.portal.connect.block", portal.getId(), pos.getX(), pos.getY(), pos.getZ());
+                var message = Text.translatable("text.plasmid.game.portal.connect.block", Text.of(portal.getId()), pos.getX(), pos.getY(), pos.getZ());
                 return message.formatted(Formatting.GRAY);
             }, false);
 

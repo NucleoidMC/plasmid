@@ -18,9 +18,9 @@ import java.util.Locale;
 import java.util.function.Function;
 
 public final class GameConfigArgument {
-    private static final DynamicCommandExceptionType GAME_NOT_FOUND = new DynamicCommandExceptionType(id -> {
-        return Text.translatable("text.plasmid.game_config.game_not_found", id);
-    });
+    private static final DynamicCommandExceptionType GAME_NOT_FOUND = new DynamicCommandExceptionType(id ->
+            Text.stringifiedTranslatable("text.plasmid.game_config.game_not_found", id)
+    );
 
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())

@@ -24,14 +24,14 @@ public class ChatCommand {
     // @formatter:on
 
     public static int switchToAll(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        var player = ctx.getSource().getPlayer();
+        var player = ctx.getSource().getPlayerOrThrow();
         ((HasChatChannel) player).setChatChannel(ChatChannel.ALL);
         player.sendMessage(Text.translatable("text.plasmid.chat.switch.all").formatted(Formatting.AQUA), false);
         return Command.SINGLE_SUCCESS;
     }
 
     public static int switchToTeam(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        var player = ctx.getSource().getPlayer();
+        var player = ctx.getSource().getPlayerOrThrow();
         ((HasChatChannel) player).setChatChannel(ChatChannel.TEAM);
         player.sendMessage(Text.translatable("text.plasmid.chat.switch.team").formatted(Formatting.AQUA), false);
         return Command.SINGLE_SUCCESS;

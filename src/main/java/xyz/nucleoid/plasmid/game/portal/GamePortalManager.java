@@ -5,7 +5,6 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryOps;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
@@ -79,22 +78,16 @@ public final class GamePortalManager {
 
     private Map<Identifier, GamePortalConfig> loadConfigs(DynamicRegistryManager registryManager, ResourceManager manager) {
         var configs = new Object2ObjectOpenHashMap<Identifier, GamePortalConfig>();
+        var ops = registryManager.getOps(JsonOps.INSTANCE);
 
         manager.findResources(PATH, path -> path.getPath().endsWith(".json")).forEach((path, resource) -> {
             try {
                 try (var reader = resource.getReader()) {
                     var json = JsonParser.parseReader(reader);
                     var identifier = identifierFromPath(path);
-
-                    var result = GamePortalConfig.CODEC.parse(registryManager.getOps(JsonOps.INSTANCE), json);
-
-                    result.result().ifPresent(config -> {
-                        configs.put(identifier, config);
-                    });
-
-                    result.error().ifPresent(error -> {
-                        Plasmid.LOGGER.error("Failed to parse game portal at {}: {}", path, error.toString());
-                    });
+                    GamePortalConfig.CODEC.parse(ops, json)
+                            .resultOrPartial(error -> Plasmid.LOGGER.error("Failed to parse game portal at {}: {}", path, error))
+                            .ifPresent(config -> configs.put(identifier, config));
                 }
             } catch (IOException e) {
                 Plasmid.LOGGER.error("Failed to read game portal at {}", path, e);

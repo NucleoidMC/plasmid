@@ -142,12 +142,8 @@ public final class GameCommand {
     protected static int openAnonymousGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
         try {
             var configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
-            var result = GameConfig.DIRECT_CODEC.parse(context.getSource().getRegistryManager().getOps(NbtOps.INSTANCE), configNbt);
-            if (result.error().isPresent()) {
-                throw MALFORMED_CONFIG.create(result.error().get());
-            }
-
-            var game = result.result().get();
+            var game = GameConfig.DIRECT_CODEC.parse(context.getSource().getRegistryManager().getOps(NbtOps.INSTANCE), configNbt)
+                    .getOrThrow(MALFORMED_CONFIG::create);
             return openGame(context, RegistryEntry.of(game), test);
         } catch (CommandSyntaxException e) {
             throw e;

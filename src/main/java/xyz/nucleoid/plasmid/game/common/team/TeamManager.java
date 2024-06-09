@@ -189,7 +189,7 @@ public final class TeamManager implements Iterable<GameTeam> {
             throw new IllegalStateException("Player " + player + " was not in team " + team + ", but had a mapping");
         }
 
-        var entity = this.gameSpace.getPlayers().getEntity(player.id());
+        var entity = state.onlinePlayers.getEntity(player.id());
         if (entity != null) {
             this.removeOnlinePlayer(entity, state);
         }

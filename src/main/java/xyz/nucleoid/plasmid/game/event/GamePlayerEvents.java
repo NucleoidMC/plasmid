@@ -28,6 +28,8 @@ public final class GamePlayerEvents {
      * <li>A new {@link GameActivity} is created, and all players are transferred</li>
      * <p>
      * This event will always be fired after {@link GameActivityEvents#CREATE} and before {@link GameActivityEvents#ENABLE}.
+     * <p>
+     * This event is invoked after the player has been added to the {@link GameSpace#getPlayers() game player set}.
      *
      * @see GamePlayerEvents#JOIN
      */
@@ -51,6 +53,8 @@ public final class GamePlayerEvents {
      * <li>A {@link GameSpace} is closed or {@link GameActivity} replaced</li>
      * <p>
      * This event will always be fired before {@link GameActivityEvents#DESTROY} and after {@link GameActivityEvents#DISABLE}.
+     * <p>
+     * This event is invoked before the player is removed from the {@link GameSpace#getPlayers() game player set}.
      *
      * @see GamePlayerEvents#LEAVE
      */

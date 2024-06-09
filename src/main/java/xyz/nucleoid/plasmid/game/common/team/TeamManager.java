@@ -127,7 +127,7 @@ public final class TeamManager implements Iterable<GameTeam> {
      * @return {@code true} if player was successfully added
      */
     public boolean addPlayerTo(PlayerRef player, GameTeamKey team) {
-        var lastTeam = this.playerToTeam.put(player.id(), team);
+        var lastTeam = this.playerToTeam.get(player.id());
         if (lastTeam == team) {
             return false;
         }
@@ -135,6 +135,8 @@ public final class TeamManager implements Iterable<GameTeam> {
         if (lastTeam != null) {
             this.removePlayerFrom(player, lastTeam);
         }
+
+        this.playerToTeam.put(player.id(), team);
 
         var state = this.teamState(team);
         if (state.allPlayers.add(player)) {
@@ -178,18 +180,20 @@ public final class TeamManager implements Iterable<GameTeam> {
      * @return {@code true} if the player was removed from this team
      */
     public boolean removePlayerFrom(PlayerRef player, GameTeamKey team) {
-        this.playerToTeam.remove(player.id(), team);
-
-        var state = this.teamState(team);
-        if (state.allPlayers.remove(player)) {
-            var entity = this.gameSpace.getPlayers().getEntity(player.id());
-            if (entity != null) {
-                this.removeOnlinePlayer(entity, state);
-            }
-            return true;
-        } else {
+        if (!this.playerToTeam.remove(player.id(), team)) {
             return false;
         }
+
+        var state = this.teamState(team);
+        if (!state.allPlayers.remove(player)) {
+            throw new IllegalStateException("Player " + player + " was not in team " + team + ", but had a mapping");
+        }
+
+        var entity = this.gameSpace.getPlayers().getEntity(player.id());
+        if (entity != null) {
+            this.removeOnlinePlayer(entity, state);
+        }
+        return true;
     }
 
     /**
@@ -350,18 +354,20 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     private void sendRemoveTeamsForPlayer(ServerPlayerEntity player) {
-        for (var state : this.teamToState.entrySet()) {
-            var data = state.getValue();
+        for (var state : this.teamToState.values()) {
+            player.networkHandler.sendPacket(TeamS2CPacket.updateRemovedTeam(state.scoreboardTeam));
 
-            player.networkHandler.sendPacket(TeamS2CPacket.updateRemovedTeam(data.scoreboardTeam));
-
-            for (var member : data.onlinePlayers) {
+            for (var member : state.onlinePlayers) {
                 player.networkHandler.sendPacket(this.resetPlayerName(member));
             }
         }
     }
 
     private void addOnlinePlayer(ServerPlayerEntity player, State state) {
+        if (!state.allPlayers.contains(PlayerRef.of(player))) {
+            throw new IllegalStateException("Tried to mark player " + player.getNameForScoreboard() + " as online in team " + state.team + ", but they are not in this team");
+        }
+
         state.onlinePlayers.add(player);
         state.scoreboardTeam.getPlayerList().add(player.getNameForScoreboard());
 
@@ -370,7 +376,9 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     private void removeOnlinePlayer(ServerPlayerEntity player, State state) {
-        state.onlinePlayers.remove(player);
+        if (!state.onlinePlayers.remove(player)) {
+            throw new IllegalStateException("Tried to mark player " + player.getNameForScoreboard() + " as offline in team " + state.team + ", but they were not online in this team");
+        }
         state.scoreboardTeam.getPlayerList().remove(player.getNameForScoreboard());
 
         this.sendPacketToAll(this.changePlayerTeam(player, state, TeamS2CPacket.Operation.REMOVE));

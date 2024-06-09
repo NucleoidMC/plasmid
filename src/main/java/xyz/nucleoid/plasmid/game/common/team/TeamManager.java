@@ -306,13 +306,16 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     private void onAddPlayer(ServerPlayerEntity player) {
+        this.sendTeamsToPlayer(player);
+        this.restoreFormerTeams(player);
+    }
+
+    private void restoreFormerTeams(ServerPlayerEntity player) {
         var team = this.teamFor(player);
         if (team != null) {
             var state = this.teamState(team);
             this.addOnlinePlayer(player, state);
         }
-
-        this.sendTeamsToPlayer(player);
     }
 
     private void onRemovePlayer(ServerPlayerEntity player) {

@@ -16,3 +16,5 @@ accessible field net/minecraft/world/GameRules$IntRule value I
 
 accessible method net/minecraft/entity/Entity unsetRemoved ()V
 accessible method net/minecraft/server/network/ServerPlayerInteractionManager setGameMode (Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V
+
+accessible method net/minecraft/block/TntBlock primeTnt (Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/LivingEntity;)V

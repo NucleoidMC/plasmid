@@ -1,17 +1,20 @@
 package xyz.nucleoid.plasmid.game.manager;
 
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.fantasy.Fantasy;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 import xyz.nucleoid.fantasy.util.GameRuleStore;
 import xyz.nucleoid.plasmid.game.world.GameSpaceWorlds;
+import xyz.nucleoid.plasmid.duck.ThreadedAnvilChunkStorageAccess;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -35,6 +38,23 @@ public final class ManagedGameSpaceWorlds implements GameSpaceWorlds {
         this.space.onAddWorld(worldHandle);
 
         return worldHandle.asWorld();
+    }
+
+    @Override
+    public void regenerate(ServerWorld world, ChunkGenerator generator, LongSet chunksToDrop) {
+        if (!this.worlds.containsKey(world.getRegistryKey())) {
+            throw new IllegalArgumentException(String.format("The given world %s was not part of the game space!", world.getRegistryKey().getValue()));
+        }
+
+        var tacs = ((ThreadedAnvilChunkStorageAccess) world.getChunkManager().threadedAnvilChunkStorage);
+
+        // Set chunk generator
+        tacs.plasmid$setGenerator(generator);
+
+        // Clear all chunks
+        tacs.plasmid$clearChunks(chunksToDrop);
+
+        // We don't need to actually initiate a regeneration, as Minecraft will notice that they are missing and do it
     }
 
     @Override

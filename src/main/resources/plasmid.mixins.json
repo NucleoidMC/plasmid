@@ -19,6 +19,10 @@
     "game.space.PlayerManagerMixin",
     "game.space.ScreenHandlerMixin",
     "game.space.ServerPlayerEntityMixin",
+    "game.world.ChunkHolderAccessor",
+    "game.world.ServerEntityManagerMixin",
+    "game.world.ServerLightingProviderAccessor",
+    "game.world.ThreadedAnvilChunkStorageMixin",
     "storage.ServerWorldMixin"
   ],
   "injectors": {

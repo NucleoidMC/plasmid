@@ -15,7 +15,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.Codecs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nucleoid.plasmid.command.*;
@@ -113,6 +112,10 @@ public final class Plasmid implements ModInitializer {
         ServerTickEvents.START_SERVER_TICK.register(server -> {
             GamePortalManager.INSTANCE.tick();
         });
+
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(
+            (_server, resourceManager, success) -> GameSpaceManager.get().onReload(resourceManager, success)
+        );
 
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             GameSpaceManager.openServer(server);

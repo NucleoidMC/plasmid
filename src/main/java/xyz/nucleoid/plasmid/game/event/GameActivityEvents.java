@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.event;
 
+import net.minecraft.resource.LifecycledResourceManager;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.GameActivity;
@@ -26,6 +27,19 @@ public final class GameActivityEvents {
         try {
             for (var listener : ctx.getListeners()) {
                 listener.onEnable();
+            }
+        } catch (Throwable throwable) {
+            ctx.handleException(throwable);
+        }
+    });
+
+    /**
+     * Called after datapacks are reloaded.
+     */
+    public static final StimulusEvent<Reload> RELOAD = StimulusEvent.create(Reload.class, ctx -> (resourceManager, success) -> {
+        try {
+            for (var listener : ctx.getListeners()) {
+                listener.onReload(resourceManager, success);
             }
         } catch (Throwable throwable) {
             ctx.handleException(throwable);
@@ -141,6 +155,10 @@ public final class GameActivityEvents {
 
     public interface Tick {
         void onTick();
+    }
+
+    public interface Reload {
+        void onReload(LifecycledResourceManager resourceManager, boolean success);
     }
 
     public interface RequestStart {

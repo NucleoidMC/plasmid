@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.game.manager;
 
 import com.google.common.collect.Lists;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.resource.LifecycledResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -238,6 +239,10 @@ public final class ManagedGameSpace implements GameSpace {
         this.lifecycle.onRemovePlayer(this, player);
         GameEvents.PLAYER_LEFT.invoker().onPlayerLeft(this, player);
         this.manager.removePlayerFromGameSpace(this, player);
+    }
+
+    void onReload(LifecycledResourceManager resourceManager, boolean success) {
+        this.state.invoker(GameActivityEvents.RELOAD).onReload(resourceManager, success);
     }
 
     void onAddWorld(RuntimeWorldHandle worldHandle) {

@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.resource.LifecycledResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -190,6 +191,12 @@ public final class GameSpaceManager {
 
     void removePlayerFromGameSpace(ManagedGameSpace gameSpace, ServerPlayerEntity player) {
         this.playerToGameSpace.remove(player.getUuid(), gameSpace);
+    }
+
+    public void onReload(LifecycledResourceManager resourceManager, boolean success) {
+        for (var gameSpace : this.gameSpaces) {
+            gameSpace.onReload(resourceManager, success);
+        }
     }
 
     private void close() {

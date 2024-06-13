@@ -99,7 +99,7 @@ public final class GameRuleType {
     public static final GameRuleType UNSTABLE_TNT = GameRuleType.create()
             .enforces(BlockPlaceEvent.AFTER, result -> (player, world, pos, state) -> {
                 if (result != ActionResult.FAIL && state.getBlock() == Blocks.TNT) {
-                    TntBlock.primeTnt(player.getWorld(), pos);
+                    TntBlock.primeTnt(player.getWorld(), pos, player);
                     player.getWorld().setBlockState(pos, Blocks.AIR.getDefaultState());
                 }
             });

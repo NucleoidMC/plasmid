@@ -81,8 +81,10 @@ public final class TestGame {
         });
     }
 
+    private static final GameAttachment<Item> TEST = GameAttachment.create(new Identifier("plasmid", "test"));
+
     private static GameResult startGame(GameSpace gameSpace) {
-        gameSpace.setAttachment("test", Items.POTATO);
+        gameSpace.setAttachment(TEST, Items.POTATO);
 
         gameSpace.setActivity((activity) -> {
             long currentTime = gameSpace.getTime();
@@ -92,7 +94,7 @@ public final class TestGame {
 
             activity.deny(GameRuleType.INTERACTION).allow(GameRuleType.USE_BLOCKS);
 
-            Item potato = gameSpace.getAttachment("test");
+            Item potato = gameSpace.getAttachment(TEST);
 
             var teamManager = TeamManager.addTo(activity);
             teamManager.addTeam(TEAM);

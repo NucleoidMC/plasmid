@@ -18,8 +18,7 @@
     "game.space.IntegratedPlayerManagerMixin",
     "game.space.PlayerManagerMixin",
     "game.space.ScreenHandlerMixin",
-    "game.space.ServerPlayerEntityMixin",
-    "storage.ServerWorldMixin"
+    "game.space.ServerPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

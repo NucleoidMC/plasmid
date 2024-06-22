@@ -23,7 +23,7 @@ import java.util.function.Consumer;
  * @see GameType
  * @see GameActivity
  */
-public interface GameSpace {
+public interface GameSpace extends GameAttachmentHolder {
     /**
      * @return the host server of this {@link GameSpace}
      */
@@ -109,8 +109,4 @@ public interface GameSpace {
      * @return true if this GameSpace is closed, false otherwise
      */
     boolean isClosed();
-
-    @Nullable
-    <T> T getAttachment(String key);
-    void setAttachment(String key, @Nullable Object obj);
 }

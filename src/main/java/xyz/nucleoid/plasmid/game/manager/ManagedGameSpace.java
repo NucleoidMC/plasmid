@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game.manager;
 
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
@@ -8,6 +9,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.fantasy.RuntimeWorldHandle;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.event.GameEvents;
@@ -19,7 +21,6 @@ import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -40,7 +41,7 @@ public final class ManagedGameSpace implements GameSpace {
     private boolean closed;
 
     private final GameSpaceStatistics statistics = new GameSpaceStatistics();
-    private final Map<String, Object> attachments = new HashMap<>();
+    private final Map<GameAttachment<?>, Object> attachments = new Reference2ObjectOpenHashMap<>();
 
     ManagedGameSpace(MinecraftServer server, GameSpaceManager manager, GameSpaceMetadata metadata) {
         this.server = server;
@@ -171,18 +172,20 @@ public final class ManagedGameSpace implements GameSpace {
     public boolean isClosed() {
         return this.closed;
     }
+
     @Override
-    public <T> T getAttachment(String key) {
-        //noinspection unchecked
-        return (T) this.attachments.get(key);
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public <T> T getAttachment(GameAttachment<? extends T> attachment) {
+        return (T) this.attachments.get(attachment);
     }
 
     @Override
-    public void setAttachment(String key, Object obj) {
-        if (obj == null) {
-            this.attachments.remove(key);
+    public <T> void setAttachment(GameAttachment<? super T> attachment, @Nullable T value) {
+        if (value == null) {
+            this.attachments.remove(attachment);
         } else {
-            this.attachments.put(key, obj);
+            this.attachments.put(attachment, value);
         }
     }
 

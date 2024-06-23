@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.mixin.game.space;
+package xyz.nucleoid.plasmid.client.mixin.game.space;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.server.integrated.IntegratedPlayerManager;

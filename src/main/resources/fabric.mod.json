@@ -10,7 +10,13 @@
   "entrypoints": {
     "main": ["xyz.nucleoid.plasmid.Plasmid"]
   },
-  "mixins": ["plasmid.mixins.json"],
+  "mixins": [
+    "plasmid.mixins.json",
+    {
+      "config": "plasmid.client.mixins.json",
+      "environment": "client"
+    }
+  ],
   "accessWidener": "plasmid.accesswidener",
   "custom": {
     "modmenu": {

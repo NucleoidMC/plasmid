@@ -18,8 +18,8 @@ public record LocalPlayerOffer(ServerPlayerEntity player) implements PlayerOffer
     }
 
     @Override
-    public PlayerOfferResult.Accept accept(ServerWorld world, Vec3d position) {
-        return new Accept(world, position);
+    public PlayerOfferResult.Accept accept(ServerWorld world, Vec3d position, float yaw, float pitch) {
+        return new Accept(world, position, yaw, pitch);
     }
 
     @Override
@@ -30,12 +30,16 @@ public record LocalPlayerOffer(ServerPlayerEntity player) implements PlayerOffer
     public static class Accept implements PlayerOfferResult.Accept {
         private final ServerWorld world;
         private final Vec3d position;
+        private final float yaw;
+        private final float pitch;
 
         private final List<Consumer<ServerPlayerEntity>> thenRun = new ArrayList<>();
 
-        Accept(ServerWorld world, Vec3d position) {
+        Accept(ServerWorld world, Vec3d position, float yaw, float pitch) {
             this.world = world;
             this.position = position;
+            this.yaw = yaw;
+            this.pitch = pitch;
         }
 
         @Override
@@ -46,7 +50,7 @@ public record LocalPlayerOffer(ServerPlayerEntity player) implements PlayerOffer
 
         public ServerWorld applyJoin(ServerPlayerEntity player) {
             player.changeGameMode(GameMode.SURVIVAL);
-            player.refreshPositionAndAngles(this.position.x, this.position.y, this.position.z, 0.0F, 0.0F);
+            player.refreshPositionAndAngles(this.position.x, this.position.y, this.position.z, this.yaw, this.pitch);
 
             for (Consumer<ServerPlayerEntity> consumer : this.thenRun) {
                 consumer.accept(player);

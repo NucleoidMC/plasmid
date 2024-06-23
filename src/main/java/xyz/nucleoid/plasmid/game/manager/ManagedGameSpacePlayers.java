@@ -6,8 +6,9 @@ import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpacePlayers;
 import xyz.nucleoid.plasmid.game.GameTexts;
+import xyz.nucleoid.plasmid.game.player.LocalPlayerOffer;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
-import xyz.nucleoid.plasmid.game.player.PlayerOffer;
+import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
 
 import java.util.Collection;
@@ -46,27 +47,26 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
             return GameResult.error(GameTexts.Join.alreadyJoined());
         }
 
-        var offer = new PlayerOffer(player);
-        var result = this.space.offerPlayer(offer);
+        var offer = new LocalPlayerOffer(player);
 
-        var reject = result.asReject();
-        if (reject != null) {
-            return GameResult.error(reject.reason());
-        }
+        switch (this.space.offerPlayer(offer)) {
+            case LocalPlayerOffer.Accept accept -> {
+                try {
+                    this.teleporter.teleportIn(player, accept::applyJoin);
+                    this.set.add(player);
+                    this.space.onAddPlayer(player);
 
-        var accept = result.asAccept();
-        if (accept != null) {
-            try {
-                this.teleporter.teleportIn(player, accept::applyJoin);
-                this.set.add(player);
-                this.space.onAddPlayer(player);
-
-                return GameResult.ok();
-            } catch (Throwable throwable) {
-                return GameResult.error(GameTexts.Join.unexpectedError());
+                    return GameResult.ok();
+                } catch (Throwable throwable) {
+                    return GameResult.error(GameTexts.Join.unexpectedError());
+                }
             }
-        } else {
-            return GameResult.error(GameTexts.Join.genericError());
+            case PlayerOfferResult.Reject reject -> {
+                return GameResult.error(reject.reason());
+            }
+            default -> {
+                return GameResult.error(GameTexts.Join.genericError());
+            }
         }
     }
 

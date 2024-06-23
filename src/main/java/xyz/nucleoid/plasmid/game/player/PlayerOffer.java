@@ -10,6 +10,7 @@ import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  * Represents a request for a {@link ServerPlayerEntity} to join a {@link GameSpace}.
@@ -48,10 +49,27 @@ public interface PlayerOffer {
      *
      * @param world the world that the player should be teleported to when accepted
      * @param position the position that the player should be teleported to when accepted
+     * @param yaw the 'yaw' angle that the player should be teleported to when accepted
+     * @param pitch the 'pitch' angle that the player should be teleported to when accepted
      * @return an "accept" offer result
-     * @see PlayerOfferResult.Accept#thenRun(java.util.function.Consumer)
+     * @see PlayerOfferResult.Accept#thenRun(Consumer)
      */
-    PlayerOfferResult.Accept accept(ServerWorld world, Vec3d position);
+    PlayerOfferResult.Accept accept(ServerWorld world, Vec3d position, float yaw, float pitch);
+
+    /**
+     * Returns an offer result that accepts this player offer and allows the player into this {@link GameSpace}.
+     * <p>
+     * This function does not do anything on its own, but its result must be returned within a
+     * {@link GamePlayerEvents#OFFER} listener.
+     *
+     * @param world the world that the player should be teleported to when accepted
+     * @param position the position that the player should be teleported to when accepted
+     * @return an "accept" offer result
+     * @see PlayerOfferResult.Accept#thenRun(Consumer)
+     */
+    default PlayerOfferResult.Accept accept(ServerWorld world, Vec3d position) {
+        return this.accept(world, position, 0.0f, 0.0f);
+    }
 
     /**
      * Returns an offer result that rejects this player offer and does not allow the player into this {@link GameSpace}.

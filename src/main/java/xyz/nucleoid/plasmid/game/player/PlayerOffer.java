@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.player;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -7,6 +8,8 @@ import net.minecraft.util.math.Vec3d;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+
+import java.util.UUID;
 
 /**
  * Represents a request for a {@link ServerPlayerEntity} to join a {@link GameSpace}.
@@ -19,9 +22,23 @@ import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
  */
 public interface PlayerOffer {
     /**
-     * @return the player that is requesting access to this {@link GameSpace}.
+     * @return the {@link GameProfile} of the player that is requesting access to this {@link GameSpace}
      */
-    ServerPlayerEntity player();
+    GameProfile profile();
+
+    /**
+     * @return the {@link UUID profile UUID} of the player that is requesting access to this {@link GameSpace}
+     */
+    default UUID playerId() {
+        return this.profile().getId();
+    }
+
+    /**
+     * @return the username of the player that is requesting access to this {@link GameSpace}
+     */
+    default String playerName() {
+        return this.profile().getName();
+    }
 
     /**
      * Returns an offer result that accepts this player offer and allows the player into this {@link GameSpace}.
@@ -32,7 +49,7 @@ public interface PlayerOffer {
      * @param world the world that the player should be teleported to when accepted
      * @param position the position that the player should be teleported to when accepted
      * @return an "accept" offer result
-     * @see PlayerOfferResult.Accept#and(Runnable)
+     * @see PlayerOfferResult.Accept#thenRun(java.util.function.Consumer)
      */
     PlayerOfferResult.Accept accept(ServerWorld world, Vec3d position);
 

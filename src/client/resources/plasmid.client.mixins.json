@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "xyz.nucleoid.plasmid.client.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "game.space.IntegratedPlayerManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -15,7 +15,6 @@
     "game.rule.ServerPlayerEntityMixin",
     "game.rule.ServerPlayNetworkHandlerMixin",
     "game.rule.TridentEntityMixin",
-    "game.space.IntegratedPlayerManagerMixin",
     "game.space.PlayerManagerMixin",
     "game.space.ScreenHandlerMixin",
     "game.space.ServerPlayerEntityMixin"

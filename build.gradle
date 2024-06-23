@@ -76,6 +76,9 @@ repositories {
   }
 }
 
+loom {
+  splitEnvironmentSourceSets()
+}
 
 dependencies {
   minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -110,6 +113,7 @@ dependencies {
   modCompileOnly("dev.emi:trinkets:3.7.1")
 
   testmodImplementation sourceSets.main.output
+  testmodImplementation sourceSets.client.output
 }
 
 processResources {

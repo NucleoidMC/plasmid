@@ -17,14 +17,11 @@ import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
  * @see GameSpace
  * @see GamePlayerEvents#OFFER
  */
-public record PlayerOffer(ServerPlayerEntity player) {
+public interface PlayerOffer {
     /**
      * @return the player that is requesting access to this {@link GameSpace}.
      */
-    @Override
-    public ServerPlayerEntity player() {
-        return this.player;
-    }
+    ServerPlayerEntity player();
 
     /**
      * Returns an offer result that accepts this player offer and allows the player into this {@link GameSpace}.
@@ -37,9 +34,7 @@ public record PlayerOffer(ServerPlayerEntity player) {
      * @return an "accept" offer result
      * @see PlayerOfferResult.Accept#and(Runnable)
      */
-    public PlayerOfferResult.Accept accept(ServerWorld world, Vec3d position) {
-        return new PlayerOfferResult.Accept(world, position);
-    }
+    PlayerOfferResult.Accept accept(ServerWorld world, Vec3d position);
 
     /**
      * Returns an offer result that rejects this player offer and does not allow the player into this {@link GameSpace}.
@@ -51,16 +46,14 @@ public record PlayerOffer(ServerPlayerEntity player) {
      * @return a "reject" offer result
      * @see GameTexts.Join
      */
-    public PlayerOfferResult.Reject reject(Text reason) {
-        return new PlayerOfferResult.Reject(reason);
-    }
+    PlayerOfferResult.Reject reject(Text reason);
 
     /**
      * Returns an offer result that does nothing with this player offer, passing on any handling to any other listener.
      *
-     * @return a "pass" offer result
+     * @return a "passing" offer result
      */
-    public PlayerOfferResult pass() {
-        return PlayerOfferResult.Pass.INSTANCE;
+    default PlayerOfferResult pass() {
+        return PlayerOfferResult.PASS;
     }
 }

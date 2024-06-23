@@ -138,7 +138,7 @@ public final class GamePlayerEvents {
         try {
             for (var listener : ctx.getListeners()) {
                 var result = listener.onOfferPlayer(offer);
-                if (result.isTerminal()) {
+                if (!(result instanceof PlayerOfferResult.Pass)) {
                     return result;
                 }
             }

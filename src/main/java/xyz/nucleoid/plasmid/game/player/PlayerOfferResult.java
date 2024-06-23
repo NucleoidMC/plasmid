@@ -1,6 +1,9 @@
 package xyz.nucleoid.plasmid.game.player;
 
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.function.Consumer;
 
 public sealed interface PlayerOfferResult permits PlayerOfferResult.Pass, PlayerOfferResult.Accept, PlayerOfferResult.Reject {
     Pass PASS = new Pass();
@@ -11,7 +14,7 @@ public sealed interface PlayerOfferResult permits PlayerOfferResult.Pass, Player
     }
 
     non-sealed interface Accept extends PlayerOfferResult {
-        PlayerOfferResult.Accept and(Runnable and);
+        PlayerOfferResult.Accept thenRun(Consumer<ServerPlayerEntity> consumer);
     }
 
     non-sealed interface Reject extends PlayerOfferResult {

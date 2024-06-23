@@ -34,7 +34,6 @@ import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
 import xyz.nucleoid.plasmid.util.WoodType;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -59,11 +58,10 @@ public final class TestGame {
                 .setGameRule(GameRules.KEEP_INVENTORY, true);
 
         return context.openWithWorld(worldConfig, (activity, world) -> {
-            activity.listen(GamePlayerEvents.OFFER, offer -> {
-                var player = offer.player();
-                return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
-                        .and(() -> player.changeGameMode(GameMode.ADVENTURE));
-            });
+            activity.listen(GamePlayerEvents.OFFER, offer ->
+                    offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
+                            .thenRun(player -> player.changeGameMode(GameMode.ADVENTURE))
+            );
 
             GameWaitingLobby.addTo(activity, new PlayerConfig(1, 99));
 

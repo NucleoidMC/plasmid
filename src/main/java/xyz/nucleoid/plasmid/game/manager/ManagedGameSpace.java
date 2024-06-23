@@ -17,6 +17,7 @@ import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.player.LocalPlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 
@@ -211,7 +212,7 @@ public final class ManagedGameSpace implements GameSpace {
         return this.state.invoker(GamePlayerEvents.SCREEN_JOINS).screenJoins(players);
     }
 
-    PlayerOfferResult offerPlayer(PlayerOffer offer) {
+    PlayerOfferResult offerPlayer(LocalPlayerOffer offer) {
         if (this.closed) {
             return offer.reject(GameTexts.Join.gameClosed());
         } else if (this.manager.inGame(offer.player())) {

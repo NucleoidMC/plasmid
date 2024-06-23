@@ -2,7 +2,6 @@ package xyz.nucleoid.plasmid.test;
 
 import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
-import eu.pb4.sidebars.api.SidebarUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.MovementType;
@@ -13,9 +12,7 @@ import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.c2s.play.VehicleMoveC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Vec3d;
@@ -61,11 +58,10 @@ public final class JankGame {
                 .setGameRule(GameRules.KEEP_INVENTORY, true);
 
         return context.openWithWorld(worldConfig, (activity, world) -> {
-            activity.listen(GamePlayerEvents.OFFER, offer -> {
-                var player = offer.player();
-                return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
-                        .and(() -> player.changeGameMode(GameMode.ADVENTURE));
-            });
+            activity.listen(GamePlayerEvents.OFFER, offer ->
+                    offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
+                            .thenRun(player -> player.changeGameMode(GameMode.ADVENTURE))
+            );
 
             GameWaitingLobby.addTo(activity, new PlayerConfig(1, 99));
 
@@ -174,10 +170,10 @@ public final class JankGame {
                 player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(0, 0, 0, 0, 0f, Set.of(), 0));
             });
 
-            activity.listen(GamePlayerEvents.OFFER, offer -> {
-                return offer.accept(gameSpace.getWorlds().iterator().next(), new Vec3d(0.0, 65.0, 0.0))
-                        .and(() -> offer.player().changeGameMode(GameMode.ADVENTURE));
-            });
+            activity.listen(GamePlayerEvents.OFFER, offer ->
+                    offer.accept(gameSpace.getWorlds().iterator().next(), new Vec3d(0.0, 65.0, 0.0))
+                            .thenRun(joiningPlayer -> joiningPlayer.changeGameMode(GameMode.ADVENTURE))
+            );
         });
 
         return GameResult.ok();

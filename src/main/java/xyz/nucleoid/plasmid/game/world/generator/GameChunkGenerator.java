@@ -1,10 +1,7 @@
 package xyz.nucleoid.plasmid.game.world.generator;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ChunkRegion;
@@ -20,20 +17,15 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.Blender;
-import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
 import net.minecraft.world.gen.noise.NoiseConfig;
-import xyz.nucleoid.fantasy.util.VoidChunkGenerator;
+import xyz.nucleoid.fantasy.util.TransientChunkGenerator;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public abstract class GameChunkGenerator extends ChunkGenerator {
-    public static final MapCodec<? extends ChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            RegistryOps.getEntryCodec(BiomeKeys.THE_VOID)
-    ).apply(i, VoidChunkGenerator::new));
-
+public abstract class GameChunkGenerator extends TransientChunkGenerator {
     public GameChunkGenerator(BiomeSource biomeSource) {
         super(biomeSource);
     }
@@ -95,11 +87,6 @@ public abstract class GameChunkGenerator extends ChunkGenerator {
     @Override
     public int getWorldHeight() {
         return 0;
-    }
-
-    @Override
-    protected final MapCodec<? extends ChunkGenerator> getCodec() {
-        return CODEC;
     }
 
     @Override

@@ -86,7 +86,7 @@ dependencies {
 
   modApi include('xyz.nucleoid:server-translations-api:2.3.0+1.20.5-rc2')
   modApi include('xyz.nucleoid:packet-tweaker:0.5.1+1.20.6')
-  modApi include('xyz.nucleoid:fantasy:0.6.0+1.20.6')
+  modApi include('xyz.nucleoid:fantasy:0.6.2+1.20.6')
   modApi include('xyz.nucleoid:more-codecs:0.3.3+1.20.2')
   modApi include('xyz.nucleoid:stimuli:0.4.11+1.20.6')
   modApi include('xyz.nucleoid:map-templates:0.1.9+1.20.4')

@@ -7,6 +7,7 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
+import xyz.nucleoid.plasmid.game.player.JoinIntent;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -19,7 +20,7 @@ public record NewGamePortalBackend(RegistryEntry<GameConfig<?>> game) implements
                 .handleAsync((gameSpace, throwable) -> {
                     GamePlayerJoiner.Results results;
                     if (gameSpace != null) {
-                        results = GamePlayerJoiner.tryJoin(player, gameSpace);
+                        results = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
                     } else {
                         results = GamePlayerJoiner.handleJoinException(throwable);
                     }

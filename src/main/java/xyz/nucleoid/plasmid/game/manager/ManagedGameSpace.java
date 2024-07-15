@@ -19,8 +19,8 @@ import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.player.JoinIntent;
 import xyz.nucleoid.plasmid.game.player.LocalPlayerOffer;
-import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 
 import java.util.Collection;
@@ -196,8 +196,8 @@ public final class ManagedGameSpace implements GameSpace {
         return this.state;
     }
 
-    GameResult screenJoins(Collection<ServerPlayerEntity> players) {
-        var result = this.attemptScreenJoins(players.stream().map(PlayerEntity::getGameProfile).toList());
+    GameResult screenJoins(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+        var result = this.attemptScreenJoins(players.stream().map(PlayerEntity::getGameProfile).toList(), intent);
 
         if (result.isError()) {
             this.players.attemptGarbageCollection();
@@ -206,12 +206,12 @@ public final class ManagedGameSpace implements GameSpace {
         return result;
     }
 
-    private GameResult attemptScreenJoins(Collection<GameProfile> players) {
+    private GameResult attemptScreenJoins(Collection<GameProfile> players, JoinIntent intent) {
         if (this.closed) {
             return GameResult.error(GameTexts.Join.gameClosed());
         }
 
-        return this.state.invoker(GamePlayerEvents.SCREEN_JOINS).screenJoins(players);
+        return this.state.invoker(GamePlayerEvents.SCREEN_JOINS).screenJoins(players, intent);
     }
 
     PlayerOfferResult offerPlayer(LocalPlayerOffer offer) {

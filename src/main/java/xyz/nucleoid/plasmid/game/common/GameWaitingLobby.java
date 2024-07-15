@@ -89,7 +89,7 @@ public final class GameWaitingLobby {
 
         activity.listen(GameActivityEvents.TICK, lobby::onTick);
         activity.listen(GameActivityEvents.REQUEST_START, lobby::requestStart);
-        activity.listen(GamePlayerEvents.SCREEN_JOINS, lobby::screenJoins);
+        activity.listen(GamePlayerEvents.SCREEN_JOINS, (players, intent) -> lobby.screenJoins(players));
         activity.listen(GamePlayerEvents.OFFER, lobby::offerPlayer);
         activity.listen(GamePlayerEvents.REMOVE, lobby::onRemovePlayer);
 

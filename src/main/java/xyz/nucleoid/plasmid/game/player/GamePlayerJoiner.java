@@ -19,10 +19,10 @@ import java.util.Set;
  * members, screening, and offering players to the {@link GameSpace}.
  */
 public final class GamePlayerJoiner {
-    public static Results tryJoin(ServerPlayerEntity player, GameSpace gameSpace) {
+    public static Results tryJoin(ServerPlayerEntity player, GameSpace gameSpace, JoinIntent intent) {
         try {
             var players = collectPlayersForJoin(player, gameSpace);
-            return tryJoinAll(players, gameSpace);
+            return tryJoinAll(players, gameSpace, intent);
         } catch (Throwable throwable) {
             return handleJoinException(throwable);
         }
@@ -37,17 +37,17 @@ public final class GamePlayerJoiner {
         return players;
     }
 
-    private static Results tryJoinAll(Collection<ServerPlayerEntity> players, GameSpace gameSpace) {
+    private static Results tryJoinAll(Collection<ServerPlayerEntity> players, GameSpace gameSpace, JoinIntent intent) {
         var results = new Results();
 
-        var screenResult = gameSpace.getPlayers().screenJoins(players);
+        var screenResult = gameSpace.getPlayers().screenJoins(players, intent);
         if (screenResult.isError()) {
             results.globalError = screenResult.error();
             return results;
         }
 
         for (var player : players) {
-            var result = gameSpace.getPlayers().offer(player);
+            var result = gameSpace.getPlayers().offer(player, intent);
             if (result.isError()) {
                 results.playerErrors.put(player, result.error());
             }

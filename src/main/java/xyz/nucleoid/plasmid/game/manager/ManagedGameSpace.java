@@ -1,8 +1,10 @@
 package xyz.nucleoid.plasmid.game.manager;
 
 import com.google.common.collect.Lists;
+import com.mojang.authlib.GameProfile;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -195,7 +197,7 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     GameResult screenJoins(Collection<ServerPlayerEntity> players) {
-        var result = this.attemptScreenJoins(players);
+        var result = this.attemptScreenJoins(players.stream().map(PlayerEntity::getGameProfile).toList());
 
         if (result.isError()) {
             this.players.attemptGarbageCollection();
@@ -204,7 +206,7 @@ public final class ManagedGameSpace implements GameSpace {
         return result;
     }
 
-    private GameResult attemptScreenJoins(Collection<ServerPlayerEntity> players) {
+    private GameResult attemptScreenJoins(Collection<GameProfile> players) {
         if (this.closed) {
             return GameResult.error(GameTexts.Join.gameClosed());
         }

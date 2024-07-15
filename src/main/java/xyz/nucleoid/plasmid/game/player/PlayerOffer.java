@@ -78,6 +78,20 @@ public interface PlayerOffer {
     }
 
     /**
+     * Returns an offer result that accepts this player offer and allows the player into this {@link GameSpace}.
+     * <p>
+     * This function does not do anything on its own, but its result must be returned within a
+     * {@link GamePlayerEvents#OFFER} listener.
+     *
+     * @param world the world that the player should be teleported to when accepted
+     * @return an "accept" offer result
+     * @see PlayerOfferResult.Accept#thenRun(Consumer)
+     */
+    default PlayerOfferResult.Accept accept(ServerWorld world) {
+        return this.accept(world, Vec3d.ofBottomCenter(world.getSpawnPos()));
+    }
+
+    /**
      * Returns an offer result that rejects this player offer and does not allow the player into this {@link GameSpace}.
      * <p>
      * This function does not do anything on its own, but its result must be returned within a

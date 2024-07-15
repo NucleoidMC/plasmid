@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.common;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -169,7 +170,7 @@ public final class GameWaitingLobby {
         }
     }
 
-    private GameResult screenJoins(Collection<ServerPlayerEntity> players) {
+    private GameResult screenJoins(Collection<GameProfile> players) {
         int newPlayerCount = this.gameSpace.getPlayers().size() + players.size();
         if (newPlayerCount > this.playerConfig.maxPlayers()) {
             return GameResult.error(GameTexts.Join.gameFull());

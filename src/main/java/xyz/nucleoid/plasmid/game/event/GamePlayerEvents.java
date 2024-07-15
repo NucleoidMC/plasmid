@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.event;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -174,7 +175,7 @@ public final class GamePlayerEvents {
     }
 
     public interface ScreenJoins {
-        GameResult screenJoins(Collection<ServerPlayerEntity> players);
+        GameResult screenJoins(Collection<GameProfile> players);
     }
 
     public interface Offer {

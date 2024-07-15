@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public record LocalPlayerOffer(ServerPlayerEntity player) implements PlayerOffer {
+public record LocalPlayerOffer(ServerPlayerEntity player, JoinIntent intent) implements PlayerOffer {
     @Override
     public GameProfile profile() {
         return this.player.getGameProfile();

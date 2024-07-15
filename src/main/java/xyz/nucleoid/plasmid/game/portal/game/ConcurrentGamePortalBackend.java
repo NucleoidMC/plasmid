@@ -7,6 +7,7 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
+import xyz.nucleoid.plasmid.game.player.JoinIntent;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -28,7 +29,7 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
     public void applyTo(ServerPlayerEntity player) {
         for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
             if (gameSpace.getMetadata().sourceConfig().equals(this.game)) {
-                var results = GamePlayerJoiner.tryJoin(player, gameSpace);
+                var results = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
 
                 if (results.globalError == null && results.playerErrors.get(player) == null) {
                     return;
@@ -42,7 +43,7 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
                     this.gameFuture = null;
                     GamePlayerJoiner.Results results;
                     if (gameSpace != null) {
-                        results = GamePlayerJoiner.tryJoin(player, gameSpace);
+                        results = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
                     } else {
                         results = GamePlayerJoiner.handleJoinException(throwable);
                     }

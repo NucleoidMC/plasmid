@@ -42,6 +42,12 @@ public interface PlayerOffer {
     }
 
     /**
+     * @return the {@link JoinIntent 'intent'} of the player, such as whether they want to participate or spectate
+     * @see JoinIntent
+     */
+    JoinIntent intent();
+
+    /**
      * Returns an offer result that accepts this player offer and allows the player into this {@link GameSpace}.
      * <p>
      * This function does not do anything on its own, but its result must be returned within a

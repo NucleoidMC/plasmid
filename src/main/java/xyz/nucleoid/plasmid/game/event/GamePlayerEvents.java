@@ -9,6 +9,7 @@ import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
+import xyz.nucleoid.plasmid.game.player.JoinIntent;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
@@ -108,10 +109,10 @@ public final class GamePlayerEvents {
      *
      * @see GamePlayerEvents#OFFER
      */
-    public static final StimulusEvent<ScreenJoins> SCREEN_JOINS = StimulusEvent.create(ScreenJoins.class, ctx -> players -> {
+    public static final StimulusEvent<ScreenJoins> SCREEN_JOINS = StimulusEvent.create(ScreenJoins.class, ctx -> (players, intent) -> {
         try {
             for (var listener : ctx.getListeners()) {
-                var result = listener.screenJoins(players);
+                var result = listener.screenJoins(players, intent);
                 if (result.isError()) {
                     return result;
                 }
@@ -175,7 +176,7 @@ public final class GamePlayerEvents {
     }
 
     public interface ScreenJoins {
-        GameResult screenJoins(Collection<GameProfile> players);
+        GameResult screenJoins(Collection<GameProfile> players, JoinIntent intent);
     }
 
     public interface Offer {

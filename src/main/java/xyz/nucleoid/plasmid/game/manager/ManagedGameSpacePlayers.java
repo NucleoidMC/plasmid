@@ -6,6 +6,7 @@ import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpacePlayers;
 import xyz.nucleoid.plasmid.game.GameTexts;
+import xyz.nucleoid.plasmid.game.player.JoinIntent;
 import xyz.nucleoid.plasmid.game.player.LocalPlayerOffer;
 import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
@@ -27,13 +28,13 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
     @Override
-    public GameResult screenJoins(Collection<ServerPlayerEntity> players) {
-        return this.space.screenJoins(players);
+    public GameResult screenJoins(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+        return this.space.screenJoins(players, intent);
     }
 
     @Override
-    public GameResult offer(ServerPlayerEntity player) {
-        var result = this.attemptOffer(player);
+    public GameResult offer(ServerPlayerEntity player, JoinIntent intent) {
+        var result = this.attemptOffer(player, intent);
 
         if (result.isError()) {
             this.attemptGarbageCollection();
@@ -42,12 +43,12 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         return result;
     }
 
-    private GameResult attemptOffer(ServerPlayerEntity player) {
+    private GameResult attemptOffer(ServerPlayerEntity player, JoinIntent intent) {
         if (this.set.contains(player)) {
             return GameResult.error(GameTexts.Join.alreadyJoined());
         }
 
-        var offer = new LocalPlayerOffer(player);
+        var offer = new LocalPlayerOffer(player, intent);
 
         switch (this.space.offerPlayer(offer)) {
             case LocalPlayerOffer.Accept accept -> {

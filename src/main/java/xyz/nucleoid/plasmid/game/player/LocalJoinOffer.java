@@ -11,7 +11,7 @@ import net.minecraft.world.GameMode;
 import java.util.*;
 import java.util.function.Consumer;
 
-public record LocalPlayerOffer(Collection<ServerPlayerEntity> serverPlayers, JoinIntent intent) implements PlayerOffer {
+public record LocalJoinOffer(Collection<ServerPlayerEntity> serverPlayers, JoinIntent intent) implements JoinOffer {
     @Override
     public Collection<GameProfile> players() {
         return this.serverPlayers
@@ -37,16 +37,16 @@ public record LocalPlayerOffer(Collection<ServerPlayerEntity> serverPlayers, Joi
     }
 
     @Override
-    public PlayerOfferResult.Accept accept(ServerWorld world, Vec3d position, float yaw, float pitch) {
+    public JoinOfferResult.Accept accept(ServerWorld world, Vec3d position, float yaw, float pitch) {
         return new Accept(world, position, yaw, pitch);
     }
 
     @Override
-    public PlayerOfferResult.Reject reject(Text reason) {
+    public JoinOfferResult.Reject reject(Text reason) {
         return () -> reason;
     }
 
-    public static class Accept implements PlayerOfferResult.Accept {
+    public static class Accept implements JoinOfferResult.Accept {
         private final ServerWorld world;
         private final Vec3d position;
         private final float yaw;

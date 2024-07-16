@@ -11,7 +11,6 @@ import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 
 public final class ManagedGameSpacePlayers implements GameSpacePlayers {
@@ -46,10 +45,10 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
             return GameResult.error(GameTexts.Join.alreadyJoined());
         }
 
-        var offer = new LocalPlayerOffer(players, intent);
+        var offer = new LocalJoinOffer(players, intent);
 
         switch (this.space.offerPlayer(offer)) {
-            case LocalPlayerOffer.Accept accept -> {
+            case LocalJoinOffer.Accept accept -> {
                 try {
                     var joiningSet = new MutablePlayerSet(this.space.getServer());
                     for (var player : players) {
@@ -65,7 +64,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
                     return GameResult.error(GameTexts.Join.unexpectedError());
                 }
             }
-            case PlayerOfferResult.Reject reject -> {
+            case JoinOfferResult.Reject reject -> {
                 return GameResult.error(reject.reason());
             }
             default -> {

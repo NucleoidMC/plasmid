@@ -20,8 +20,8 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.JoinIntent;
-import xyz.nucleoid.plasmid.game.player.LocalPlayerOffer;
-import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
+import xyz.nucleoid.plasmid.game.player.LocalJoinOffer;
+import xyz.nucleoid.plasmid.game.player.JoinOfferResult;
 
 import java.util.Collection;
 import java.util.Map;
@@ -214,7 +214,7 @@ public final class ManagedGameSpace implements GameSpace {
         return this.state.invoker(GamePlayerEvents.SCREEN_JOINS).screenJoins(players, intent);
     }
 
-    PlayerOfferResult offerPlayer(LocalPlayerOffer offer) {
+    JoinOfferResult offerPlayer(LocalJoinOffer offer) {
         if (this.closed) {
             return offer.reject(GameTexts.Join.gameClosed());
         } else if (offer.serverPlayers().stream().anyMatch(this.manager::inGame)) {

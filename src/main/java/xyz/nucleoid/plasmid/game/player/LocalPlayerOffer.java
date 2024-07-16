@@ -1,20 +1,39 @@
 package xyz.nucleoid.plasmid.game.player;
 
 import com.mojang.authlib.GameProfile;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
-public record LocalPlayerOffer(ServerPlayerEntity player, JoinIntent intent) implements PlayerOffer {
+public record LocalPlayerOffer(Collection<ServerPlayerEntity> serverPlayers, JoinIntent intent) implements PlayerOffer {
     @Override
-    public GameProfile profile() {
-        return this.player.getGameProfile();
+    public Collection<GameProfile> players() {
+        return this.serverPlayers
+                .stream()
+                .map(PlayerEntity::getGameProfile)
+                .toList();
+    }
+
+    @Override
+    public Collection<UUID> playerIds() {
+        return this.serverPlayers
+                .stream()
+                .map(player -> player.getGameProfile().getId())
+                .toList();
+    }
+
+    @Override
+    public Collection<String> playerNames() {
+        return this.serverPlayers
+                .stream()
+                .map(player -> player.getGameProfile().getName())
+                .toList();
     }
 
     @Override
@@ -33,7 +52,7 @@ public record LocalPlayerOffer(ServerPlayerEntity player, JoinIntent intent) imp
         private final float yaw;
         private final float pitch;
 
-        private final List<Consumer<ServerPlayerEntity>> thenRun = new ArrayList<>();
+        private final List<Consumer<PlayerSet>> thenRun = new ArrayList<>();
 
         Accept(ServerWorld world, Vec3d position, float yaw, float pitch) {
             this.world = world;
@@ -43,18 +62,20 @@ public record LocalPlayerOffer(ServerPlayerEntity player, JoinIntent intent) imp
         }
 
         @Override
-        public Accept thenRun(Consumer<ServerPlayerEntity> consumer) {
+        public Accept thenRun(Consumer<PlayerSet> consumer) {
             this.thenRun.add(consumer);
             return this;
+        }
+
+        public void joinAll(PlayerSet players) {
+            for (var consumer : this.thenRun) {
+                consumer.accept(players);
+            }
         }
 
         public ServerWorld applyJoin(ServerPlayerEntity player) {
             player.changeGameMode(GameMode.SURVIVAL);
             player.refreshPositionAndAngles(this.position.x, this.position.y, this.position.z, this.yaw, this.pitch);
-
-            for (Consumer<ServerPlayerEntity> consumer : this.thenRun) {
-                consumer.accept(player);
-            }
 
             return this.world;
         }

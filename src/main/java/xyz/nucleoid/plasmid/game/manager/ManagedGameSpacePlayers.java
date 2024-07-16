@@ -6,14 +6,12 @@ import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpacePlayers;
 import xyz.nucleoid.plasmid.game.GameTexts;
-import xyz.nucleoid.plasmid.game.player.JoinIntent;
-import xyz.nucleoid.plasmid.game.player.LocalPlayerOffer;
-import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
-import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
+import xyz.nucleoid.plasmid.game.player.*;
 import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 public final class ManagedGameSpacePlayers implements GameSpacePlayers {
@@ -33,8 +31,8 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
     @Override
-    public GameResult offer(ServerPlayerEntity player, JoinIntent intent) {
-        var result = this.attemptOffer(player, intent);
+    public GameResult offer(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+        var result = this.attemptOffer(players, intent);
 
         if (result.isError()) {
             this.attemptGarbageCollection();
@@ -43,19 +41,24 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         return result;
     }
 
-    private GameResult attemptOffer(ServerPlayerEntity player, JoinIntent intent) {
-        if (this.set.contains(player)) {
+    private GameResult attemptOffer(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+        if (players.stream().anyMatch(this.set::contains)) {
             return GameResult.error(GameTexts.Join.alreadyJoined());
         }
 
-        var offer = new LocalPlayerOffer(player, intent);
+        var offer = new LocalPlayerOffer(players, intent);
 
         switch (this.space.offerPlayer(offer)) {
             case LocalPlayerOffer.Accept accept -> {
                 try {
-                    this.teleporter.teleportIn(player, accept::applyJoin);
-                    this.set.add(player);
-                    this.space.onAddPlayer(player);
+                    var joiningSet = new MutablePlayerSet(this.space.getServer());
+                    for (var player : players) {
+                        this.teleporter.teleportIn(player, accept::applyJoin);
+                        this.set.add(player);
+                        this.space.onAddPlayer(player);
+                        joiningSet.add(player);
+                    }
+                    accept.joinAll(joiningSet);
 
                     return GameResult.ok();
                 } catch (Throwable throwable) {

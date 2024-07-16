@@ -46,9 +46,9 @@ public final class GamePlayerJoiner {
             return results;
         }
 
-        for (var player : players) {
-            var result = gameSpace.getPlayers().offer(player, intent);
-            if (result.isError()) {
+        var result = gameSpace.getPlayers().offer(players, intent);
+        if (result.isError()) {
+            for (var player : players) {
                 results.playerErrors.put(player, result.error());
             }
         }

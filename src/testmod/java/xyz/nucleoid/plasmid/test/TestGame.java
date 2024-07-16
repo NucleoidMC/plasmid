@@ -60,7 +60,9 @@ public final class TestGame {
         return context.openWithWorld(worldConfig, (activity, world) -> {
             activity.listen(GamePlayerEvents.OFFER, offer ->
                     offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
-                            .thenRun(player -> player.changeGameMode(GameMode.ADVENTURE))
+                            .thenRunForEach(joiningPlayer -> {
+                                joiningPlayer.changeGameMode(GameMode.ADVENTURE);
+                            })
             );
 
             GameWaitingLobby.addTo(activity, new PlayerConfig(1, 99));

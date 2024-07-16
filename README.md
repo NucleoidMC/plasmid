@@ -203,7 +203,7 @@ An example offer listener may look like:
 ```java
 activity.listen(GamePlayerEvents.OFFER, offer -> {
     return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
-        .thenRun(player -> {
+        .thenRunForEach(player -> {
             player.changeGameMode(GameMode.ADVENTURE);
         });
 });
@@ -271,7 +271,7 @@ public final class ExampleGame {
 
     private PlayerOfferResult onPlayerOffer(PlayerOffer offer) {
         return offer.accept(this.world, new Vec3d(0.0, 65.0, 0.0))
-                .thenRun(player -> {
+                .thenRunForEach(player -> {
                     player.changeGameMode(GameMode.ADVENTURE);
                 });
     }

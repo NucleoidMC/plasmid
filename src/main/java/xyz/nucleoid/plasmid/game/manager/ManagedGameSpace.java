@@ -217,9 +217,9 @@ public final class ManagedGameSpace implements GameSpace {
     PlayerOfferResult offerPlayer(LocalPlayerOffer offer) {
         if (this.closed) {
             return offer.reject(GameTexts.Join.gameClosed());
-        } else if (this.manager.inGame(offer.player())) {
+        } else if (offer.serverPlayers().stream().anyMatch(this.manager::inGame)) {
             return offer.reject(GameTexts.Join.inOtherGame());
-        } else if (!Permissions.check(offer.player(), "plasmid.join_game", true)) {
+        } else if (offer.serverPlayers().stream().anyMatch(p -> !Permissions.check(p, "plasmid.join_game", true))) {
             return offer.reject(GameTexts.Join.notAllowed());
         }
 

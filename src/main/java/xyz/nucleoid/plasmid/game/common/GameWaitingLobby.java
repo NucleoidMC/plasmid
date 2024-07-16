@@ -22,8 +22,8 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.player.PlayerOffer;
-import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
+import xyz.nucleoid.plasmid.game.player.JoinOffer;
+import xyz.nucleoid.plasmid.game.player.JoinOfferResult;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.util.compatibility.AfkDisplayCompatibility;
 
@@ -179,7 +179,7 @@ public final class GameWaitingLobby {
         return GameResult.ok();
     }
 
-    private PlayerOfferResult offerPlayer(PlayerOffer offer) {
+    private JoinOfferResult offerPlayer(JoinOffer offer) {
         if (this.isFull()) {
             return offer.reject(GameTexts.Join.gameFull());
         }

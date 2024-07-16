@@ -10,8 +10,8 @@ import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.player.JoinIntent;
-import xyz.nucleoid.plasmid.game.player.PlayerOffer;
-import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
+import xyz.nucleoid.plasmid.game.player.JoinOffer;
+import xyz.nucleoid.plasmid.game.player.JoinOfferResult;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.Collection;
@@ -129,10 +129,10 @@ public final class GamePlayerEvents {
      * the player into the {@link GameSpace} world in the correct location.
      * <p>
      * Games must respond to this event in order for a player to be able to join by returning either
-     * {@link PlayerOffer#accept(ServerWorld, Vec3d)} or {@link PlayerOffer#reject(Text)}.
+     * {@link JoinOffer#accept(ServerWorld, Vec3d)} or {@link JoinOffer#reject(Text)}.
      *
-     * @see PlayerOffer
-     * @see PlayerOfferResult
+     * @see JoinOffer
+     * @see JoinOfferResult
      * @see GamePlayerEvents#SCREEN_JOINS
      * @see GamePlayerEvents#JOIN
      */
@@ -140,7 +140,7 @@ public final class GamePlayerEvents {
         try {
             for (var listener : ctx.getListeners()) {
                 var result = listener.onOfferPlayer(offer);
-                if (!(result instanceof PlayerOfferResult.Pass)) {
+                if (!(result instanceof JoinOfferResult.Pass)) {
                     return result;
                 }
             }
@@ -180,7 +180,7 @@ public final class GamePlayerEvents {
     }
 
     public interface Offer {
-        PlayerOfferResult onOfferPlayer(PlayerOffer offer);
+        JoinOfferResult onOfferPlayer(JoinOffer offer);
     }
 
     public interface Name {

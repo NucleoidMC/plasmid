@@ -16,7 +16,7 @@ import java.util.Set;
 
 /**
  * Utility class for joining players to a {@link GameSpace}. This handles all logic such as collecting all party
- * members, screening, and offering players to the {@link GameSpace}.
+ * members, and offering players to the {@link GameSpace}.
  */
 public final class GamePlayerJoiner {
     public static Results tryJoin(ServerPlayerEntity player, GameSpace gameSpace, JoinIntent intent) {
@@ -39,12 +39,6 @@ public final class GamePlayerJoiner {
 
     private static Results tryJoinAll(Collection<ServerPlayerEntity> players, GameSpace gameSpace, JoinIntent intent) {
         var results = new Results();
-
-        var screenResult = gameSpace.getPlayers().screenJoins(players, intent);
-        if (screenResult.isError()) {
-            results.globalError = screenResult.error();
-            return results;
-        }
 
         var result = gameSpace.getPlayers().offer(players, intent);
         if (result.isError()) {

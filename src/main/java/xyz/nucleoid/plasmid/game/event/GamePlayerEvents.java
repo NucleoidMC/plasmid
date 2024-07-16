@@ -102,38 +102,14 @@ public final class GamePlayerEvents {
     });
 
     /**
-     * Called when a group of players try to join this game. This should be used to reject multiple players as a group,
-     * such as when a party tries to join but has too many players to fit into the game.
-     * <p>
-     * This is called before {@link GamePlayerEvents#OFFER} which handles specifically bringing a player into the game.
-     *
-     * @see GamePlayerEvents#OFFER
-     */
-    public static final StimulusEvent<ScreenJoins> SCREEN_JOINS = StimulusEvent.create(ScreenJoins.class, ctx -> (players, intent) -> {
-        try {
-            for (var listener : ctx.getListeners()) {
-                var result = listener.screenJoins(players, intent);
-                if (result.isError()) {
-                    return result;
-                }
-            }
-            return GameResult.ok();
-        } catch (Throwable throwable) {
-            ctx.handleException(throwable);
-            return GameResult.error(GameTexts.Join.unexpectedError());
-        }
-    });
-
-    /**
      * Called when a single {@link ServerPlayerEntity} tries to join this game. This event is responsible for bringing
      * the player into the {@link GameSpace} world in the correct location.
      * <p>
      * Games must respond to this event in order for a player to be able to join by returning either
-     * {@link JoinOffer#accept(ServerWorld, Vec3d)} or {@link JoinOffer#reject(Text)}.
+     * {@link JoinOffer#accept(ServerWorld)} or {@link JoinOffer#reject(Text)}.
      *
      * @see JoinOffer
      * @see JoinOfferResult
-     * @see GamePlayerEvents#SCREEN_JOINS
      * @see GamePlayerEvents#JOIN
      */
     public static final StimulusEvent<Offer> OFFER = StimulusEvent.create(Offer.class, ctx -> offer -> {
@@ -173,10 +149,6 @@ public final class GamePlayerEvents {
 
     public interface Remove {
         void onRemovePlayer(ServerPlayerEntity player);
-    }
-
-    public interface ScreenJoins {
-        GameResult screenJoins(Collection<GameProfile> players, JoinIntent intent);
     }
 
     public interface Offer {

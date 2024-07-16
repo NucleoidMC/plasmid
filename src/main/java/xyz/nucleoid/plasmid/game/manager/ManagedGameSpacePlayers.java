@@ -25,8 +25,18 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
     @Override
-    public GameResult screenJoins(Collection<ServerPlayerEntity> players, JoinIntent intent) {
-        return this.space.screenJoins(players, intent);
+    public GameResult simulateOffer(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+        if (players.stream().anyMatch(this.set::contains)) {
+            return GameResult.error(GameTexts.Join.alreadyJoined());
+        }
+
+        var offer = new LocalJoinOffer(players, intent);
+
+        return switch (this.space.offerPlayer(offer)) {
+            case JoinOfferResult.Accept accept -> GameResult.ok();
+            case JoinOfferResult.Reject reject -> GameResult.error(reject.reason());
+            default -> GameResult.error(GameTexts.Join.genericError());
+        };
     }
 
     @Override

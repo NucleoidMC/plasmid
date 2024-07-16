@@ -196,24 +196,6 @@ public final class ManagedGameSpace implements GameSpace {
         return this.state;
     }
 
-    GameResult screenJoins(Collection<ServerPlayerEntity> players, JoinIntent intent) {
-        var result = this.attemptScreenJoins(players.stream().map(PlayerEntity::getGameProfile).toList(), intent);
-
-        if (result.isError()) {
-            this.players.attemptGarbageCollection();
-        }
-
-        return result;
-    }
-
-    private GameResult attemptScreenJoins(Collection<GameProfile> players, JoinIntent intent) {
-        if (this.closed) {
-            return GameResult.error(GameTexts.Join.gameClosed());
-        }
-
-        return this.state.invoker(GamePlayerEvents.SCREEN_JOINS).screenJoins(players, intent);
-    }
-
     JoinOfferResult offerPlayer(LocalJoinOffer offer) {
         if (this.closed) {
             return offer.reject(GameTexts.Join.gameClosed());

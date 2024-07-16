@@ -6,8 +6,7 @@ import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 /**
  * Represents the "intention" of a player or group of players joining a {@link GameSpace}.
  * It is up to the game implementation to respect this intent in the way that is appropriate for their game. This may be
- * accomplished by handling the {@link GamePlayerEvents#SCREEN_JOINS 'Screen Joins'} and
- * {@link GamePlayerEvents#OFFER 'Join Offer'} events.
+ * accomplished by handling the {@link GamePlayerEvents#OFFER 'Join Offer'} events.
  */
 public enum JoinIntent {
     /**

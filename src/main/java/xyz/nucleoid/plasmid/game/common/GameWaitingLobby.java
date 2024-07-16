@@ -89,7 +89,6 @@ public final class GameWaitingLobby {
 
         activity.listen(GameActivityEvents.TICK, lobby::onTick);
         activity.listen(GameActivityEvents.REQUEST_START, lobby::requestStart);
-        activity.listen(GamePlayerEvents.SCREEN_JOINS, (players, intent) -> lobby.screenJoins(players));
         activity.listen(GamePlayerEvents.OFFER, lobby::offerPlayer);
         activity.listen(GamePlayerEvents.REMOVE, lobby::onRemovePlayer);
 
@@ -170,17 +169,9 @@ public final class GameWaitingLobby {
         }
     }
 
-    private GameResult screenJoins(Collection<GameProfile> players) {
-        int newPlayerCount = this.gameSpace.getPlayers().size() + players.size();
-        if (newPlayerCount > this.playerConfig.maxPlayers()) {
-            return GameResult.error(GameTexts.Join.gameFull());
-        }
-
-        return GameResult.ok();
-    }
-
     private JoinOfferResult offerPlayer(JoinOffer offer) {
-        if (this.isFull()) {
+        int newPlayerCount = this.gameSpace.getPlayers().size() + offer.players().size();
+        if (newPlayerCount > this.playerConfig.maxPlayers()) {
             return offer.reject(GameTexts.Join.gameFull());
         }
 

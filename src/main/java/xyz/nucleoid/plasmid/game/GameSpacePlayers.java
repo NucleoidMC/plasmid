@@ -17,18 +17,17 @@ import java.util.Collection;
  */
 public interface GameSpacePlayers extends PlayerSet {
     /**
-     * Screens a player or group of players and returns whether the collective group should be allowed into the game.
+     * Simulates offer to join a player or group of players and returns whether they should be allowed into the game.
      * <p>
-     * This logic is controlled through the active {@link GameActivity} through {@link GamePlayerEvents#SCREEN_JOINS}.
+     * This logic is controlled through the active {@link GameActivity} through {@link GamePlayerEvents#OFFER}.
      *
      * @param players the group of players trying to join
      * @param intent the intent of the players trying to join, such as whether they want to participate or spectate
      * @return a {@link GameResult} describing whether these players can join this game, or an error if not
-     * @see GamePlayerEvents#SCREEN_JOINS
-     * @see GameSpacePlayers#offer(Collection, JoinIntent) 
+     * @see GameSpacePlayers#offer(Collection, JoinIntent)
      * @see xyz.nucleoid.plasmid.game.player.GamePlayerJoiner
      */
-    GameResult screenJoins(Collection<ServerPlayerEntity> players, JoinIntent intent);
+    GameResult simulateOffer(Collection<ServerPlayerEntity> players, JoinIntent intent);
 
     /**
      * Offers a player or group of players to join this game. If accepted, they will be teleported into the game, and if not

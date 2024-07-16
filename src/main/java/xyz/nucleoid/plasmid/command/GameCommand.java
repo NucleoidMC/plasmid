@@ -287,11 +287,9 @@ public final class GameCommand {
                 .collect(Collectors.toList());
 
         var intent = JoinIntent.ANY;
-        var screen = gameSpace.getPlayers().screenJoins(players, intent);
-        if (screen.isOk()) {
-            gameSpace.getPlayers().offer(players, intent);
-        } else {
-            source.sendError(screen.errorCopy().formatted(Formatting.RED));
+        var result = gameSpace.getPlayers().offer(players, intent);
+        if (result.isError()) {
+            source.sendError(result.errorCopy().formatted(Formatting.RED));
         }
     }
 

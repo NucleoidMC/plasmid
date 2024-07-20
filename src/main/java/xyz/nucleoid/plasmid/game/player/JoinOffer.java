@@ -9,8 +9,10 @@ import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Represents a request for of a player or group of players to join a {@link GameSpace}.
@@ -25,26 +27,26 @@ public interface JoinOffer {
     /**
      * @return the set of {@link GameProfile} of the players that are requesting access to this {@link GameSpace}
      */
-    Collection<GameProfile> players();
+    Set<GameProfile> players();
 
     /**
      * @return the {@link UUID profile UUID} of the players that are requesting access to this {@link GameSpace}
      */
-    default Collection<UUID> playerIds() {
+    default Set<UUID> playerIds() {
         return this.players()
                 .stream()
                 .map(GameProfile::getId)
-                .toList();
+                .collect(Collectors.toSet());
     }
 
     /**
      * @return the usernames of the players that are requesting access to this {@link GameSpace}
      */
-    default Collection<String> playerNames() {
+    default Set<String> playerNames() {
         return this.players()
                 .stream()
                 .map(GameProfile::getName)
-                .toList();
+                .collect(Collectors.toSet());
     }
 
     /**

@@ -3,6 +3,8 @@ package xyz.nucleoid.plasmid.game.portal.game;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Formatting;
+import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
@@ -18,14 +20,16 @@ public record NewGamePortalBackend(RegistryEntry<GameConfig<?>> game) implements
         CompletableFuture.supplyAsync(() -> this.openGame(player.server))
                 .thenCompose(Function.identity())
                 .handleAsync((gameSpace, throwable) -> {
-                    GamePlayerJoiner.Results results;
+                    GameResult result;
                     if (gameSpace != null) {
-                        results = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
+                        result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
                     } else {
-                        results = GamePlayerJoiner.handleJoinException(throwable);
+                        result = GamePlayerJoiner.handleJoinException(throwable);
                     }
 
-                    results.sendErrorsTo(player);
+                    if (result.isError()) {
+                        player.sendMessage(result.errorCopy().formatted(Formatting.RED), false);
+                    }
 
                     return null;
                 }, player.server);

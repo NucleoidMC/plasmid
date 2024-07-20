@@ -294,8 +294,10 @@ public final class GameCommand {
     }
 
     private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
-        var results = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
-        results.sendErrorsTo(player);
+        var result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
+        if (result.isError()) {
+            player.sendMessage(result.errorCopy().formatted(Formatting.RED));
+        }
     }
 
     private static GameSpace getJoinableGameSpace() throws CommandSyntaxException {

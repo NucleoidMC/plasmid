@@ -10,30 +10,31 @@ import net.minecraft.world.GameMode;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public record LocalJoinOffer(Collection<ServerPlayerEntity> serverPlayers, JoinIntent intent) implements JoinOffer {
     @Override
-    public Collection<GameProfile> players() {
+    public Set<GameProfile> players() {
         return this.serverPlayers
                 .stream()
                 .map(PlayerEntity::getGameProfile)
-                .toList();
+                .collect(Collectors.toSet());
     }
 
     @Override
-    public Collection<UUID> playerIds() {
+    public Set<UUID> playerIds() {
         return this.serverPlayers
                 .stream()
                 .map(player -> player.getGameProfile().getId())
-                .toList();
+                .collect(Collectors.toSet());
     }
 
     @Override
-    public Collection<String> playerNames() {
+    public Set<String> playerNames() {
         return this.serverPlayers
                 .stream()
                 .map(player -> player.getGameProfile().getName())
-                .toList();
+                .collect(Collectors.toSet());
     }
 
     @Override

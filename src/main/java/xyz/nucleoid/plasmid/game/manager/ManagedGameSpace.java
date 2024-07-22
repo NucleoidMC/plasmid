@@ -1,10 +1,8 @@
 package xyz.nucleoid.plasmid.game.manager;
 
 import com.google.common.collect.Lists;
-import com.mojang.authlib.GameProfile;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -19,11 +17,11 @@ import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
-import xyz.nucleoid.plasmid.game.player.JoinIntent;
+import xyz.nucleoid.plasmid.game.player.JoinAcceptorResult;
+import xyz.nucleoid.plasmid.game.player.LocalJoinAcceptor;
 import xyz.nucleoid.plasmid.game.player.LocalJoinOffer;
 import xyz.nucleoid.plasmid.game.player.JoinOfferResult;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -196,7 +194,7 @@ public final class ManagedGameSpace implements GameSpace {
         return this.state;
     }
 
-    JoinOfferResult offerPlayer(LocalJoinOffer offer) {
+    JoinOfferResult offerPlayers(LocalJoinOffer offer) {
         if (this.closed) {
             return offer.reject(GameTexts.Join.gameClosed());
         } else if (offer.serverPlayers().stream().anyMatch(this.manager::inGame)) {
@@ -205,8 +203,13 @@ public final class ManagedGameSpace implements GameSpace {
             return offer.reject(GameTexts.Join.notAllowed());
         }
 
-        return this.state.invoker(GamePlayerEvents.OFFER).onOfferPlayer(offer);
+        return this.state.invoker(GamePlayerEvents.OFFER).onOfferPlayers(offer);
     }
+
+    JoinAcceptorResult acceptPlayers(LocalJoinAcceptor acceptor) {
+        return this.state.invoker(GamePlayerEvents.ACCEPT).onAcceptPlayers(acceptor);
+    }
+
 
     void onAddPlayer(ServerPlayerEntity player) {
         this.state.propagatingInvoker(GamePlayerEvents.JOIN).onAddPlayer(player);

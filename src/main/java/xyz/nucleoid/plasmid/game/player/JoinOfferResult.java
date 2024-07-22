@@ -1,23 +1,18 @@
 package xyz.nucleoid.plasmid.game.player;
 
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-
-import java.util.function.Consumer;
 
 public sealed interface JoinOfferResult permits JoinOfferResult.Pass, JoinOfferResult.Accept, JoinOfferResult.Reject {
     Pass PASS = new Pass();
+    Accept ACCEPT = new Accept();
 
     final class Pass implements JoinOfferResult {
         private Pass() {
         }
     }
 
-    non-sealed interface Accept extends JoinOfferResult {
-        JoinOfferResult.Accept thenRun(Consumer<PlayerSet> consumer);
-
-        default JoinOfferResult.Accept thenRunForEach(Consumer<ServerPlayerEntity> consumer) {
-            return this.thenRun(players -> players.forEach(consumer));
+    final class Accept implements JoinOfferResult {
+        private Accept() {
         }
     }
 

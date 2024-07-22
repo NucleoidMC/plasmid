@@ -1,17 +1,13 @@
 package xyz.nucleoid.plasmid.game.player;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -61,42 +57,10 @@ public interface JoinOffer {
      * This function does not do anything on its own, but its result must be returned within a
      * {@link GamePlayerEvents#OFFER} listener.
      *
-     * @param world the world that the players should be teleported to when accepted
-     * @param position the position that the players should be teleported to when accepted
-     * @param yaw the 'yaw' angle that the players should be teleported to when accepted
-     * @param pitch the 'pitch' angle that the players should be teleported to when accepted
      * @return an "accept" offer result
-     * @see JoinOfferResult.Accept#thenRun(Consumer)
      */
-    JoinOfferResult.Accept accept(ServerWorld world, Vec3d position, float yaw, float pitch);
-
-    /**
-     * Returns an offer result that accepts this offer and allows the player into this {@link GameSpace}.
-     * <p>
-     * This function does not do anything on its own, but its result must be returned within a
-     * {@link GamePlayerEvents#OFFER} listener.
-     *
-     * @param world the world that the players should be teleported to when accepted
-     * @param position the position that the players should be teleported to when accepted
-     * @return an "accept" offer result
-     * @see JoinOfferResult.Accept#thenRun(Consumer)
-     */
-    default JoinOfferResult.Accept accept(ServerWorld world, Vec3d position) {
-        return this.accept(world, position, 0.0f, 0.0f);
-    }
-
-    /**
-     * Returns an offer result that accepts this offer and allows the players into this {@link GameSpace}.
-     * <p>
-     * This function does not do anything on its own, but its result must be returned within a
-     * {@link GamePlayerEvents#OFFER} listener.
-     *
-     * @param world the world that the players should be teleported to when accepted
-     * @return an "accept" offer result
-     * @see JoinOfferResult.Accept#thenRun(Consumer)
-     */
-    default JoinOfferResult.Accept accept(ServerWorld world) {
-        return this.accept(world, Vec3d.ofBottomCenter(world.getSpawnPos()));
+    default JoinOfferResult.Accept accept() {
+        return JoinOfferResult.ACCEPT;
     }
 
     /**

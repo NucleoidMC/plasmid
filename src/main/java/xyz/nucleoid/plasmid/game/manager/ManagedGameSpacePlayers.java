@@ -32,7 +32,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
 
         var offer = new LocalJoinOffer(players, intent);
 
-        return switch (this.space.offerPlayer(offer)) {
+        return switch (this.space.offerPlayers(offer)) {
             case JoinOfferResult.Accept accept -> GameResult.ok();
             case JoinOfferResult.Reject reject -> GameResult.error(reject.reason());
             default -> GameResult.error(GameTexts.Join.genericError());
@@ -57,29 +57,34 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
 
         var offer = new LocalJoinOffer(players, intent);
 
-        switch (this.space.offerPlayer(offer)) {
-            case LocalJoinOffer.Accept accept -> {
+        return switch (this.space.offerPlayers(offer)) {
+            case JoinOfferResult.Accept accept -> this.accept(players, intent);
+            case JoinOfferResult.Reject reject -> GameResult.error(reject.reason());
+            default -> GameResult.error(GameTexts.Join.genericError());
+        };
+    }
+
+    private GameResult accept(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+        var acceptor = new LocalJoinAcceptor(players, intent);
+
+        switch (this.space.acceptPlayers(acceptor)) {
+            case LocalJoinAcceptor.Teleport teleport -> {
                 try {
                     var joiningSet = new MutablePlayerSet(this.space.getServer());
                     for (var player : players) {
-                        this.teleporter.teleportIn(player, accept::applyJoin);
+                        this.teleporter.teleportIn(player, teleport::applyTeleport);
                         this.set.add(player);
                         this.space.onAddPlayer(player);
                         joiningSet.add(player);
                     }
-                    accept.joinAll(joiningSet);
+                    teleport.runCallbacks(joiningSet);
 
                     return GameResult.ok();
                 } catch (Throwable throwable) {
                     return GameResult.error(GameTexts.Join.unexpectedError());
                 }
             }
-            case JoinOfferResult.Reject reject -> {
-                return GameResult.error(reject.reason());
-            }
-            default -> {
-                return GameResult.error(GameTexts.Join.genericError());
-            }
+            default -> throw new IllegalStateException("Accept event must be handled");
         }
     }
 

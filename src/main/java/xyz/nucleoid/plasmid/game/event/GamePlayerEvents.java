@@ -1,20 +1,15 @@
 package xyz.nucleoid.plasmid.game.event;
 
-import com.mojang.authlib.GameProfile;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
 import xyz.nucleoid.plasmid.game.GameActivity;
-import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
-import xyz.nucleoid.plasmid.game.player.JoinIntent;
+import xyz.nucleoid.plasmid.game.player.JoinAcceptor;
+import xyz.nucleoid.plasmid.game.player.JoinAcceptorResult;
 import xyz.nucleoid.plasmid.game.player.JoinOffer;
 import xyz.nucleoid.plasmid.game.player.JoinOfferResult;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
-
-import java.util.Collection;
 
 /**
  * Events relating to players being added and removed from a {@link GameSpace} or {@link GameActivity}.
@@ -102,20 +97,19 @@ public final class GamePlayerEvents {
     });
 
     /**
-     * Called when a single {@link ServerPlayerEntity} tries to join this game. This event is responsible for bringing
-     * the player into the {@link GameSpace} world in the correct location.
+     * Called when a group of {@link ServerPlayerEntity} tries to join this game.
      * <p>
-     * Games must respond to this event in order for a player to be able to join by returning either
-     * {@link JoinOffer#accept(ServerWorld)} or {@link JoinOffer#reject(Text)}.
+     * Games must respond to this event in order for players to be able to join by returning either
+     * {@link JoinOffer#accept()} or {@link JoinOffer#reject(Text)}.
      *
      * @see JoinOffer
      * @see JoinOfferResult
-     * @see GamePlayerEvents#JOIN
+     * @see GamePlayerEvents#ACCEPT
      */
     public static final StimulusEvent<Offer> OFFER = StimulusEvent.create(Offer.class, ctx -> offer -> {
         try {
             for (var listener : ctx.getListeners()) {
-                var result = listener.onOfferPlayer(offer);
+                var result = listener.onOfferPlayers(offer);
                 if (!(result instanceof JoinOfferResult.Pass)) {
                     return result;
                 }
@@ -125,6 +119,30 @@ public final class GamePlayerEvents {
             ctx.handleException(throwable);
             return offer.reject(GameTexts.Join.unexpectedError());
         }
+    });
+
+    /**
+     * Called when a group of {@link ServerPlayerEntity} is accepted to join this game. This event is responsible for bringing
+     * the players into the {@link GameSpace} world in the correct location.
+     * <p>
+     * Games must respond to this event in order for players to be able to join.
+     *
+     * @see JoinAcceptor
+     * @see JoinAcceptorResult
+     * @see GamePlayerEvents#JOIN
+     */
+    public static final StimulusEvent<Accept> ACCEPT = StimulusEvent.create(Accept.class, ctx -> accept -> {
+        try {
+            for (var listener : ctx.getListeners()) {
+                var result = listener.onAcceptPlayers(accept);
+                if (!(result instanceof JoinAcceptorResult.Pass)) {
+                    return result;
+                }
+            }
+        } catch (Throwable throwable) {
+            ctx.handleException(throwable);
+        }
+        return accept.pass();
     });
 
     /**
@@ -152,7 +170,11 @@ public final class GamePlayerEvents {
     }
 
     public interface Offer {
-        JoinOfferResult onOfferPlayer(JoinOffer offer);
+        JoinOfferResult onOfferPlayers(JoinOffer offer);
+    }
+
+    public interface Accept {
+        JoinAcceptorResult onAcceptPlayers(JoinAcceptor acceptor);
     }
 
     public interface Name {

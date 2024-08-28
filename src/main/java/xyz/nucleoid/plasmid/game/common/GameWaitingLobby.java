@@ -105,6 +105,7 @@ public final class GameWaitingLobby {
         }
 
         lobby.sidebar.setTitle(title);
+        lobby.updateSidebar();
         lobby.sidebar.show();
 
         return lobby;
@@ -135,7 +136,7 @@ public final class GameWaitingLobby {
         if (time % 20 == 0) {
             this.updateCountdown();
             this.tickCountdownBar();
-            this.tickSidebar();
+            this.updateSidebar();
             this.tickCountdownSound();
         }
 
@@ -244,7 +245,7 @@ public final class GameWaitingLobby {
         }
     }
 
-    private void tickSidebar() {
+    private void updateSidebar() {
         this.sidebar.set((b) -> {
             b.add(PADDING_LINE);
             if (this.countdownStart != -1) {

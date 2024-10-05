@@ -139,7 +139,7 @@ public final class GameEvents {
     public interface PlayerLeft {
         /**
          * @param gameSpace The {@link GameSpace} the game is running in.
-         * @param player the initial player who tried to join a {@link GameSpace}
+         * @param player the initial player who tried to leave a {@link GameSpace}
          */
         void onPlayerLeft(GameSpace gameSpace, ServerPlayerEntity player);
     }

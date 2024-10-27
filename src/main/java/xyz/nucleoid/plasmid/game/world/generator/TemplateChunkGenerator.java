@@ -23,7 +23,6 @@ import xyz.nucleoid.map_templates.MapChunk;
 import xyz.nucleoid.map_templates.MapTemplate;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 public class TemplateChunkGenerator extends GameChunkGenerator {
     private final MapTemplate template;
@@ -45,7 +44,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     }
 
     @Override
-    public CompletableFuture<Chunk> populateNoise(Executor executor, Blender blender, NoiseConfig noiseConfig, StructureAccessor structureAccessor, Chunk chunk) {
+    public CompletableFuture<Chunk> populateNoise(Blender blender, NoiseConfig noiseConfig, StructureAccessor structureAccessor, Chunk chunk) {
         var chunkPos = chunk.getPos();
 
         var chunkBounds = BlockBounds.ofChunk(chunk);
@@ -83,7 +82,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
             }
 
             return chunk;
-        }, executor);
+        });
     }
 
     private void addSection(int minWorldX, int minWorldY, int minWorldZ, BlockPos.Mutable templatePos, ProtoChunk chunk, ChunkSection section, MapChunk templateChunk) {

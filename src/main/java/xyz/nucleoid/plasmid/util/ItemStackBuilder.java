@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.util;
 
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.component.DataComponentType;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.*;
 import net.minecraft.enchantment.Enchantment;
@@ -46,12 +46,12 @@ public final class ItemStackBuilder {
         return this;
     }
 
-    public ItemStackBuilder addEnchantment(Enchantment enchantment, int level) {
+    public ItemStackBuilder addEnchantment(RegistryEntry<Enchantment> enchantment, int level) {
         this.stack.addEnchantment(enchantment, level);
         return this;
     }
 
-    public <T> ItemStackBuilder set(DataComponentType<T> type, @Nullable T value) {
+    public <T> ItemStackBuilder set(ComponentType<T> type, @Nullable T value) {
         this.stack.set(type,value);
         return this;
     }

@@ -47,20 +47,20 @@ public final class Plasmid implements ModInitializer {
     public void onInitialize() {
         DynamicRegistries.register(GameConfigs.REGISTRY_KEY, GameConfig.DIRECT_CODEC);
 
-        Registry.register(Registries.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
+        Registry.register(Registries.CHUNK_GENERATOR, Identifier.of(ID, "game"), GameChunkGenerator.CODEC);
 
-        GamePortalConfig.register(new Identifier(ID, "single_game"), SingleGamePortalConfig.CODEC);
-        GamePortalConfig.register(new Identifier(ID, "new_game"), NewGamePortalConfig.CODEC);
-        GamePortalConfig.register(new Identifier(ID, "concurrent_game"), ConcurrentGamePortalConfig.CODEC);
-        GamePortalConfig.register(new Identifier(ID, "on_demand"), LegacyOnDemandPortalConfig.CODEC); // old one
+        GamePortalConfig.register(Identifier.of(ID, "single_game"), SingleGamePortalConfig.CODEC);
+        GamePortalConfig.register(Identifier.of(ID, "new_game"), NewGamePortalConfig.CODEC);
+        GamePortalConfig.register(Identifier.of(ID, "concurrent_game"), ConcurrentGamePortalConfig.CODEC);
+        GamePortalConfig.register(Identifier.of(ID, "on_demand"), LegacyOnDemandPortalConfig.CODEC); // old one
 
-        GamePortalConfig.register(new Identifier(ID, "menu"), MenuPortalConfig.CODEC);
-        GamePortalConfig.register(new Identifier(ID, "advanced_menu"), AdvancedMenuPortalConfig.CODEC);
+        GamePortalConfig.register(Identifier.of(ID, "menu"), MenuPortalConfig.CODEC);
+        GamePortalConfig.register(Identifier.of(ID, "advanced_menu"), AdvancedMenuPortalConfig.CODEC);
 
-        MenuEntryConfig.register(new Identifier(ID, "game"), GameMenuEntryConfig.CODEC);
-        MenuEntryConfig.register(new Identifier(ID, "portal"), PortalEntryConfig.CODEC);
+        MenuEntryConfig.register(Identifier.of(ID, "game"), GameMenuEntryConfig.CODEC);
+        MenuEntryConfig.register(Identifier.of(ID, "portal"), PortalEntryConfig.CODEC);
 
-        GameType.register(new Identifier(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
+        GameType.register(Identifier.of(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
 
         this.registerCallbacks();
 

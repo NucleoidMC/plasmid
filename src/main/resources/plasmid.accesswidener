@@ -1,11 +1,6 @@
 accessWidener v1 named
 
-accessible field net/minecraft/item/Item ATTACK_DAMAGE_MODIFIER_ID Ljava/util/UUID;
-accessible field net/minecraft/item/Item ATTACK_SPEED_MODIFIER_ID Ljava/util/UUID;
-
 accessible method net/minecraft/entity/decoration/ArmorStandEntity setMarker (Z)V
-
-accessible class net/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTracker
 
 accessible field net/minecraft/entity/EntityType factory Lnet/minecraft/entity/EntityType$EntityFactory;
 accessible field net/minecraft/entity/EntityType canSpawnInside Lcom/google/common/collect/ImmutableSet;

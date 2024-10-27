@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -86,7 +87,7 @@ public final class TeamSelectionLobby {
             var stack = new ItemStack(ColoredBlocks.wool(config.blockDyeColor()));
             stack.set(DataComponentTypes.ITEM_NAME, name);
 
-            stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT.with(Codec.STRING.fieldOf(TEAM_KEY), team.key().id()).getOrThrow());
+            stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT.with(NbtOps.INSTANCE, Codec.STRING.fieldOf(TEAM_KEY), team.key().id()).getOrThrow());
 
             player.getInventory().setStack(index++, stack);
         }

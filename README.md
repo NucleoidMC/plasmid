@@ -37,14 +37,14 @@ Plasmid is designed to encourage data-driven games, and works with the concept o
 To register a `GameType`, you will need to call `GameType.register()` in your `ModInitializer` class. A call to register a `GameType` may look something like:
 ```java
 GameType.register(
-        new Identifier("plasmid_example", "example"),
+        Identifier.of("plasmid_example", "example"),
         ExampleGameConfig.CODEC,
         ExampleGame::open
 );
 ```
 
 Let's break down what is going on here:
-- `new Identifier("plasmid_example", "example")`
+- `Identifier.of("plasmid_example", "example")`
     - declares the unique identifier for this _game type_ that will be referenced by game config JSONs
 - `ExampleGameConfig.CODEC`
     - a `Codec` that will be used to load the game configuration from a JSON file (more on this later!)

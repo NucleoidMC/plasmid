@@ -34,7 +34,7 @@ import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 public final class TestGameWithResourcePack {
-    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(new Identifier(Plasmid.ID, "test_rp"));
+    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(Identifier.of(Plasmid.ID, "test_rp"));
 
     private static final GameTeam TEAM = new GameTeam(
             new GameTeamKey("players"),
@@ -65,7 +65,7 @@ public final class TestGameWithResourcePack {
             activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(0.0, 65.0, 0.0);
+                player.teleport(world, 0.0, 65.0, 0.0, player.getYaw(), player.getPitch());
                 return ActionResult.FAIL;
             });
 
@@ -124,14 +124,16 @@ public final class TestGameWithResourcePack {
                 }
             });
 
+            var world = gameSpace.getWorlds().iterator().next();
+
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(0.0, 65.0, 0.0);
+                player.teleport(world, 0.0, 65.0, 0.0, player.getYaw(), player.getPitch());
                 return ActionResult.FAIL;
             });
 
             activity.listen(GamePlayerEvents.OFFER, offer -> {
                 var player = offer.player();
-                return offer.accept(gameSpace.getWorlds().iterator().next(), new Vec3d(0.0, 65.0, 0.0))
+                return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
                         .and(() -> player.changeGameMode(GameMode.ADVENTURE));
             });
         });

@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.test;
 
 import eu.pb4.polymer.common.api.PolymerCommonUtils;
+import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
 import eu.pb4.sidebars.api.SidebarUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -14,6 +15,7 @@ import net.minecraft.network.packet.c2s.play.VehicleMoveC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.screen.ScreenTexts;
+import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -74,7 +76,7 @@ public final class JankGame {
             activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(0.0, 65.0, 0.0);
+                player.teleport(world, 0.0, 65.0, 0.0, player.getYaw(), player.getPitch());
                 return ActionResult.FAIL;
             });
 
@@ -111,16 +113,18 @@ public final class JankGame {
                 //SidebarUtils.updateTexts(player.networkHandler, sidebar);
             };
 
+            var world = gameSpace.getWorlds().iterator().next();
+
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(0.0, 65.0, 0.0);
+                player.teleport(world, 0.0, 65.0, 0.0, player.getYaw(), player.getPitch());
                 return ActionResult.FAIL;
             });
-            var mover = new ArmorStandEntity(gameSpace.getWorlds().iterator().next(), 0.0, 65.0, 0.0);
-            gameSpace.getWorlds().iterator().next().spawnEntity(mover);
+            var mover = new ArmorStandEntity(world, 0.0, 65.0, 0.0);
+            world.spawnEntity(mover);
 
             activity.listen(GamePlayerEvents.ADD, player -> {
-                player.networkHandler.sendPacket(FAKE_BOAT.createSpawnPacket());
-                player.networkHandler.sendPacket(CAMERA.createSpawnPacket());
+                player.networkHandler.sendPacket(FAKE_BOAT.createSpawnPacket(new EntityTrackerEntry(world, FAKE_BOAT, 1, false, player.networkHandler::sendPacket)));
+                player.networkHandler.sendPacket(CAMERA.createSpawnPacket(new EntityTrackerEntry(world, CAMERA, 1, false, player.networkHandler::sendPacket)));
                 player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(FAKE_BOAT.getId(), FAKE_BOAT.getDataTracker().getChangedEntries()));
                 player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(CAMERA.getId(), CAMERA.getDataTracker().getChangedEntries()));
                 player.networkHandler.sendPacket(VirtualEntityUtils.createRidePacket(FAKE_BOAT.getId(), IntList.of(player.getId())));
@@ -175,7 +179,7 @@ public final class JankGame {
             });
 
             activity.listen(GamePlayerEvents.OFFER, offer -> {
-                return offer.accept(gameSpace.getWorlds().iterator().next(), new Vec3d(0.0, 65.0, 0.0))
+                return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
                         .and(() -> offer.player().changeGameMode(GameMode.ADVENTURE));
             });
         });

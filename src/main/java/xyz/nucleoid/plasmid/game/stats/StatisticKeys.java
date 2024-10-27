@@ -28,7 +28,7 @@ public final class StatisticKeys {
     public static final StatisticKey<Integer> LONGEST_TIME = StatisticKey.intKey(id("longest_time"));
 
     private static Identifier id(String path) {
-        return new Identifier(Plasmid.ID, path);
+        return Identifier.of(Plasmid.ID, path);
     }
     private StatisticKeys() { }
 }

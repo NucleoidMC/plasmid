@@ -41,7 +41,7 @@ import java.util.List;
 
 public final class TestGame {
     private static final List<Method> WOOD_TYPE_BLOCK_FIELDS = Arrays.stream(WoodType.class.getMethods()).filter(x -> x.getReturnType() == Block.class).toList();
-    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(new Identifier(Plasmid.ID, "test"));
+    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(Identifier.of(Plasmid.ID, "test"));
 
     private static final GameTeam TEAM = new GameTeam(
             new GameTeamKey("players"),
@@ -72,7 +72,7 @@ public final class TestGame {
             activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(0.0, 65.0, 0.0);
+                player.teleport(world, 0.0, 65.0, 0.0, player.getYaw(), player.getPitch());
                 return ActionResult.FAIL;
             });
 
@@ -81,7 +81,7 @@ public final class TestGame {
         });
     }
 
-    private static final GameAttachment<Item> TEST = GameAttachment.create(new Identifier("plasmid", "test"));
+    private static final GameAttachment<Item> TEST = GameAttachment.create(Identifier.of("plasmid", "test"));
 
     private static GameResult startGame(GameSpace gameSpace) {
         gameSpace.setAttachment(TEST, Items.POTATO);
@@ -126,14 +126,16 @@ public final class TestGame {
                 }
             });
 
+            var world = gameSpace.getWorlds().iterator().next();
+
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(0.0, 65.0, 0.0);
+                player.teleport(world, 0.0, 65.0, 0.0, player.getYaw(), player.getPitch());
                 return ActionResult.FAIL;
             });
 
             /*activity.listen(GamePlayerEvents.OFFER, offer -> {
                 var player = offer.player();
-                return offer.accept(gameSpace.getWorlds().iterator().next(), new Vec3d(0.0, 65.0, 0.0))
+                return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
                         .and(() -> player.changeGameMode(GameMode.ADVENTURE));
             });*/
         });

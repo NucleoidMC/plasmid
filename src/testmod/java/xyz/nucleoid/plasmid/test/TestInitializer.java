@@ -40,20 +40,20 @@ public class TestInitializer implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        GameType.register(new Identifier(ID, "test"), TestConfig.CODEC, TestGame::open);
-        GameType.register(new Identifier(ID, "no_join"), TestConfig.CODEC, PlayerlessGame::open);
-        GameType.register(new Identifier(ID, "test_rp"), TestConfig.CODEC, TestGameWithResourcePack::open);
-        GameType.register(new Identifier(ID, "jank"), TestConfig.CODEC, JankGame::open);
+        GameType.register(Identifier.of(ID, "test"), TestConfig.CODEC, TestGame::open);
+        GameType.register(Identifier.of(ID, "no_join"), TestConfig.CODEC, PlayerlessGame::open);
+        GameType.register(Identifier.of(ID, "test_rp"), TestConfig.CODEC, TestGameWithResourcePack::open);
+        GameType.register(Identifier.of(ID, "jank"), TestConfig.CODEC, JankGame::open);
         Registry.register(Registries.BLOCK, id("test_block"), TEST_BLOCK);
         Registry.register(Registries.ITEM, id("test_item"), TEST_ITEM);
 
 
         CREATOR.addAssetSource("plasmid-test-mod");
-        resourcePack = GameResourcePack.from(new Identifier(ID, "test"), CREATOR);
+        resourcePack = GameResourcePack.from(Identifier.of(ID, "test"), CREATOR);
 
     }
 
     private static final Identifier id(String path) {
-        return new Identifier(ID, path);
+        return Identifier.of(ID, path);
     }
 }

@@ -7,8 +7,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.*;
 import net.minecraft.registry.entry.RegistryEntry;
-
-import java.util.UUID;
+import net.minecraft.util.Identifier;
 
 /**
  * A utility class that allows old-style 1.8 combat to be applied to any given {@link ItemStack}.
@@ -19,8 +18,8 @@ public final class OldCombat {
     private static final RegistryEntry<EntityAttribute> DAMAGE_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_DAMAGE;
     private static final RegistryEntry<EntityAttribute> SPEED_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_SPEED;
 
-    private static final UUID DAMAGE_ID = Item.ATTACK_DAMAGE_MODIFIER_ID;
-    private static final UUID SPEED_ID = Item.ATTACK_SPEED_MODIFIER_ID;
+    private static final Identifier DAMAGE_ID = Item.BASE_ATTACK_DAMAGE_MODIFIER_ID;
+    private static final Identifier SPEED_ID = Item.BASE_ATTACK_SPEED_MODIFIER_ID;
 
     private static final int HOE_BASE_DAMAGE = 0;
     private static final int SHOVEL_BASE_DAMAGE = 0;
@@ -56,11 +55,11 @@ public final class OldCombat {
     }
 
     private static EntityAttributeModifier createSpeedModifier() {
-        return new EntityAttributeModifier(SPEED_ID, "Weapon modifier", 10000.0F, EntityAttributeModifier.Operation.ADD_VALUE);
+        return new EntityAttributeModifier(SPEED_ID, 10000.0F, EntityAttributeModifier.Operation.ADD_VALUE);
     }
 
     private static EntityAttributeModifier createDamageModifier(double damage) {
-        return new EntityAttributeModifier(DAMAGE_ID, "Weapon modifier", damage, EntityAttributeModifier.Operation.ADD_VALUE);
+        return new EntityAttributeModifier(DAMAGE_ID, damage, EntityAttributeModifier.Operation.ADD_VALUE);
     }
 
     private static int getBaseDamage(ItemStack stack) {

@@ -13,7 +13,6 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.util.ItemStackBuilder;
 import xyz.nucleoid.plasmid.util.PlasmidCodecs;
@@ -205,7 +204,7 @@ public final record GameTeamConfig(
             var formatting = formatByDye(dyeColor);
             return new Colors(
                     formatting,
-                    TextColor.fromRgb(dyeColor(dyeColor)),
+                    TextColor.fromRgb(dyeColor.getEntityColor()),
                     dyeColor,
                     TextColor.fromRgb(dyeColor.getFireworkColor())
             );
@@ -229,14 +228,6 @@ public final record GameTeamConfig(
                 case RED -> Formatting.RED;
                 case BLACK -> Formatting.BLACK;
             };
-        }
-
-        private static int dyeColor(DyeColor dye) {
-            var components = dye.getColorComponents();
-            int red = MathHelper.floor(components[0] * 255.0F) & 0xFF;
-            int green = MathHelper.floor(components[1] * 255.0F) & 0xFF;
-            int blue = MathHelper.floor(components[2] * 255.0F) & 0xFF;
-            return (red << 16) | (green << 8) | blue;
         }
     }
 }

@@ -7,7 +7,6 @@ import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.Vec3d;
@@ -31,6 +30,7 @@ import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 import xyz.nucleoid.plasmid.game.stats.StatisticKey;
 import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 public final class TestGameWithResourcePack {
@@ -65,8 +65,8 @@ public final class TestGameWithResourcePack {
             activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(world, 0.0, 65.0, 0.0, player.getYaw(), player.getPitch());
-                return ActionResult.FAIL;
+                player.setPos(0.0, 65.0, 0.0);
+                return EventResult.DENY;
             });
 
             activity.listen(GameActivityEvents.REQUEST_START, () -> startGame(activity.getGameSpace(), 0));
@@ -127,8 +127,8 @@ public final class TestGameWithResourcePack {
             var world = gameSpace.getWorlds().iterator().next();
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(world, 0.0, 65.0, 0.0, player.getYaw(), player.getPitch());
-                return ActionResult.FAIL;
+                player.setPos(0.0, 65.0, 0.0);
+                return EventResult.DENY;
             });
 
             activity.listen(GamePlayerEvents.OFFER, offer -> {

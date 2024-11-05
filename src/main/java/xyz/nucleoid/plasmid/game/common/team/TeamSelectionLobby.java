@@ -12,9 +12,9 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
@@ -93,7 +93,7 @@ public final class TeamSelectionLobby {
         }
     }
 
-    private TypedActionResult<ItemStack> onUseItem(ServerPlayerEntity player, Hand hand) {
+    private ActionResult onUseItem(ServerPlayerEntity player, Hand hand) {
         var stack = player.getStackInHand(hand);
 
         if (stack.isIn(ItemTags.WOOL)) {
@@ -111,11 +111,11 @@ public final class TeamSelectionLobby {
 
                 player.sendMessage(message, false);
 
-                return TypedActionResult.success(stack);
+                return ActionResult.SUCCESS;
             }
         }
 
-        return TypedActionResult.pass(ItemStack.EMPTY);
+        return ActionResult.PASS;
     }
 
     /**

@@ -2,10 +2,10 @@ package xyz.nucleoid.plasmid.game;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.function.BiConsumer;
@@ -30,7 +30,7 @@ public record GameOpenContext<C>(MinecraftServer server, GameConfig<C> game) {
      * @return a {@link GameOpenProcedure} which should be returned by a game constructor
      * @see GameActivity
      * @see GameActivity#listen(StimulusEvent, Object)
-     * @see GameActivity#setRule(GameRuleType, ActionResult)
+     * @see GameActivity#setRule(GameRuleType, EventResult)
      */
     public GameOpenProcedure open(Consumer<GameActivity> setup) {
         return gameSpace -> gameSpace.setActivity(setup);
@@ -47,7 +47,7 @@ public record GameOpenContext<C>(MinecraftServer server, GameConfig<C> game) {
      * @return a {@link GameOpenProcedure} which should be returned by a game constructor
      * @see GameActivity
      * @see GameActivity#listen(StimulusEvent, Object)
-     * @see GameActivity#setRule(GameRuleType, ActionResult)
+     * @see GameActivity#setRule(GameRuleType, EventResult)
      */
     public GameOpenProcedure openWithWorld(RuntimeWorldConfig worldConfig, BiConsumer<GameActivity, ServerWorld> setup) {
         return this.open(activity -> {

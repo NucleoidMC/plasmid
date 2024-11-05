@@ -15,11 +15,20 @@ import net.minecraft.util.Identifier;
  * This works by modifying the damage and attack speed attributes to match their 1.8 levels.
  */
 public final class OldCombat {
-    private static final RegistryEntry<EntityAttribute> DAMAGE_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_DAMAGE;
-    private static final RegistryEntry<EntityAttribute> SPEED_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_SPEED;
+    private static final RegistryEntry<EntityAttribute> DAMAGE_ATTRIBUTE = EntityAttributes.ATTACK_DAMAGE;
+    private static final RegistryEntry<EntityAttribute> SPEED_ATTRIBUTE = EntityAttributes.ATTACK_SPEED;
 
     private static final Identifier DAMAGE_ID = Item.BASE_ATTACK_DAMAGE_MODIFIER_ID;
     private static final Identifier SPEED_ID = Item.BASE_ATTACK_SPEED_MODIFIER_ID;
+
+    private static final ToolMaterial[] TOOL_MATERIALS = {
+            ToolMaterial.WOOD,
+            ToolMaterial.GOLD,
+            ToolMaterial.STONE,
+            ToolMaterial.IRON,
+            ToolMaterial.DIAMOND,
+            ToolMaterial.NETHERITE
+    };
 
     private static final int HOE_BASE_DAMAGE = 0;
     private static final int SHOVEL_BASE_DAMAGE = 0;
@@ -28,14 +37,17 @@ public final class OldCombat {
     private static final int SWORD_BASE_DAMAGE = 3;
 
     public static ItemStack applyTo(ItemStack stack) {
-        var item = stack.getItem();
-        if (!(item instanceof ToolItem toolItem)) {
+        if (!stack.contains(DataComponentTypes.TOOL)) {
             return stack;
         }
 
-        var material = toolItem.getMaterial();
+        var material = getToolMaterial(stack);
 
-        var defaultModifiers = item.getAttributeModifiers();
+        if (material == null) {
+            return stack;
+        }
+
+        var defaultModifiers = stack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
 
         {
             EntityAttributeModifier modifier = createSpeedModifier();
@@ -43,10 +55,10 @@ public final class OldCombat {
         }
 
         {
-            float attackDamage = material.getAttackDamage();
+            float attackDamageBonus = stack.getItem() instanceof HoeItem ? 0 : getToolMaterial(stack).attackDamageBonus();
             int baseDamage = getBaseDamage(stack);
 
-            EntityAttributeModifier modifier = createDamageModifier(attackDamage + baseDamage);
+            EntityAttributeModifier modifier = createDamageModifier(attackDamageBonus + baseDamage);
             defaultModifiers = defaultModifiers.with(DAMAGE_ATTRIBUTE, modifier, AttributeModifierSlot.MAINHAND);
         }
 
@@ -60,6 +72,22 @@ public final class OldCombat {
 
     private static EntityAttributeModifier createDamageModifier(double damage) {
         return new EntityAttributeModifier(DAMAGE_ID, damage, EntityAttributeModifier.Operation.ADD_VALUE);
+    }
+
+    private static ToolMaterial getToolMaterial(ItemStack item) {
+        for (var material : TOOL_MATERIALS) {
+            var repairable = item.get(DataComponentTypes.REPAIRABLE);
+
+            if (repairable != null) {
+                var repairItems = repairable.items().getTagKey();
+
+                if (repairItems.isPresent() && repairItems.get().equals(material.repairItems())) {
+                    return material;
+                }
+            }
+        }
+
+        return null;
     }
 
     private static int getBaseDamage(ItemStack stack) {

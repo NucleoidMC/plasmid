@@ -6,7 +6,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
+import xyz.nucleoid.stimuli.event.EventResult;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity {
@@ -23,11 +24,11 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     }
 
     @Inject(method = "damage", at = @At(value = "RETURN", ordinal = 3), cancellable = true)
-    private void damage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-        if (!this.getWorld().isClient() && source.isIn(DamageTypeTags.IS_PROJECTILE)) {
+    private void damage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        if (source.isIn(DamageTypeTags.IS_PROJECTILE)) {
             var gameSpace = GameSpaceManager.get().byPlayer((PlayerEntity) (Object) this);
-            if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.PLAYER_PROJECTILE_KNOCKBACK) == ActionResult.SUCCESS) {
-                cir.setReturnValue(super.damage(source, amount));
+            if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.PLAYER_PROJECTILE_KNOCKBACK) == EventResult.ALLOW) {
+                cir.setReturnValue(super.damage(world, source, amount));
             }
         }
     }
@@ -44,7 +45,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             var serverPlayer = (ServerPlayerEntity) (Object) this;
 
             var gameSpace = GameSpaceManager.get().byPlayer(serverPlayer);
-            if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.DISMOUNT_VEHICLE) == ActionResult.FAIL) {
+            if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.DISMOUNT_VEHICLE) == EventResult.DENY) {
                 ci.cancel();
             }
         }

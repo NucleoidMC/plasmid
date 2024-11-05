@@ -10,7 +10,6 @@ import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -32,6 +31,7 @@ import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 import xyz.nucleoid.plasmid.game.stats.StatisticKey;
 import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
 import xyz.nucleoid.plasmid.util.WoodType;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 import java.lang.reflect.Field;
@@ -72,8 +72,8 @@ public final class TestGame {
             activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(world, 0.0, 65.0, 0.0, player.getYaw(), player.getPitch());
-                return ActionResult.FAIL;
+                player.setPos(0.0, 65.0, 0.0);
+                return EventResult.DENY;
             });
 
             activity.listen(GameActivityEvents.REQUEST_START, () -> startGame(activity.getGameSpace()));
@@ -126,14 +126,14 @@ public final class TestGame {
                 }
             });
 
-            var world = gameSpace.getWorlds().iterator().next();
-
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(world, 0.0, 65.0, 0.0, player.getYaw(), player.getPitch());
-                return ActionResult.FAIL;
+                player.setPos(0.0, 65.0, 0.0);
+                return EventResult.DENY;
             });
 
-            /*activity.listen(GamePlayerEvents.OFFER, offer -> {
+            /*var world = gameSpace.getWorlds().iterator().next();
+
+            activity.listen(GamePlayerEvents.OFFER, offer -> {
                 var player = offer.player();
                 return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
                         .and(() -> player.changeGameMode(GameMode.ADVENTURE));

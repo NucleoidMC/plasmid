@@ -6,9 +6,9 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.TypedActionResult;
+import xyz.nucleoid.stimuli.event.DroppedItemsResult;
 import xyz.nucleoid.stimuli.event.EventRegistrar;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 import xyz.nucleoid.stimuli.event.block.BlockBreakEvent;
 import xyz.nucleoid.stimuli.event.block.BlockDropItemsEvent;
@@ -29,7 +29,6 @@ import xyz.nucleoid.stimuli.event.world.FluidFlowEvent;
 import xyz.nucleoid.stimuli.event.world.IceMeltEvent;
 import xyz.nucleoid.stimuli.event.world.NetherPortalOpenEvent;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 
 public final class GameRuleType {
@@ -52,7 +51,7 @@ public final class GameRuleType {
                 if (source.getSource() instanceof PlayerEntity) {
                     return result;
                 } else {
-                    return ActionResult.PASS;
+                    return EventResult.PASS;
                 }
             });
 
@@ -66,27 +65,27 @@ public final class GameRuleType {
                 if (source.isIn(DamageTypeTags.IS_FALL)) {
                     return result;
                 } else {
-                    return ActionResult.PASS;
+                    return EventResult.PASS;
                 }
             });
 
     public static final GameRuleType USE_BLOCKS = GameRuleType.create()
-            .enforces(BlockUseEvent.EVENT, result -> (player, hand, hitResult) -> result);
+            .enforces(BlockUseEvent.EVENT, result -> (player, hand, hitResult) -> result.asActionResult());
     public static final GameRuleType USE_ITEMS = GameRuleType.create()
-            .enforces(ItemUseEvent.EVENT, result -> (player, hand) -> new TypedActionResult<>(result, ItemStack.EMPTY));
+            .enforces(ItemUseEvent.EVENT, result -> (player, hand) -> result.asActionResult());
     public static final GameRuleType USE_ENTITIES = GameRuleType.create()
             .enforces(EntityUseEvent.EVENT, result -> (player, entity, hand, hitResult) -> result);
 
     public static final GameRuleType INTERACTION = GameRuleType.allOf(USE_BLOCKS, USE_ITEMS, USE_ENTITIES);
 
     public static final GameRuleType BLOCK_DROPS = GameRuleType.create()
-            .enforces(BlockDropItemsEvent.EVENT, result -> (entity, world, pos, state, drops) -> {
-                if (result == ActionResult.FAIL) {
-                    return TypedActionResult.fail(new ArrayList<>());
-                } else {
-                    return new TypedActionResult<>(result, drops);
-                }
-            });
+        .enforces(BlockDropItemsEvent.EVENT, result -> (entity, world, pos, state, drops) -> {
+            return switch (result) {
+                case PASS -> DroppedItemsResult.pass(drops);
+                case ALLOW -> DroppedItemsResult.allow(drops);
+                case DENY -> DroppedItemsResult.deny();
+            };
+        });
 
     public static final GameRuleType THROW_ITEMS = GameRuleType.create()
             .enforces(ItemThrowEvent.EVENT, result -> (player, slot, stack) -> result);
@@ -98,7 +97,7 @@ public final class GameRuleType {
 
     public static final GameRuleType UNSTABLE_TNT = GameRuleType.create()
             .enforces(BlockPlaceEvent.AFTER, result -> (player, world, pos, state) -> {
-                if (result != ActionResult.FAIL && state.getBlock() == Blocks.TNT) {
+                if (result != EventResult.DENY && state.getBlock() == Blocks.TNT) {
                     TntBlock.primeTnt(player.getWorld(), pos, player);
                     player.getWorld().setBlockState(pos, Blocks.AIR.getDefaultState());
                 }
@@ -158,7 +157,7 @@ public final class GameRuleType {
         return this;
     }
 
-    public void enforce(EventRegistrar events, ActionResult result) {
+    public void enforce(EventRegistrar events, EventResult result) {
         var enforcer = this.enforcer;
         if (enforcer != null) {
             enforcer.apply(events, result);

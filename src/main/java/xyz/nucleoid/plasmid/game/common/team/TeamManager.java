@@ -14,7 +14,6 @@ import net.minecraft.scoreboard.Team;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.game.GameActivity;
@@ -24,6 +23,7 @@ import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.mixin.chat.PlayerListS2CPacketEntryAccessor;
 import xyz.nucleoid.plasmid.util.PlayerRef;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
 
 import java.util.Iterator;
@@ -330,17 +330,17 @@ public final class TeamManager implements Iterable<GameTeam> {
         }
     }
 
-    private ActionResult onDamagePlayer(ServerPlayerEntity player, DamageSource source, float amount) {
+    private EventResult onDamagePlayer(ServerPlayerEntity player, DamageSource source, float amount) {
         if (source.getAttacker() instanceof ServerPlayerEntity attacker) {
             var playerTeam = this.teamFor(player);
             var attackerTeam = this.teamFor(attacker);
 
             if (playerTeam != null && playerTeam == attackerTeam && !this.getTeamConfig(playerTeam).friendlyFire()) {
-                return ActionResult.FAIL;
+                return EventResult.DENY;
             }
         }
 
-        return ActionResult.PASS;
+        return EventResult.PASS;
     }
 
     private Text onFormatDisplayName(ServerPlayerEntity player, Text name, Text vanilla) {

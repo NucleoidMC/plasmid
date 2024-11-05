@@ -1,20 +1,20 @@
 package xyz.nucleoid.plasmid.game.rule;
 
-import net.minecraft.util.ActionResult;
 import xyz.nucleoid.stimuli.event.EventRegistrar;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 public interface GameRuleEnforcer {
     static <T> GameRuleEnforcer singleEvent(StimulusEvent<T> event, ListenerFactory<T> listenerFactory) {
         return (events, result) -> {
-            var listenerResult = result == ActionResult.FAIL ? ActionResult.FAIL : ActionResult.PASS;
+            var listenerResult = result == EventResult.DENY ? EventResult.DENY : EventResult.PASS;
             events.listen(event, listenerFactory.create(listenerResult));
         };
     }
 
-    void apply(EventRegistrar events, ActionResult result);
+    void apply(EventRegistrar events, EventResult result);
 
     interface ListenerFactory<T> {
-        T create(ActionResult result);
+        T create(EventResult result);
     }
 }

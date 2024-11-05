@@ -1,7 +1,6 @@
 package xyz.nucleoid.plasmid.game.manager;
 
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.plasmid.event.GameEvents;
 import xyz.nucleoid.plasmid.game.GameBehavior;
@@ -10,6 +9,7 @@ import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.Collections;
@@ -109,8 +109,8 @@ final class GameActivityState implements GameBehavior {
 
     @Override
     @NotNull
-    public ActionResult testRule(GameRuleType rule) {
+    public EventResult testRule(GameRuleType rule) {
         var activity = this.activity;
-        return activity != null ? activity.testRule(rule) : ActionResult.PASS;
+        return activity != null ? activity.testRule(rule) : EventResult.PASS;
     }
 }

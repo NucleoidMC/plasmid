@@ -3,10 +3,13 @@ package xyz.nucleoid.plasmid.game.portal.game;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Formatting;
+import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
+import xyz.nucleoid.plasmid.game.player.JoinIntent;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -28,9 +31,9 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
     public void applyTo(ServerPlayerEntity player) {
         for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
             if (gameSpace.getMetadata().sourceConfig().equals(this.game)) {
-                var results = GamePlayerJoiner.tryJoin(player, gameSpace);
+                var result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
 
-                if (results.globalError == null && results.playerErrors.get(player) == null) {
+                if (result.isOk()) {
                     return;
                 }
             }
@@ -40,14 +43,16 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
                 .thenCompose(Function.identity())
                 .handleAsync((gameSpace, throwable) -> {
                     this.gameFuture = null;
-                    GamePlayerJoiner.Results results;
+                    GameResult result;
                     if (gameSpace != null) {
-                        results = GamePlayerJoiner.tryJoin(player, gameSpace);
+                        result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
                     } else {
-                        results = GamePlayerJoiner.handleJoinException(throwable);
+                        result = GamePlayerJoiner.handleJoinException(throwable);
                     }
 
-                    results.sendErrorsTo(player);
+                    if (result.isError()) {
+                        player.sendMessage(result.errorCopy().formatted(Formatting.RED), false);
+                    }
 
                     return null;
                 }, player.server);

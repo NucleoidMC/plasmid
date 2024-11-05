@@ -17,10 +17,11 @@ import xyz.nucleoid.plasmid.game.*;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
-import xyz.nucleoid.plasmid.game.player.PlayerOffer;
-import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
+import xyz.nucleoid.plasmid.game.player.JoinAcceptorResult;
+import xyz.nucleoid.plasmid.game.player.LocalJoinAcceptor;
+import xyz.nucleoid.plasmid.game.player.LocalJoinOffer;
+import xyz.nucleoid.plasmid.game.player.JoinOfferResult;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -193,35 +194,22 @@ public final class ManagedGameSpace implements GameSpace {
         return this.state;
     }
 
-    GameResult screenJoins(Collection<ServerPlayerEntity> players) {
-        var result = this.attemptScreenJoins(players);
-
-        if (result.isError()) {
-            this.players.attemptGarbageCollection();
-        }
-
-        return result;
-    }
-
-    private GameResult attemptScreenJoins(Collection<ServerPlayerEntity> players) {
-        if (this.closed) {
-            return GameResult.error(GameTexts.Join.gameClosed());
-        }
-
-        return this.state.invoker(GamePlayerEvents.SCREEN_JOINS).screenJoins(players);
-    }
-
-    PlayerOfferResult offerPlayer(PlayerOffer offer) {
+    JoinOfferResult offerPlayers(LocalJoinOffer offer) {
         if (this.closed) {
             return offer.reject(GameTexts.Join.gameClosed());
-        } else if (this.manager.inGame(offer.player())) {
+        } else if (offer.serverPlayers().stream().anyMatch(this.manager::inGame)) {
             return offer.reject(GameTexts.Join.inOtherGame());
-        } else if (!Permissions.check(offer.player(), "plasmid.join_game", true)) {
+        } else if (offer.serverPlayers().stream().anyMatch(p -> !Permissions.check(p, "plasmid.join_game", true))) {
             return offer.reject(GameTexts.Join.notAllowed());
         }
 
-        return this.state.invoker(GamePlayerEvents.OFFER).onOfferPlayer(offer);
+        return this.state.invoker(GamePlayerEvents.OFFER).onOfferPlayers(offer);
     }
+
+    JoinAcceptorResult acceptPlayers(LocalJoinAcceptor acceptor) {
+        return this.state.invoker(GamePlayerEvents.ACCEPT).onAcceptPlayers(acceptor);
+    }
+
 
     void onAddPlayer(ServerPlayerEntity player) {
         this.state.propagatingInvoker(GamePlayerEvents.JOIN).onAddPlayer(player);

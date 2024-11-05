@@ -202,11 +202,10 @@ However! Before we give functionality to our brilliant example game, we need to 
 An example offer listener may look like:
 ```java
 activity.listen(GamePlayerEvents.OFFER, offer -> {
-    ServerPlayerEntity player = offer.player();
-    return offer.accept(world, new Vec3d(0.0, 64.0, 0.0))
-            .and(() -> {
-                player.changeGameMode(GameMode.ADVENTURE);
-            });
+    return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
+        .thenRunForEach(player -> {
+            player.changeGameMode(GameMode.ADVENTURE);
+        });
 });
 ```
 
@@ -271,9 +270,8 @@ public final class ExampleGame {
     }
 
     private PlayerOfferResult onPlayerOffer(PlayerOffer offer) {
-        ServerPlayerEntity player = offer.player();
-        return offer.accept(this.world, new Vec3d(0.0, 64.0, 0.0))
-                .and(() -> {
+        return offer.accept(this.world, new Vec3d(0.0, 65.0, 0.0))
+                .thenRunForEach(player -> {
                     player.changeGameMode(GameMode.ADVENTURE);
                 });
     }

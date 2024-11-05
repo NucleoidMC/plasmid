@@ -6,8 +6,7 @@ import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpacePlayers;
 import xyz.nucleoid.plasmid.game.GameTexts;
-import xyz.nucleoid.plasmid.game.player.MutablePlayerSet;
-import xyz.nucleoid.plasmid.game.player.PlayerOffer;
+import xyz.nucleoid.plasmid.game.player.*;
 import xyz.nucleoid.plasmid.game.player.isolation.IsolatingPlayerTeleporter;
 
 import java.util.Collection;
@@ -26,13 +25,23 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
     @Override
-    public GameResult screenJoins(Collection<ServerPlayerEntity> players) {
-        return this.space.screenJoins(players);
+    public GameResult simulateOffer(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+        if (players.stream().anyMatch(this.set::contains)) {
+            return GameResult.error(GameTexts.Join.alreadyJoined());
+        }
+
+        var offer = new LocalJoinOffer(players, intent);
+
+        return switch (this.space.offerPlayers(offer)) {
+            case JoinOfferResult.Accept accept -> GameResult.ok();
+            case JoinOfferResult.Reject reject -> GameResult.error(reject.reason());
+            default -> GameResult.error(GameTexts.Join.genericError());
+        };
     }
 
     @Override
-    public GameResult offer(ServerPlayerEntity player) {
-        var result = this.attemptOffer(player);
+    public GameResult offer(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+        var result = this.attemptOffer(players, intent);
 
         if (result.isError()) {
             this.attemptGarbageCollection();
@@ -41,32 +50,41 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         return result;
     }
 
-    private GameResult attemptOffer(ServerPlayerEntity player) {
-        if (this.set.contains(player)) {
+    private GameResult attemptOffer(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+        if (players.stream().anyMatch(this.set::contains)) {
             return GameResult.error(GameTexts.Join.alreadyJoined());
         }
 
-        var offer = new PlayerOffer(player);
-        var result = this.space.offerPlayer(offer);
+        var offer = new LocalJoinOffer(players, intent);
 
-        var reject = result.asReject();
-        if (reject != null) {
-            return GameResult.error(reject.reason());
-        }
+        return switch (this.space.offerPlayers(offer)) {
+            case JoinOfferResult.Accept accept -> this.accept(players, intent);
+            case JoinOfferResult.Reject reject -> GameResult.error(reject.reason());
+            default -> GameResult.error(GameTexts.Join.genericError());
+        };
+    }
 
-        var accept = result.asAccept();
-        if (accept != null) {
-            try {
-                this.teleporter.teleportIn(player, accept::applyJoin);
-                this.set.add(player);
-                this.space.onAddPlayer(player);
+    private GameResult accept(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+        var acceptor = new LocalJoinAcceptor(players, intent);
 
-                return GameResult.ok();
-            } catch (Throwable throwable) {
-                return GameResult.error(GameTexts.Join.unexpectedError());
+        switch (this.space.acceptPlayers(acceptor)) {
+            case LocalJoinAcceptor.Teleport teleport -> {
+                try {
+                    var joiningSet = new MutablePlayerSet(this.space.getServer());
+                    for (var player : players) {
+                        this.teleporter.teleportIn(player, teleport::applyTeleport);
+                        this.set.add(player);
+                        this.space.onAddPlayer(player);
+                        joiningSet.add(player);
+                    }
+                    teleport.runCallbacks(joiningSet);
+
+                    return GameResult.ok();
+                } catch (Throwable throwable) {
+                    return GameResult.error(GameTexts.Join.unexpectedError());
+                }
             }
-        } else {
-            return GameResult.error(GameTexts.Join.genericError());
+            default -> throw new IllegalStateException("Accept event must be handled");
         }
     }
 

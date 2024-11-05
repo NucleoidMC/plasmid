@@ -8,7 +8,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Unit;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
@@ -26,6 +25,7 @@ import xyz.nucleoid.plasmid.game.common.team.GameTeamKey;
 import xyz.nucleoid.plasmid.game.common.team.TeamManager;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.player.JoinOffer;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 import xyz.nucleoid.plasmid.game.stats.StatisticKey;
@@ -52,11 +52,13 @@ public final class TestGameWithResourcePack {
                 .setGameRule(GameRules.KEEP_INVENTORY, true);
 
         return context.openWithWorld(worldConfig, (activity, world) -> {
-            activity.listen(GamePlayerEvents.OFFER, offer -> {
-                var player = offer.player();
-                return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
-                        .and(() -> player.changeGameMode(GameMode.ADVENTURE));
-            });
+            activity.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
+            activity.listen(GamePlayerEvents.ACCEPT, acceptor ->
+                    acceptor.teleport(world, new Vec3d(0.0, 65.0, 0.0))
+                            .thenRunForEach(joiningPlayer -> {
+                                joiningPlayer.changeGameMode(GameMode.ADVENTURE);
+                            })
+            );
 
             GameWaitingLobby.addTo(activity, new PlayerConfig(1, 99));
 
@@ -131,11 +133,14 @@ public final class TestGameWithResourcePack {
                 return EventResult.DENY;
             });
 
-            activity.listen(GamePlayerEvents.OFFER, offer -> {
-                var player = offer.player();
-                return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
-                        .and(() -> player.changeGameMode(GameMode.ADVENTURE));
-            });
+
+            activity.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
+            activity.listen(GamePlayerEvents.ACCEPT, acceptor ->
+                    acceptor.teleport(gameSpace.getWorlds().iterator().next(), new Vec3d(0.0, 65.0, 0.0))
+                            .thenRunForEach(joiningPlayer -> {
+                                joiningPlayer.changeGameMode(GameMode.ADVENTURE);
+                            })
+            );
         });
 
         return GameResult.ok();

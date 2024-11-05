@@ -9,7 +9,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.logging.LogUtils;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.command.ServerCommandSource;
@@ -30,6 +29,7 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
+import xyz.nucleoid.plasmid.game.player.JoinIntent;
 import xyz.nucleoid.plasmid.util.Scheduler;
 
 import java.util.Comparator;
@@ -286,19 +286,18 @@ public final class GameCommand {
                 .filter(player -> !GameSpaceManager.get().inGame(player))
                 .collect(Collectors.toList());
 
-        var screen = gameSpace.getPlayers().screenJoins(players);
-        if (screen.isOk()) {
-            for (var player : players) {
-                gameSpace.getPlayers().offer(player);
-            }
-        } else {
-            source.sendError(screen.errorCopy().formatted(Formatting.RED));
+        var intent = JoinIntent.ANY;
+        var result = gameSpace.getPlayers().offer(players, intent);
+        if (result.isError()) {
+            source.sendError(result.errorCopy().formatted(Formatting.RED));
         }
     }
 
     private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
-        var results = GamePlayerJoiner.tryJoin(player, gameSpace);
-        results.sendErrorsTo(player);
+        var result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
+        if (result.isError()) {
+            player.sendMessage(result.errorCopy().formatted(Formatting.RED));
+        }
     }
 
     private static GameSpace getJoinableGameSpace() throws CommandSyntaxException {

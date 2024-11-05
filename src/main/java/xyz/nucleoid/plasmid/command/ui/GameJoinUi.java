@@ -15,6 +15,7 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.game.player.GamePlayerJoiner;
+import xyz.nucleoid.plasmid.game.player.JoinIntent;
 import xyz.nucleoid.plasmid.util.Guis;
 
 import java.util.ArrayList;
@@ -38,8 +39,10 @@ public class GameJoinUi extends SimpleGui {
 
     private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
         player.server.execute(() -> {
-            var results = GamePlayerJoiner.tryJoin(player, gameSpace);
-            results.sendErrorsTo(player);
+            var result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
+            if (result.isError()) {
+                player.sendMessage(result.errorCopy().formatted(Formatting.RED));
+            }
         });
     }
 

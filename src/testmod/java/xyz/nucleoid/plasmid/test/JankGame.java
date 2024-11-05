@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.test;
 import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
-import eu.pb4.sidebars.api.SidebarUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -21,7 +20,6 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
@@ -35,6 +33,7 @@ import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
 import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.player.JoinOffer;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
 import xyz.nucleoid.stimuli.event.EventResult;
@@ -67,11 +66,13 @@ public final class JankGame {
                 .setGameRule(GameRules.KEEP_INVENTORY, true);
 
         return context.openWithWorld(worldConfig, (activity, world) -> {
-            activity.listen(GamePlayerEvents.OFFER, offer -> {
-                var player = offer.player();
-                return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
-                        .and(() -> player.changeGameMode(GameMode.ADVENTURE));
-            });
+            activity.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
+            activity.listen(GamePlayerEvents.ACCEPT, acceptor ->
+                    acceptor.teleport(world, new Vec3d(0.0, 65.0, 0.0))
+                            .thenRunForEach(joiningPlayer -> {
+                                joiningPlayer.changeGameMode(GameMode.ADVENTURE);
+                            })
+            );
 
             GameWaitingLobby.addTo(activity, new PlayerConfig(1, 99));
 
@@ -182,10 +183,14 @@ public final class JankGame {
                 player.networkHandler.sendPacket(PlayerPositionLookS2CPacket.of(0, new PlayerPosition(Vec3d.ZERO, Vec3d.ZERO, 0, 0f), Set.of()));
             });
 
-            activity.listen(GamePlayerEvents.OFFER, offer -> {
-                return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
-                        .and(() -> offer.player().changeGameMode(GameMode.ADVENTURE));
-            });
+
+            activity.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
+            activity.listen(GamePlayerEvents.ACCEPT, acceptor ->
+                    acceptor.teleport(gameSpace.getWorlds().iterator().next(), new Vec3d(0.0, 65.0, 0.0))
+                            .thenRunForEach(joiningPlayer -> {
+                                joiningPlayer.changeGameMode(GameMode.ADVENTURE);
+                            })
+            );
         });
 
         return GameResult.ok();

@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.game.common;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -21,8 +22,8 @@ import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.player.PlayerOffer;
-import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
+import xyz.nucleoid.plasmid.game.player.JoinOffer;
+import xyz.nucleoid.plasmid.game.player.JoinOfferResult;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.util.compatibility.AfkDisplayCompatibility;
 
@@ -88,7 +89,6 @@ public final class GameWaitingLobby {
 
         activity.listen(GameActivityEvents.TICK, lobby::onTick);
         activity.listen(GameActivityEvents.REQUEST_START, lobby::requestStart);
-        activity.listen(GamePlayerEvents.SCREEN_JOINS, lobby::screenJoins);
         activity.listen(GamePlayerEvents.OFFER, lobby::offerPlayer);
         activity.listen(GamePlayerEvents.REMOVE, lobby::onRemovePlayer);
 
@@ -105,6 +105,7 @@ public final class GameWaitingLobby {
         }
 
         lobby.sidebar.setTitle(title);
+        lobby.updateSidebar();
         lobby.sidebar.show();
 
         return lobby;
@@ -135,7 +136,7 @@ public final class GameWaitingLobby {
         if (time % 20 == 0) {
             this.updateCountdown();
             this.tickCountdownBar();
-            this.tickSidebar();
+            this.updateSidebar();
             this.tickCountdownSound();
         }
 
@@ -169,17 +170,9 @@ public final class GameWaitingLobby {
         }
     }
 
-    private GameResult screenJoins(Collection<ServerPlayerEntity> players) {
-        int newPlayerCount = this.gameSpace.getPlayers().size() + players.size();
+    private JoinOfferResult offerPlayer(JoinOffer offer) {
+        int newPlayerCount = this.gameSpace.getPlayers().size() + offer.players().size();
         if (newPlayerCount > this.playerConfig.maxPlayers()) {
-            return GameResult.error(GameTexts.Join.gameFull());
-        }
-
-        return GameResult.ok();
-    }
-
-    private PlayerOfferResult offerPlayer(PlayerOffer offer) {
-        if (this.isFull()) {
             return offer.reject(GameTexts.Join.gameFull());
         }
 
@@ -252,7 +245,7 @@ public final class GameWaitingLobby {
         }
     }
 
-    private void tickSidebar() {
+    private void updateSidebar() {
         this.sidebar.set((b) -> {
             b.add(PADDING_LINE);
             if (this.countdownStart != -1) {

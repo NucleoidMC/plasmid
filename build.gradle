@@ -110,8 +110,8 @@ dependencies {
 
   modCompileOnly('xyz.nucleoid:disguiselib-fabric:1.3.2')
   modCompileOnly('maven.modrinth:afkdisplay:1.1.0')
-  modCompileOnly('eu.pb4:polymer-autohost:0.10.1+1.21.3')
-  modCompileOnly("dev.emi:trinkets:3.7.1")
+  modCompileOnly("eu.pb4:polymer-autohost:${project.polymer_version}")
+  modCompileOnly("dev.emi:trinkets:3.10.0")
 
   testmodImplementation sourceSets.main.output
   testmodImplementation sourceSets.client.output

@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.test;
 import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
+import eu.pb4.sidebars.api.SidebarUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
@@ -21,6 +22,9 @@ import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.PlayerInput;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
@@ -44,15 +48,13 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public final class JankGame {
-    private static ChestBoatEntity FAKE_BOAT = new ChestBoatEntity(EntityType.OAK_CHEST_BOAT, PolymerCommonUtils.getFakeWorld(), () -> Items.OAK_CHEST_BOAT);
     private static ArmorStandEntity CAMERA = new ArmorStandEntity(PolymerCommonUtils.getFakeWorld(), 0, 80, 0);
     private volatile static float currentYaw;
     private volatile static float currentPitch;
     private volatile static float currentX;
     private volatile static float currentXOld;
     private volatile static double currentY;
-    private volatile static boolean shift;
-    private volatile static boolean space;
+    private volatile static PlayerInput input = PlayerInput.DEFAULT;
 
     private static double mouseX = 0;
     private static double mouseY = 0;
@@ -105,17 +107,24 @@ public final class JankGame {
             sidebar.setUpdateRate(99999999);
 
             Consumer<ServerPlayerEntity> updateSidebar = (player) -> {
+                    var text = Text.empty();
+                    text.append(Text.literal("^").formatted(input.forward() ? Formatting.GREEN : Formatting.DARK_GRAY));
+                    text.append(Text.literal("v").formatted(input.backward() ? Formatting.GREEN : Formatting.DARK_GRAY));
+                    text.append(Text.literal("<").formatted(input.left() ? Formatting.GREEN : Formatting.DARK_GRAY));
+                    text.append(Text.literal(">").formatted(input.right() ? Formatting.GREEN : Formatting.DARK_GRAY));
+                    text.append(Text.literal("-").formatted(input.jump() ? Formatting.GREEN : Formatting.DARK_GRAY));
+                    text.append(Text.literal("_").formatted(input.sneak() ? Formatting.GREEN : Formatting.DARK_GRAY));
+                    text.append(Text.literal("$").formatted(input.sprint() ? Formatting.GREEN : Formatting.DARK_GRAY));
+
                     sidebar.set(b -> {
-                        b.add(Text.literal("     "));
                         b.add(Text.literal("YAW: " + currentYaw));
                         b.add(Text.literal("PITCH: " + currentPitch));
-                        b.add(Text.literal("X: " + currentX));
-                        b.add(Text.literal("Y: " + currentY));
-                        b.add(Text.literal("Space: " + space));
-                        b.add(Text.literal("Shift: " + shift));
+                        b.add(Text.literal("Mouse-X: " + currentX));
+                        b.add(Text.literal("Mouse-Y: " + currentY));
+                        b.add(text);
                     });
 
-                //SidebarUtils.updateTexts(player.networkHandler, sidebar);
+                SidebarUtils.updateTexts(player.networkHandler, sidebar);
             };
 
             var world = gameSpace.getWorlds().iterator().next();
@@ -128,11 +137,9 @@ public final class JankGame {
             world.spawnEntity(mover);
 
             activity.listen(GamePlayerEvents.ADD, player -> {
-                player.networkHandler.sendPacket(FAKE_BOAT.createSpawnPacket(new EntityTrackerEntry(world, FAKE_BOAT, 1, false, player.networkHandler::sendPacket)));
                 player.networkHandler.sendPacket(CAMERA.createSpawnPacket(new EntityTrackerEntry(world, CAMERA, 1, false, player.networkHandler::sendPacket)));
-                player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(FAKE_BOAT.getId(), FAKE_BOAT.getDataTracker().getChangedEntries()));
                 player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(CAMERA.getId(), CAMERA.getDataTracker().getChangedEntries()));
-                player.networkHandler.sendPacket(VirtualEntityUtils.createRidePacket(FAKE_BOAT.getId(), IntList.of(player.getId())));
+                player.networkHandler.sendPacket(VirtualEntityUtils.createRidePacket(CAMERA.getId(), IntList.of(player.getId())));
                 player.networkHandler.sendPacket(new SetCameraEntityS2CPacket(CAMERA));
             });
             
@@ -145,14 +152,9 @@ public final class JankGame {
 
                     updateSidebar.accept(player);
                     return EventResult.DENY;
-                } else if (packet instanceof VehicleMoveC2SPacket vehicleMoveC2SPacket) {
-                    currentX = vehicleMoveC2SPacket.getYaw();
-                    currentY = vehicleMoveC2SPacket.getZ();
-                    updateSidebar.accept(player);
-                    return EventResult.DENY;
                 } else if (packet instanceof PlayerInputC2SPacket playerInputC2SPacket) {
-                    space = playerInputC2SPacket.input().jump();
-                    shift = playerInputC2SPacket.input().sneak();
+                    input = playerInputC2SPacket.input();
+                    updateSidebar.accept(player);
                     return EventResult.DENY;
                 }
                 
@@ -162,24 +164,19 @@ public final class JankGame {
             var player = gameSpace.getPlayers().iterator().next();
 
             activity.listen(GameActivityEvents.TICK, () -> {
-                boolean isMoving = Math.abs(currentX) > 9 || (Math.abs(currentX) - Math.abs(currentXOld) > 0 && Math.abs(currentX) > 0.1);
-                currentXOld = currentX;
-
-                mover.move(MovementType.PLAYER, new Vec3d(isMoving ? -Math.signum(currentX) : 0, space ? 1 : shift ? -1 : 0, currentY > 0.02 ? 1 : currentY < -0.003 ? -1 : 0).multiply(0.1));
+                mover.move(MovementType.PLAYER, new Vec3d(input.right() ? -1 : input.left() ? 1 : 0,
+                        input.jump() ? 3 : input.sneak() ? -1 : 0,
+                        input.forward() ? 1 : input.backward() ? -1 : 0).multiply(input.sprint() ? 0.4 : 0.2));
                 mover.setYaw(currentYaw);
 
 
-                JankGame.mouseX += Math.abs(currentYaw) > 0.1 ? -currentYaw * 0.1 : 0;
-                JankGame.mouseY += Math.abs(currentPitch) > 0.1 ? -currentPitch * 0.1 : 0;
+                JankGame.mouseX = MathHelper.clamp(-currentYaw / 90 * 2, -8, 8) + mover.getX();
+                JankGame.mouseY = MathHelper.clamp(-currentPitch / 90 * 2, -8, 8) + mover.getZ();
 
-                player.networkHandler.sendPacket(new ParticleS2CPacket(ParticleTypes.FLAME, true, JankGame.mouseX, 65, JankGame.mouseY, 0, 0, 0, 0, 0));
+                player.networkHandler.sendPacket(new ParticleS2CPacket(ParticleTypes.FLAME, true, JankGame.mouseX, mover.getY(), JankGame.mouseY, 0, 0, 0, 0, 0));
 
-                player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(FAKE_BOAT.getId(), FAKE_BOAT.getDataTracker().getChangedEntries()));
-                player.networkHandler.sendPacket(new VehicleMoveS2CPacket(FAKE_BOAT));
-                CAMERA.setPos(mover.getX(), 70, mover.getZ());
+                CAMERA.setPos(mover.getX(), mover.getY() + 10, mover.getZ());
                 player.networkHandler.sendPacket(EntityPositionSyncS2CPacket.create(CAMERA));
-                player.networkHandler.sendPacket(EntityPositionSyncS2CPacket.create(FAKE_BOAT));
-                player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(FAKE_BOAT));
                 player.networkHandler.sendPacket(PlayerPositionLookS2CPacket.of(0, new PlayerPosition(Vec3d.ZERO, Vec3d.ZERO, 0, 0f), Set.of()));
             });
 
@@ -207,8 +204,6 @@ public final class JankGame {
     }
 
     static {
-        FAKE_BOAT.setNoGravity(true);
-        FAKE_BOAT.setInvisible(true);
         CAMERA.setNoGravity(true);
         CAMERA.setMarker(true);
         CAMERA.setInvisible(true);

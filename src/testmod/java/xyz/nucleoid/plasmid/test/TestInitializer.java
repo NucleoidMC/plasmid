@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import eu.pb4.polymer.blocks.api.BlockModelType;
 import eu.pb4.polymer.blocks.api.BlockResourceCreator;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
+import eu.pb4.polymer.core.api.item.PolymerBlockItem;
 import eu.pb4.polymer.resourcepack.api.ResourcePackCreator;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.block.AbstractBlock;
@@ -38,11 +39,9 @@ public class TestInitializer implements ModInitializer {
 
     private static final RegistryKey<Item> TEST_ITEM_KEY = RegistryKey.of(RegistryKeys.ITEM, id("test_item"));
 
-    public static final Item TEST_ITEM = new BlockItem(
+    public static final Item TEST_ITEM = new PolymerBlockItem(
             TEST_BLOCK,
-            new Item.Settings()
-                    .component(DataComponentTypes.ITEM_MODEL, id("chair"))
-                    .registryKey(TEST_ITEM_KEY)
+            new Item.Settings().registryKey(TEST_ITEM_KEY)
     );
 
     public static Optional<GameResourcePack> resourcePack;

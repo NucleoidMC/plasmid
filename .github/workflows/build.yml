@@ -62,7 +62,7 @@ jobs:
           MINOR_VERSION: ${{ steps.minor_version.outputs.version_build_number }}
           BUILD_NUMBER: ${{ steps.build_number.outputs.version_build_number }}
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: artifacts
           path: build/libs

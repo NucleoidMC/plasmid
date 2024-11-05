@@ -64,7 +64,7 @@ jobs:
           workflow_name: 'minor_version'
           version_key: ${{ steps.read_version.outputs.value }}
           gist_token: ${{ secrets.GIST_TOKEN }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: artifacts
           path: build/libs

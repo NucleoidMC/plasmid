@@ -41,7 +41,7 @@ public interface MenuEntry {
     }
 
     default GuiElement createGuiElement() {
-        var element = GuiElementBuilder.from(this.icon().copy()).hideFlags()
+        var element = GuiElementBuilder.from(this.icon().copy()).hideDefaultTooltip()
                 .setName(Text.empty().append(this.name()));
 
         for (var line : this.description()) {

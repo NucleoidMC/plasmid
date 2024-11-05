@@ -12,7 +12,7 @@ public final class InventoryUtil {
 
     public static void clear(ServerPlayerEntity player) {
         player.getInventory().clear();
-        player.playerScreenHandler.clearCraftingSlots();
+        player.playerScreenHandler.getCraftingInput().clear();
         player.playerScreenHandler.setCursorStack(ItemStack.EMPTY);
         player.currentScreenHandler.setCursorStack(ItemStack.EMPTY);
         for (var handler : CUSTOM_INVENTORY_HANDLERS) {

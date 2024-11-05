@@ -1,8 +1,8 @@
 package xyz.nucleoid.plasmid.game;
 
-import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.Collections;
@@ -40,8 +40,8 @@ public interface GameBehavior {
 
         @Override
         @NotNull
-        public ActionResult testRule(GameRuleType rule) {
-            return ActionResult.PASS;
+        public EventResult testRule(GameRuleType rule) {
+            return EventResult.DENY;
         }
     };
 
@@ -57,13 +57,13 @@ public interface GameBehavior {
     /**
      * Tests whether the given {@link GameRuleType} passes in this {@link GameBehavior}.
      *
-     * <p>As an example, calling this method with {@link GameRuleType#BLOCK_DROPS} will return a {@link ActionResult} that describes whether blocks can drop.
+     * <p>As an example, calling this method with {@link GameRuleType#BLOCK_DROPS} will return a {@link EventResult} that describes whether blocks can drop.
      *
      * @param rule the {@link GameRuleType} to test in this {@link GameBehavior}
-     * @return a {@link ActionResult} that describes whether the {@link GameRuleType} passes
+     * @return a {@link EventResult} that describes whether the {@link GameRuleType} passes
      *
-     * @see ActionResult
+     * @see EventResult
      */
     @NotNull
-    ActionResult testRule(GameRuleType rule);
+    EventResult testRule(GameRuleType rule);
 }

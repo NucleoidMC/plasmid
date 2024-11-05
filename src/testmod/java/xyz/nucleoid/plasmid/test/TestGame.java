@@ -10,7 +10,6 @@ import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -33,6 +32,7 @@ import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 import xyz.nucleoid.plasmid.game.stats.StatisticKey;
 import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
 import xyz.nucleoid.plasmid.util.WoodType;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 import java.lang.reflect.Method;
@@ -41,7 +41,7 @@ import java.util.List;
 
 public final class TestGame {
     private static final List<Method> WOOD_TYPE_BLOCK_FIELDS = Arrays.stream(WoodType.class.getMethods()).filter(x -> x.getReturnType() == Block.class).toList();
-    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(new Identifier(Plasmid.ID, "test"));
+    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(Identifier.of(Plasmid.ID, "test"));
 
     private static final GameTeam TEAM = new GameTeam(
             new GameTeamKey("players"),
@@ -74,8 +74,8 @@ public final class TestGame {
             activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(0.0, 65.0, 0.0);
-                return ActionResult.FAIL;
+                player.setPos(0.0, 65.0, 0.0);
+                return EventResult.DENY;
             });
 
             activity.listen(GameActivityEvents.REQUEST_START, () -> startGame(activity.getGameSpace()));
@@ -83,7 +83,7 @@ public final class TestGame {
         });
     }
 
-    private static final GameAttachment<Item> TEST = GameAttachment.create(new Identifier("plasmid", "test"));
+    private static final GameAttachment<Item> TEST = GameAttachment.create(Identifier.of("plasmid", "test"));
 
     private static GameResult startGame(GameSpace gameSpace) {
         gameSpace.setAttachment(TEST, Items.POTATO);
@@ -129,13 +129,15 @@ public final class TestGame {
             });
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(0.0, 65.0, 0.0);
-                return ActionResult.FAIL;
+                player.setPos(0.0, 65.0, 0.0);
+                return EventResult.DENY;
             });
 
-            /*activity.listen(GamePlayerEvents.OFFER, offer -> {
+            /*var world = gameSpace.getWorlds().iterator().next();
+
+            activity.listen(GamePlayerEvents.OFFER, offer -> {
                 var player = offer.player();
-                return offer.accept(gameSpace.getWorlds().iterator().next(), new Vec3d(0.0, 65.0, 0.0))
+                return offer.accept(world, new Vec3d(0.0, 65.0, 0.0))
                         .and(() -> player.changeGameMode(GameMode.ADVENTURE));
             });*/
         });

@@ -8,12 +8,13 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.GameActivity;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
@@ -86,13 +87,13 @@ public final class TeamSelectionLobby {
             var stack = new ItemStack(ColoredBlocks.wool(config.blockDyeColor()));
             stack.set(DataComponentTypes.ITEM_NAME, name);
 
-            stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT.with(Codec.STRING.fieldOf(TEAM_KEY), team.key().id()).getOrThrow());
+            stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT.with(NbtOps.INSTANCE, Codec.STRING.fieldOf(TEAM_KEY), team.key().id()).getOrThrow());
 
             player.getInventory().setStack(index++, stack);
         }
     }
 
-    private TypedActionResult<ItemStack> onUseItem(ServerPlayerEntity player, Hand hand) {
+    private ActionResult onUseItem(ServerPlayerEntity player, Hand hand) {
         var stack = player.getStackInHand(hand);
 
         if (stack.isIn(ItemTags.WOOL)) {
@@ -110,11 +111,11 @@ public final class TeamSelectionLobby {
 
                 player.sendMessage(message, false);
 
-                return TypedActionResult.success(stack);
+                return ActionResult.SUCCESS;
             }
         }
 
-        return TypedActionResult.pass(ItemStack.EMPTY);
+        return ActionResult.PASS;
     }
 
     /**

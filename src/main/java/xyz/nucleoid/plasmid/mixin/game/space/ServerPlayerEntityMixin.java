@@ -6,11 +6,11 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 
@@ -20,16 +20,9 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         super(world, pos, yaw, profile);
     }
 
-    @Inject(method = "teleport(Lnet/minecraft/server/world/ServerWorld;DDDFF)V", at = @At("HEAD"), cancellable = true)
-    private void onTeleport(ServerWorld targetWorld, double x, double y, double z, float yaw, float pitch, CallbackInfo ci) {
-        if (this.getWorld() != targetWorld && !this.tryTeleportTo(targetWorld)) {
-            ci.cancel();
-        }
-    }
-
-    @Inject(method = "moveToWorld", at = @At("HEAD"), cancellable = true)
-    private void onMoveWorld(ServerWorld targetWorld, CallbackInfoReturnable<Entity> ci) {
-        if (this.getWorld() != targetWorld && !this.tryTeleportTo(targetWorld)) {
+    @Inject(method = "teleportTo", at = @At("HEAD"), cancellable = true)
+    private void onTeleport(TeleportTarget target, CallbackInfoReturnable<Entity> ci) {
+        if (this.getWorld() != target.world() && !this.tryTeleportTo(target.world())) {
             ci.setReturnValue(this);
         }
     }

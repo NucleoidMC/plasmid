@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.advancement.PlayerAdvancementTracker;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
@@ -15,10 +16,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.stat.ServerStatHandler;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.PlayerSaveHandler;
+import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.dimension.DimensionType;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -35,7 +35,6 @@ import xyz.nucleoid.plasmid.game.player.isolation.PlayerManagerAccess;
 import xyz.nucleoid.plasmid.game.player.isolation.PlayerResetter;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Mixin(PlayerManager.class)
@@ -45,7 +44,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     private MinecraftServer server;
     @Shadow
     @Final
-    private WorldSaveHandler saveHandler;
+    private PlayerSaveHandler saveHandler;
     @Shadow
     @Final
     private Map<UUID, ServerStatHandler> statisticsMap;
@@ -81,9 +80,8 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             locals = LocalCapture.CAPTURE_FAILHARD
     )
     private void respawnPlayer(
-            ServerPlayerEntity oldPlayer, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> ci,
-            BlockPos spawnPos, float spawnAngle, boolean spawnSet, ServerWorld spawnWorld, Optional<Vec3d> respawnPoint,
-            ServerWorld respawnWorld, ServerPlayerEntity respawnedPlayer
+            ServerPlayerEntity oldPlayer, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayerEntity> ci,
+            TeleportTarget respawnTarget, ServerWorld respawnWorld, ServerPlayerEntity respawnedPlayer
     ) {
         var gameSpace = GameSpaceManager.get().byPlayer(oldPlayer);
 
@@ -142,9 +140,9 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
 
     @WrapWithCondition(
             method = "savePlayerData",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldSaveHandler;savePlayerData(Lnet/minecraft/entity/player/PlayerEntity;)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/PlayerSaveHandler;savePlayerData(Lnet/minecraft/entity/player/PlayerEntity;)V")
     )
-    private boolean savePlayerData(WorldSaveHandler handler, PlayerEntity player) {
+    private boolean savePlayerData(PlayerSaveHandler handler, PlayerEntity player) {
         return !GameSpaceManager.get().inGame(player);
     }
 

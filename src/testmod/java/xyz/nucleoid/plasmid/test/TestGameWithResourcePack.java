@@ -7,7 +7,6 @@ import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
@@ -31,10 +30,11 @@ import xyz.nucleoid.plasmid.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 import xyz.nucleoid.plasmid.game.stats.StatisticKey;
 import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 public final class TestGameWithResourcePack {
-    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(new Identifier(Plasmid.ID, "test_rp"));
+    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(Identifier.of(Plasmid.ID, "test_rp"));
 
     private static final GameTeam TEAM = new GameTeam(
             new GameTeamKey("players"),
@@ -67,8 +67,8 @@ public final class TestGameWithResourcePack {
             activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(0.0, 65.0, 0.0);
-                return ActionResult.FAIL;
+                player.setPos(0.0, 65.0, 0.0);
+                return EventResult.DENY;
             });
 
             activity.listen(GameActivityEvents.REQUEST_START, () -> startGame(activity.getGameSpace(), 0));
@@ -126,10 +126,13 @@ public final class TestGameWithResourcePack {
                 }
             });
 
+            var world = gameSpace.getWorlds().iterator().next();
+
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
-                player.teleport(0.0, 65.0, 0.0);
-                return ActionResult.FAIL;
+                player.setPos(0.0, 65.0, 0.0);
+                return EventResult.DENY;
             });
+
 
             activity.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
             activity.listen(GamePlayerEvents.ACCEPT, acceptor ->

@@ -102,7 +102,7 @@ public final class GamePortalManager {
     private static Identifier identifierFromPath(Identifier location) {
         var path = location.getPath();
         path = path.substring(PATH.length() + 1, path.length() - ".json".length());
-        return new Identifier(location.getNamespace(), path);
+        return Identifier.of(location.getNamespace(), path);
     }
 
     public void tick() {

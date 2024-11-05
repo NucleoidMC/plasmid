@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.game;
 
-import net.minecraft.util.ActionResult;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 public interface GameActivity extends GameBehavior {
@@ -19,32 +19,32 @@ public interface GameActivity extends GameBehavior {
      * @see GameActivity#allow(GameRuleType)
      * @see GameActivity#deny(GameRuleType)
      */
-    GameActivity setRule(GameRuleType rule, ActionResult result);
+    GameActivity setRule(GameRuleType rule, EventResult result);
 
     /**
-     * Sets a rule on this {@link GameActivity} to {@link ActionResult#SUCCESS} which will be enforced while this
+     * Sets a rule on this {@link GameActivity} to {@link EventResult#ALLOW} which will be enforced while this
      * activity is enabled.
      *
      * @param rule the rule type to set
      * @return this {@link GameActivity}
-     * @see ActionResult#SUCCESS
-     * @see GameActivity#setRule(GameRuleType, ActionResult)
+     * @see EventResult#ALLOW
+     * @see GameActivity#setRule(GameRuleType, EventResult)
      */
     default GameActivity allow(GameRuleType rule) {
-        return this.setRule(rule, ActionResult.SUCCESS);
+        return this.setRule(rule, EventResult.ALLOW);
     }
 
     /**
-     * Sets a rule on this {@link GameActivity} to {@link ActionResult#FAIL} which will be enforced while this
+     * Sets a rule on this {@link GameActivity} to {@link EventResult#DENY} which will be enforced while this
      * activity is enabled.
      *
      * @param rule the rule type to set
      * @return this {@link GameActivity}
-     * @see ActionResult#FAIL
-     * @see GameActivity#setRule(GameRuleType, ActionResult)
+     * @see EventResult#DENY
+     * @see GameActivity#setRule(GameRuleType, EventResult)
      */
     default GameActivity deny(GameRuleType rule) {
-        return this.setRule(rule, ActionResult.FAIL);
+        return this.setRule(rule, EventResult.DENY);
     }
 
     /**

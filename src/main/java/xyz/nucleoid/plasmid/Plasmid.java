@@ -9,8 +9,6 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
@@ -35,7 +33,6 @@ import xyz.nucleoid.plasmid.game.portal.game.LegacyOnDemandPortalConfig;
 import xyz.nucleoid.plasmid.game.portal.game.NewGamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.game.SingleGamePortalConfig;
 import xyz.nucleoid.plasmid.game.portal.menu.*;
-import xyz.nucleoid.plasmid.game.world.generator.GameChunkGenerator;
 import xyz.nucleoid.plasmid.util.compatibility.TrinketsCompatibility;
 
 public final class Plasmid implements ModInitializer {
@@ -47,20 +44,18 @@ public final class Plasmid implements ModInitializer {
     public void onInitialize() {
         DynamicRegistries.register(GameConfigs.REGISTRY_KEY, GameConfig.DIRECT_CODEC);
 
-        Registry.register(Registries.CHUNK_GENERATOR, new Identifier(ID, "game"), GameChunkGenerator.CODEC);
+        GamePortalConfig.register(Identifier.of(ID, "single_game"), SingleGamePortalConfig.CODEC);
+        GamePortalConfig.register(Identifier.of(ID, "new_game"), NewGamePortalConfig.CODEC);
+        GamePortalConfig.register(Identifier.of(ID, "concurrent_game"), ConcurrentGamePortalConfig.CODEC);
+        GamePortalConfig.register(Identifier.of(ID, "on_demand"), LegacyOnDemandPortalConfig.CODEC); // old one
 
-        GamePortalConfig.register(new Identifier(ID, "single_game"), SingleGamePortalConfig.CODEC);
-        GamePortalConfig.register(new Identifier(ID, "new_game"), NewGamePortalConfig.CODEC);
-        GamePortalConfig.register(new Identifier(ID, "concurrent_game"), ConcurrentGamePortalConfig.CODEC);
-        GamePortalConfig.register(new Identifier(ID, "on_demand"), LegacyOnDemandPortalConfig.CODEC); // old one
+        GamePortalConfig.register(Identifier.of(ID, "menu"), MenuPortalConfig.CODEC);
+        GamePortalConfig.register(Identifier.of(ID, "advanced_menu"), AdvancedMenuPortalConfig.CODEC);
 
-        GamePortalConfig.register(new Identifier(ID, "menu"), MenuPortalConfig.CODEC);
-        GamePortalConfig.register(new Identifier(ID, "advanced_menu"), AdvancedMenuPortalConfig.CODEC);
+        MenuEntryConfig.register(Identifier.of(ID, "game"), GameMenuEntryConfig.CODEC);
+        MenuEntryConfig.register(Identifier.of(ID, "portal"), PortalEntryConfig.CODEC);
 
-        MenuEntryConfig.register(new Identifier(ID, "game"), GameMenuEntryConfig.CODEC);
-        MenuEntryConfig.register(new Identifier(ID, "portal"), PortalEntryConfig.CODEC);
-
-        GameType.register(new Identifier(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
+        GameType.register(Identifier.of(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
 
         this.registerCallbacks();
 

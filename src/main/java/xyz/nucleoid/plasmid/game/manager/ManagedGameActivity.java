@@ -1,7 +1,6 @@
 package xyz.nucleoid.plasmid.game.manager;
 
 import com.google.common.collect.Iterables;
-import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.GameActivity;
@@ -11,6 +10,7 @@ import xyz.nucleoid.plasmid.game.event.GameEventExceptionHandler;
 import xyz.nucleoid.plasmid.game.event.GameEventListeners;
 import xyz.nucleoid.plasmid.game.rule.GameRuleMap;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.Collections;
@@ -47,7 +47,7 @@ public final class ManagedGameActivity implements GameActivity {
     }
 
     @Override
-    public ManagedGameActivity setRule(GameRuleType rule, ActionResult result) {
+    public ManagedGameActivity setRule(GameRuleType rule, EventResult result) {
         this.rules.set(rule, result);
         return this;
     }
@@ -95,7 +95,7 @@ public final class ManagedGameActivity implements GameActivity {
 
     @Override
     @NotNull
-    public ActionResult testRule(GameRuleType rule) {
+    public EventResult testRule(GameRuleType rule) {
         return this.rules.test(rule);
     }
 

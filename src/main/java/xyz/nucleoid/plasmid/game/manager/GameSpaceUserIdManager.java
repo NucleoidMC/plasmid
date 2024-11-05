@@ -48,7 +48,7 @@ final class GameSpaceUserIdManager {
 
     private Identifier generateRandomId(Identifier typeId) {
         var random = RandomStringUtils.randomAlphabetic(4).toLowerCase(Locale.ROOT);
-        return new Identifier(typeId.getNamespace(), typeId.getPath() + "/" + random);
+        return Identifier.of(typeId.getNamespace(), typeId.getPath() + "/" + random);
     }
 
     private Identifier getIdForType(GameType<?> type) {

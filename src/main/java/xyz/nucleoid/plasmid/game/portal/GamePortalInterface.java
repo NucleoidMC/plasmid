@@ -30,7 +30,7 @@ public interface GamePortalInterface {
     @Nullable
     default Identifier deserializePortalId(NbtCompound root) {
         if (root.contains(NBT_KEY, NbtElement.STRING_TYPE)) {
-            return new Identifier(root.getString(NBT_KEY));
+            return Identifier.of(root.getString(NBT_KEY));
         }
         return null;
     }

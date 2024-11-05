@@ -103,7 +103,8 @@ public final class IsolatingPlayerTeleporter {
             world.getDimensionEntry(), world.getRegistryKey(),
             BiomeAccess.hashSeed(world.getSeed()),
             player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(),
-            world.isDebugWorld(), world.isFlat(), player.getLastDeathPos(), player.getPortalCooldown()
+            world.isDebugWorld(), world.isFlat(), player.getLastDeathPos(), player.getPortalCooldown(),
+            world.getSeaLevel()
         );
 
         var networkHandler = player.networkHandler;
@@ -113,8 +114,9 @@ public final class IsolatingPlayerTeleporter {
 
         BlockMapper.resetMapper(player);
 
-        world.onPlayerTeleport(player);
         networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
+        networkHandler.syncWithPlayerPosition();
+        world.onDimensionChanged(player);
         networkHandler.sendPacket(new DifficultyS2CPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
         networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(player.getInventory().selectedSlot));
         player.sendAbilitiesUpdate();
@@ -125,12 +127,9 @@ public final class IsolatingPlayerTeleporter {
 
         playerManager.sendWorldInfo(player, world);
         playerManager.sendPlayerStatus(player);
+        playerManager.sendStatusEffects(player);
 
         // we just sent the full inventory, so we can consider the ScreenHandler as up-to-date
         ((ScreenHandlerAccess) player.playerScreenHandler).plasmid$resetTrackedState();
-
-        for (var effect : player.getStatusEffects()) {
-            networkHandler.sendPacket(new EntityStatusEffectS2CPacket(player.getId(), effect, true));
-        }
     }
 }

@@ -4,6 +4,7 @@ import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.SetCursorItemS2CPacket;
 import net.minecraft.registry.Registries;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.server.MinecraftServer;
@@ -13,7 +14,6 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
+import xyz.nucleoid.stimuli.event.EventResult;
 
 @Mixin(ServerPlayNetworkHandler.class)
 public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkHandler {
@@ -49,14 +50,14 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
             var screenHandler = this.player.currentScreenHandler;
 
             boolean isArmor = (packet.getSlot() >= 5 && packet.getSlot() <= 8) && screenHandler instanceof PlayerScreenHandler;
-            boolean denyModifyInventory = gameSpace.getBehavior().testRule(GameRuleType.MODIFY_INVENTORY) == ActionResult.FAIL;
+            boolean denyModifyInventory = gameSpace.getBehavior().testRule(GameRuleType.MODIFY_INVENTORY) == EventResult.DENY;
             var modifyArmor = gameSpace.getBehavior().testRule(GameRuleType.MODIFY_ARMOR);
-            if ((denyModifyInventory && (!isArmor || modifyArmor != ActionResult.SUCCESS))
-                    || (isArmor && modifyArmor == ActionResult.FAIL)) {
+            if ((denyModifyInventory && (!isArmor || modifyArmor != EventResult.ALLOW))
+                    || (isArmor && modifyArmor == EventResult.DENY)) {
                 var stack = screenHandler.getSlot(packet.getSlot()).getStack();
 
                 this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(packet.getSyncId(), screenHandler.nextRevision(), packet.getSlot(), stack));
-                this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(ScreenHandlerSlotUpdateS2CPacket.UPDATE_CURSOR_SYNC_ID, screenHandler.nextRevision(), -1, screenHandler.getCursorStack()));
+                this.sendPacket(new SetCursorItemS2CPacket(screenHandler.getCursorStack()));
 
                 ci.cancel();
             }

@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.game.common;
 
 import com.mojang.authlib.GameProfile;
+import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -16,6 +17,7 @@ import xyz.nucleoid.plasmid.game.GameResult;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
+import xyz.nucleoid.plasmid.game.common.ui.WaitingLobbyUi;
 import xyz.nucleoid.plasmid.game.common.widget.BossBarWidget;
 import xyz.nucleoid.plasmid.game.common.widget.SidebarWidget;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
@@ -90,6 +92,7 @@ public final class GameWaitingLobby {
         activity.listen(GameActivityEvents.TICK, lobby::onTick);
         activity.listen(GameActivityEvents.REQUEST_START, lobby::requestStart);
         activity.listen(GamePlayerEvents.OFFER, lobby::offerPlayer);
+        activity.listen(GamePlayerEvents.ADD, lobby::onAddPlayer);
         activity.listen(GamePlayerEvents.REMOVE, lobby::onRemovePlayer);
 
 
@@ -150,6 +153,11 @@ public final class GameWaitingLobby {
                 this.started = false;
                 this.startRequested = false;
                 this.countdownStart = -1;
+            } else {
+                for (var player : this.gameSpace.getPlayers()) {
+                    player.closeHandledScreen();
+                    PolymerUtils.reloadInventory(player);
+                }
             }
         }
     }
@@ -178,6 +186,11 @@ public final class GameWaitingLobby {
 
         this.updateCountdown();
         return offer.pass();
+    }
+
+    private void onAddPlayer(ServerPlayerEntity player) {
+        var ui = new WaitingLobbyUi(player, this.gameSpace);
+        ui.open();
     }
 
     private void onRemovePlayer(ServerPlayerEntity player) {

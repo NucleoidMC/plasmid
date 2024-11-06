@@ -30,7 +30,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.player.isolation.PlayerManagerAccess;
 import xyz.nucleoid.plasmid.impl.player.isolation.PlayerResetter;
 

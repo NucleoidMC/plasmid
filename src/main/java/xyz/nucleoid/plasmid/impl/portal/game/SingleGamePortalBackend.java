@@ -9,8 +9,7 @@ import xyz.nucleoid.plasmid.api.game.GameLifecycle;
 import xyz.nucleoid.plasmid.api.game.GameResult;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
-import xyz.nucleoid.plasmid.impl.manager.ManagedGameSpace;
+import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
 

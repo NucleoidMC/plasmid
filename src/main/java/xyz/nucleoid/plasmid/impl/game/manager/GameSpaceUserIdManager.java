@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.impl.manager;
+package xyz.nucleoid.plasmid.impl.game.manager;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

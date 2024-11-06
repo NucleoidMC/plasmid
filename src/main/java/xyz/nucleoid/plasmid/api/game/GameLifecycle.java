@@ -2,7 +2,7 @@ package xyz.nucleoid.plasmid.api.game;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.impl.manager.ManagedGameActivity;
+import xyz.nucleoid.plasmid.impl.game.manager.ManagedGameActivity;
 
 import java.util.ArrayList;
 import java.util.List;

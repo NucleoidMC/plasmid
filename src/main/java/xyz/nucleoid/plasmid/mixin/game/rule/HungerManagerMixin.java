@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.EventResult;
 

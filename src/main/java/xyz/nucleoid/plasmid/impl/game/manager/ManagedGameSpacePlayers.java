@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.impl.manager;
+package xyz.nucleoid.plasmid.impl.game.manager;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;

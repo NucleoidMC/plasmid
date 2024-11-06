@@ -7,8 +7,8 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
-import xyz.nucleoid.plasmid.impl.manager.ManagedGameSpace;
+import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.game.manager.ManagedGameSpace;
 
 import java.util.Collection;
 import java.util.UUID;

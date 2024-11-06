@@ -24,7 +24,7 @@ import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameResult;
 import xyz.nucleoid.plasmid.api.game.GameTexts;
 import xyz.nucleoid.plasmid.api.game.common.widget.SidebarWidget;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.compatibility.AfkDisplayCompatibility;
 
 import java.util.ArrayList;

@@ -11,7 +11,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 
 public final class GameSpaceArgument {
     private static final SimpleCommandExceptionType GAME_NOT_FOUND = new SimpleCommandExceptionType(Text.translatable("text.plasmid.game.not_found"));

@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.impl.manager;
+package xyz.nucleoid.plasmid.impl.game.manager;
 
 import com.google.common.collect.Iterables;
 import org.jetbrains.annotations.NotNull;

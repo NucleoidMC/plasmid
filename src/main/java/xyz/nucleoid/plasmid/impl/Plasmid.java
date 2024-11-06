@@ -23,7 +23,7 @@ import xyz.nucleoid.plasmid.impl.game.composite.RandomGameConfig;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.api.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalManager;

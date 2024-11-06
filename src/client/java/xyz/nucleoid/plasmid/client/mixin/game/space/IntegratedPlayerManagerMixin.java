@@ -5,7 +5,7 @@ import net.minecraft.server.integrated.IntegratedPlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 
 @Mixin(IntegratedPlayerManager.class)
 public abstract class IntegratedPlayerManagerMixin {

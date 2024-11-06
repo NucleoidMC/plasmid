@@ -126,6 +126,7 @@
   "text.plasmid.team_selection.request_team": "Request %s Team",
   "text.plasmid.team_selection.requested_team": "You have requested to join the %s",
   "text.plasmid.team_selection.suffixed_team": "%s Team",
+  "text.plasmid.team_selection.teams": "Teams",
   "text.plasmid.test": "Test",
   "text.plasmid.ui.game_join.invalid.description": "No game or menu is linked to this entry",
   "text.plasmid.ui.game_join.invalid.name": "Invalid Menu Entry",

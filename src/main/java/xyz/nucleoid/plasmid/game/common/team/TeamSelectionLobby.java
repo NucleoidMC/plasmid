@@ -1,26 +1,16 @@
 package xyz.nucleoid.plasmid.game.common.team;
 
-import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMaps;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
-import xyz.nucleoid.plasmid.Plasmid;
 import xyz.nucleoid.plasmid.game.GameActivity;
-import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.common.ui.WaitingLobbyUiLayout;
+import xyz.nucleoid.plasmid.game.common.ui.element.TeamSelectionWaitingLobbyUiElement;
+import xyz.nucleoid.plasmid.game.event.GameWaitingLobbyEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerIterable;
-import xyz.nucleoid.plasmid.util.ColoredBlocks;
-import xyz.nucleoid.stimuli.event.item.ItemUseEvent;
 
 import java.util.Map;
 import java.util.UUID;
@@ -39,8 +29,6 @@ import java.util.stream.Collectors;
  * @see xyz.nucleoid.plasmid.game.common.GameWaitingLobby
  */
 public final class TeamSelectionLobby {
-    private static final String TEAM_KEY = Plasmid.ID + ":team";
-
     private final GameTeamList teams;
 
     private final Reference2IntMap<GameTeamKey> maxTeamSize = new Reference2IntOpenHashMap<>();
@@ -60,8 +48,7 @@ public final class TeamSelectionLobby {
      */
     public static TeamSelectionLobby addTo(GameActivity activity, GameTeamList teams) {
         var lobby = new TeamSelectionLobby(teams);
-        activity.listen(GamePlayerEvents.ADD, lobby::onAddPlayer);
-        activity.listen(ItemUseEvent.EVENT, lobby::onUseItem);
+        activity.listen(GameWaitingLobbyEvents.BUILD_UI_LAYOUT, lobby::onBuildUiLayout);
 
         return lobby;
     }
@@ -76,30 +63,8 @@ public final class TeamSelectionLobby {
         this.maxTeamSize.put(team, size);
     }
 
-    private void onAddPlayer(ServerPlayerEntity player) {
-        int index = 0;
-
-        for (var team : this.teams) {
-            var config = team.config();
-            var name = Text.translatable("text.plasmid.team_selection.request_team", config.name())
-                    .formatted(Formatting.BOLD, config.chatFormatting());
-
-            var stack = new ItemStack(ColoredBlocks.wool(config.blockDyeColor()));
-            stack.set(DataComponentTypes.ITEM_NAME, name);
-
-            stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT.with(NbtOps.INSTANCE, Codec.STRING.fieldOf(TEAM_KEY), team.key().id()).getOrThrow());
-
-            player.getInventory().setStack(index++, stack);
-        }
-    }
-
-    private ActionResult onUseItem(ServerPlayerEntity player, Hand hand) {
-        var stack = player.getStackInHand(hand);
-
-        if (stack.isIn(ItemTags.WOOL)) {
-            var key = new GameTeamKey(stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT)
-                    .get(Codec.STRING.fieldOf(TEAM_KEY)).getOrThrow());
-
+    private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayerEntity player) {
+        layout.addLeft(new TeamSelectionWaitingLobbyUiElement(teams, key -> {
             var team = this.teams.byKey(key);
             if (team != null) {
                 var config = team.config();
@@ -110,12 +75,8 @@ public final class TeamSelectionLobby {
                         Text.translatable("text.plasmid.team_selection.suffixed_team", config.name()).formatted(config.chatFormatting()));
 
                 player.sendMessage(message, false);
-
-                return ActionResult.SUCCESS;
             }
-        }
-
-        return ActionResult.PASS;
+        }));
     }
 
     /**

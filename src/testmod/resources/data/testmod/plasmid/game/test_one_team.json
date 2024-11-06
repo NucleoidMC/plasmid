@@ -1,0 +1,10 @@
+{
+  "type": "testmod:test",
+  "icon": "diamond",
+  "description": [
+    "Lorem ipsum minigamum",
+    "Example description"
+  ],
+  "items": "#minecraft:slabs",
+  "team_count": 1
+}

@@ -7,7 +7,7 @@ import net.minecraft.util.collection.DefaultedList;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import xyz.nucleoid.plasmid.game.player.isolation.ScreenHandlerAccess;
+import xyz.nucleoid.plasmid.impl.player.isolation.ScreenHandlerAccess;
 
 @Mixin(ScreenHandler.class)
 public class ScreenHandlerMixin implements ScreenHandlerAccess {

@@ -24,9 +24,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.plasmid.game.portal.GamePortal;
-import xyz.nucleoid.plasmid.game.portal.GamePortalDisplay;
-import xyz.nucleoid.plasmid.game.portal.GamePortalInterface;
+import xyz.nucleoid.plasmid.impl.portal.GamePortal;
+import xyz.nucleoid.plasmid.impl.portal.GamePortalDisplay;
+import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
 
 @Mixin(SignBlockEntity.class)
 public abstract class SignBlockEntityMixin extends BlockEntity implements GamePortalInterface {

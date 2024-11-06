@@ -5,8 +5,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.api.game.GameResult;
+import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
@@ -35,7 +36,7 @@ public record NewGamePortalBackend(RegistryEntry<GameConfig<?>> game) implements
                 }, player.server);
     }
 
-    private CompletableFuture<ManagedGameSpace> openGame(MinecraftServer server) {
-        return GameSpaceManager.get().open(this.game);
+    private CompletableFuture<GameSpace> openGame(MinecraftServer server) {
+        return GameSpaceManagerImpl.get().open(this.game);
     }
 }

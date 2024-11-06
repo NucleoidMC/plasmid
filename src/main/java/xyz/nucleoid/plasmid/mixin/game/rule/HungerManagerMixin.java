@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.EventResult;
 
@@ -19,7 +19,7 @@ public class HungerManagerMixin {
             at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/HungerManager;saturationLevel:F", opcode = Opcodes.GETFIELD, ordinal = 2)
     )
     private float attemptSaturatedRegeneration(HungerManager instance, Operation<Float> original, ServerPlayerEntity player) {
-        var gameSpace = GameSpaceManager.get().byPlayer(player);
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(player);
         if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.SATURATED_REGENERATION) == EventResult.DENY) {
             return 0;
         }

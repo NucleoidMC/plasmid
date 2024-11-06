@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin extends PlayerEntity {
@@ -28,7 +28,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     }
 
     private boolean tryTeleportTo(ServerWorld targetWorld) {
-        var gameSpaceManager = GameSpaceManager.get();
+        var gameSpaceManager = GameSpaceManagerImpl.get();
         var playerGameSpace = gameSpaceManager.byPlayer(this);
         var targetGameSpace = gameSpaceManager.byWorld(targetWorld);
         if (playerGameSpace == targetGameSpace) {

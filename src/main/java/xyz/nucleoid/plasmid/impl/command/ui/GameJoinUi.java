@@ -12,7 +12,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
@@ -59,7 +59,7 @@ public class GameJoinUi extends SimpleGui {
         int i = 0;
         int gameI = 0;
 
-        var games = new ArrayList<>(GameSpaceManager.get().getOpenGameSpaces());
+        var games = new ArrayList<>(GameSpaceManagerImpl.get().getOpenGameSpaces());
         games.sort(Comparator.comparingInt(space -> -space.getPlayers().size()));
 
         int limit = this.size;

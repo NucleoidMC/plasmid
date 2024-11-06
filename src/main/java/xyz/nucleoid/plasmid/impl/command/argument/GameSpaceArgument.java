@@ -11,7 +11,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
 
 public final class GameSpaceArgument {
     private static final SimpleCommandExceptionType GAME_NOT_FOUND = new SimpleCommandExceptionType(Text.translatable("text.plasmid.game.not_found"));
@@ -19,7 +19,7 @@ public final class GameSpaceArgument {
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((context, builder) -> {
-                    var gameSpaceManager = GameSpaceManager.get();
+                    var gameSpaceManager = GameSpaceManagerImpl.get();
 
                     return CommandSource.suggestIdentifiers(
                             gameSpaceManager.getOpenGameSpaces().stream().map(space -> space.getMetadata().userId()),
@@ -31,7 +31,7 @@ public final class GameSpaceArgument {
     public static GameSpace get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
         var identifier = IdentifierArgumentType.getIdentifier(context, name);
 
-        var gameSpace = GameSpaceManager.get().byUserId(identifier);
+        var gameSpace = GameSpaceManagerImpl.get().byUserId(identifier);
         if (gameSpace == null) {
             throw GAME_NOT_FOUND.create();
         }

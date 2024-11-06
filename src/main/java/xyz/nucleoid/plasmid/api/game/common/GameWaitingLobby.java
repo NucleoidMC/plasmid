@@ -24,7 +24,7 @@ import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameResult;
 import xyz.nucleoid.plasmid.api.game.GameTexts;
 import xyz.nucleoid.plasmid.api.game.common.widget.SidebarWidget;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.compatibility.AfkDisplayCompatibility;
 
 import java.util.ArrayList;
@@ -311,7 +311,7 @@ public final class GameWaitingLobby {
 
         // if there are no players outside of a game on the server
         for (var world : server.getWorlds()) {
-            if (hasActivePlayer(world) && !GameSpaceManager.get().hasGame(world)) {
+            if (hasActivePlayer(world) && !GameSpaceManagerImpl.get().hasGame(world)) {
                 return false;
             }
         }

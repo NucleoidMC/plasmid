@@ -5,8 +5,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.api.game.GameResult;
+import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
@@ -16,7 +17,7 @@ import java.util.function.Function;
 
 public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBackend {
     private final RegistryEntry<GameConfig<?>> game;
-    private CompletableFuture<ManagedGameSpace> gameFuture;
+    private CompletableFuture<GameSpace> gameFuture;
 
     public ConcurrentGamePortalBackend(RegistryEntry<GameConfig<?>> game) {
         this.game = game;
@@ -29,7 +30,7 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
 
     @Override
     public void applyTo(ServerPlayerEntity player) {
-        for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
+        for (var gameSpace : GameSpaceManagerImpl.get().getOpenGameSpaces()) {
             if (gameSpace.getMetadata().sourceConfig().equals(this.game)) {
                 var result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
 
@@ -58,7 +59,7 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
                 }, player.server);
     }
 
-    public CompletableFuture<ManagedGameSpace> getOrOpenNew(MinecraftServer server) {
+    public CompletableFuture<GameSpace> getOrOpenNew(MinecraftServer server) {
         var future = this.gameFuture;
         if (future == null || future.isCompletedExceptionally()) {
             this.gameFuture = future = this.openGame(server);
@@ -66,7 +67,7 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
         return future;
     }
 
-    private CompletableFuture<ManagedGameSpace> openGame(MinecraftServer server) {
-        return GameSpaceManager.get().open(this.game);
+    private CompletableFuture<GameSpace> openGame(MinecraftServer server) {
+        return GameSpaceManagerImpl.get().open(this.game);
     }
 }

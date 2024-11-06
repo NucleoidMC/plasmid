@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 
 public final class ManagedGameSpace implements GameSpace {
     private final MinecraftServer server;
-    private final GameSpaceManager manager;
+    private final GameSpaceManagerImpl manager;
 
     private final GameSpaceMetadata metadata;
 
@@ -44,7 +44,7 @@ public final class ManagedGameSpace implements GameSpace {
     private final GameSpaceStatistics statistics = new GameSpaceStatistics();
     private final Map<GameAttachment<?>, Object> attachments = new Reference2ObjectOpenHashMap<>();
 
-    ManagedGameSpace(MinecraftServer server, GameSpaceManager manager, GameSpaceMetadata metadata) {
+    ManagedGameSpace(MinecraftServer server, GameSpaceManagerImpl manager, GameSpaceMetadata metadata) {
         this.server = server;
         this.manager = manager;
 

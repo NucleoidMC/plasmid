@@ -13,9 +13,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.api.game.GameCloseReason;
-import xyz.nucleoid.plasmid.api.game.GameOpenProcedure;
-import xyz.nucleoid.plasmid.api.game.GameSpaceMetadata;
+import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.api.event.GameEvents;
@@ -27,9 +25,9 @@ import xyz.nucleoid.stimuli.selector.EventListenerSelector;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public final class GameSpaceManager {
-    private static final GameSpaceManager FALLBACK = new GameSpaceManager(null);
-    private static GameSpaceManager instance;
+public final class GameSpaceManagerImpl implements GameSpaceManager {
+    private static final GameSpaceManagerImpl FALLBACK = new GameSpaceManagerImpl(null);
+    private static GameSpaceManagerImpl instance;
 
     @Nullable
     private final MinecraftServer server;
@@ -45,34 +43,34 @@ public final class GameSpaceManager {
 
     private final ListenerSelector listenerSelector = new ListenerSelector();
 
-    private GameSpaceManager(@Nullable MinecraftServer server) {
+    private GameSpaceManagerImpl(@Nullable MinecraftServer server) {
         this.server = server;
     }
 
     public static void openServer(MinecraftServer server) {
-        var instance = GameSpaceManager.instance;
+        var instance = GameSpaceManagerImpl.instance;
         if (instance != null) {
             instance.close();
         }
 
-        instance = new GameSpaceManager(server);
+        instance = new GameSpaceManagerImpl(server);
         Stimuli.registerSelector(instance.listenerSelector);
 
-        GameSpaceManager.instance = instance;
+        GameSpaceManagerImpl.instance = instance;
     }
 
     public static void startClosing() {
-        var instance = GameSpaceManager.instance;
+        var instance = GameSpaceManagerImpl.instance;
         if (instance != null) {
             instance.close();
         }
     }
 
     public static void closeServer() {
-        GameSpaceManager.instance = null;
+        GameSpaceManagerImpl.instance = null;
     }
 
-    public static GameSpaceManager get() {
+    public static GameSpaceManagerImpl get() {
         if (instance != null) {
             return instance;
         } else {
@@ -80,7 +78,8 @@ public final class GameSpaceManager {
         }
     }
 
-    public CompletableFuture<ManagedGameSpace> open(RegistryEntry<GameConfig<?>> config) {
+    @Override
+    public CompletableFuture<GameSpace> open(RegistryEntry<GameConfig<?>> config) {
         if (this.server == null) {
             return CompletableFuture.failedFuture(new RuntimeException("Not initialized yet!"));
         }
@@ -118,10 +117,12 @@ public final class GameSpaceManager {
         return gameSpace;
     }
 
+    @Override
     public Collection<ManagedGameSpace> getOpenGameSpaces() {
         return this.gameSpaces;
     }
 
+    @Override
     @Nullable
     public ManagedGameSpace byId(UUID id) {
         if (this.server == null) {
@@ -130,6 +131,7 @@ public final class GameSpaceManager {
         return this.idToGameSpace.get(id);
     }
 
+    @Override
     @Nullable
     public ManagedGameSpace byUserId(Identifier userId) {
         if (this.server == null) {
@@ -138,6 +140,7 @@ public final class GameSpaceManager {
         return this.userIdToGameSpace.get(userId);
     }
 
+    @Override
     @Nullable
     public ManagedGameSpace byWorld(World world) {
         if (this.server == null) {
@@ -146,6 +149,7 @@ public final class GameSpaceManager {
         return this.dimensionToGameSpace.get(world.getRegistryKey());
     }
 
+    @Override
     @Nullable
     public ManagedGameSpace byPlayer(PlayerEntity player) {
         if (this.server == null) {
@@ -154,6 +158,7 @@ public final class GameSpaceManager {
         return this.playerToGameSpace.get(player.getUuid());
     }
 
+    @Override
     public boolean hasGame(World world) {
         if (this.server == null) {
             return false;
@@ -161,6 +166,7 @@ public final class GameSpaceManager {
         return this.dimensionToGameSpace.containsKey(world.getRegistryKey());
     }
 
+    @Override
     public boolean inGame(PlayerEntity player) {
         if (this.server == null) {
             return false;
@@ -223,14 +229,14 @@ public final class GameSpaceManager {
         private ManagedGameSpace getGameSpaceFor(EventSource source) {
             var entity = source.getEntity();
             if (entity instanceof ServerPlayerEntity) {
-                var gameSpace = GameSpaceManager.this.playerToGameSpace.get(entity.getUuid());
+                var gameSpace = GameSpaceManagerImpl.this.playerToGameSpace.get(entity.getUuid());
                 if (gameSpace != null) {
                     return gameSpace;
                 }
             }
 
             if (source.getDimension() != null) {
-                return GameSpaceManager.this.dimensionToGameSpace.get(source.getDimension());
+                return GameSpaceManagerImpl.this.dimensionToGameSpace.get(source.getDimension());
             }
 
             return null;

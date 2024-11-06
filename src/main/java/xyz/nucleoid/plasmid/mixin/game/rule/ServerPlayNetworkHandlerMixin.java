@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.EventResult;
 
@@ -38,7 +38,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
             )
     )
     private void onClickSlot(ClickSlotC2SPacket packet, CallbackInfo ci) {
-        var gameSpace = GameSpaceManager.get().byPlayer(this.player);
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(this.player);
 
         if (gameSpace != null) {
             if (packet.getSlot() < 0 || packet.getSlot() >= this.player.getInventory().size()) return;

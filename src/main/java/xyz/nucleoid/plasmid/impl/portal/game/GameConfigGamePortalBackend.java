@@ -5,7 +5,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
 
 import java.util.List;
@@ -16,7 +16,7 @@ public interface GameConfigGamePortalBackend extends GamePortalBackend {
 
     @Override
     default void provideGameSpaces(Consumer<GameSpace> consumer) {
-        for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
+        for (var gameSpace : GameSpaceManagerImpl.get().getOpenGameSpaces()) {
             if (gameSpace.getMetadata().isSourceConfig(this.game())) {
                 consumer.accept(gameSpace);
             }
@@ -26,7 +26,7 @@ public interface GameConfigGamePortalBackend extends GamePortalBackend {
     @Override
     default int getPlayerCount() {
         int count = 0;
-        for (var gameSpace : GameSpaceManager.get().getOpenGameSpaces()) {
+        for (var gameSpace : GameSpaceManagerImpl.get().getOpenGameSpaces()) {
             if (gameSpace.getMetadata().isSourceConfig(this.game())) {
                 count += gameSpace.getPlayers().size();
             }

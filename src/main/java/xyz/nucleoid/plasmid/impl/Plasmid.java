@@ -23,7 +23,7 @@ import xyz.nucleoid.plasmid.impl.game.composite.RandomGameConfig;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.api.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
-import xyz.nucleoid.plasmid.impl.manager.GameSpaceManager;
+import xyz.nucleoid.plasmid.impl.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalManager;
@@ -95,7 +95,7 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerTickEvents.END_WORLD_TICK.register(world -> {
-            var game = GameSpaceManager.get().byWorld(world);
+            var game = GameSpaceManagerImpl.get().byWorld(world);
             if (game != null) {
                 try {
                     game.getBehavior().propagatingInvoker(GameActivityEvents.TICK).onTick();
@@ -110,7 +110,7 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-            GameSpaceManager.openServer(server);
+            GameSpaceManagerImpl.openServer(server);
             GamePortalManager.INSTANCE.setup(server);
             loadData(server.getRegistryManager(), server.getResourceManager());
             PlasmidConfig.get().webServerConfig().ifPresent(config -> {
@@ -119,7 +119,7 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            GameSpaceManager.startClosing();
+            GameSpaceManagerImpl.startClosing();
             GamePortalManager.INSTANCE.close(server);
             if (httpServer != null) {
                 httpServer.stop(0);
@@ -127,7 +127,7 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
-            GameSpaceManager.closeServer();
+            GameSpaceManagerImpl.closeServer();
         });
 
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(((server, resourceManager, success) -> {

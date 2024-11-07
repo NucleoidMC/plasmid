@@ -16,7 +16,7 @@ import java.util.function.Function;
 
 public record NewGamePortalBackend(RegistryEntry<GameConfig<?>> game) implements GameConfigGamePortalBackend {
     @Override
-    public void applyTo(ServerPlayerEntity player) {
+    public void applyTo(ServerPlayerEntity player, boolean alt) {
         CompletableFuture.supplyAsync(() -> this.openGame(player.server))
                 .thenCompose(Function.identity())
                 .handleAsync((gameSpace, throwable) -> {

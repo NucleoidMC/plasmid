@@ -2,10 +2,7 @@ package xyz.nucleoid.plasmid.api.game.event;
 
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.api.game.GameSpace;
-import xyz.nucleoid.plasmid.api.game.GameActivity;
-import xyz.nucleoid.plasmid.api.game.GameCloseReason;
-import xyz.nucleoid.plasmid.api.game.GameResult;
+import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.function.Consumer;
@@ -123,6 +120,21 @@ public final class GameActivityEvents {
         }
     });
 
+    /**
+     * Called when information about current game needs to be updated.
+     */
+    public static final StimulusEvent<StateUpdate> STATE_UPDATE = StimulusEvent.create(StateUpdate.class, ctx -> (builder) -> {
+        try {
+            for (var listener : ctx.getListeners()) {
+                builder = listener.onStateUpdate(builder);
+            }
+            return builder;
+        } catch (Throwable throwable) {
+            ctx.handleException(throwable);
+            return builder;
+        }
+    });
+
     public interface Enable {
         void onEnable();
     }
@@ -146,5 +158,9 @@ public final class GameActivityEvents {
     public interface RequestStart {
         @Nullable
         GameResult onRequestStart();
+    }
+
+    public interface StateUpdate {
+        GameSpaceState.Builder onStateUpdate(GameSpaceState.Builder builder);
     }
 }

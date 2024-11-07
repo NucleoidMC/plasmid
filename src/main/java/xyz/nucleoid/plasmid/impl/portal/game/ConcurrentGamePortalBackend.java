@@ -28,10 +28,10 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
     }
 
     @Override
-    public void applyTo(ServerPlayerEntity player) {
+    public void applyTo(ServerPlayerEntity player, boolean alt) {
         for (var gameSpace : GameSpaceManagerImpl.get().getOpenGameSpaces()) {
             if (gameSpace.getMetadata().sourceConfig().equals(this.game)) {
-                var result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.PLAY);
+                var result = GamePlayerJoiner.tryJoin(player, gameSpace, alt ? JoinIntent.SPECTATE : JoinIntent.PLAY);
 
                 if (result.isOk()) {
                     return;

@@ -17,9 +17,11 @@ public interface GamePortalBackend {
     default void populateDisplay(GamePortalDisplay display) {
         display.set(GamePortalDisplay.NAME, Text.empty().append(this.getName()).formatted(Formatting.AQUA));
         display.set(GamePortalDisplay.PLAYER_COUNT, this.getPlayerCount());
+        display.set(GamePortalDisplay.MAX_PLAYER_COUNT, this.getMaxPlayerCount());
+        display.set(GamePortalDisplay.SPECTATOR_COUNT, this.getSpectatorCount());
     }
 
-    void applyTo(ServerPlayerEntity player);
+    void applyTo(ServerPlayerEntity player, boolean alt);
 
     default Text getName() {
         return Text.literal("༼ つ ◕_◕ ༽つ (Unnamed)");
@@ -37,11 +39,18 @@ public interface GamePortalBackend {
         return -1;
     }
 
+    default int getMaxPlayerCount() {
+        return -1;
+    }
+
     default int getSpectatorCount() {
         return -1;
     }
 
     default ActionType getActionType() {
+        return ActionType.NONE;
+    }
+    default ActionType getAltActionType() {
         return ActionType.NONE;
     }
 
@@ -51,9 +60,9 @@ public interface GamePortalBackend {
         GamePortalBackend create(MinecraftServer server, Identifier id);
     }
 
-    record ActionType(Text text) {
-        public static ActionType NONE = new ActionType(Text.empty());
-        public static ActionType PLAY = new ActionType(Text.translatable("text.plasmid.ui.game_join.action.play"));
-        public static ActionType SPECTATE = new ActionType(Text.translatable("text.plasmid.ui.game_join.action.spectate"));
+    record ActionType(Text text, Text textAlt) {
+        public static ActionType NONE = new ActionType(Text.empty(), Text.empty());
+        public static ActionType PLAY = new ActionType(Text.translatable("text.plasmid.ui.game_join.action.play"), Text.translatable("text.plasmid.ui.game_join.action.play.alt"));
+        public static ActionType SPECTATE = new ActionType(Text.translatable("text.plasmid.ui.game_join.action.spectate"), Text.translatable("text.plasmid.ui.game_join.action.spectate.alt"));
     }
 }

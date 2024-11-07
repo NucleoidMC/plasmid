@@ -28,7 +28,18 @@ public interface GameConfigGamePortalBackend extends GamePortalBackend {
         int count = 0;
         for (var gameSpace : GameSpaceManagerImpl.get().getOpenGameSpaces()) {
             if (gameSpace.getMetadata().isSourceConfig(this.game())) {
-                count += gameSpace.getPlayers().size();
+                count += gameSpace.getState().players();
+            }
+        }
+        return count;
+    }
+
+    @Override
+    default int getSpectatorCount() {
+        int count = 0;
+        for (var gameSpace : GameSpaceManagerImpl.get().getOpenGameSpaces()) {
+            if (gameSpace.getMetadata().isSourceConfig(this.game())) {
+                count += gameSpace.getState().spectators();
             }
         }
         return count;

@@ -52,7 +52,18 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
         var uniqueGameSpaces = new ReferenceOpenHashSet<GameSpace>();
         provideGameSpaces(uniqueGameSpaces::add);
         for (var entry : uniqueGameSpaces) {
-            count += Math.max(0, entry.getPlayers().size());
+            count += Math.max(0, entry.getState().players());
+        }
+        return count;
+    }
+
+    @Override
+    public int getSpectatorCount() {
+        int count = 0;
+        var uniqueGameSpaces = new ReferenceOpenHashSet<GameSpace>();
+        provideGameSpaces(uniqueGameSpaces::add);
+        for (var entry : uniqueGameSpaces) {
+            count += Math.max(0, entry.getState().spectators());
         }
         return count;
     }
@@ -87,7 +98,7 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
     }
 
     @Override
-    public void applyTo(ServerPlayerEntity player) {
+    public void applyTo(ServerPlayerEntity player, boolean alt) {
         var ui = Guis.createSelectorGui(player, this.name.copy(), true, this.getGuiElements());
         ui.open();
     }

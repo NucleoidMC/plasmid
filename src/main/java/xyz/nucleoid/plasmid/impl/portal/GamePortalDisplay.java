@@ -8,6 +8,8 @@ import org.jetbrains.annotations.Nullable;
 public final class GamePortalDisplay {
     public static final Field<Text> NAME = Field.create();
     public static final Field<Integer> PLAYER_COUNT = Field.create();
+    public static final Field<Integer> MAX_PLAYER_COUNT = Field.create();
+    public static final Field<Integer> SPECTATOR_COUNT = Field.create();
     public static final Field<Integer> ACTIVE_GAMES = Field.create();
 
     private final Reference2ObjectMap<Field<?>, Object> fields = new Reference2ObjectOpenHashMap<>();

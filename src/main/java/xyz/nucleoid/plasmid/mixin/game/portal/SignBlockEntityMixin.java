@@ -106,7 +106,7 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     @Inject(method = "runCommandClickEvent", at = @At("HEAD"), cancellable = true)
     private void runCommandClickEvent(PlayerEntity player, World world, BlockPos pos, boolean front, CallbackInfoReturnable<Boolean> ci) {
         if (this.portal != null && player instanceof ServerPlayerEntity serverPlayer) {
-            this.portal.requestJoin(serverPlayer);
+            this.portal.requestJoin(serverPlayer, false);
             ci.setReturnValue(true);
         }
     }

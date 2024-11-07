@@ -17,8 +17,8 @@ public record GameMenuEntry(
         ItemStack icon
 ) implements MenuEntry {
     @Override
-    public void click(ServerPlayerEntity player) {
-        game.applyTo(player);
+    public void click(ServerPlayerEntity player, boolean alt) {
+        game.applyTo(player, alt);
     }
 
     @Override

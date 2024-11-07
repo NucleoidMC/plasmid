@@ -14,6 +14,8 @@ import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class SingleGamePortalBackend implements GameConfigGamePortalBackend {
@@ -25,13 +27,13 @@ public final class SingleGamePortalBackend implements GameConfigGamePortalBacken
     }
 
     @Override
-    public void applyTo(ServerPlayerEntity player) {
+    public void applyTo(ServerPlayerEntity player, boolean alt) {
         CompletableFuture.supplyAsync(() -> this.getOrOpen(player.server))
                 .thenCompose(Function.identity())
                 .handleAsync((gameSpace, throwable) -> {
                     GameResult result;
                     if (gameSpace != null) {
-                        result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.PLAY);
+                        result = GamePlayerJoiner.tryJoin(player, gameSpace, alt ? JoinIntent.SPECTATE : JoinIntent.PLAY);
                     } else {
                         result = GamePlayerJoiner.handleJoinException(throwable);
                     }
@@ -42,6 +44,53 @@ public final class SingleGamePortalBackend implements GameConfigGamePortalBacken
 
                     return null;
                 }, player.server);
+    }
+
+    @Override
+    public void provideGameSpaces(Consumer<GameSpace> consumer) {
+        if (this.gameFuture != null && this.gameFuture.isDone()) {
+            try {
+                consumer.accept(this.gameFuture.get());
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Override
+    public int getPlayerCount() {
+        if (this.gameFuture != null && this.gameFuture.isDone()) {
+            try {
+                return this.gameFuture.get().getState().players();
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int getSpectatorCount() {
+        if (this.gameFuture != null && this.gameFuture.isDone()) {
+            try {
+                return this.gameFuture.get().getState().spectators();
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int getMaxPlayerCount() {
+        if (this.gameFuture != null && this.gameFuture.isDone()) {
+            try {
+                return this.gameFuture.get().getState().maxPlayers();
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return 0;
     }
 
     public CompletableFuture<GameSpace> getOrOpen(MinecraftServer server) {

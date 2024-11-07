@@ -57,8 +57,16 @@ public final class GamePortal {
         return this.backend.getPlayerCount();
     }
 
-    public void requestJoin(ServerPlayerEntity player) {
-        this.backend.applyTo(player);
+    public int getSpectatorCount() {
+        return this.backend.getSpectatorCount();
+    }
+
+    public int getMaxPlayerCount() {
+        return this.backend.getMaxPlayerCount();
+    }
+
+    public void requestJoin(ServerPlayerEntity player, boolean alt) {
+        this.backend.applyTo(player, alt);
     }
 
     public boolean addInterface(GamePortalInterface itf) {

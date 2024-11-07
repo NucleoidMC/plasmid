@@ -105,6 +105,11 @@ public interface GameSpace extends GameAttachmentHolder {
     GameSpaceStatistics getStatistics();
 
     /**
+     * @return the current state of this {@link GameSpace}. It should be used purely for non-logic information.
+     */
+    GameSpaceState getState();
+
+    /**
      * @return true if this GameSpace is closed, false otherwise
      */
     boolean isClosed();

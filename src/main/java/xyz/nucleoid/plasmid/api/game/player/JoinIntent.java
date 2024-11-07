@@ -12,7 +12,7 @@ public enum JoinIntent {
     /**
      * The player has no particular intention. Generally, this should be considered as a preference to participate.
      */
-    ANY,
+    //ANY,
     /**
      * The player intends to join the game to participate. If they cannot be joined as a participant, they should not
      * be allowed to join.

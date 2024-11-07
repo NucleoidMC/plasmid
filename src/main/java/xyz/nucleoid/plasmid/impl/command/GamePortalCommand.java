@@ -51,7 +51,7 @@ public final class GamePortalCommand {
 
     private static int openPortal(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var portal = GamePortalArgument.get(context, "portal");
-        portal.requestJoin(context.getSource().getPlayer());
+        portal.requestJoin(context.getSource().getPlayer(), false);
         return 1;
     }
 

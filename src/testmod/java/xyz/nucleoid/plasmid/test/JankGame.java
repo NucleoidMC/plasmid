@@ -24,10 +24,7 @@ import net.minecraft.world.GameRules;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.map_templates.BlockBounds;
 import xyz.nucleoid.map_templates.MapTemplate;
-import xyz.nucleoid.plasmid.api.game.GameOpenContext;
-import xyz.nucleoid.plasmid.api.game.GameOpenProcedure;
-import xyz.nucleoid.plasmid.api.game.GameResult;
-import xyz.nucleoid.plasmid.api.game.GameSpace;
+import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
 import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
 import xyz.nucleoid.plasmid.api.game.common.config.PlayerConfig;
@@ -131,6 +128,12 @@ public final class JankGame {
             });
             var mover = new ArmorStandEntity(world, 0.0, 65.0, 0.0);
             world.spawnEntity(mover);
+
+            activity.listen(GameActivityEvents.STATE_UPDATE, state -> state
+                    .players(gameSpace.getPlayers().size(), 24)
+                    .spectators(4)
+                    .state(GameSpaceState.State.STARTING)
+            );
 
             activity.listen(GamePlayerEvents.ADD, player -> {
                 player.networkHandler.sendPacket(CAMERA.createSpawnPacket(new EntityTrackerEntry(world, CAMERA, 1, false, player.networkHandler::sendPacket)));

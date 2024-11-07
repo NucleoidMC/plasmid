@@ -45,7 +45,7 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Override
     public boolean interactWithPortal(ServerPlayerEntity player) {
         if (this.portal != null) {
-            this.portal.requestJoin(player);
+            this.portal.requestJoin(player, false);
             return true;
         }
         return false;

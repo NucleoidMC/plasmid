@@ -16,14 +16,28 @@ public record PortalEntry(
         List<Text> description,
         ItemStack icon
 ) implements MenuEntry {
+    public PortalEntry(GamePortal portal) {
+        this(portal, portal.getName(), portal.getDescription(), portal.getIcon());
+    }
+
     @Override
-    public void click(ServerPlayerEntity player) {
-        this.portal.requestJoin(player);
+    public void click(ServerPlayerEntity player, boolean alt) {
+        this.portal.requestJoin(player, alt);
     }
 
     @Override
     public int getPlayerCount() {
         return this.portal.getPlayerCount();
+    }
+
+    @Override
+    public int getSpectatorCount() {
+        return this.portal.getSpectatorCount();
+    }
+
+    @Override
+    public int getMaxPlayerCount() {
+        return this.portal.getMaxPlayerCount();
     }
 
     @Override
@@ -34,5 +48,10 @@ public record PortalEntry(
     @Override
     public GamePortalBackend.ActionType getActionType() {
         return this.portal.getBackend().getActionType();
+    }
+
+    @Override
+    public GamePortalBackend.ActionType getAltActionType() {
+        return this.portal.getBackend().getAltActionType();
     }
 }

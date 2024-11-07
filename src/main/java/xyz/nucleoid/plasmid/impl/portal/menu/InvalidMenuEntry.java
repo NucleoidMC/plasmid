@@ -30,7 +30,7 @@ public record InvalidMenuEntry(Text name) implements MenuEntry {
     }
 
     @Override
-    public void click(ServerPlayerEntity player) {
+    public void click(ServerPlayerEntity player, boolean alt) {
     }
 
     @Override

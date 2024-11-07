@@ -170,6 +170,11 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
     @Override
+    public GameSpaceState getState() {
+        return this.state.invoker(GameActivityEvents.STATE_UPDATE).onStateUpdate(new GameSpaceState.Builder(this));
+    }
+
+    @Override
     public boolean isClosed() {
         return this.closed;
     }

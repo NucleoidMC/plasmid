@@ -7,6 +7,7 @@ import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
@@ -17,6 +18,7 @@ import xyz.nucleoid.plasmid.impl.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
 import xyz.nucleoid.plasmid.api.util.Guis;
+import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -121,6 +123,7 @@ public class GameJoinUi extends SimpleGui {
     }
 
     private GuiElementBuilder createIconFor(GameSpace gameSpace) {
+        var state = gameSpace.getState();
         var sourceConfig = gameSpace.getMetadata().sourceConfig();
         var element = GuiElementBuilder.from(sourceConfig.value().icon().copy()).hideDefaultTooltip()
                 .setName(GameConfig.name(sourceConfig).copy());
@@ -134,12 +137,47 @@ public class GameJoinUi extends SimpleGui {
 
             element.addLoreLine(text);
         }
-        element.addLoreLine(ScreenTexts.EMPTY);
-        element.addLoreLine(Text.empty()
-                .append(Text.literal("» ").formatted(Formatting.DARK_GRAY))
-                .append(Text.translatable("text.plasmid.ui.game_join.players",
-                        Text.literal(gameSpace.getPlayers().size() + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
-        );
+
+        boolean allowSpace = true;
+
+        if (!state.state().hidden()) {
+            element.addLoreLine(ScreenTexts.EMPTY);
+            element.addLoreLine(Text.literal(" ").append(state.state().display()).formatted(Formatting.WHITE));
+            allowSpace = false;
+        }
+
+        if (state.players() > -1) {
+            if (allowSpace) {
+                element.addLoreLine(ScreenTexts.EMPTY);
+                allowSpace = false;
+            }
+            element.addLoreLine(Text.empty()
+                    .append(Text.literal("» ").formatted(Formatting.DARK_GRAY))
+                    .append(Text.translatable("text.plasmid.ui.game_join.players",
+                            Text.literal(state.players() + (state.maxPlayers() > 0 ? " / " + state.maxPlayers() : "")).formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
+            );
+        }
+
+        if (state.spectators() > 0) {
+            if (allowSpace) {
+                element.addLoreLine(ScreenTexts.EMPTY);
+                allowSpace = false;
+            }
+
+            element.addLoreLine(Text.empty()
+                    .append(Text.literal("» ").formatted(Formatting.DARK_GRAY))
+                    .append(Text.translatable("text.plasmid.ui.game_join.spectators",
+                            Text.literal( state.spectators() + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
+            );
+        }
+
+        var actionType = this.joinIntent == JoinIntent.PLAY ? GamePortalBackend.ActionType.PLAY : GamePortalBackend.ActionType.SPECTATE;
+
+        if (actionType != GamePortalBackend.ActionType.NONE) {
+            element.addLoreLine(Text.empty().append(Text.literal(" [ ").formatted(Formatting.GRAY))
+                    .append(actionType.text())
+                    .append(Text.literal(" ]").formatted(Formatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));
+        }
 
         element.hideDefaultTooltip();
         element.setCallback((a, b, c, d) -> tryJoinGame(this.getPlayer(), gameSpace, joinIntent));

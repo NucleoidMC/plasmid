@@ -31,7 +31,7 @@ public final class SingleGamePortalBackend implements GameConfigGamePortalBacken
                 .handleAsync((gameSpace, throwable) -> {
                     GameResult result;
                     if (gameSpace != null) {
-                        result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
+                        result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.PLAY);
                     } else {
                         result = GamePlayerJoiner.handleJoinException(throwable);
                     }

@@ -31,7 +31,7 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
     public void applyTo(ServerPlayerEntity player) {
         for (var gameSpace : GameSpaceManagerImpl.get().getOpenGameSpaces()) {
             if (gameSpace.getMetadata().sourceConfig().equals(this.game)) {
-                var result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
+                var result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.PLAY);
 
                 if (result.isOk()) {
                     return;
@@ -45,7 +45,7 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
                     this.gameFuture = null;
                     GameResult result;
                     if (gameSpace != null) {
-                        result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
+                        result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.PLAY);
                     } else {
                         result = GamePlayerJoiner.handleJoinException(throwable);
                     }

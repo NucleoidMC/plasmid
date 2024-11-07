@@ -96,10 +96,16 @@ public final class GameCommand {
                     )
                 )
                 .then(literal("join")
-                    .executes(GameCommand::joinGame)
+                    .executes(ctx -> GameCommand.joinGame(ctx, JoinIntent.PLAY))
                     .then(GameSpaceArgument.argument("game_space")
-                        .executes(GameCommand::joinQualifiedGame)
+                        .executes(ctx -> GameCommand.joinQualifiedGame(ctx, JoinIntent.PLAY))
                     )
+                )
+                .then(literal("spectate")
+                     .executes(ctx -> GameCommand.joinGame(ctx, JoinIntent.SPECTATE))
+                     .then(GameSpaceArgument.argument("game_space")
+                          .executes(ctx -> GameCommand.joinQualifiedGame(ctx, JoinIntent.SPECTATE))
+                     )
                 )
                 .then(literal("joinall")
                     .requires(source -> source.hasPermissionLevel(2))
@@ -198,7 +204,7 @@ public final class GameCommand {
                 gameSpace.getPlayers().sendMessage(error);
             }
         } else if (player != null) {
-            tryJoinGame(player, gameSpace);
+            tryJoinGame(player, gameSpace, JoinIntent.PLAY);
         }
     }
 
@@ -243,14 +249,14 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int joinGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        new GameJoinUi(context.getSource().getPlayerOrThrow()).open();
+    private static int joinGame(CommandContext<ServerCommandSource> context, JoinIntent intent) throws CommandSyntaxException {
+        new GameJoinUi(context.getSource().getPlayerOrThrow(), intent).open();
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int joinQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int joinQualifiedGame(CommandContext<ServerCommandSource> context, JoinIntent intent) throws CommandSyntaxException {
         var gameSpace = GameSpaceArgument.get(context, "game_space");
-        tryJoinGame(context.getSource().getPlayerOrThrow(), gameSpace);
+        tryJoinGame(context.getSource().getPlayerOrThrow(), gameSpace, intent);
 
         return Command.SINGLE_SUCCESS;
     }
@@ -286,15 +292,15 @@ public final class GameCommand {
                 .filter(player -> !GameSpaceManagerImpl.get().inGame(player))
                 .collect(Collectors.toList());
 
-        var intent = JoinIntent.ANY;
+        var intent = JoinIntent.PLAY;
         var result = gameSpace.getPlayers().offer(players, intent);
         if (result.isError()) {
             source.sendError(result.errorCopy().formatted(Formatting.RED));
         }
     }
 
-    private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
-        var result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
+    private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace, JoinIntent intent) {
+        var result = GamePlayerJoiner.tryJoin(player, gameSpace, intent);
         if (result.isError()) {
             player.sendMessage(result.errorCopy().formatted(Formatting.RED));
         }

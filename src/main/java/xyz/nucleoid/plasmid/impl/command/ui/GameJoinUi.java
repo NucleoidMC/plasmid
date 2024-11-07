@@ -22,24 +22,26 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 public class GameJoinUi extends SimpleGui {
-    private static final GuiElementInterface EMPTY = new GuiElementBuilder(Items.GRAY_STAINED_GLASS_PANE).setName(Text.empty()).build();
+    private static final GuiElementInterface EMPTY = new GuiElementBuilder(Items.GRAY_STAINED_GLASS_PANE).hideTooltip().build();
 
     private static final int NAVBAR_POS = 81;
     private final ServerPlayerEntity player;
+    private final JoinIntent joinIntent;
     private int tick;
     private int page = 0;
     private int pageSize;
 
-    public GameJoinUi(ServerPlayerEntity player) {
+    public GameJoinUi(ServerPlayerEntity player, JoinIntent intent) {
         super(ScreenHandlerType.GENERIC_9X6, player, true);
+        this.joinIntent = intent;
         this.player = player;
         this.setTitle(Text.translatable("text.plasmid.ui.game_join.title"));
         this.updateUi();
     }
 
-    private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace) {
+    private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace, JoinIntent joinIntent) {
         player.server.execute(() -> {
-            var result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.ANY);
+            var result = GamePlayerJoiner.tryJoin(player, gameSpace, joinIntent);
             if (result.isError()) {
                 player.sendMessage(result.errorCopy().formatted(Formatting.RED));
             }
@@ -140,7 +142,7 @@ public class GameJoinUi extends SimpleGui {
         );
 
         element.hideDefaultTooltip();
-        element.setCallback((a, b, c, d) -> tryJoinGame(this.getPlayer(), gameSpace));
+        element.setCallback((a, b, c, d) -> tryJoinGame(this.getPlayer(), gameSpace, joinIntent));
 
         return element;
     }

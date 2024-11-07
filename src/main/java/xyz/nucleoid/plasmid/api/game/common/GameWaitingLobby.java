@@ -10,8 +10,8 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.api.game.GameSpace;
-import xyz.nucleoid.plasmid.api.game.common.config.PlayerConfig;
+import xyz.nucleoid.plasmid.api.game.*;
+import xyz.nucleoid.plasmid.api.game.common.config.WaitingLobbyConfig;
 import xyz.nucleoid.plasmid.api.game.common.team.TeamSelectionLobby;
 import xyz.nucleoid.plasmid.api.game.common.widget.BossBarWidget;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
@@ -20,9 +20,6 @@ import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
 import xyz.nucleoid.plasmid.api.game.player.JoinOfferResult;
 import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
-import xyz.nucleoid.plasmid.api.game.GameActivity;
-import xyz.nucleoid.plasmid.api.game.GameResult;
-import xyz.nucleoid.plasmid.api.game.GameTexts;
 import xyz.nucleoid.plasmid.api.game.common.widget.SidebarWidget;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.compatibility.AfkDisplayCompatibility;
@@ -33,11 +30,11 @@ import java.util.List;
 /**
  * A very simple waiting lobby implementation that games can easily apply to their {@link GameActivity}.
  * <p>
- * This implements both control for minimum/maximum players as well as a countdown for game start, and additionally
+ * This implements both control for minimum/maximum players and a countdown for game start, and additionally
  * sets some basic rules which prevent players from damaging the map or each other.
  *
- * @see GameWaitingLobby#addTo(GameActivity, PlayerConfig)
- * @see PlayerConfig
+ * @see GameWaitingLobby#addTo(GameActivity, WaitingLobbyConfig)
+ * @see WaitingLobbyConfig
  * @see TeamSelectionLobby
  */
 public final class GameWaitingLobby {
@@ -51,8 +48,9 @@ public final class GameWaitingLobby {
     private static final Text PADDING_LINE = Text.literal(" ".repeat(36));
 
     private final GameSpace gameSpace;
-    private final PlayerConfig playerConfig;
+    private final WaitingLobbyConfig playerConfig;
 
+    private final PlayerLimiter limiter;
     private final BossBarWidget bar;
     private final SidebarWidget sidebar;
     private long countdownStart = -1;
@@ -62,11 +60,12 @@ public final class GameWaitingLobby {
     private boolean started;
     private List<Text> sidebarText;
 
-    private GameWaitingLobby(GameSpace gameSpace, PlayerConfig playerConfig, BossBarWidget bar, SidebarWidget sidebar) {
+    private GameWaitingLobby(GameSpace gameSpace, WaitingLobbyConfig playerConfig, BossBarWidget bar, SidebarWidget sidebar, PlayerLimiter limiter) {
         this.gameSpace = gameSpace;
         this.playerConfig = playerConfig;
         this.bar = bar;
         this.sidebar = sidebar;
+        this.limiter = limiter;
     }
 
     /**
@@ -75,13 +74,14 @@ public final class GameWaitingLobby {
      * @param activity the activity to apply to
      * @param playerConfig the config that this waiting lobby should respect regarding player counts and countdowns
      */
-    public static GameWaitingLobby addTo(GameActivity activity, PlayerConfig playerConfig) {
+    public static GameWaitingLobby addTo(GameActivity activity, WaitingLobbyConfig playerConfig) {
         var sourceConfig = activity.getGameSpace().getMetadata().sourceConfig();
 
         var widgets = GlobalWidgets.addTo(activity);
         var bar = widgets.addBossBar(WAITING_TITLE, WAITING_COLOR, BOSS_BAR_STYLE);
         var sidebar = widgets.addSidebar();
-        var lobby = new GameWaitingLobby(activity.getGameSpace(), playerConfig, bar, sidebar);
+        var limiter = PlayerLimiter.addTo(activity, playerConfig.playerConfig());
+        var lobby = new GameWaitingLobby(activity.getGameSpace(), playerConfig, bar, sidebar, limiter);
         activity.deny(GameRuleType.PVP).deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER)
                 .deny(GameRuleType.CRAFTING).deny(GameRuleType.PORTALS).deny(GameRuleType.THROW_ITEMS)
                 .deny(GameRuleType.INTERACTION).deny(GameRuleType.PLACE_BLOCKS).deny(GameRuleType.BREAK_BLOCKS);
@@ -91,6 +91,7 @@ public final class GameWaitingLobby {
         activity.listen(GamePlayerEvents.OFFER, lobby::offerPlayer);
         activity.listen(GamePlayerEvents.REMOVE, lobby::onRemovePlayer);
 
+        activity.listen(GameActivityEvents.STATE_UPDATE, lobby::updateState);
 
         lobby.setSidebarLines(sourceConfig.value().description());
         var title = GameConfig.shortName(sourceConfig).copy();
@@ -109,6 +110,11 @@ public final class GameWaitingLobby {
 
         return lobby;
     }
+
+    private GameSpaceState.Builder updateState(GameSpaceState.Builder builder) {
+        return builder.state(this.getTargetCountdownDuration() != -1 ? GameSpaceState.State.STARTING : GameSpaceState.State.WAITING);
+    }
+
     public void setSidebarTitle(Text text) {
         this.sidebar.setTitle(text);
     }
@@ -170,11 +176,6 @@ public final class GameWaitingLobby {
     }
 
     private JoinOfferResult offerPlayer(JoinOffer offer) {
-        int newPlayerCount = this.gameSpace.getPlayers().size() + offer.players().size();
-        if (newPlayerCount > this.playerConfig.maxPlayers()) {
-            return offer.reject(GameTexts.Join.gameFull());
-        }
-
         this.updateCountdown();
         return offer.pass();
     }
@@ -257,11 +258,16 @@ public final class GameWaitingLobby {
                 b.add(WAITING_TITLE);
             }
             b.add(ScreenTexts.EMPTY);
-            b.add(Text.translatable("text.plasmid.game.waiting_lobby.sidebar.players",
-                    Text.literal("" + this.gameSpace.getPlayers().size()).formatted(Formatting.AQUA),
-                    Text.literal("/").formatted(Formatting.GRAY),
-                    Text.literal("" + this.playerConfig.maxPlayers()).formatted(Formatting.AQUA)));
 
+            if (this.playerConfig.playerConfig().maxPlayers().isEmpty()) {
+                b.add(Text.translatable("text.plasmid.game.waiting_lobby.sidebar.players",
+                        Text.literal("" + this.gameSpace.getPlayers().size()).formatted(Formatting.AQUA), "", ""));
+            } else {
+                b.add(Text.translatable("text.plasmid.game.waiting_lobby.sidebar.players",
+                        Text.literal("" + this.gameSpace.getPlayers().size()).formatted(Formatting.AQUA),
+                        Text.literal("/").formatted(Formatting.GRAY),
+                        Text.literal("" + this.playerConfig.playerConfig().maxPlayers().orElse(0)).formatted(Formatting.AQUA)));
+            }
             if (this.sidebarText != null && !this.sidebarText.isEmpty()) {
                 b.add(ScreenTexts.EMPTY);
                 for (Text text : this.sidebarText) {
@@ -295,7 +301,7 @@ public final class GameWaitingLobby {
     }
 
     private boolean isFull() {
-        return this.gameSpace.getPlayers().size() >= this.playerConfig.maxPlayers();
+        return this.limiter.isFull();
     }
 
     private boolean isActiveFull() {

@@ -52,4 +52,27 @@ public interface GameSpacePlayers extends PlayerSet {
      * @return whether the {@link ServerPlayerEntity} was successfully removed
      */
     boolean kick(ServerPlayerEntity player);
+
+    /**
+     * @return a {@link PlayerSet} of players who joined with intent to only spectate
+     */
+    PlayerSet spectators();
+
+    /**
+     * @return a {@link PlayerSet} of players who joined with intent to actively play
+     */
+    PlayerSet players();
+
+    /**
+     * @return a {@link PlayerSet} of players who joined with provided intent
+     */
+    PlayerSet byIntent(JoinIntent joinIntent);
+
+    /**
+     * Changes stored player's join intent to selected one, allowing to switch player's state.
+     *
+     * @param player {@link ServerPlayerEntity} to change intent of
+     * @param joinIntent {@link JoinIntent} a new join intent
+     */
+    void modifyIntent(ServerPlayerEntity player, JoinIntent joinIntent);
 }

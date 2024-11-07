@@ -1,9 +1,12 @@
-package xyz.nucleoid.plasmid.api.game.player;
+package xyz.nucleoid.plasmid.impl.player;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
+import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
+import xyz.nucleoid.plasmid.api.game.player.JoinOfferResult;
 
 import java.util.*;
 import java.util.stream.Collectors;

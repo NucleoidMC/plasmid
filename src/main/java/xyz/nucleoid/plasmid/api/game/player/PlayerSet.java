@@ -2,10 +2,12 @@ package xyz.nucleoid.plasmid.api.game.player;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.util.PlayerRef;
 import xyz.nucleoid.plasmid.impl.player.EmptyPlayerSet;
 import xyz.nucleoid.plasmid.impl.player.ServerPlayerSet;
+import xyz.nucleoid.plasmid.impl.player.ServerWorldPlayerSet;
 
 import java.util.Iterator;
 import java.util.UUID;
@@ -24,6 +26,10 @@ public interface PlayerSet extends PlayerIterable {
 
     static PlayerSet ofServer(MinecraftServer server) {
         return new ServerPlayerSet(server.getPlayerManager());
+    }
+
+    static PlayerSet ofWorld(ServerWorld world) {
+        return new ServerWorldPlayerSet(world);
     }
 
     /**

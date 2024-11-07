@@ -3,6 +3,9 @@ package xyz.nucleoid.plasmid.impl.game.manager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.player.*;
+import xyz.nucleoid.plasmid.impl.player.LocalJoinAcceptor;
+import xyz.nucleoid.plasmid.impl.player.LocalJoinOffer;
+import xyz.nucleoid.plasmid.api.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.impl.player.isolation.IsolatingPlayerTeleporter;
 import xyz.nucleoid.plasmid.api.game.GameCloseReason;
 import xyz.nucleoid.plasmid.api.game.GameResult;
@@ -16,11 +19,15 @@ import java.util.UUID;
 public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     private final ManagedGameSpace space;
     final MutablePlayerSet set;
+    final MutablePlayerSet spectators;
+    final MutablePlayerSet players;
     final IsolatingPlayerTeleporter teleporter;
 
     ManagedGameSpacePlayers(ManagedGameSpace space) {
         this.space = space;
         this.set = new MutablePlayerSet(space.getServer());
+        this.spectators = new MutablePlayerSet(space.getServer());
+        this.players = new MutablePlayerSet(space.getServer());
         this.teleporter = new IsolatingPlayerTeleporter(space.getServer());
     }
 
@@ -74,6 +81,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
                     for (var player : players) {
                         this.teleporter.teleportIn(player, teleport::applyTeleport);
                         this.set.add(player);
+                        this.byIntent(intent).add(player);
                         this.space.onAddPlayer(player);
                         joiningSet.add(player);
                     }
@@ -104,6 +112,31 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         }
     }
 
+    @Override
+    public MutablePlayerSet byIntent(JoinIntent joinIntent) {
+        return switch (joinIntent) {
+            case PLAY -> this.players;
+            case SPECTATE -> this.spectators;
+        };
+    }
+
+    @Override
+    public void modifyIntent(ServerPlayerEntity player, JoinIntent joinIntent) {
+        this.spectators.remove(player);
+        this.players.remove(player);
+        this.byIntent(joinIntent).add(player);
+    }
+
+    @Override
+    public PlayerSet spectators() {
+        return this.spectators;
+    }
+
+    @Override
+    public PlayerSet players() {
+        return this.players;
+    }
+
     public boolean remove(ServerPlayerEntity player) {
         if (!this.set.contains(player)) {
             return false;
@@ -112,6 +145,8 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         this.space.onPlayerRemove(player);
 
         this.set.remove(player);
+        this.players.remove(player);
+        this.spectators.remove(player);
 
         this.attemptGarbageCollection();
 

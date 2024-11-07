@@ -99,7 +99,7 @@ public final class GamePlayerEvents {
     /**
      * Called when a group of {@link ServerPlayerEntity} tries to join this game.
      * <p>
-     * Games must respond to this event in order for players to be able to join by returning either
+     * Games should respond to this event in order for players to prevent players from joining or skip any further listeners.
      * {@link JoinOffer#accept()} or {@link JoinOffer#reject(Text)}.
      *
      * @see JoinOffer
@@ -114,7 +114,7 @@ public final class GamePlayerEvents {
                     return result;
                 }
             }
-            return offer.pass();
+            return offer.accept();
         } catch (Throwable throwable) {
             ctx.handleException(throwable);
             return offer.reject(GameTexts.Join.unexpectedError());

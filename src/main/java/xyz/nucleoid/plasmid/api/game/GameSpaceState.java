@@ -29,7 +29,8 @@ public interface GameSpaceState {
         public Builder() {}
 
         public Builder(GameSpace space) {
-            this.players = space.getPlayers().size();
+            this.players = space.getPlayers().players().size();
+            this.spectators = space.getPlayers().spectators().size();
         }
 
         public Builder players(int players, int spectators, int maxPlayers) {

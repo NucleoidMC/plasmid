@@ -27,7 +27,9 @@ import xyz.nucleoid.map_templates.MapTemplate;
 import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
 import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
-import xyz.nucleoid.plasmid.api.game.common.config.PlayerConfig;
+import xyz.nucleoid.plasmid.api.game.common.PlayerLimiter;
+import xyz.nucleoid.plasmid.api.game.common.config.PlayerLimiterConfig;
+import xyz.nucleoid.plasmid.api.game.common.config.WaitingLobbyConfig;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
@@ -69,7 +71,7 @@ public final class JankGame {
                             })
             );
 
-            GameWaitingLobby.addTo(activity, new PlayerConfig(1, 99));
+            GameWaitingLobby.addTo(activity, new WaitingLobbyConfig(1, 99));
 
             activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
             activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);
@@ -129,8 +131,9 @@ public final class JankGame {
             var mover = new ArmorStandEntity(world, 0.0, 65.0, 0.0);
             world.spawnEntity(mover);
 
+            PlayerLimiter.addTo(activity, new PlayerLimiterConfig(24));
+
             activity.listen(GameActivityEvents.STATE_UPDATE, state -> state
-                    .players(gameSpace.getPlayers().size(), 24)
                     .spectators(4)
                     .state(GameSpaceState.State.STARTING)
             );

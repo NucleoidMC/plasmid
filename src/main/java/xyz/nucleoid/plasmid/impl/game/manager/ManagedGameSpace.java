@@ -17,8 +17,8 @@ import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.api.game.player.JoinAcceptorResult;
 import xyz.nucleoid.plasmid.api.game.player.JoinOfferResult;
-import xyz.nucleoid.plasmid.api.game.player.LocalJoinAcceptor;
-import xyz.nucleoid.plasmid.api.game.player.LocalJoinOffer;
+import xyz.nucleoid.plasmid.impl.player.LocalJoinAcceptor;
+import xyz.nucleoid.plasmid.impl.player.LocalJoinOffer;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.api.event.GameEvents;
 

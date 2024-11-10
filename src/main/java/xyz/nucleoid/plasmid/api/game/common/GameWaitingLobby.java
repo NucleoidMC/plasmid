@@ -202,7 +202,7 @@ public final class GameWaitingLobby {
     }
 
     private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayerEntity player) {
-        layout.addRight(new LeaveGameWaitingLobbyUiElement(this.gameSpace, player));
+        layout.addTrailing(new LeaveGameWaitingLobbyUiElement(this.gameSpace, player));
     }
 
     private void updateCountdown() {

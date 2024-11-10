@@ -65,7 +65,7 @@ public final class TeamSelectionLobby {
     }
 
     private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayerEntity player) {
-        layout.addLeft(new TeamSelectionWaitingLobbyUiElement(teams, key -> {
+        layout.addLeading(new TeamSelectionWaitingLobbyUiElement(teams, key -> {
             return key == this.teamPreference.get(player.getUuid());
         }, key -> {
             var team = this.teams.byKey(key);

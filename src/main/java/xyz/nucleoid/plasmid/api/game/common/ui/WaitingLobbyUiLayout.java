@@ -7,9 +7,9 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public interface WaitingLobbyUiLayout {
-    void addLeft(WaitingLobbyUiElement element);
+    void addLeading(WaitingLobbyUiElement element);
 
-    void addRight(WaitingLobbyUiElement element);
+    void addTrailing(WaitingLobbyUiElement element);
 
     void refresh();
 

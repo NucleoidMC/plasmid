@@ -18,29 +18,29 @@ public final class WaitingLobbyUiLayoutImpl implements WaitingLobbyUiLayout {
 
     private final Consumer<GuiElementInterface[]> callback;
 
-    private final List<WaitingLobbyUiElement> leftElements = new ArrayList<>();
-    private final List<WaitingLobbyUiElement> rightElements = new ArrayList<>();
+    private final List<WaitingLobbyUiElement> leadingElements = new ArrayList<>();
+    private final List<WaitingLobbyUiElement> trailingElements = new ArrayList<>();
 
     public WaitingLobbyUiLayoutImpl(Consumer<GuiElementInterface[]> callback) {
         this.callback = callback;
     }
 
     @Override
-    public void addLeft(WaitingLobbyUiElement element) {
-        this.add(element, this.leftElements);
+    public void addLeading(WaitingLobbyUiElement element) {
+        this.add(element, this.leadingElements);
     }
 
     @Override
-    public void addRight(WaitingLobbyUiElement element) {
-        this.add(element, this.rightElements);
+    public void addTrailing(WaitingLobbyUiElement element) {
+        this.add(element, this.trailingElements);
     }
 
     private void add(WaitingLobbyUiElement element, List<WaitingLobbyUiElement> elements) {
         Objects.requireNonNull(element);
 
-        if (this.leftElements.contains(element) || this.rightElements.contains(element)) {
+        if (this.leadingElements.contains(element) || this.trailingElements.contains(element)) {
             throw new IllegalArgumentException("Element " + element + " has already been added to the layout");
-        } else if (this.leftElements.size() + this.rightElements.size() >= SIZE) {
+        } else if (this.leadingElements.size() + this.trailingElements.size() >= SIZE) {
             throw new IllegalStateException("Cannot have more than " + SIZE + " elements in the layout");
         }
 
@@ -51,17 +51,17 @@ public final class WaitingLobbyUiLayoutImpl implements WaitingLobbyUiLayout {
         var elements = new GuiElementInterface[SIZE];
         Arrays.fill(elements, GuiElement.EMPTY);
 
-        if (this.leftElements.isEmpty() && this.rightElements.isEmpty()) {
+        if (this.leadingElements.isEmpty() && this.trailingElements.isEmpty()) {
             return elements;
         }
 
-        var elementsToEntries = new HashMap<WaitingLobbyUiElement, WaitingLobbyUiLayoutEntry>(this.leftElements.size() + this.rightElements.size());
+        var elementsToEntries = new HashMap<WaitingLobbyUiElement, WaitingLobbyUiLayoutEntry>(this.leadingElements.size() + this.trailingElements.size());
 
-        for (var element : this.leftElements) {
+        for (var element : this.leadingElements) {
             elementsToEntries.put(element, new WaitingLobbyUiLayoutEntry(element));
         }
 
-        for (var element : this.rightElements) {
+        for (var element : this.trailingElements) {
             elementsToEntries.put(element, new WaitingLobbyUiLayoutEntry(element));
         }
 
@@ -79,7 +79,7 @@ public final class WaitingLobbyUiLayoutImpl implements WaitingLobbyUiLayout {
 
         int index = 0;
 
-        for (var element : this.leftElements) {
+        for (var element : this.leadingElements) {
             var entry = elementsToEntries.get(element);
 
             for (var guiElement : entry.getGuiElements()) {
@@ -90,7 +90,7 @@ public final class WaitingLobbyUiLayoutImpl implements WaitingLobbyUiLayout {
 
         index = SIZE - 1;
 
-        for (var element : this.rightElements) {
+        for (var element : this.trailingElements) {
             var entry = elementsToEntries.get(element);
 
             for (var guiElement : entry.getGuiElements()) {
@@ -109,6 +109,6 @@ public final class WaitingLobbyUiLayoutImpl implements WaitingLobbyUiLayout {
 
     @Override
     public String toString() {
-        return "WaitingLobbyUiLayoutImpl{leftElements=" + this.leftElements + ", rightElements=" + this.rightElements + "}";
+        return "WaitingLobbyUiLayoutImpl{leadingElements=" + this.leadingElements + ", trailingElements=" + this.trailingElements + "}";
     }
 }

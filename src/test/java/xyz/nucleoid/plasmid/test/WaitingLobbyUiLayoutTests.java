@@ -33,31 +33,31 @@ public class WaitingLobbyUiLayoutTests {
     }
 
     @Test
-    public void simpleLeftLayout() {
+    public void simpleLeadingLayout() {
         expectBuiltLayout((layout, map) -> {
-            layout.addLeft(new StaticWaitingLobbyUiElement(map.get('A')));
+            layout.addLeading(new StaticWaitingLobbyUiElement(map.get('A')));
         }, "A        ");
     }
 
     @Test
-    public void simpleRightLayout() {
+    public void simpleTrailingLayout() {
         expectBuiltLayout((layout, map) -> {
-            layout.addRight(new StaticWaitingLobbyUiElement(map.get('A')));
+            layout.addTrailing(new StaticWaitingLobbyUiElement(map.get('A')));
         }, "        A");
     }
 
     @Test
     public void simpleBothLayout() {
         expectBuiltLayout((layout, map) -> {
-            layout.addLeft(new StaticWaitingLobbyUiElement(map.get('A')));
-            layout.addRight(new StaticWaitingLobbyUiElement(map.get('B')));
+            layout.addLeading(new StaticWaitingLobbyUiElement(map.get('A')));
+            layout.addTrailing(new StaticWaitingLobbyUiElement(map.get('B')));
         }, "A       B");
     }
 
     @Test
-    public void extendedLeftLayout() {
+    public void extendedLeadingLayout() {
         expectBuiltLayout((layout, map) -> {
-            layout.addLeft(new StaticWaitingLobbyUiElement(map.get('E'), List.of(
+            layout.addLeading(new StaticWaitingLobbyUiElement(map.get('E'), List.of(
                     map.get('A'),
                     map.get('B'),
                     map.get('C'),
@@ -67,9 +67,9 @@ public class WaitingLobbyUiLayoutTests {
     }
 
     @Test
-    public void extendedRightLayout() {
+    public void extendedTrailingLayout() {
         expectBuiltLayout((layout, map) -> {
-            layout.addRight(new StaticWaitingLobbyUiElement(map.get('E'), List.of(
+            layout.addTrailing(new StaticWaitingLobbyUiElement(map.get('E'), List.of(
                     map.get('A'),
                     map.get('B'),
                     map.get('C'),
@@ -81,14 +81,14 @@ public class WaitingLobbyUiLayoutTests {
     @Test
     public void extendedBothLayout() {
         expectBuiltLayout((layout, map) -> {
-            layout.addLeft(new StaticWaitingLobbyUiElement(map.get('E'), List.of(
+            layout.addLeading(new StaticWaitingLobbyUiElement(map.get('E'), List.of(
                     map.get('A'),
                     map.get('B'),
                     map.get('C'),
                     map.get('D')
             )));
 
-            layout.addRight(new StaticWaitingLobbyUiElement(map.get('J'), List.of(
+            layout.addTrailing(new StaticWaitingLobbyUiElement(map.get('J'), List.of(
                     map.get('F'),
                     map.get('G'),
                     map.get('H'),
@@ -100,13 +100,13 @@ public class WaitingLobbyUiLayoutTests {
     @Test
     public void packedLayout() {
         expectBuiltLayout((layout, map) -> {
-            layout.addLeft(new StaticWaitingLobbyUiElement(map.get('D'), List.of(
+            layout.addLeading(new StaticWaitingLobbyUiElement(map.get('D'), List.of(
                     map.get('A'),
                     map.get('B'),
                     map.get('C')
             )));
 
-            layout.addRight(new StaticWaitingLobbyUiElement(map.get('K'), List.of(
+            layout.addTrailing(new StaticWaitingLobbyUiElement(map.get('K'), List.of(
                     map.get('E'),
                     map.get('F'),
                     map.get('G'),
@@ -120,13 +120,13 @@ public class WaitingLobbyUiLayoutTests {
     @Test
     public void shrunkLayout() {
         expectBuiltLayout((layout, map) -> {
-            layout.addLeft(new StaticWaitingLobbyUiElement(map.get('D'), List.of(
+            layout.addLeading(new StaticWaitingLobbyUiElement(map.get('D'), List.of(
                     map.get('A'),
                     map.get('B'),
                     map.get('C')
             )));
 
-            layout.addRight(new StaticWaitingLobbyUiElement(map.get('L'), List.of(
+            layout.addTrailing(new StaticWaitingLobbyUiElement(map.get('L'), List.of(
                     map.get('E'),
                     map.get('F'),
                     map.get('G'),
@@ -146,8 +146,8 @@ public class WaitingLobbyUiLayoutTests {
             var guiElement = new GuiElementBuilder(Items.MELON).build();
             var element = new StaticWaitingLobbyUiElement(guiElement);
 
-            layout.addLeft(element);
-            layout.addLeft(element);
+            layout.addLeading(element);
+            layout.addLeading(element);
         });
     }
 
@@ -159,8 +159,8 @@ public class WaitingLobbyUiLayoutTests {
             var guiElement = new GuiElementBuilder(Items.PUMPKIN).build();
             var element = new StaticWaitingLobbyUiElement(guiElement);
 
-            layout.addLeft(element);
-            layout.addRight(element);
+            layout.addLeading(element);
+            layout.addTrailing(element);
         });
     }
 
@@ -174,9 +174,9 @@ public class WaitingLobbyUiLayoutTests {
                 var element = new StaticWaitingLobbyUiElement(guiElement);
 
                 if (i % 2 == 0) {
-                    layout.addLeft(element);
+                    layout.addLeading(element);
                 } else {
-                    layout.addRight(element);
+                    layout.addTrailing(element);
                 }
             }
         });

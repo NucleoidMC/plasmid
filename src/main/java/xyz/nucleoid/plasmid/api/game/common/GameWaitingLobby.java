@@ -161,7 +161,7 @@ public final class GameWaitingLobby {
 
     @Nullable
     private GameResult requestStart() {
-        if (this.gameSpace.getPlayers().size() < this.playerConfig.minPlayers()) {
+        if (this.gameSpace.getPlayers().participants().size() < this.playerConfig.minPlayers()) {
             return GameResult.error(GameTexts.Start.notEnoughPlayers());
         }
 
@@ -218,7 +218,7 @@ public final class GameWaitingLobby {
             return START_REQUESTED_COUNTDOWN;
         }
 
-        if (this.gameSpace.getPlayers().size() >= this.playerConfig.minPlayers()) {
+        if (this.gameSpace.getPlayers().participants().size() >= this.playerConfig.minPlayers()) {
             if (this.isActiveFull()) {
                 return countdown.fullSeconds() * 20L;
             } else if (this.isReady()) {
@@ -261,10 +261,10 @@ public final class GameWaitingLobby {
 
             if (this.playerConfig.playerConfig().maxPlayers().isEmpty()) {
                 b.add(Text.translatable("text.plasmid.game.waiting_lobby.sidebar.players",
-                        Text.literal("" + this.gameSpace.getPlayers().size()).formatted(Formatting.AQUA), "", ""));
+                        Text.literal("" + this.gameSpace.getPlayers().participants().size()).formatted(Formatting.AQUA), "", ""));
             } else {
                 b.add(Text.translatable("text.plasmid.game.waiting_lobby.sidebar.players",
-                        Text.literal("" + this.gameSpace.getPlayers().size()).formatted(Formatting.AQUA),
+                        Text.literal("" + this.gameSpace.getPlayers().participants().size()).formatted(Formatting.AQUA),
                         Text.literal("/").formatted(Formatting.GRAY),
                         Text.literal("" + this.playerConfig.playerConfig().maxPlayers().orElse(0)).formatted(Formatting.AQUA)));
             }
@@ -297,7 +297,7 @@ public final class GameWaitingLobby {
     }
 
     private boolean isReady() {
-        return this.gameSpace.getPlayers().size() >= this.playerConfig.thresholdPlayers();
+        return this.gameSpace.getPlayers().participants().size() >= this.playerConfig.thresholdPlayers();
     }
 
     private boolean isFull() {

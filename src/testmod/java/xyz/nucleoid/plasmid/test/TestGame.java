@@ -100,7 +100,7 @@ public final class TestGame {
 
             activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
             activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);
-            activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
+            activity.deny(GameRuleType.THROW_ITEMS);
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
                 player.setPos(0.0, 65.0, 0.0);
@@ -121,7 +121,7 @@ public final class TestGame {
             long currentTime = gameSpace.getTime();
             activity.deny(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
             activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);
-            activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
+            activity.deny(GameRuleType.THROW_ITEMS);
 
             activity.deny(GameRuleType.INTERACTION).allow(GameRuleType.USE_BLOCKS);
 

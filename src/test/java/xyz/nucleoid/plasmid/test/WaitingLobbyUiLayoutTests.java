@@ -11,6 +11,7 @@ import net.minecraft.Bootstrap;
 import net.minecraft.SharedConstants;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
+import xyz.nucleoid.plasmid.game.common.ui.ExtensionGuiElement;
 import xyz.nucleoid.plasmid.game.common.ui.WaitingLobbyUiLayout;
 
 import java.util.List;
@@ -185,6 +186,7 @@ public class WaitingLobbyUiLayoutTests {
         var expected = buildGuiElementsFromPattern(expectedPattern, map);
 
         var layout = WaitingLobbyUiLayout.of(actual -> {
+            extractExtensionGuiElements(actual);
             assertArrayEquals(expected, actual);
         });
 
@@ -215,6 +217,14 @@ public class WaitingLobbyUiLayoutTests {
         }
 
         return array;
+    }
+
+    private static void extractExtensionGuiElements(GuiElementInterface[] elements) {
+        for (int index = 0; index < elements.length; index++) {
+            if (elements[index] instanceof ExtensionGuiElement element) {
+                elements[index] = element.delegate();
+            }
+        }
     }
 
     private static WaitingLobbyUiLayout createNonBuildingLayout() {

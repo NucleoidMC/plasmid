@@ -47,8 +47,8 @@ public class TeamSelectionWaitingLobbyUiElement implements WaitingLobbyUiElement
 
             var element = new GuiElementBuilder(ColoredBlocks.wool(config.blockDyeColor()).asItem())
                     .setItemName(name)
-                    .setCallback((index, type, action) -> {
-                        if (type.isRight) {
+                    .setCallback((index, type, action, gui) -> {
+                        if (WaitingLobbyUiElement.isClick(type, gui)) {
                             this.selectCallback.accept(key);
                         }
                     })

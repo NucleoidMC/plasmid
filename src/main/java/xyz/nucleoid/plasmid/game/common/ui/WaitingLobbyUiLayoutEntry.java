@@ -17,12 +17,17 @@ class WaitingLobbyUiLayoutEntry {
         this.guiElements = element.createExtendedElements();
     }
 
+    public WaitingLobbyUiElement getElement() {
+        return this.element;
+    }
+
     public SequencedCollection<GuiElementInterface> getGuiElements() {
         return this.guiElements;
     }
 
     public void shrink() {
-        this.guiElements = List.of(this.element.createMainElement());
+        var element = new ExtensionGuiElement(this.element.createMainElement(), this);
+        this.guiElements = List.of(element);
     }
 
     public int size() {

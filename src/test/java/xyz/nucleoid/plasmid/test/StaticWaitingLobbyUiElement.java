@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.test;
 
 import eu.pb4.sgui.api.elements.GuiElementInterface;
-import xyz.nucleoid.plasmid.game.common.ui.element.WaitingLobbyUiElement;
+import xyz.nucleoid.plasmid.api.game.common.ui.WaitingLobbyUiElement;
 
 import java.util.List;
 import java.util.SequencedCollection;

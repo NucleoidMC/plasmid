@@ -11,8 +11,9 @@ import net.minecraft.Bootstrap;
 import net.minecraft.SharedConstants;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
-import xyz.nucleoid.plasmid.game.common.ui.ExtensionGuiElement;
-import xyz.nucleoid.plasmid.game.common.ui.WaitingLobbyUiLayout;
+import xyz.nucleoid.plasmid.api.game.common.ui.WaitingLobbyUiLayout;
+import xyz.nucleoid.plasmid.impl.game.common.ui.ExtensionGuiElement;
+import xyz.nucleoid.plasmid.impl.game.common.ui.WaitingLobbyUiLayoutImpl;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -230,6 +231,6 @@ public class WaitingLobbyUiLayoutTests {
     private static WaitingLobbyUiLayout createNonBuildingLayout() {
         // WaitingLobbyUiLayout#refresh isn't expected to be called,
         // so the callback can be null
-        return WaitingLobbyUiLayout.of(null);
+        return new WaitingLobbyUiLayoutImpl(null);
     }
 }

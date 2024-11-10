@@ -30,9 +30,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
-import xyz.nucleoid.plasmid.game.player.isolation.PlayerManagerAccess;
-import xyz.nucleoid.plasmid.game.player.isolation.PlayerResetter;
+import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.player.isolation.PlayerManagerAccess;
+import xyz.nucleoid.plasmid.impl.player.isolation.PlayerResetter;
 
 import java.util.Map;
 import java.util.UUID;
@@ -64,7 +64,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
 
     @Inject(method = "remove", at = @At("RETURN"))
     private void removePlayer(ServerPlayerEntity player, CallbackInfo ci) {
-        var gameSpace = GameSpaceManager.get().byPlayer(player);
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(player);
         if (gameSpace != null) {
             gameSpace.getPlayers().remove(player);
         }
@@ -83,7 +83,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             ServerPlayerEntity oldPlayer, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayerEntity> ci,
             TeleportTarget respawnTarget, ServerWorld respawnWorld, ServerPlayerEntity respawnedPlayer
     ) {
-        var gameSpace = GameSpaceManager.get().byPlayer(oldPlayer);
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(oldPlayer);
 
         if (gameSpace != null) {
             gameSpace.getPlayers().remove(oldPlayer);
@@ -143,7 +143,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/PlayerSaveHandler;savePlayerData(Lnet/minecraft/entity/player/PlayerEntity;)V")
     )
     private boolean savePlayerData(PlayerSaveHandler handler, PlayerEntity player) {
-        return !GameSpaceManager.get().inGame(player);
+        return !GameSpaceManagerImpl.get().inGame(player);
     }
 
     @Override

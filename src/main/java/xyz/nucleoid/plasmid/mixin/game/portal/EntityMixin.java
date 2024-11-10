@@ -20,10 +20,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.plasmid.game.portal.GamePortal;
-import xyz.nucleoid.plasmid.game.portal.GamePortalDisplay;
-import xyz.nucleoid.plasmid.game.portal.GamePortalInterface;
-import xyz.nucleoid.plasmid.util.compatibility.DisguiseLibCompatibility;
+import xyz.nucleoid.plasmid.impl.portal.GamePortal;
+import xyz.nucleoid.plasmid.impl.portal.GamePortalDisplay;
+import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
+import xyz.nucleoid.plasmid.impl.compatibility.DisguiseLibCompatibility;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements GamePortalInterface {
@@ -45,7 +45,7 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Override
     public boolean interactWithPortal(ServerPlayerEntity player) {
         if (this.portal != null) {
-            this.portal.requestJoin(player);
+            this.portal.requestJoin(player, false);
             return true;
         }
         return false;

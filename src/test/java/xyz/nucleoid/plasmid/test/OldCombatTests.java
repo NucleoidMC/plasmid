@@ -14,7 +14,7 @@ import net.minecraft.item.Items;
 import net.minecraft.registry.entry.RegistryEntry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import xyz.nucleoid.plasmid.game.common.OldCombat;
+import xyz.nucleoid.plasmid.api.game.common.OldCombat;
 
 import static org.junit.jupiter.api.Assertions.*;
 

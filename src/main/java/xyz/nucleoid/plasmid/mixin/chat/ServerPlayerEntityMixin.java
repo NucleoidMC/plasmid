@@ -2,8 +2,8 @@ package xyz.nucleoid.plasmid.mixin.chat;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
-import xyz.nucleoid.plasmid.chat.ChatChannel;
-import xyz.nucleoid.plasmid.chat.HasChatChannel;
+import xyz.nucleoid.plasmid.api.chat.ChatChannel;
+import xyz.nucleoid.plasmid.api.chat.HasChatChannel;
 
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerEntityMixin implements HasChatChannel {

@@ -1,8 +1,8 @@
 package xyz.nucleoid.plasmid.test;
 
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
-import xyz.nucleoid.plasmid.game.GameOpenContext;
-import xyz.nucleoid.plasmid.game.GameOpenProcedure;
+import xyz.nucleoid.plasmid.api.game.GameOpenContext;
+import xyz.nucleoid.plasmid.api.game.GameOpenProcedure;
 
 public class PlayerlessGame {
     public static GameOpenProcedure open(GameOpenContext context) {

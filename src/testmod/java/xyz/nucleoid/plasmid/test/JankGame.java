@@ -1,24 +1,17 @@
 package xyz.nucleoid.plasmid.test;
 
 import eu.pb4.polymer.common.api.PolymerCommonUtils;
-import eu.pb4.polymer.core.api.entity.PolymerEntityUtils;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
 import eu.pb4.sidebars.api.SidebarUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerPosition;
-import net.minecraft.entity.vehicle.ChestBoatEntity;
-import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.network.packet.c2s.play.VehicleMoveC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -31,15 +24,17 @@ import net.minecraft.world.GameRules;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.map_templates.BlockBounds;
 import xyz.nucleoid.map_templates.MapTemplate;
-import xyz.nucleoid.plasmid.game.*;
-import xyz.nucleoid.plasmid.game.common.GameWaitingLobby;
-import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
-import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
-import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
-import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
-import xyz.nucleoid.plasmid.game.player.JoinOffer;
-import xyz.nucleoid.plasmid.game.rule.GameRuleType;
-import xyz.nucleoid.plasmid.game.world.generator.TemplateChunkGenerator;
+import xyz.nucleoid.plasmid.api.game.*;
+import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
+import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
+import xyz.nucleoid.plasmid.api.game.common.PlayerLimiter;
+import xyz.nucleoid.plasmid.api.game.common.config.PlayerLimiterConfig;
+import xyz.nucleoid.plasmid.api.game.common.config.WaitingLobbyConfig;
+import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
+import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
+import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
+import xyz.nucleoid.plasmid.api.game.world.generator.TemplateChunkGenerator;
 import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerC2SPacketEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
@@ -76,7 +71,7 @@ public final class JankGame {
                             })
             );
 
-            GameWaitingLobby.addTo(activity, new PlayerConfig(1, 99));
+            GameWaitingLobby.addTo(activity, new WaitingLobbyConfig(1, 99));
 
             activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
             activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);
@@ -135,6 +130,13 @@ public final class JankGame {
             });
             var mover = new ArmorStandEntity(world, 0.0, 65.0, 0.0);
             world.spawnEntity(mover);
+
+            PlayerLimiter.addTo(activity, new PlayerLimiterConfig(24));
+
+            activity.listen(GameActivityEvents.STATE_UPDATE, state -> state
+                    .spectators(4)
+                    .state(GameSpaceState.State.STARTING)
+            );
 
             activity.listen(GamePlayerEvents.ADD, player -> {
                 player.networkHandler.sendPacket(CAMERA.createSpawnPacket(new EntityTrackerEntry(world, CAMERA, 1, false, player.networkHandler::sendPacket)));

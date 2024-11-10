@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 public record PlasmidConfig(
+        boolean ignoreInvalidGames,
         Optional<String> userFacingPackAddress,
         Optional<PlasmidWebServer.Config> webServerConfig
 ) {
@@ -28,6 +29,7 @@ public record PlasmidConfig(
 
     private static final Codec<PlasmidConfig> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
+                Codec.BOOL.optionalFieldOf("ignore_invalid_game_configs", false).forGetter(PlasmidConfig::ignoreInvalidGames),
                 Codec.STRING.optionalFieldOf("resource_pack_address").forGetter(PlasmidConfig::userFacingPackAddress),
                 PlasmidWebServer.Config.CODEC.optionalFieldOf("web_server").forGetter(PlasmidConfig::webServerConfig)
         ).apply(instance, PlasmidConfig::new)
@@ -37,6 +39,7 @@ public record PlasmidConfig(
 
     private PlasmidConfig() {
         this(
+                false,
                 Optional.of("http://127.0.0.1:25566/" + PlasmidWebServer.RESOURCE_PACKS_ENDPOINT),
                 Optional.of(new PlasmidWebServer.Config(25566))
         );

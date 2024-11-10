@@ -4,6 +4,7 @@
   "package": "xyz.nucleoid.plasmid.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "SimpleRegistryMixin",
     "chat.PlayerEntityMixin",
     "chat.PlayerListS2CPacketEntryAccessor",
     "chat.ServerPlayerEntityMixin",

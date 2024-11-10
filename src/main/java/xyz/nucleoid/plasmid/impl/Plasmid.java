@@ -1,5 +1,7 @@
 package xyz.nucleoid.plasmid.impl;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.sun.net.httpserver.HttpServer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -11,12 +13,16 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Unit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nucleoid.plasmid.api.event.GameEvents;
+import xyz.nucleoid.plasmid.api.game.GameOpenContext;
+import xyz.nucleoid.plasmid.api.game.GameOpenException;
 import xyz.nucleoid.plasmid.api.game.GameType;
 import xyz.nucleoid.plasmid.impl.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.impl.game.composite.RandomGameConfig;
@@ -42,7 +48,7 @@ public final class Plasmid implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        DynamicRegistries.register(GameConfigs.REGISTRY_KEY, GameConfig.DIRECT_CODEC);
+        DynamicRegistries.register(GameConfigs.REGISTRY_KEY, GameConfig.REGISTRY_CODEC);
 
         GamePortalConfig.register(Identifier.of(ID, "single_game"), SingleGamePortalConfig.CODEC);
         GamePortalConfig.register(Identifier.of(ID, "new_game"), NewGamePortalConfig.CODEC);
@@ -56,6 +62,10 @@ public final class Plasmid implements ModInitializer {
         MenuEntryConfig.register(Identifier.of(ID, "portal"), PortalEntryConfig.CODEC);
 
         GameType.register(Identifier.of(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
+        GameType.register(Identifier.of(Plasmid.ID, "invalid"), MapCodec.unit(""), (context) -> {
+            var id = context.server().getRegistryManager().getOrThrow(GameConfigs.REGISTRY_KEY).getId(context.game());
+            throw new GameOpenException(Text.translatable("text.plasmid.map.open.invalid_game", id != null ? id.toString() : context.game()));
+        });
 
         this.registerCallbacks();
 

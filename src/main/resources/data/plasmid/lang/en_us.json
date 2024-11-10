@@ -93,6 +93,7 @@
   "text.plasmid.map.leave.success": "You have left '%s'!",
   "text.plasmid.map.map_not_here": "No map found here",
   "text.plasmid.map.open.error": "An unexpected error occurred while trying to open workspace!",
+  "text.plasmid.map.open.invalid_game": "Tried to open invalid game '%s'!",
   "text.plasmid.map.open.invalid_generator_config": "Invalid generator config! %s",
   "text.plasmid.map.open.join_command": "/map join %s",
   "text.plasmid.map.open.map_already_exists": "Map with id '%s' already exists!",

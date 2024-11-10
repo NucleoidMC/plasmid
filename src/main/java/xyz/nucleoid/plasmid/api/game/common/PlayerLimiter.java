@@ -44,12 +44,12 @@ public final class PlayerLimiter {
         if (max < 0) {
             return false;
         }
-        return this.gameSpace.getPlayers().players().size() >= max;
+        return this.gameSpace.getPlayers().participants().size() >= max;
     }
 
     private GameSpaceState.Builder updateState(GameSpaceState.Builder builder) {
         var max = this.config.maxPlayers().orElse(-1);
-        return builder.maxPlayers(max).canPlay(max < 0 || this.gameSpace.getPlayers().players().size() < max).canSpectate(this.config.allowSpectators());
+        return builder.maxPlayers(max).canPlay(max < 0 || this.gameSpace.getPlayers().participants().size() < max).canSpectate(this.config.allowSpectators());
     }
 
     private JoinOfferResult offerPlayer(JoinOffer offer) {
@@ -62,7 +62,7 @@ public final class PlayerLimiter {
         }
 
 
-        int newPlayerCount = this.gameSpace.getPlayers().players().size() + offer.players().size();
+        int newPlayerCount = this.gameSpace.getPlayers().participants().size() + offer.players().size();
         if (newPlayerCount > max) {
             return offer.reject(GameTexts.Join.gameFull());
         }

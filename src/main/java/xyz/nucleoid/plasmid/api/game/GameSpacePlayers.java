@@ -61,7 +61,7 @@ public interface GameSpacePlayers extends PlayerSet {
     /**
      * @return a {@link PlayerSet} of players who joined with intent to actively play
      */
-    PlayerSet players();
+    PlayerSet participants();
 
     /**
      * @return a {@link PlayerSet} of players who joined with provided intent

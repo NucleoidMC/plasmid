@@ -133,7 +133,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
     @Override
-    public PlayerSet players() {
+    public PlayerSet participants() {
         return this.players;
     }
 

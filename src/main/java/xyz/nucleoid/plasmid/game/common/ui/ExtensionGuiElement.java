@@ -25,10 +25,12 @@ public record ExtensionGuiElement(GuiElementInterface delegate, WaitingLobbyUiLa
         var player = parent.getPlayer();
         var name = this.delegate.getItemStackForDisplay(parent).getName().copy();
 
-        var ui = Guis.createSelectorGui(player, name, true, () -> {
-            // Refresh elements
-            this.openExtendedGui(parent);
-        }, () -> {
+        var ui = Guis.createSelectorGui(player, name, true, gui -> {
+            if (gui.isOpen()) {
+                // Refresh elements
+                this.openExtendedGui(parent);
+            }
+        }, gui -> {
             parent.open();
         }, this.entry.getElement().createExtendedElements());
 

@@ -18,11 +18,14 @@ import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.GameTexts;
 import xyz.nucleoid.plasmid.game.common.config.PlayerConfig;
 import xyz.nucleoid.plasmid.game.common.ui.WaitingLobbyUi;
+import xyz.nucleoid.plasmid.game.common.ui.WaitingLobbyUiLayout;
+import xyz.nucleoid.plasmid.game.common.ui.element.LeaveGameWaitingLobbyUiElement;
 import xyz.nucleoid.plasmid.game.common.widget.BossBarWidget;
 import xyz.nucleoid.plasmid.game.common.widget.SidebarWidget;
 import xyz.nucleoid.plasmid.game.config.GameConfig;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.game.event.GameWaitingLobbyEvents;
 import xyz.nucleoid.plasmid.game.manager.GameSpaceManager;
 import xyz.nucleoid.plasmid.game.player.JoinOffer;
 import xyz.nucleoid.plasmid.game.player.JoinOfferResult;
@@ -94,6 +97,7 @@ public final class GameWaitingLobby {
         activity.listen(GamePlayerEvents.OFFER, lobby::offerPlayer);
         activity.listen(GamePlayerEvents.ADD, lobby::onAddPlayer);
         activity.listen(GamePlayerEvents.REMOVE, lobby::onRemovePlayer);
+        activity.listen(GameWaitingLobbyEvents.BUILD_UI_LAYOUT, lobby::onBuildUiLayout);
 
 
         lobby.setSidebarLines(sourceConfig.value().description());
@@ -195,6 +199,10 @@ public final class GameWaitingLobby {
 
     private void onRemovePlayer(ServerPlayerEntity player) {
         this.updateCountdown();
+    }
+
+    private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayerEntity player) {
+        layout.addRight(new LeaveGameWaitingLobbyUiElement(this.gameSpace, player));
     }
 
     private void updateCountdown() {

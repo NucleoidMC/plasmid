@@ -26,8 +26,10 @@ class WaitingLobbyUiLayoutEntry {
     }
 
     public void shrink() {
-        var element = new ExtensionGuiElement(this.element.createMainElement(), this);
-        this.guiElements = List.of(element);
+        if (this.guiElements.size() > 1) {
+            var element = new ExtensionGuiElement(this.element.createMainElement(), this);
+            this.guiElements = List.of(element);
+        }
     }
 
     public int size() {

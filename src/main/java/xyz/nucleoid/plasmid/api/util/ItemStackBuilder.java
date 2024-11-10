@@ -10,8 +10,13 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -44,6 +49,18 @@ public final class ItemStackBuilder {
     public ItemStackBuilder setCount(int count) {
         this.stack.setCount(count);
         return this;
+    }
+
+    public ItemStackBuilder addEnchantment(MinecraftServer server, RegistryKey<Enchantment> enchantment, int level) {
+        return this.addEnchantment(server.getRegistryManager(), enchantment, level);
+    }
+
+    public ItemStackBuilder addEnchantment(World world, RegistryKey<Enchantment> enchantment, int level) {
+        return this.addEnchantment(world.getRegistryManager(), enchantment, level);
+    }
+
+    public ItemStackBuilder addEnchantment(RegistryWrapper.WrapperLookup lookup, RegistryKey<Enchantment> enchantment, int level) {
+        return this.addEnchantment(lookup.getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(enchantment), level);
     }
 
     public ItemStackBuilder addEnchantment(RegistryEntry<Enchantment> enchantment, int level) {

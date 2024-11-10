@@ -11,12 +11,19 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public final class WaitingLobbyUiLayout {
     private static final int SIZE = 9;
 
+    private final Consumer<GuiElementInterface[]> callback;
+
     private final List<WaitingLobbyUiElement> leftElements = new ArrayList<>();
     private final List<WaitingLobbyUiElement> rightElements = new ArrayList<>();
+
+    private WaitingLobbyUiLayout(Consumer<GuiElementInterface[]> callback) {
+        this.callback = callback;
+    }
 
     public void addLeft(WaitingLobbyUiElement element) {
         this.add(element, this.leftElements);
@@ -38,7 +45,7 @@ public final class WaitingLobbyUiLayout {
         elements.add(element);
     }
 
-    public GuiElementInterface[] build() {
+    private GuiElementInterface[] build() {
         var elements = new GuiElementInterface[SIZE];
         Arrays.fill(elements, GuiElement.EMPTY);
 
@@ -93,8 +100,16 @@ public final class WaitingLobbyUiLayout {
         return elements;
     }
 
+    public void refresh() {
+        this.callback.accept(this.build());
+    }
+
     @Override
     public String toString() {
         return "WaitingLobbyUiLayout{leftElements=" + this.leftElements + ", rightElements=" + this.rightElements + "}";
+    }
+
+    public static WaitingLobbyUiLayout of(Consumer<GuiElementInterface[]> callback) {
+        return new WaitingLobbyUiLayout(callback);
     }
 }

@@ -139,7 +139,7 @@ public class WaitingLobbyUiLayoutTests {
     @Test
     public void cannotAddDuplicateElement() {
         assertThrows(IllegalArgumentException.class, () -> {
-            var layout = new WaitingLobbyUiLayout();
+            var layout = createNonBuildingLayout();
 
             var guiElement = new GuiElementBuilder(Items.MELON).build();
             var element = new StaticWaitingLobbyUiElement(guiElement);
@@ -152,7 +152,7 @@ public class WaitingLobbyUiLayoutTests {
     @Test
     public void cannotAddDuplicateElementToEitherSide() {
         assertThrows(IllegalArgumentException.class, () -> {
-            var layout = new WaitingLobbyUiLayout();
+            var layout = createNonBuildingLayout();
 
             var guiElement = new GuiElementBuilder(Items.PUMPKIN).build();
             var element = new StaticWaitingLobbyUiElement(guiElement);
@@ -165,7 +165,7 @@ public class WaitingLobbyUiLayoutTests {
     @Test
     public void cannotExceedMaximumElements() {
         assertThrows(IllegalStateException.class, () -> {
-            var layout = new WaitingLobbyUiLayout();
+            var layout = createNonBuildingLayout();
 
             for (int i = 0; i < 10; i++) {
                 var guiElement = new GuiElementBuilder(Items.DIRT).build();
@@ -182,14 +182,14 @@ public class WaitingLobbyUiLayoutTests {
 
     private static void expectBuiltLayout(BiConsumer<WaitingLobbyUiLayout, Char2ObjectMap<GuiElementInterface>> consumer, String expectedPattern) {
         var map = createGuiElementMap();
-
-        var layout = new WaitingLobbyUiLayout();
-        consumer.accept(layout, map);
-
         var expected = buildGuiElementsFromPattern(expectedPattern, map);
-        var actual = layout.build();
 
-        assertArrayEquals(expected, actual);
+        var layout = WaitingLobbyUiLayout.of(actual -> {
+            assertArrayEquals(expected, actual);
+        });
+
+        consumer.accept(layout, map);
+        layout.refresh();
     }
 
     private static Char2ObjectMap<GuiElementInterface> createGuiElementMap() {
@@ -215,5 +215,11 @@ public class WaitingLobbyUiLayoutTests {
         }
 
         return array;
+    }
+
+    private static WaitingLobbyUiLayout createNonBuildingLayout() {
+        // WaitingLobbyUiLayout#refresh isn't expected to be called,
+        // so the callback can be null
+        return WaitingLobbyUiLayout.of(null);
     }
 }

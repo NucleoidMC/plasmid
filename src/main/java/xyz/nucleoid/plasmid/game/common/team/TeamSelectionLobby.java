@@ -65,11 +65,14 @@ public final class TeamSelectionLobby {
 
     private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayerEntity player) {
         layout.addLeft(new TeamSelectionWaitingLobbyUiElement(teams, key -> {
+            return key == this.teamPreference.get(player.getUuid());
+        }, key -> {
             var team = this.teams.byKey(key);
             if (team != null) {
                 var config = team.config();
 
                 this.teamPreference.put(player.getUuid(), key);
+                layout.refresh();
 
                 var message = Text.translatable("text.plasmid.team_selection.requested_team",
                         Text.translatable("text.plasmid.team_selection.suffixed_team", config.name()).formatted(config.chatFormatting()));

@@ -10,18 +10,20 @@ public class WaitingLobbyUi extends HotbarGui {
     public WaitingLobbyUi(ServerPlayerEntity player, GameSpace gameSpace) {
         super(player);
 
-        var layout = new WaitingLobbyUiLayout();
+        var layout = WaitingLobbyUiLayout.of(elements -> {
+            int index = 0;
+
+            for (var element : elements) {
+                this.setSlot(index, element);
+                index += 1;
+            }
+        });
 
         try (var invokers = Stimuli.select().forEntity(player)) {
             invokers.get(GameWaitingLobbyEvents.BUILD_UI_LAYOUT).onBuildUiLayout(layout, player);
         }
 
-        int index = 0;
-
-        for (var element : layout.build()) {
-            this.setSlot(index, element);
-            index += 1;
-        }
+        layout.refresh();
     }
 
     @Override

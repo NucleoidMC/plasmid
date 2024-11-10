@@ -12,13 +12,18 @@ import xyz.nucleoid.plasmid.util.ColoredBlocks;
 import java.util.ArrayList;
 import java.util.SequencedCollection;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public class TeamSelectionWaitingLobbyUiElement implements WaitingLobbyUiElement {
     private final GameTeamList teams;
+
+    private final Predicate<GameTeamKey> activePredicate;
     private final Consumer<GameTeamKey> selectCallback;
 
-    public TeamSelectionWaitingLobbyUiElement(GameTeamList teams, Consumer<GameTeamKey> selectCallback) {
+    public TeamSelectionWaitingLobbyUiElement(GameTeamList teams, Predicate<GameTeamKey> activePredicate, Consumer<GameTeamKey> selectCallback) {
         this.teams = teams;
+
+        this.activePredicate = activePredicate;
         this.selectCallback = selectCallback;
     }
 
@@ -47,6 +52,7 @@ public class TeamSelectionWaitingLobbyUiElement implements WaitingLobbyUiElement
                             this.selectCallback.accept(key);
                         }
                     })
+                    .glow(this.activePredicate.test(key))
                     .build();
 
             extendedElements.add(element);

@@ -97,7 +97,7 @@ public final class Plasmid implements ModInitializer {
                             && hand == Hand.MAIN_HAND
             ) {
                 if (portalInterface.interactWithPortal(serverPlayer)) {
-                    return ActionResult.SUCCESS;
+                    return ActionResult.SUCCESS_SERVER;
                 }
             }
 

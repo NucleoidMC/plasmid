@@ -112,7 +112,7 @@ public final class TeamSelectionLobby {
 
                 player.sendMessage(message, false);
 
-                return ActionResult.SUCCESS;
+                return ActionResult.SUCCESS_SERVER;
             }
         }
 

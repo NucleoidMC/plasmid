@@ -13,6 +13,7 @@ import xyz.nucleoid.plasmid.api.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.api.util.PlayerPos;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -74,21 +75,21 @@ public record LocalJoinAcceptor(Collection<ServerPlayerEntity> serverPlayers, Jo
     public static class Teleport implements JoinAcceptorResult.Teleport {
         private final Map<UUID, PlayerPos> positions;
 
-        private final List<Consumer<PlayerSet>> thenRun = new ArrayList<>();
+        private final List<BiConsumer<PlayerSet, JoinIntent>> thenRun = new ArrayList<>();
 
         Teleport(Map<UUID, PlayerPos> positions) {
             this.positions = positions;
         }
 
         @Override
-        public JoinAcceptorResult.Teleport thenRun(Consumer<PlayerSet> consumer) {
+        public JoinAcceptorResult.Teleport thenRun(BiConsumer<PlayerSet, JoinIntent> consumer) {
             this.thenRun.add(consumer);
             return this;
         }
 
-        public void runCallbacks(PlayerSet players) {
+        public void runCallbacks(PlayerSet players, JoinIntent intent) {
             for (var consumer : this.thenRun) {
-                consumer.accept(players);
+                consumer.accept(players, intent);
             }
         }
 

@@ -85,7 +85,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
                         this.space.onAddPlayer(player);
                         joiningSet.add(player);
                     }
-                    teleport.runCallbacks(joiningSet);
+                    teleport.runCallbacks(joiningSet, intent);
 
                     return GameResult.ok();
                 } catch (Throwable throwable) {

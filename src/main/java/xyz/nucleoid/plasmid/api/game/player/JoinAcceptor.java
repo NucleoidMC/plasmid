@@ -124,4 +124,30 @@ public interface JoinAcceptor {
     default JoinAcceptorResult pass() {
         return JoinAcceptorResult.PASS;
     }
+
+    /**
+     * The result of this function only is selected for spectators, returning pass for non-spectators
+     * {@link GamePlayerEvents#ACCEPT} listener.
+     * @return a result
+     */
+    default JoinAcceptorResult ifSpectator(Function<JoinAcceptor, JoinAcceptorResult> spectatorFunction) {
+        if (this.intent() == JoinIntent.SPECTATE) {
+            return spectatorFunction.apply(this);
+        } else {
+            return this.pass();
+        }
+    }
+
+    /**
+     * The result of this function only is selected for participants, returning pass for spectators
+     * {@link GamePlayerEvents#ACCEPT} listener.
+     * @return a result
+     */
+    default JoinAcceptorResult ifParticipant(Function<JoinAcceptor, JoinAcceptorResult> participantFunction) {
+        if (this.intent() == JoinIntent.PLAY) {
+            return participantFunction.apply(this);
+        } else {
+            return this.pass();
+        }
+    }
 }

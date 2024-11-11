@@ -17,6 +17,7 @@ import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.api.util.ItemStackBuilder;
 import xyz.nucleoid.plasmid.api.util.PlasmidCodecs;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -38,14 +39,14 @@ public final record GameTeamConfig(
 
     public static final MapCodec<GameTeamConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> {
         return instance.group(
-                PlasmidCodecs.TEXT.fieldOf("name").forGetter(GameTeamConfig::name),
+                PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(config -> Optional.of(config.name)),
                 Colors.CODEC.optionalFieldOf("color", Colors.NONE).forGetter(GameTeamConfig::colors),
                 Codec.BOOL.optionalFieldOf("friendly_fire", true).forGetter(GameTeamConfig::friendlyFire),
                 COLLISION_CODEC.optionalFieldOf("collision", AbstractTeam.CollisionRule.ALWAYS).forGetter(GameTeamConfig::collision),
                 VISIBILITY_CODEC.optionalFieldOf("name_tag_visibility", AbstractTeam.VisibilityRule.ALWAYS).forGetter(GameTeamConfig::nameTagVisibility),
                 PlasmidCodecs.TEXT.optionalFieldOf("prefix", ScreenTexts.EMPTY).forGetter(GameTeamConfig::prefix),
                 PlasmidCodecs.TEXT.optionalFieldOf("suffix", ScreenTexts.EMPTY).forGetter(GameTeamConfig::suffix)
-        ).apply(instance, GameTeamConfig::new);
+        ).apply(instance, GameTeamConfig::of);
     });
 
     public static final Codec<GameTeamConfig> CODEC = MAP_CODEC.codec();
@@ -107,8 +108,22 @@ public final record GameTeamConfig(
         scoreboardTeam.setSuffix(this.suffix());
     }
 
+    public static GameTeamConfig of(Optional<Text> name, Colors colors, boolean friendlyFire, AbstractTeam.CollisionRule collision, AbstractTeam.VisibilityRule nameTagVisibility, Text prefix, Text suffix) {
+        return new GameTeamConfig(getNameWithColorFallback(name, colors), colors, friendlyFire, collision, nameTagVisibility, prefix, suffix);
+    }
+
+    private static Text getNameWithColorFallback(Optional<Text> name, Colors colors) {
+        return name.orElseGet(() -> {
+            if (colors == Colors.NONE) {
+                return Text.literal("Team");
+            } else {
+                return Text.translatable("color.minecraft." + colors.blockDyeColor().getName());
+            }
+        });
+    }
+
     public static final class Builder {
-        private Text name = Text.literal("Team");
+        private Optional<Text> name = Optional.empty();
         private Colors colors = Colors.NONE;
         private boolean friendlyFire = true;
         private AbstractTeam.CollisionRule collision = AbstractTeam.CollisionRule.ALWAYS;
@@ -120,7 +135,7 @@ public final record GameTeamConfig(
         }
 
         Builder(GameTeamConfig config) {
-            this.name = config.name;
+            this.name = Optional.of(config.name);
             this.colors = config.colors;
             this.friendlyFire = config.friendlyFire;
             this.collision = config.collision;
@@ -130,7 +145,7 @@ public final record GameTeamConfig(
         }
 
         public Builder setName(Text name) {
-            this.name = name;
+            this.name = Optional.of(name);
             return this;
         }
 
@@ -165,7 +180,7 @@ public final record GameTeamConfig(
         }
 
         public GameTeamConfig build() {
-            return new GameTeamConfig(
+            return GameTeamConfig.of(
                     this.name, this.colors,
                     this.friendlyFire, this.collision, this.nameTagVisibility,
                     this.prefix, this.suffix

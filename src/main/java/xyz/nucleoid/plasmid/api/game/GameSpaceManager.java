@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 
 @ApiStatus.NonExtendable
 public interface GameSpaceManager {
-    static GameSpaceManagerImpl get() {
+    static GameSpaceManager get() {
         return GameSpaceManagerImpl.get();
     }
 

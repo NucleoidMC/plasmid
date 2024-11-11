@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.api.game.GameActivity;
+import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
 import xyz.nucleoid.plasmid.api.game.common.ui.WaitingLobbyUiLayout;
 import xyz.nucleoid.plasmid.api.game.event.GameWaitingLobbyEvents;
@@ -30,12 +31,14 @@ import java.util.stream.Collectors;
  * @see GameWaitingLobby
  */
 public final class TeamSelectionLobby {
+    private final GameSpace gameSpace;
     private final GameTeamList teams;
 
     private final Reference2IntMap<GameTeamKey> maxTeamSize = new Reference2IntOpenHashMap<>();
     private final Map<UUID, GameTeamKey> teamPreference = new Object2ObjectOpenHashMap<>();
 
-    private TeamSelectionLobby(GameTeamList teams) {
+    private TeamSelectionLobby(GameSpace gameSpace, GameTeamList teams) {
+        this.gameSpace = gameSpace;
         this.teams = teams;
     }
 
@@ -48,7 +51,7 @@ public final class TeamSelectionLobby {
      * @see TeamSelectionLobby#allocate(PlayerIterable, BiConsumer)
      */
     public static TeamSelectionLobby addTo(GameActivity activity, GameTeamList teams) {
-        var lobby = new TeamSelectionLobby(teams);
+        var lobby = new TeamSelectionLobby(activity.getGameSpace(), teams);
         activity.listen(GameWaitingLobbyEvents.BUILD_UI_LAYOUT, lobby::onBuildUiLayout);
 
         return lobby;
@@ -65,6 +68,11 @@ public final class TeamSelectionLobby {
     }
 
     private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayerEntity player) {
+        // Spectators cannot choose a team
+        if (!this.gameSpace.getPlayers().participants().contains(player)) {
+            return;
+        }
+
         layout.addLeading(new TeamSelectionWaitingLobbyUiElement(teams, key -> {
             return key == this.teamPreference.get(player.getUuid());
         }, key -> {

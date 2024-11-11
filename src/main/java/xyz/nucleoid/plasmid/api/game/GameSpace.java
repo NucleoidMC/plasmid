@@ -113,4 +113,6 @@ public interface GameSpace extends GameAttachmentHolder {
      * @return true if this GameSpace is closed, false otherwise
      */
     boolean isClosed();
+
+    GameBehavior getBehavior();
 }

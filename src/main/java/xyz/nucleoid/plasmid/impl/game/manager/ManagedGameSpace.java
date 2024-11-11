@@ -195,6 +195,7 @@ public final class ManagedGameSpace implements GameSpace {
         }
     }
 
+    @Override
     public GameBehavior getBehavior() {
         return this.state;
     }

@@ -118,8 +118,9 @@ public final class GameSpaceManagerImpl implements GameSpaceManager {
     }
 
     @Override
-    public Collection<ManagedGameSpace> getOpenGameSpaces() {
-        return this.gameSpaces;
+    public Collection<GameSpace> getOpenGameSpaces() {
+        //noinspection unchecked
+        return (Collection<GameSpace>) (Object) this.gameSpaces;
     }
 
     @Override

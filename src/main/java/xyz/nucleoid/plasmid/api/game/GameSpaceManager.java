@@ -22,7 +22,7 @@ public interface GameSpaceManager {
 
     CompletableFuture<GameSpace> open(RegistryEntry<GameConfig<?>> config);
 
-    Collection<ManagedGameSpace> getOpenGameSpaces();
+    Collection<GameSpace> getOpenGameSpaces();
 
     @Nullable
     GameSpace byId(UUID id);

@@ -76,7 +76,7 @@ public class GameJoinUi extends SimpleGui {
 
         this.page = MathHelper.clamp(this.page, 0, this.pageSize);
 
-        for (ManagedGameSpace gameSpace : games) {
+        for (var gameSpace : games) {
             if (gameI >= this.page * NAVBAR_POS) {
                 if (i < limit) {
                     this.setSlot(i++, this.createIconFor(gameSpace));

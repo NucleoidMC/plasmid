@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.api.shop;
 
+import eu.pb4.sgui.api.GuiHelpers;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.GuiInterface;
 import net.minecraft.component.DataComponentTypes;
@@ -52,7 +53,7 @@ public final class ShopEntry implements GuiElementInterface {
             name.append(costText);
         }
 
-        icon.set(DataComponentTypes.ITEM_NAME, name);
+        icon.set(DataComponentTypes.CUSTOM_NAME, name);
 
         return icon;
     }
@@ -76,7 +77,7 @@ public final class ShopEntry implements GuiElementInterface {
 
         var count = Text.literal(stack.getCount() + "x ");
         var name = icon.getName().copy().formatted(Formatting.BOLD);
-        icon.set(DataComponentTypes.ITEM_NAME, count.append(name));
+        icon.set(DataComponentTypes.CUSTOM_NAME, count.append(name).styled(GuiHelpers.STYLE_CLEARER));
 
         return new ShopEntry(icon).onBuy((player) -> player.getInventory().offerOrDrop(stack.copy()));
     }
@@ -86,7 +87,7 @@ public final class ShopEntry implements GuiElementInterface {
 
         var count = Text.literal(stack.getCount() + "x ");
         var name = icon.getName().copy().formatted(Formatting.BOLD);
-        icon.set(DataComponentTypes.ITEM_NAME, count.append(name));
+        icon.set(DataComponentTypes.CUSTOM_NAME, count.append(name).styled(GuiHelpers.STYLE_CLEARER));
 
         return new ShopEntry(icon).onBuy((player) -> player.getInventory().offerOrDrop(stack.copy())).withCost(cost);
     }

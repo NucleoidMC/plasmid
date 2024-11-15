@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.api.game.common;
 
+import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,14 +14,18 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.plasmid.api.game.common.config.WaitingLobbyConfig;
 import xyz.nucleoid.plasmid.api.game.common.team.TeamSelectionLobby;
+import xyz.nucleoid.plasmid.api.game.common.ui.WaitingLobbyUiLayout;
 import xyz.nucleoid.plasmid.api.game.common.widget.BossBarWidget;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.api.game.event.GameWaitingLobbyEvents;
 import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
 import xyz.nucleoid.plasmid.api.game.player.JoinOfferResult;
 import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.api.game.common.widget.SidebarWidget;
+import xyz.nucleoid.plasmid.impl.game.common.ui.WaitingLobbyUi;
+import xyz.nucleoid.plasmid.impl.game.common.ui.element.LeaveGameWaitingLobbyUiElement;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.compatibility.AfkDisplayCompatibility;
 
@@ -89,7 +94,9 @@ public final class GameWaitingLobby {
         activity.listen(GameActivityEvents.TICK, lobby::onTick);
         activity.listen(GameActivityEvents.REQUEST_START, lobby::requestStart);
         activity.listen(GamePlayerEvents.OFFER, lobby::offerPlayer);
+        activity.listen(GamePlayerEvents.ADD, lobby::onAddPlayer);
         activity.listen(GamePlayerEvents.REMOVE, lobby::onRemovePlayer);
+        activity.listen(GameWaitingLobbyEvents.BUILD_UI_LAYOUT, lobby::onBuildUiLayout);
 
         activity.listen(GameActivityEvents.STATE_UPDATE, lobby::updateState);
 
@@ -155,6 +162,11 @@ public final class GameWaitingLobby {
                 this.started = false;
                 this.startRequested = false;
                 this.countdownStart = -1;
+            } else {
+                for (var player : this.gameSpace.getPlayers()) {
+                    player.closeHandledScreen();
+                    PolymerUtils.reloadInventory(player);
+                }
             }
         }
     }
@@ -180,8 +192,17 @@ public final class GameWaitingLobby {
         return offer.pass();
     }
 
+    private void onAddPlayer(ServerPlayerEntity player) {
+        var ui = new WaitingLobbyUi(player, this.gameSpace);
+        ui.open();
+    }
+
     private void onRemovePlayer(ServerPlayerEntity player) {
         this.updateCountdown();
+    }
+
+    private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayerEntity player) {
+        layout.addTrailing(new LeaveGameWaitingLobbyUiElement(this.gameSpace, player));
     }
 
     private void updateCountdown() {

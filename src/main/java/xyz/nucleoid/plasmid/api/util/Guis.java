@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.api.util;
 
+import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.SlotHolder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.SimpleGui;
@@ -13,6 +14,7 @@ import net.minecraft.item.Items;
 import net.minecraft.registry.*;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.ScreenTexts;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.DyeColor;
@@ -21,29 +23,46 @@ import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Range;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
 public final class Guis {
     private Guis() {
     }
 
-    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, boolean includePlayerSlots, GuiElementInterface... elements) {
-        var gui = new SimpleGui(selectScreenType(elements.length), player, includePlayerSlots);
+    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, boolean includePlayerSlots, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, GuiElementInterface... elements) {
+        var gui = new SimpleGui(selectScreenType(elements.length), player, includePlayerSlots) {
+            @Override
+            public boolean onClick(int index, ClickType type, SlotActionType action, GuiElementInterface element) {
+                onClick.accept(this);
+                return super.onClick(index, type, action, element);
+            }
+
+            @Override
+            public void onClose() {
+                onClose.accept(this);
+            }
+        };
+
         gui.setTitle(text);
 
         buildSelector(gui, elements);
         return gui;
     }
 
-    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, GuiElementInterface... elements) {
-        return createSelectorGui(player, text, false, elements);
+    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, GuiElementInterface... elements) {
+        return createSelectorGui(player, text, false, onClick, onClose, elements);
     }
 
-    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, Collection<GuiElementInterface> elements) {
-        return createSelectorGui(player, text, false, elements);
+    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, Collection<GuiElementInterface> elements) {
+        return createSelectorGui(player, text, false, onClick, onClose, elements);
+    }
+
+    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, boolean includePlayerSlots, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, Collection<GuiElementInterface> elements) {
+        return createSelectorGui(player, text, includePlayerSlots, onClick, onClose, elements.toArray(new GuiElementInterface[0]));
     }
 
     public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, boolean includePlayerSlots, Collection<GuiElementInterface> elements) {
-        return createSelectorGui(player, text, includePlayerSlots, elements.toArray(new GuiElementInterface[0]));
+        return createSelectorGui(player, text, includePlayerSlots, gui -> {}, gui -> {}, elements.toArray(new GuiElementInterface[0]));
     }
 
     public static Layer createSelectorLayer(int height, int width, Collection<GuiElementInterface> elements) {

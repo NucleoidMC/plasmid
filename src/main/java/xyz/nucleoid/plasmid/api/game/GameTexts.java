@@ -156,6 +156,14 @@ public final class GameTexts {
         public static MutableText notAllowed() {
             return Text.translatable("text.plasmid.join_result.not_allowed");
         }
+
+        public static MutableText spectatorsOnly() {
+            return Text.translatable("text.plasmid.join_result.spectators_only");
+        }
+
+        public static MutableText participantsOnly() {
+            return Text.translatable("text.plasmid.join_result.participants_only");
+        }
     }
 
     public static final class Kick {

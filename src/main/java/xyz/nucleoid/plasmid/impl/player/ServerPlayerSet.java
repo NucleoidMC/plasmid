@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.impl.player;
 
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.player.PlayerSet;
 
@@ -26,7 +27,7 @@ public record ServerPlayerSet(PlayerManager players) implements PlayerSet {
     }
 
     @Override
-    public Iterator<ServerPlayerEntity> iterator() {
+    public @NotNull Iterator<ServerPlayerEntity> iterator() {
         return this.players.getPlayerList().iterator();
     }
 }

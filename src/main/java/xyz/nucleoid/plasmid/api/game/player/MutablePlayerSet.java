@@ -4,20 +4,32 @@ import com.google.common.collect.AbstractIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.util.PlayerRef;
 
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 
 public final class MutablePlayerSet implements PlayerSet {
-    private final MinecraftServer server;
+    private final Function<UUID, ServerPlayerEntity> playerGetter;
 
     private final Set<UUID> players = new ObjectOpenHashSet<>();
 
     public MutablePlayerSet(MinecraftServer server) {
-        this.server = server;
+        this.playerGetter = server.getPlayerManager()::getPlayer;
+    }
+
+    public MutablePlayerSet(ServerWorld world) {
+        this.playerGetter = (uuid) -> world.getPlayerByUuid(uuid) instanceof ServerPlayerEntity player ? player : null;
+    }
+
+    public MutablePlayerSet(GameSpace gameSpace) {
+        this.playerGetter = gameSpace.getPlayers()::getEntity;
     }
 
     public void clear() {
@@ -47,7 +59,7 @@ public final class MutablePlayerSet implements PlayerSet {
     @Nullable
     @Override
     public ServerPlayerEntity getEntity(UUID id) {
-        return this.players.contains(id) ? this.server.getPlayerManager().getPlayer(id) : null;
+        return this.players.contains(id) ? this.playerGetter.apply(id) : null;
     }
 
     @Override
@@ -56,8 +68,8 @@ public final class MutablePlayerSet implements PlayerSet {
     }
 
     @Override
-    public Iterator<ServerPlayerEntity> iterator() {
-        var playerManager = this.server.getPlayerManager();
+    public @NotNull Iterator<ServerPlayerEntity> iterator() {
+        var playerGetter = this.playerGetter;
         var ids = this.players.iterator();
 
         return new AbstractIterator<>() {
@@ -65,7 +77,7 @@ public final class MutablePlayerSet implements PlayerSet {
             protected ServerPlayerEntity computeNext() {
                 while (ids.hasNext()) {
                     var id = ids.next();
-                    var player = playerManager.getPlayer(id);
+                    var player = playerGetter.apply(id);
                     if (player != null) {
                         return player;
                     }

@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.impl.game.manager;
 
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.player.*;
 import xyz.nucleoid.plasmid.impl.player.LocalJoinAcceptor;
@@ -174,7 +175,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
     @Override
-    public Iterator<ServerPlayerEntity> iterator() {
+    public @NotNull Iterator<ServerPlayerEntity> iterator() {
         return this.set.iterator();
     }
 

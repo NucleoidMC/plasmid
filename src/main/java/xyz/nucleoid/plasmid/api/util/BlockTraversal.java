@@ -141,14 +141,38 @@ public final class BlockTraversal {
      * @see <a href="https://en.wikipedia.org/wiki/Pixel_connectivity#3-dimensional">3-dimensional pixel connectivity</a>
      */
     public static final class Connectivity {
-        public static final Connectivity SIX = create(Connectivity::six);
-        public static final Connectivity EIGHTEEN = create(Connectivity::eighteen);
-        public static final Connectivity TWENTY_SIX = create(Connectivity::twentySix);
+        public static final Connectivity SIX = create(Connectivity::generateSix);
+        public static final Connectivity EIGHTEEN = create(Connectivity::generateEighteen);
+        public static final Connectivity TWENTY_SIX = create(Connectivity::generateTwentySix);
+
+        private static final Connectivity FOUR_X = create(consumer -> generateFour(Direction.Axis.X, consumer));
+        private static final Connectivity FOUR_Y = create(consumer -> generateFour(Direction.Axis.Y, consumer));
+        private static final Connectivity FOUR_Z = create(consumer -> generateFour(Direction.Axis.Z, consumer));
+
+        private static final Connectivity EIGHT_X = create(consumer -> generateEight(Direction.Axis.X, consumer));
+        private static final Connectivity EIGHT_Y = create(consumer -> generateEight(Direction.Axis.Y, consumer));
+        private static final Connectivity EIGHT_Z = create(consumer -> generateEight(Direction.Axis.Z, consumer));
 
         final Vec3i[] offsets;
 
         Connectivity(Vec3i[] offsets) {
             this.offsets = offsets;
+        }
+
+        public static Connectivity four(Direction.Axis orthogonalAxis) {
+            return switch (orthogonalAxis) {
+                case X -> FOUR_X;
+                case Y -> FOUR_Y;
+                case Z -> FOUR_Z;
+            };
+        }
+
+        public static Connectivity eight(Direction.Axis orthogonalAxis) {
+            return switch (orthogonalAxis) {
+                case X -> EIGHT_X;
+                case Y -> EIGHT_Y;
+                case Z -> EIGHT_Z;
+            };
         }
 
         static Connectivity create(Consumer<Consumer<Vec3i>> generator) {
@@ -157,14 +181,14 @@ public final class BlockTraversal {
             return new Connectivity(offsets.toArray(new Vec3i[0]));
         }
 
-        private static void six(Consumer<Vec3i> consumer) {
+        private static void generateSix(Consumer<Vec3i> consumer) {
             for (var direction : Direction.values()) {
                 consumer.accept(direction.getVector());
             }
         }
 
-        private static void eighteen(Consumer<Vec3i> consumer) {
-            six(consumer);
+        private static void generateEighteen(Consumer<Vec3i> consumer) {
+            generateSix(consumer);
 
             for (int x = -1; x <= 1; x += 2) {
                 for (int y = -1; y <= 1; y += 2) {
@@ -175,14 +199,36 @@ public final class BlockTraversal {
             }
         }
 
-        private static void twentySix(Consumer<Vec3i> consumer) {
-            eighteen(consumer);
+        private static void generateTwentySix(Consumer<Vec3i> consumer) {
+            generateEighteen(consumer);
 
             for (int z = -1; z <= 1; z += 2) {
                 for (int x = -1; x <= 1; x += 2) {
                     for (int y = -1; y <= 1; y += 2) {
                         consumer.accept(new BlockPos(x, y, z));
                     }
+                }
+            }
+        }
+
+        private static void generateFour(Direction.Axis orthogonalAxis, Consumer<Vec3i> consumer) {
+            for (var direction : Direction.values()) {
+                if (direction.getAxis() != orthogonalAxis) {
+                    consumer.accept(direction.getVector());
+                }
+            }
+        }
+
+        private static void generateEight(Direction.Axis orthogonalAxis, Consumer<Vec3i> consumer) {
+            generateFour(orthogonalAxis, consumer);
+
+            for (int x = -1; x <= 1; x += 2) {
+                for (int y = -1; y <= 1; y += 2) {
+                    consumer.accept(switch (orthogonalAxis) {
+                        case X -> new BlockPos(0, x, y);
+                        case Y -> new BlockPos(y, 0, x);
+                        case Z -> new BlockPos(x, y, 0);
+                    });
                 }
             }
         }

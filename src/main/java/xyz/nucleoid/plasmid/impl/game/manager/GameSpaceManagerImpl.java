@@ -84,7 +84,7 @@ public final class GameSpaceManagerImpl implements GameSpaceManager {
             return CompletableFuture.failedFuture(new RuntimeException("Not initialized yet!"));
         }
         return CompletableFuture.supplyAsync(
-                () -> config.value().openProcedure(this.server),
+                () -> GameConfig.openProcedure(this.server, config),
                 Util.getMainWorkerExecutor()
         ).thenApplyAsync(
                 procedure -> this.addGameSpace(procedure.configOverride() != null ? procedure.configOverride() : config, config, procedure),

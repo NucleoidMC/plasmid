@@ -58,9 +58,11 @@ public record GameConfig<C>(
     });
     public static final Codec<RegistryEntry<GameConfig<?>>> CODEC = RegistryElementCodec.of(GameConfigs.REGISTRY_KEY, DIRECT_CODEC);
 
-    public GameOpenProcedure openProcedure(MinecraftServer server) {
-        var context = new GameOpenContext<C>(server, this);
-        return this.type.open(context);
+    public static GameOpenProcedure openProcedure(MinecraftServer server, RegistryEntry<GameConfig<?>> config) {
+        //noinspection unchecked,rawtypes
+        var context = new GameOpenContext<>(server, config);
+        //noinspection unchecked
+        return config.value().type().open(context);
     }
 
     /**
@@ -139,6 +141,11 @@ public record GameConfig<C>(
                 metadata.custom,
                 config
         )));
+    }
+
+    @Deprecated(forRemoval = true)
+    public GameOpenProcedure openProcedure(MinecraftServer server) {
+        return openProcedure(server, RegistryEntry.of(this));
     }
 
     private record Metadata(

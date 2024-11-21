@@ -5,6 +5,7 @@ import net.minecraft.util.math.random.Random;
 import xyz.nucleoid.plasmid.api.game.GameOpenContext;
 import xyz.nucleoid.plasmid.api.game.GameOpenException;
 import xyz.nucleoid.plasmid.api.game.GameOpenProcedure;
+import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 
 public final class RandomGame {
     public static GameOpenProcedure open(GameOpenContext<RandomGameConfig> context) {
@@ -15,6 +16,6 @@ public final class RandomGame {
             throw new GameOpenException(Text.translatable("text.plasmid.random.empty_composite_game_config"));
         }
 
-        return GameOpenProcedure.withOverride(game.value().openProcedure(context.server()), game);
+        return GameOpenProcedure.withOverride(GameConfig.openProcedure(context.server(), game), game);
     }
 }

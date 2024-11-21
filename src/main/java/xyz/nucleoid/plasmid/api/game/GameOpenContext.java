@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.api.game;
 
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
@@ -19,7 +20,13 @@ import java.util.function.Consumer;
  * @see GameOpenProcedure
  * @see GameType.Open
  */
-public record GameOpenContext<C>(MinecraftServer server, GameConfig<C> game) {
+public record GameOpenContext<C>(MinecraftServer server, RegistryEntry<GameConfig<C>> gameConfig) {
+
+    @Deprecated(forRemoval = true)
+    public GameOpenContext(MinecraftServer server, GameConfig<C> game) {
+        this(server, RegistryEntry.of(game));
+    }
+
     /**
      * Creates a {@link GameOpenProcedure} that opens a game given the {@code setup} function.
      * <p>
@@ -60,6 +67,10 @@ public record GameOpenContext<C>(MinecraftServer server, GameConfig<C> game) {
      * @return the configuration that this game was opened with
      */
     public C config() {
-        return this.game.config();
+        return this.gameConfig.value().config();
+    }
+
+    public GameConfig<C> game() {
+        return this.gameConfig.value();
     }
 }

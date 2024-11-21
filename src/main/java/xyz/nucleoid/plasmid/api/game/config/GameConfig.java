@@ -60,7 +60,7 @@ public record GameConfig<C>(
 
     public static GameOpenProcedure openProcedure(MinecraftServer server, RegistryEntry<GameConfig<?>> config) {
         //noinspection unchecked,rawtypes
-        var context = new GameOpenContext<>(server, config);
+        var context = new GameOpenContext(server, config);
         //noinspection unchecked
         return config.value().type().open(context);
     }

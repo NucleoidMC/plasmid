@@ -3,7 +3,9 @@ package xyz.nucleoid.plasmid.impl.game.manager;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -38,12 +40,28 @@ public final class ManagedGameSpaceWorlds implements GameSpaceWorlds {
     }
 
     @Override
+    public ServerWorld addPersistent(Identifier identifier, RuntimeWorldConfig worldConfig) {
+        var world = this.space.getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, identifier));
+        if (world != null) {
+            throw new RuntimeException("World '" + identifier + "' is already loaded!");
+        }
+
+        applyDefaultsTo(worldConfig);
+
+        var worldHandle = Fantasy.get(this.space.getServer()).getOrOpenPersistentWorld(identifier, worldConfig);
+        this.worlds.put(worldHandle.asWorld().getRegistryKey(), worldHandle);
+        this.space.onAddWorld(worldHandle);
+
+        return worldHandle.asWorld();
+    }
+
+    @Override
     public boolean remove(ServerWorld world) {
         var dimension = world.getRegistryKey();
         var worldHandle = this.worlds.remove(dimension);
         if (worldHandle != null) {
             this.space.onRemoveWorld(dimension);
-            worldHandle.delete();
+            worldHandle.unload();
             return true;
         } else {
             return false;
@@ -52,7 +70,7 @@ public final class ManagedGameSpaceWorlds implements GameSpaceWorlds {
 
     void clear() {
         for (var worldHandler : this.worlds.values()) {
-            worldHandler.delete();
+            worldHandler.unload();
         }
         this.worlds.clear();
     }

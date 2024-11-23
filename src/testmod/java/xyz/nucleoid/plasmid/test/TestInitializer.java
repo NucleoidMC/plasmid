@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.test;
 
+import com.mojang.serialization.MapCodec;
 import eu.pb4.polymer.blocks.api.BlockModelType;
 import eu.pb4.polymer.blocks.api.BlockResourceCreator;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
@@ -15,6 +16,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Unit;
 import xyz.nucleoid.plasmid.api.game.GameType;
 import xyz.nucleoid.plasmid.api.game.common.GameResourcePack;
 
@@ -45,6 +47,7 @@ public class TestInitializer implements ModInitializer {
     @Override
     public void onInitialize() {
         GameType.register(Identifier.of(ID, "test"), TestConfig.CODEC, TestGame::open);
+        GameType.register(Identifier.of(ID, "persistent"), MapCodec.unit(Unit.INSTANCE), PersistentGame::open);
         GameType.register(Identifier.of(ID, "no_join"), TestConfig.CODEC, PlayerlessGame::open);
         GameType.register(Identifier.of(ID, "test_rp"), TestConfig.CODEC, TestGameWithResourcePack::open);
         GameType.register(Identifier.of(ID, "jank"), TestConfig.CODEC, JankGame::open);

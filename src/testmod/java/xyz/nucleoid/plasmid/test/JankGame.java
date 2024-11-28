@@ -175,7 +175,7 @@ public final class JankGame {
                 JankGame.mouseX = MathHelper.clamp(-currentYaw / 90 * 2, -8, 8) + mover.getX();
                 JankGame.mouseY = MathHelper.clamp(-currentPitch / 90 * 2, -8, 8) + mover.getZ();
 
-                player.networkHandler.sendPacket(new ParticleS2CPacket(ParticleTypes.FLAME, true, JankGame.mouseX, mover.getY(), JankGame.mouseY, 0, 0, 0, 0, 0));
+                player.networkHandler.sendPacket(new ParticleS2CPacket(ParticleTypes.FLAME, true, true, JankGame.mouseX, mover.getY(), JankGame.mouseY, 0, 0, 0, 0, 0));
 
                 CAMERA.setPos(mover.getX(), mover.getY() + 10, mover.getZ());
                 player.networkHandler.sendPacket(EntityPositionSyncS2CPacket.create(CAMERA));

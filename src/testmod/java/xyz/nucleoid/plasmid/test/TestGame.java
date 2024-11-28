@@ -6,8 +6,10 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.ButtonBlock;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.enums.BlockFace;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,11 +20,13 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 import xyz.nucleoid.map_templates.BlockBounds;
+import xyz.nucleoid.map_templates.MapEntity;
 import xyz.nucleoid.map_templates.MapTemplate;
 import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.plasmid.api.game.common.team.*;
@@ -152,7 +156,7 @@ public final class TestGame {
             long currentTime = gameSpace.getTime();
             activity.deny(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
             activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);
-            activity.deny(GameRuleType.THROW_ITEMS);
+            activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.STOP_SPECTATING_ENTITY);
 
             activity.deny(GameRuleType.INTERACTION).allow(GameRuleType.USE_BLOCKS);
 
@@ -213,6 +217,13 @@ public final class TestGame {
 
         var edge = new BlockPos(max.getX(), max.getY() + 1, max.getZ());
         template.setBlockState(edge, BUTTON);
+
+        var armorStandNbt = new NbtCompound();
+        armorStandNbt.putString("id", EntityType.getId(EntityType.ARMOR_STAND).toString());
+        armorStandNbt.putBoolean("NoGravity", true);
+
+        var armorStandPos = Vec3d.ofBottomCenter(edge.offset(Direction.WEST));
+        template.addEntity(new MapEntity(armorStandPos, armorStandNbt));
 
         for (var pos : bounds) {
             template.setBlockState(pos, state);

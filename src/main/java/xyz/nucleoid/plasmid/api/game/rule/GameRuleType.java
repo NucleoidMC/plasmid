@@ -111,6 +111,7 @@ public final class GameRuleType {
             .enforces(CoralDeathEvent.EVENT, result -> (world, pos, from, to) -> result);
 
     public static final GameRuleType DISMOUNT_VEHICLE = GameRuleType.create();
+    public static final GameRuleType STOP_SPECTATING_ENTITY = GameRuleType.create();
     public static final GameRuleType PLAYER_PROJECTILE_KNOCKBACK = GameRuleType.create();
     public static final GameRuleType TRIDENTS_LOYAL_IN_VOID = GameRuleType.create();
     public static final GameRuleType MODIFY_INVENTORY = GameRuleType.create();

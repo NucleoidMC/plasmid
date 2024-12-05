@@ -101,7 +101,7 @@ public final class TeamAllocator<T, V> {
      * @return a {@link Multimap} containing every team and the allocated players
      */
     public Multimap<T, V> allocate() {
-        var allocations = new Allocations<T, V>();
+        var allocations = new Allocations<T, V>(this.teamPreferences);
 
         // 1. place players evenly and randomly into all the teams
         this.placePlayersRandomly(allocations);
@@ -162,7 +162,7 @@ public final class TeamAllocator<T, V> {
 
             // set team preferences to the group's team if the player has no preference
             for (var player : group) {
-                this.teamPreferences.putIfAbsent(player, team);
+                allocations.teamPreferences.putIfAbsent(player, team);
             }
 
             teamIndex = (teamIndex + 1) % this.teams.size();
@@ -174,7 +174,7 @@ public final class TeamAllocator<T, V> {
         Collections.shuffle(players);
 
         for (var player : players) {
-            var preference = this.teamPreferences.get(player);
+            var preference = allocations.teamPreferences.get(player);
             var current = allocations.teamFor(player);
 
             // we have no preference or we are already in our desired position, continue
@@ -201,7 +201,7 @@ public final class TeamAllocator<T, V> {
     }
 
     private void trySwapWithOtherPlayer(Allocations<T, V> allocations, V player, T from, T to) {
-        var swapWith = this.findSwapCandidate(from, to, allocations.playersIn(to));
+        var swapWith = this.findSwapCandidate(allocations, from, to, allocations.playersIn(to));
         if (swapWith != null) {
             allocations.moveTeam(player, from, to);
             allocations.moveTeam(swapWith, to, from);
@@ -209,11 +209,11 @@ public final class TeamAllocator<T, V> {
     }
 
     @Nullable
-    private V findSwapCandidate(T from, T to, Collection<V> candidates) {
+    private V findSwapCandidate(Allocations<T, V> allocations, T from, T to, Collection<V> candidates) {
         V swapWith = null;
 
         for (var candidate : candidates) {
-            var candidatePreference = this.teamPreferences.get(candidate);
+            var candidatePreference = allocations.teamPreferences.get(candidate);
             if (candidatePreference == to) {
                 // we can't swap with this player: they are already in their chosen team
                 continue;
@@ -231,6 +231,11 @@ public final class TeamAllocator<T, V> {
     static final class Allocations<T, V> {
         final Multimap<T, V> teamToPlayers = HashMultimap.create();
         final Map<V, T> playerToTeam = new Object2ObjectOpenHashMap<>();
+        final Map<V, T> teamPreferences = new Object2ObjectOpenHashMap<>();
+
+        Allocations(Map<V, T> teamPreferences) {
+            this.teamPreferences.putAll(teamPreferences);
+        }
 
         void setTeam(V player, T team) {
             this.teamToPlayers.put(team, player);

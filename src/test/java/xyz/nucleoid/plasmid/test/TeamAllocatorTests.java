@@ -9,9 +9,13 @@ import xyz.nucleoid.plasmid.api.game.common.team.TeamAllocator;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -158,6 +162,44 @@ public class TeamAllocatorTests {
                 fail("expected player1 to be in team1 or team2");
             }
         });
+    }
+
+    @Test
+    public void uniqueGroupsFromMultipleRuns() {
+        var team1 = new Team("team1");
+        var team2 = new Team("team2");
+
+        var allocator = createAllocator(Set.of(team1, team2));
+
+        var players = IntStream.range(0, 20)
+                .mapToObj(index -> new Player("player" + index))
+                .collect(Collectors.toList());
+
+        for (var player : players) {
+            allocator.add(player, null);
+        }
+
+        allocator.group(players.subList(0, players.size() / 2));
+        allocator.group(players.subList(players.size() / 2, players.size()));
+
+        var allocations = new HashSet<HashMap<Team, Set<Player>>>();
+
+        for (int i = 0; i < REPEAT_COUNT; i++) {
+            var allocation = allocator.allocate();
+            var orderedAllocation = new HashMap<Team, Set<Player>>();
+
+            for (var entry : allocation.entries()) {
+                var team = entry.getKey();
+                var player = entry.getValue();
+
+                var teamPlayers = orderedAllocation.computeIfAbsent(team, k -> new HashSet<>());
+                teamPlayers.add(player);
+            }
+
+            allocations.add(orderedAllocation);
+        }
+
+        assertTrue(allocations.size() > 1, "expected multiple unique allocations, but found " + allocations);
     }
 
     @Test

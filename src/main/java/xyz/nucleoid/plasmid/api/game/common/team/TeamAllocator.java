@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -70,6 +71,7 @@ public final class TeamAllocator<T, V> {
      *
      * @param group the group to add to this allocator
      */
+    @ApiStatus.Experimental
     public void group(Iterable<V> group) {
         for (var player : group) {
             if (!this.players.contains(player)) {

@@ -9,7 +9,10 @@ import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameCloseReason;
 import xyz.nucleoid.plasmid.api.game.GameResult;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
+import xyz.nucleoid.plasmid.api.game.common.team.GameTeamKey;
+import xyz.nucleoid.plasmid.api.game.common.team.TeamAllocator;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
+import xyz.nucleoid.plasmid.api.game.player.PlayerIterable;
 
 import java.util.Set;
 
@@ -68,6 +71,12 @@ public final class GameEvents {
     public static final Event<PlayerLeft> PLAYER_LEFT = EventFactory.createArrayBacked(PlayerLeft.class, listeners -> (gameSpace, player) -> {
         for (var listener : listeners) {
             listener.onPlayerLeft(gameSpace, player);
+        }
+    });
+
+    public static final Event<TeamSelectionLobbyFinalize> TEAM_SELECTION_LOBBY_FINALIZE = EventFactory.createArrayBacked(TeamSelectionLobbyFinalize.class, listeners -> (gameSpace, allocator, players) -> {
+        for (var listener : listeners) {
+            listener.onFinalizeTeamSelection(gameSpace, allocator, players);
         }
     });
 
@@ -142,6 +151,15 @@ public final class GameEvents {
          * @param player the initial player who tried to leave a {@link GameSpace}
          */
         void onPlayerLeft(GameSpace gameSpace, ServerPlayerEntity player);
+    }
+
+    public interface TeamSelectionLobbyFinalize {
+        /**
+         * @param gameSpace The {@link GameSpace} the game is running in.
+         * @param allocator the allocator that is handling the team selections
+         * @param players the players that the allocator is handling
+         */
+        void onFinalizeTeamSelection(GameSpace gameSpace, TeamAllocator<GameTeamKey, ServerPlayerEntity> allocator, PlayerIterable players);
     }
 
 }

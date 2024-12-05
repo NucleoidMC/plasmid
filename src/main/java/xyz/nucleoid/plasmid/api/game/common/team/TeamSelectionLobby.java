@@ -6,11 +6,13 @@ import it.unimi.dsi.fastutil.objects.Reference2IntMaps;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import xyz.nucleoid.plasmid.api.event.GameEvents;
 import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
 import xyz.nucleoid.plasmid.api.game.common.ui.WaitingLobbyUiLayout;
 import xyz.nucleoid.plasmid.api.game.event.GameWaitingLobbyEvents;
+import xyz.nucleoid.plasmid.api.game.event.TeamSelectionLobbyEvents;
 import xyz.nucleoid.plasmid.api.game.player.PlayerIterable;
 import xyz.nucleoid.plasmid.impl.game.common.ui.element.TeamSelectionWaitingLobbyUiElement;
 
@@ -110,6 +112,9 @@ public final class TeamSelectionLobby {
             GameTeamKey preference = this.teamPreference.get(player.getUuid());
             allocator.add(player, preference);
         }
+
+        this.gameSpace.getBehavior().invoker(TeamSelectionLobbyEvents.FINALIZE).onFinalizeTeamSelection(allocator, players);
+        GameEvents.TEAM_SELECTION_LOBBY_FINALIZE.invoker().onFinalizeTeamSelection(gameSpace, allocator, players);
 
         allocator.allocate(apply);
     }

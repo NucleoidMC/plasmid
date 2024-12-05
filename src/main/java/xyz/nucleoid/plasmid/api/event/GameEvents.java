@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameCloseReason;
@@ -74,6 +75,7 @@ public final class GameEvents {
         }
     });
 
+    @ApiStatus.Experimental
     public static final Event<TeamSelectionLobbyFinalize> TEAM_SELECTION_LOBBY_FINALIZE = EventFactory.createArrayBacked(TeamSelectionLobbyFinalize.class, listeners -> (gameSpace, allocator, players) -> {
         for (var listener : listeners) {
             listener.onFinalizeTeamSelection(gameSpace, allocator, players);
@@ -153,6 +155,7 @@ public final class GameEvents {
         void onPlayerLeft(GameSpace gameSpace, ServerPlayerEntity player);
     }
 
+    @ApiStatus.Experimental
     public interface TeamSelectionLobbyFinalize {
         /**
          * @param gameSpace The {@link GameSpace} the game is running in.

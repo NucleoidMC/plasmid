@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.api.game.common.team;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -22,9 +23,13 @@ import java.util.function.BiConsumer;
  * @param <V> the "player" type
  */
 public final class TeamAllocator<T, V> {
+    private static final Comparator<Set<?>> LARGEST_SET_FIRST_COMPARATOR = Comparator.<Set<?>>comparingInt(Set::size).reversed();
+
     private final List<T> teams;
     private final List<V> players = new ArrayList<>();
     private final Map<V, T> teamPreferences = new Object2ObjectOpenHashMap<>();
+    private final Set<V> groupedPlayers = new HashSet<>();
+    private final Set<Set<V>> groupPreferences = new HashSet<>();
     private final Object2IntMap<T> teamSizes = new Object2IntOpenHashMap<>();
 
     public TeamAllocator(Collection<T> teams) {
@@ -61,6 +66,24 @@ public final class TeamAllocator<T, V> {
     }
 
     /**
+     * Specifies that a group of players should be placed on the same team, if possible.
+     *
+     * @param group the group to add to this allocator
+     */
+    public void group(Iterable<V> group) {
+        for (var player : group) {
+            if (!this.players.contains(player)) {
+                throw new IllegalArgumentException("cannot group unadded player " + player);
+            } else if (this.groupedPlayers.contains(player)) {
+                throw new IllegalStateException("player " + player + " is already in a group");
+            }
+        }
+
+        this.groupPreferences.add(Sets.newHashSet(group));
+        group.forEach(this.groupedPlayers::add);
+    }
+
+    /**
      * Allocates all players added through {@link TeamAllocator#add} into teams, taking preference and max size into
      * account.
      *
@@ -83,7 +106,10 @@ public final class TeamAllocator<T, V> {
         // 1. place players evenly and randomly into all the teams
         this.placePlayersRandomly(allocations);
 
-        // 2. go through and try to swap players whose preferences mismatch with their assigned team
+        // 2. set preferences for players in the same group for the same team
+        this.setGroupPreferences(allocations);
+
+        // 3. go through and try to swap players whose preferences mismatch with their assigned team
         this.optimizeTeamsByPreference(allocations);
 
         return allocations.teamToPlayers;
@@ -115,6 +141,31 @@ public final class TeamAllocator<T, V> {
             }
 
             teamIndex = (teamIndex + 1) % availableTeams.size();
+        }
+    }
+
+    private void setGroupPreferences(Allocations<T, V> allocations) {
+        var groupPreferences = new ArrayList<>(this.groupPreferences);
+        var teams = new ArrayList<>(this.teams);
+
+        Collections.shuffle(groupPreferences);
+        Collections.shuffle(teams);
+
+        // assign the largest groups to the largest teams
+        groupPreferences.sort(LARGEST_SET_FIRST_COMPARATOR);
+        teams.sort(Comparator.<T>comparingInt(team -> this.teamSizes.getInt(team)).reversed());
+
+        int teamIndex = 0;
+
+        for (var group : groupPreferences) {
+            var team = teams.get(teamIndex);
+
+            // set team preferences to the group's team if the player has no preference
+            for (var player : group) {
+                this.teamPreferences.putIfAbsent(player, team);
+            }
+
+            teamIndex = (teamIndex + 1) % this.teams.size();
         }
     }
 

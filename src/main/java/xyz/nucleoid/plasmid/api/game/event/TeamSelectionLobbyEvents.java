@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.api.game.event;
 
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.ApiStatus;
 import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.common.team.GameTeamKey;
@@ -12,6 +13,7 @@ import xyz.nucleoid.stimuli.event.StimulusEvent;
 /**
  * Events relating to a {@link TeamSelectionLobby} applied to a {@link GameActivity} within a {@link GameSpace}.
  */
+@ApiStatus.Experimental
 public final class TeamSelectionLobbyEvents {
     /**
      * Called when a {@link TeamAllocator} has been populated to allocate selected teams for a game.

@@ -123,8 +123,9 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
         if (this.loadedPortalId != null) {
-            this.tryConnectTo(this.loadedPortalId);
-            this.loadedPortalId = null;
+            if (this.tryConnectTo(this.loadedPortalId)) {
+                this.loadedPortalId = null;
+            }
         }
     }
 

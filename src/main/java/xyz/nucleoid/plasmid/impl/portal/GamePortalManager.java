@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.impl.portal;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.resource.ResourceManager;
@@ -12,6 +13,8 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.api.util.TinyRegistry;
+import xyz.nucleoid.plasmid.impl.PlasmidConfig;
+import xyz.nucleoid.plasmid.impl.portal.game.InvalidGamePortalBackend;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -86,7 +89,12 @@ public final class GamePortalManager {
                     var json = JsonParser.parseReader(reader);
                     var identifier = identifierFromPath(path);
                     GamePortalConfig.CODEC.parse(ops, json)
-                            .resultOrPartial(error -> Plasmid.LOGGER.error("Failed to parse game portal at {}: {}", path, error))
+                            .resultOrPartial(error -> {
+                                Plasmid.LOGGER.error("Failed to parse game portal at {}: {}", path, error);
+                                if (PlasmidConfig.get().ignoreInvalidGames()) {
+                                    configs.put(identifier, InvalidGamePortalBackend.CONFIG);
+                                }
+                            })
                             .ifPresent(config -> configs.put(identifier, config));
                 }
             } catch (IOException e) {

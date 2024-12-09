@@ -90,6 +90,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
 
                     return GameResult.ok();
                 } catch (Throwable throwable) {
+                    this.space.getLifecycle().onError(this.space, throwable, "handling LocalJoinAcceptor.Teleport");
                     return GameResult.error(GameTexts.Join.unexpectedError());
                 }
             }

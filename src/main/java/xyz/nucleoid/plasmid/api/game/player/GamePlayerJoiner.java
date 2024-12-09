@@ -4,10 +4,8 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.api.event.GameEvents;
-import xyz.nucleoid.plasmid.api.game.GameOpenException;
-import xyz.nucleoid.plasmid.api.game.GameResult;
-import xyz.nucleoid.plasmid.api.game.GameSpace;
-import xyz.nucleoid.plasmid.api.game.GameTexts;
+import xyz.nucleoid.plasmid.api.game.*;
+import xyz.nucleoid.plasmid.impl.Plasmid;
 
 import java.util.Collection;
 import java.util.Set;
@@ -40,6 +38,7 @@ public final class GamePlayerJoiner {
     }
 
     public static GameResult handleJoinException(Throwable throwable) {
+        Plasmid.LOGGER.error("Failed to add player to game space!", throwable);
         return GameResult.error(getFeedbackForException(throwable));
     }
 

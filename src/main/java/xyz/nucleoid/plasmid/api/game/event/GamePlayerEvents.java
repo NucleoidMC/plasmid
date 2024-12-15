@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.api.game.event;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.player.JoinAcceptor;
 import xyz.nucleoid.plasmid.api.game.player.JoinAcceptorResult;
@@ -161,6 +162,44 @@ public final class GamePlayerEvents {
         }
     });
 
+    /**
+     * Called when join message of {@link ServerPlayerEntity} is created.
+     * Can be used to manipulate it in game.
+     * This event is invoked after game handles player being added, but before the global join event
+     *
+     * Event returns a Text to set it or {@code null} to disable it.
+     */
+    public static final StimulusEvent<JoinMessage> JOIN_MESSAGE = StimulusEvent.create(JoinMessage.class, ctx -> (player, current, defaultText) -> {
+        try {
+            for (var listener : ctx.getListeners()) {
+                current = listener.onJoinMessageCreation(player, current, defaultText);
+            }
+            return current;
+        } catch (Throwable throwable) {
+            ctx.handleException(throwable);
+            return defaultText;
+        }
+    });
+
+    /**
+     * Called when leave message of {@link ServerPlayerEntity} is created.
+     * Can be used to manipulate it in game.
+     * This event is invoked before game handles player being removed
+
+     * Event returns a Text to set it or {@code null} to disable it.
+     */
+    public static final StimulusEvent<LeaveMessage> LEAVE_MESSAGE = StimulusEvent.create(LeaveMessage.class, ctx -> (player, current, defaultText) -> {
+        try {
+            for (var listener : ctx.getListeners()) {
+                current = listener.onLeaveMessageCreation(player, current, defaultText);
+            }
+            return current;
+        } catch (Throwable throwable) {
+            ctx.handleException(throwable);
+            return defaultText;
+        }
+    });
+
     public interface Add {
         void onAddPlayer(ServerPlayerEntity player);
     }
@@ -179,5 +218,15 @@ public final class GamePlayerEvents {
 
     public interface Name {
         Text onDisplayNameCreation(ServerPlayerEntity player, Text currentText, Text vanillaText);
+    }
+
+    public interface JoinMessage {
+        @Nullable
+        Text onJoinMessageCreation(ServerPlayerEntity player, @Nullable Text currentText, Text defaultText);
+    }
+
+    public interface LeaveMessage {
+        @Nullable
+        Text onLeaveMessageCreation(ServerPlayerEntity player, @Nullable Text currentText, Text defaultText);
     }
 }

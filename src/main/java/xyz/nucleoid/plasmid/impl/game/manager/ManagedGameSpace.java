@@ -225,20 +225,36 @@ public final class ManagedGameSpace implements GameSpace {
 
         this.lifecycle.onAddPlayer(this, player);
 
-        var joinMessage = GameTexts.Join.success(player)
-                .formatted(Formatting.YELLOW);
-        this.players.sendMessage(joinMessage);
-
+        var spectator = this.players.spectators().contains(player);
+        Text joinMessage = (spectator ? GameTexts.Join.successSpectator(player) : GameTexts.Join.success(player)).formatted(Formatting.YELLOW);
+        joinMessage = this.state.invoker(GamePlayerEvents.JOIN_MESSAGE).onJoinMessageCreation(player, joinMessage, joinMessage);
         GameEvents.PLAYER_JOIN.invoker().onPlayerJoin(this, player);
+
+        if (joinMessage != null) {
+            this.players.sendMessage(joinMessage);
+        }
     }
 
     void onPlayerRemove(ServerPlayerEntity player) {
+        var spectator = this.players.spectators().contains(player);
+        Text leaveMessage = (spectator ? GameTexts.Leave.spectator(player) : GameTexts.Leave.participant(player)).formatted(Formatting.YELLOW);
+        leaveMessage = this.state.invoker(GamePlayerEvents.LEAVE_MESSAGE).onLeaveMessageCreation(player, leaveMessage, leaveMessage);
+
         this.state.invoker(GamePlayerEvents.LEAVE).onRemovePlayer(player);
         this.state.invoker(GamePlayerEvents.REMOVE).onRemovePlayer(player);
 
         this.lifecycle.onRemovePlayer(this, player);
+
         GameEvents.PLAYER_LEFT.invoker().onPlayerLeft(this, player);
         this.manager.removePlayerFromGameSpace(this, player);
+
+        if (leaveMessage != null) {
+            for (var receiver : this.players) {
+                if (receiver != player) {
+                    receiver.sendMessage(leaveMessage);
+                }
+            }
+        }
     }
 
     void onAddWorld(RuntimeWorldHandle worldHandle) {

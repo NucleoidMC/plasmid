@@ -96,6 +96,8 @@ public final class GameWaitingLobby {
         activity.listen(GamePlayerEvents.OFFER, lobby::offerPlayer);
         activity.listen(GamePlayerEvents.ADD, lobby::onAddPlayer);
         activity.listen(GamePlayerEvents.REMOVE, lobby::onRemovePlayer);
+        activity.listen(GamePlayerEvents.JOIN_MESSAGE, lobby::onJoinMessage);
+        activity.listen(GamePlayerEvents.LEAVE_MESSAGE, lobby::onLeaveMessage);
         activity.listen(GameWaitingLobbyEvents.BUILD_UI_LAYOUT, lobby::onBuildUiLayout);
 
         activity.listen(GameActivityEvents.STATE_UPDATE, lobby::updateState);
@@ -116,6 +118,52 @@ public final class GameWaitingLobby {
         lobby.sidebar.show();
 
         return lobby;
+    }
+
+    @Nullable
+    private Text onJoinMessage(ServerPlayerEntity player, Text currentText, Text defaultText) {
+        if (currentText == null || (this.playerConfig.thresholdPlayers() == 1 && this.playerConfig.minPlayers() == 1) || this.playerConfig.playerConfig().maxPlayers().isEmpty() || this.gameSpace.getPlayers().spectators().contains(player)) {
+            return currentText;
+        }
+        var count = this.gameSpace.getPlayers().participants().size();
+        var canStart = count >= this.playerConfig.minPlayers() && (this.isActiveFull(this.gameSpace.getPlayers().size()) || this.isReady(count));
+
+        if (canStart) {
+            return currentText;
+        }
+
+        var required = Math.max(Math.min(this.playerConfig.thresholdPlayers(),
+                this.gameSpace.getServer().getCurrentPlayerCount()
+        ), this.playerConfig.minPlayers()) - count;
+
+        return Text.empty()
+                .append(currentText)
+                .append(" ")
+                .append(Text.translatable("text.plasmid.game.waiting_lobby.players_needed_to_start", required).formatted(Formatting.YELLOW));
+    }
+
+    @Nullable
+    private Text onLeaveMessage(ServerPlayerEntity player, Text currentText, Text defaultText) {
+        if (currentText == null || (this.playerConfig.thresholdPlayers() == 1 && this.playerConfig.minPlayers() == 1) || this.playerConfig.playerConfig().maxPlayers().isEmpty() || this.gameSpace.getPlayers().spectators().contains(player)) {
+            return currentText;
+        }
+
+        var count = this.gameSpace.getPlayers().participants().size() - 1;
+        var canStart = count >= this.playerConfig.minPlayers() && (this.isActiveFull(this.gameSpace.getPlayers().size() - 1) || this.isReady(count));
+
+
+        if (canStart) {
+            return currentText;
+        }
+
+        var required = Math.max(Math.min(this.playerConfig.thresholdPlayers(),
+                this.gameSpace.getServer().getCurrentPlayerCount()
+        ), this.playerConfig.minPlayers()) - count;
+
+        return Text.empty()
+                .append(currentText)
+                .append(" ")
+                .append(Text.translatable("text.plasmid.game.waiting_lobby.players_needed_to_start", required).formatted(Formatting.YELLOW));
     }
 
     private GameSpaceState.Builder updateState(GameSpaceState.Builder builder) {
@@ -240,9 +288,9 @@ public final class GameWaitingLobby {
         }
 
         if (this.gameSpace.getPlayers().participants().size() >= this.playerConfig.minPlayers()) {
-            if (this.isActiveFull()) {
+            if (this.isActiveFull(this.gameSpace.getPlayers().size())) {
                 return countdown.fullSeconds() * 20L;
-            } else if (this.isReady()) {
+            } else if (this.isReady(this.gameSpace.getPlayers().participants().size())) {
                 return countdown.readySeconds() * 20L;
             }
         }
@@ -317,22 +365,22 @@ public final class GameWaitingLobby {
         return Math.max(this.countdownStart + this.countdownDuration - time, 0);
     }
 
-    private boolean isReady() {
-        return this.gameSpace.getPlayers().participants().size() >= this.playerConfig.thresholdPlayers();
+    private boolean isReady(int count) {
+        return count >= this.playerConfig.thresholdPlayers();
     }
 
     private boolean isFull() {
         return this.limiter.isFull();
     }
 
-    private boolean isActiveFull() {
+    private boolean isActiveFull(int count) {
         if (this.isFull()) {
             return true;
         }
 
         // if all players on the server are in this lobby
         var server = this.gameSpace.getServer();
-        if (this.gameSpace.getPlayers().size() >= server.getCurrentPlayerCount()) {
+        if (count >= server.getCurrentPlayerCount()) {
             return true;
         }
 

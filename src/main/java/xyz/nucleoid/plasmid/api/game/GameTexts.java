@@ -112,6 +112,10 @@ public final class GameTexts {
             return Text.translatable("text.plasmid.game.join", player.getDisplayName());
         }
 
+        public static MutableText successSpectator(ServerPlayerEntity player) {
+            return Text.translatable("text.plasmid.game.join.spectate", player.getDisplayName());
+        }
+
         public static MutableText link(GameSpace gameSpace) {
             var hover = Text.translatable("text.plasmid.join_link_hover", GameConfig.name(gameSpace.getMetadata().sourceConfig()));
 
@@ -165,6 +169,17 @@ public final class GameTexts {
             return Text.translatable("text.plasmid.join_result.participants_only");
         }
     }
+
+    public static final class Leave {
+        public static MutableText participant(ServerPlayerEntity player) {
+            return Text.translatable("text.plasmid.game.leave", player.getDisplayName());
+        }
+
+        public static MutableText spectator(ServerPlayerEntity player) {
+            return Text.translatable("text.plasmid.game.leave.spectate", player.getDisplayName());
+        }
+    }
+
 
     public static final class Kick {
         public static MutableText kick(ServerCommandSource source, ServerPlayerEntity target) {

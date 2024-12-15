@@ -82,6 +82,9 @@ public final class JankGame {
                 return EventResult.DENY;
             });
 
+            activity.listen(GamePlayerEvents.JOIN_MESSAGE, (player, text, text2) -> null);
+            activity.listen(GamePlayerEvents.LEAVE_MESSAGE, (player, text, text2) -> null);
+
             activity.listen(GameActivityEvents.REQUEST_START, () -> startGame(activity.getGameSpace()));
 
         });

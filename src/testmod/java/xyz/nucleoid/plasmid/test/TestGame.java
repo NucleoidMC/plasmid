@@ -83,7 +83,7 @@ public final class TestGame {
                             })
             );
 
-            GameWaitingLobby.addTo(activity, new WaitingLobbyConfig(1, 99));
+            GameWaitingLobby.addTo(activity, context.config().players());
 
             int teamCount = context.config().teamCount();
 

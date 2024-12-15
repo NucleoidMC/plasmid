@@ -1,0 +1,7 @@
+{
+  "type": "testmod:test",
+  "players": {
+    "max": 16,
+    "min": 2
+  }
+}

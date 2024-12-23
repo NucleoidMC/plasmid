@@ -16,11 +16,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.impl.command.argument.GameConfigArgument;
 import xyz.nucleoid.plasmid.impl.command.argument.GameSpaceArgument;
-import xyz.nucleoid.plasmid.impl.command.ui.GameJoinUi;
 import xyz.nucleoid.plasmid.api.game.GameCloseReason;
 import xyz.nucleoid.plasmid.api.game.GameOpenException;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
@@ -31,6 +31,8 @@ import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
 import xyz.nucleoid.plasmid.api.util.Scheduler;
+import xyz.nucleoid.plasmid.impl.portal.config.ActiveGamePortalConfig;
+import xyz.nucleoid.plasmid.impl.portal.config.GamePortalConfig;
 
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -250,7 +252,8 @@ public final class GameCommand {
     }
 
     private static int joinGame(CommandContext<ServerCommandSource> context, JoinIntent intent) throws CommandSyntaxException {
-        new GameJoinUi(context.getSource().getPlayerOrThrow(), intent).open();
+        GamePortalConfig.create(context.getSource().getServer(), Identifier.of("plasmid", "join_command"),
+                ActiveGamePortalConfig.of(Text.translatable("text.plasmid.ui.game_join.title"), intent)).applyTo(context.getSource().getPlayerOrThrow(), false);
         return Command.SINGLE_SUCCESS;
     }
 

@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.api.game.player;
 
+import net.minecraft.util.StringIdentifiable;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 
@@ -8,22 +9,24 @@ import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
  * It is up to the game implementation to respect this intent in the way that is appropriate for their game. This may be
  * accomplished by handling the {@link GamePlayerEvents#OFFER 'Join Offer'} events.
  */
-public enum JoinIntent {
-    /**
-     * The player has no particular intention. Generally, this should be considered as a preference to participate.
-     */
-    //ANY,
+public enum JoinIntent implements StringIdentifiable {
     /**
      * The player intends to join the game to participate. If they cannot be joined as a participant, they should not
      * be allowed to join.
      */
-    PLAY,
+    PLAY("play"),
     /**
      * The player intends to join the game to spectate. Unless the game does not support spectators, this player should
      * generally always be accepted.
      */
-    SPECTATE,
+    SPECTATE("spectate"),
     ;
+
+    private final String name;
+
+    JoinIntent(String name) {
+        this.name = name;
+    }
 
     /**
      * @return {@code true} if the player may join as a participant under any circumstances
@@ -37,5 +40,10 @@ public enum JoinIntent {
      */
     public boolean canSpectate() {
         return this != PLAY;
+    }
+
+    @Override
+    public String asString() {
+        return this.name;
     }
 }

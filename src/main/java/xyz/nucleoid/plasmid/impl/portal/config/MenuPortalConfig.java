@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.impl.portal.menu;
+package xyz.nucleoid.plasmid.impl.portal.config;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
@@ -14,9 +14,9 @@ import net.minecraft.util.Identifier;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.api.game.config.CustomValuesConfig;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;
+import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
 import xyz.nucleoid.plasmid.api.util.PlasmidCodecs;
+import xyz.nucleoid.plasmid.impl.portal.backend.menu.MenuPortalBackend;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,18 +38,6 @@ public record MenuPortalConfig(
             Entry.CODEC.listOf().fieldOf("games").forGetter(config -> config.games),
             CustomValuesConfig.CODEC.optionalFieldOf("custom", CustomValuesConfig.empty()).forGetter(config -> config.custom)
     ).apply(i, MenuPortalConfig::new));
-
-    @Override
-    public GamePortalBackend createBackend(MinecraftServer server, Identifier id) {
-        Text name;
-        if (this.name != null && this.name != ScreenTexts.EMPTY) {
-            name = this.name;
-        } else {
-            name = Text.literal(id.toString());
-        }
-
-        return new MenuPortalBackend(name, this.description, this.icon, this.games);
-    }
 
     @Override
     public MapCodec<MenuPortalConfig> codec() {

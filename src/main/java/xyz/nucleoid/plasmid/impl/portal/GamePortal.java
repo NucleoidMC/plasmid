@@ -9,6 +9,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.CustomValuesConfig;
+import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.config.GamePortalConfig;
 
 import java.util.List;
 import java.util.Set;
@@ -24,9 +26,9 @@ public final class GamePortal {
     private GamePortalDisplay lastDisplay = new GamePortalDisplay();
     private GamePortalDisplay currentDisplay = new GamePortalDisplay();
 
-    public GamePortal(MinecraftServer server, Identifier id, GamePortalBackend.Factory backendFactory) {
+    public GamePortal(Identifier id, GamePortalBackend backend) {
         this.id = id;
-        this.backend = backendFactory.create(server, id);
+        this.backend = backend;
     }
 
     void setCustom(CustomValuesConfig custom) {

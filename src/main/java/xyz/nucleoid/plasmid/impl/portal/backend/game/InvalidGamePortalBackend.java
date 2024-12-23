@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.impl.portal.game;
+package xyz.nucleoid.plasmid.impl.portal.backend.game;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.server.MinecraftServer;
@@ -6,16 +6,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.api.game.config.CustomValuesConfig;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;
+import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.config.GamePortalConfig;
 
 public record InvalidGamePortalBackend(Identifier identifier) implements GamePortalBackend {
     public static final GamePortalConfig CONFIG = new GamePortalConfig() {
-        @Override
-        public GamePortalBackend createBackend(MinecraftServer server, Identifier id) {
-            return new InvalidGamePortalBackend(id);
-        }
-
         @Override
         public CustomValuesConfig custom() {
             return CustomValuesConfig.empty();

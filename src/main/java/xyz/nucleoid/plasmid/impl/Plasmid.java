@@ -1,6 +1,5 @@
 package xyz.nucleoid.plasmid.impl;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.sun.net.httpserver.HttpServer;
 import net.fabricmc.api.ModInitializer;
@@ -12,17 +11,17 @@ import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Unit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nucleoid.plasmid.api.event.GameEvents;
-import xyz.nucleoid.plasmid.api.game.GameOpenContext;
 import xyz.nucleoid.plasmid.api.game.GameOpenException;
+import xyz.nucleoid.plasmid.api.game.GameSpaceManager;
 import xyz.nucleoid.plasmid.api.game.GameType;
 import xyz.nucleoid.plasmid.impl.game.composite.RandomGame;
 import xyz.nucleoid.plasmid.impl.game.composite.RandomGameConfig;
@@ -30,15 +29,19 @@ import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.api.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;
+import xyz.nucleoid.plasmid.impl.portal.backend.game.ConcurrentGamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.game.NewGamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.game.SingleGamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.menu.ActiveGamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.menu.AdvancedMenuPortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.menu.MenuPortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.config.GamePortalConfig;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalManager;
-import xyz.nucleoid.plasmid.impl.portal.game.ConcurrentGamePortalConfig;
-import xyz.nucleoid.plasmid.impl.portal.game.LegacyOnDemandPortalConfig;
-import xyz.nucleoid.plasmid.impl.portal.game.NewGamePortalConfig;
-import xyz.nucleoid.plasmid.impl.portal.game.SingleGamePortalConfig;
+import xyz.nucleoid.plasmid.impl.portal.config.*;
 import xyz.nucleoid.plasmid.impl.command.*;
 import xyz.nucleoid.plasmid.impl.compatibility.TrinketsCompatibility;
+import xyz.nucleoid.plasmid.impl.portal.menu.GameMenuEntryConfig;
 import xyz.nucleoid.plasmid.impl.portal.menu.*;
 
 public final class Plasmid implements ModInitializer {
@@ -53,13 +56,47 @@ public final class Plasmid implements ModInitializer {
         GamePortalConfig.register(Identifier.of(ID, "single_game"), SingleGamePortalConfig.CODEC);
         GamePortalConfig.register(Identifier.of(ID, "new_game"), NewGamePortalConfig.CODEC);
         GamePortalConfig.register(Identifier.of(ID, "concurrent_game"), ConcurrentGamePortalConfig.CODEC);
-        GamePortalConfig.register(Identifier.of(ID, "on_demand"), LegacyOnDemandPortalConfig.CODEC); // old one
 
+        GamePortalConfig.register(Identifier.of(ID, "active_games"), ActiveGamePortalConfig.CODEC);
         GamePortalConfig.register(Identifier.of(ID, "menu"), MenuPortalConfig.CODEC);
         GamePortalConfig.register(Identifier.of(ID, "advanced_menu"), AdvancedMenuPortalConfig.CODEC);
 
         MenuEntryConfig.register(Identifier.of(ID, "game"), GameMenuEntryConfig.CODEC);
         MenuEntryConfig.register(Identifier.of(ID, "portal"), PortalEntryConfig.CODEC);
+
+        GamePortalConfig.registerFactory(SingleGamePortalConfig.class, ((server, id, config) -> new SingleGamePortalBackend(config.game())));
+        GamePortalConfig.registerFactory(NewGamePortalConfig.class, ((server, id, config) -> new NewGamePortalBackend(config.game())));
+        GamePortalConfig.registerFactory(ConcurrentGamePortalConfig.class, ((server, id, config) -> new ConcurrentGamePortalBackend(config.game())));
+        GamePortalConfig.registerFactory(MenuPortalConfig.class, ((server, id, config) -> {
+            Text name;
+            if (config.name() != null && config.name() != ScreenTexts.EMPTY) {
+                name = config.name();
+            } else {
+                name = Text.literal(id.toString());
+            }
+
+            return new MenuPortalBackend(name, config.description(), config.icon(), config.games());
+        }));
+        GamePortalConfig.registerFactory(AdvancedMenuPortalConfig.class, ((server, id, config) -> {
+            Text name;
+            if (config.name() != null && config.name() != ScreenTexts.EMPTY) {
+                name = config.name();
+            } else {
+                name = Text.literal(id.toString());
+            }
+            return new AdvancedMenuPortalBackend(name, config.description(), config.icon(), config.entries());
+        }));
+
+        GamePortalConfig.registerFactory(ActiveGamePortalConfig.class, ((server, id, config) -> {
+            Text name;
+            if (config.name() != null && config.name() != ScreenTexts.EMPTY) {
+                name = config.name();
+            } else {
+                name = Text.literal(id.toString());
+            }
+            return new ActiveGamePortalBackend(name, config.description(), config.icon(), GameSpaceManager.get(), config.joinIntent());
+        }));
+
 
         GameType.register(Identifier.of(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
         GameType.register(Identifier.of(Plasmid.ID, "invalid"), MapCodec.unit(""), (context) -> {

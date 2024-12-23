@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.impl.portal;
+package xyz.nucleoid.plasmid.impl.portal.backend;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -8,6 +8,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
+import xyz.nucleoid.plasmid.impl.portal.config.GamePortalConfig;
+import xyz.nucleoid.plasmid.impl.portal.GamePortalDisplay;
 
 import java.util.Collections;
 import java.util.List;
@@ -56,8 +58,8 @@ public interface GamePortalBackend {
 
     default void provideGameSpaces(Consumer<GameSpace> consumer) {}
 
-    interface Factory {
-        GamePortalBackend create(MinecraftServer server, Identifier id);
+    interface Factory<T extends GamePortalConfig> {
+        GamePortalBackend create(MinecraftServer server, Identifier id, T config);
     }
 
     record ActionType(Text text, Text textAlt) {

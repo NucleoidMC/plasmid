@@ -7,7 +7,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.impl.portal.game.ConcurrentGamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.game.ConcurrentGamePortalBackend;
 import xyz.nucleoid.plasmid.api.util.PlasmidCodecs;
 
 import java.util.List;

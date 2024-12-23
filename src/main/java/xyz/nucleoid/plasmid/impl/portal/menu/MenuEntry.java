@@ -9,7 +9,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 
 import java.util.List;

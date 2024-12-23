@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.impl.portal.game;
+package xyz.nucleoid.plasmid.impl.portal.backend.game;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -6,7 +6,7 @@ import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
 
 import java.util.List;
 import java.util.function.Consumer;

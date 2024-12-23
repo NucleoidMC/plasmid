@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.impl.portal.game;
+package xyz.nucleoid.plasmid.impl.portal.backend.game;
 
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
@@ -14,7 +14,6 @@ import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 

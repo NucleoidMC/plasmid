@@ -1,34 +1,36 @@
-package xyz.nucleoid.plasmid.impl.portal.menu;
+package xyz.nucleoid.plasmid.impl.portal.backend.menu;
 
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import xyz.nucleoid.plasmid.api.game.config.GameConfig;
+import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.game.ConcurrentGamePortalBackend;
 import xyz.nucleoid.plasmid.api.util.Guis;
+import xyz.nucleoid.plasmid.impl.portal.menu.GameMenuEntry;
+import xyz.nucleoid.plasmid.impl.portal.menu.MenuEntry;
+import xyz.nucleoid.plasmid.impl.portal.config.MenuPortalConfig;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public final class AdvancedMenuPortalBackend implements GamePortalBackend {
+public final class MenuPortalBackend implements GamePortalBackend {
     private final Text name;
-
+    private final List<MenuEntry> games;
     private final List<Text> description;
     private final ItemStack icon;
 
-    private final List<MenuEntryConfig> entryConfigs;
-    private List<MenuEntry> entries;
-
-    AdvancedMenuPortalBackend(Text name, List<Text> description, ItemStack icon, List<MenuEntryConfig> entryConfigs) {
+    public MenuPortalBackend(Text name, List<Text> description, ItemStack icon, List<MenuPortalConfig.Entry> games) {
         this.name = name;
-
         this.description = description;
         this.icon = icon;
 
-        this.entryConfigs = entryConfigs;
+
+        this.games = this.buildGames(games);
     }
 
     @Override
@@ -70,7 +72,7 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
 
     @Override
     public void provideGameSpaces(Consumer<GameSpace> consumer) {
-        for (var entry : this.getEntries()) {
+        for (var entry : this.games) {
             entry.provideGameSpaces(consumer);
         }
     }
@@ -78,23 +80,28 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
     private List<GuiElementInterface> getGuiElements() {
         List<GuiElementInterface> elements = new ArrayList<>();
 
-        for (var entry : this.getEntries()) {
-            var uiEntry = entry.createGuiElement();
+        for (var game : this.games) {
+            var uiEntry = game.createGuiElement();
             elements.add(uiEntry);
         }
 
         return elements;
     }
 
-    private List<MenuEntry> getEntries() {
-        if (this.entries == null) {
-            this.entries = new ArrayList<MenuEntry>(this.entryConfigs.size());
-            for (var configEntry : this.entryConfigs) {
-                this.entries.add(configEntry.createEntry());
-            }
+    private List<MenuEntry> buildGames(List<MenuPortalConfig.Entry> configs) {
+        var games = new ArrayList<MenuEntry>(configs.size());
+        for (var configEntry : configs) {
+            var config = configEntry.game();
+            var game = new ConcurrentGamePortalBackend(config);
+            games.add(new GameMenuEntry(
+                    game,
+                    configEntry.name().orElse(GameConfig.name(config)),
+                    configEntry.description().orElse(config.value().description()),
+                    configEntry.icon().orElse(config.value().icon())
+            ));
         }
 
-        return this.entries;
+        return games;
     }
 
     @Override

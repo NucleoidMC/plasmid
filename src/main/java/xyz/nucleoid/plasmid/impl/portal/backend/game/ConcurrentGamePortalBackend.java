@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.impl.portal.game;
+package xyz.nucleoid.plasmid.impl.portal.backend.game;
 
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
@@ -14,12 +14,35 @@ import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-public record NewGamePortalBackend(RegistryEntry<GameConfig<?>> game) implements GameConfigGamePortalBackend {
+public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBackend {
+    private final RegistryEntry<GameConfig<?>> game;
+    private CompletableFuture<GameSpace> gameFuture;
+
+    public ConcurrentGamePortalBackend(RegistryEntry<GameConfig<?>> game) {
+        this.game = game;
+    }
+
+    @Override
+    public RegistryEntry<GameConfig<?>> game() {
+        return this.game;
+    }
+
     @Override
     public void applyTo(ServerPlayerEntity player, boolean alt) {
-        CompletableFuture.supplyAsync(() -> this.openGame(player.server))
+        for (var gameSpace : GameSpaceManagerImpl.get().getOpenGameSpaces()) {
+            if (gameSpace.getMetadata().sourceConfig().equals(this.game)) {
+                var result = GamePlayerJoiner.tryJoin(player, gameSpace, alt ? JoinIntent.SPECTATE : JoinIntent.PLAY);
+
+                if (result.isOk()) {
+                    return;
+                }
+            }
+        }
+
+        CompletableFuture.supplyAsync(() -> this.getOrOpenNew(player.server))
                 .thenCompose(Function.identity())
                 .handleAsync((gameSpace, throwable) -> {
+                    this.gameFuture = null;
                     GameResult result;
                     if (gameSpace != null) {
                         result = GamePlayerJoiner.tryJoin(player, gameSpace, JoinIntent.PLAY);
@@ -33,6 +56,14 @@ public record NewGamePortalBackend(RegistryEntry<GameConfig<?>> game) implements
 
                     return null;
                 }, player.server);
+    }
+
+    public CompletableFuture<GameSpace> getOrOpenNew(MinecraftServer server) {
+        var future = this.gameFuture;
+        if (future == null || future.isCompletedExceptionally()) {
+            this.gameFuture = future = this.openGame(server);
+        }
+        return future;
     }
 
     private CompletableFuture<GameSpace> openGame(MinecraftServer server) {

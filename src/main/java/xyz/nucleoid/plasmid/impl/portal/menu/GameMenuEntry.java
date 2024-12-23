@@ -6,9 +6,9 @@ import java.util.function.Consumer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
-import xyz.nucleoid.plasmid.impl.portal.game.ConcurrentGamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.game.ConcurrentGamePortalBackend;
 
 public record GameMenuEntry(
         ConcurrentGamePortalBackend game,

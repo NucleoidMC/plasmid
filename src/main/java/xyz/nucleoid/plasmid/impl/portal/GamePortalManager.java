@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.impl.portal;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.resource.ResourceManager;
@@ -14,7 +13,8 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.api.util.TinyRegistry;
 import xyz.nucleoid.plasmid.impl.PlasmidConfig;
-import xyz.nucleoid.plasmid.impl.portal.game.InvalidGamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.backend.game.InvalidGamePortalBackend;
+import xyz.nucleoid.plasmid.impl.portal.config.GamePortalConfig;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -72,10 +72,13 @@ public final class GamePortalManager {
             var identifier = entry.getKey();
             var config = entry.getValue();
 
-            var portal = new GamePortal(server, identifier, config::createBackend);
-            portal.setCustom(config.custom());
+            var backend = GamePortalConfig.create(server, identifier, config);
+            if (backend != null) {
+                var portal = new GamePortal(identifier, backend);
+                portal.setCustom(config.custom());
 
-            this.portals.register(identifier, portal);
+                this.portals.register(identifier, portal);
+            }
         }
     }
 

@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.impl.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import xyz.nucleoid.plasmid.impl.command.argument.GameConfigArgument;
@@ -16,7 +17,7 @@ public final class GameTestCommand {
         dispatcher.register(
             literal("game")
                 .then(literal("test")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(Permissions.require("plasmid.command.game.test", 2))
                     .then(GameConfigArgument.argument("game_config")
                         .executes(GameTestCommand::openTestGame)
                     )

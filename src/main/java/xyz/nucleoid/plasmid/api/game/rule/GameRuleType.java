@@ -114,6 +114,7 @@ public final class GameRuleType {
     public static final GameRuleType STOP_SPECTATING_ENTITY = GameRuleType.create();
     public static final GameRuleType PLAYER_PROJECTILE_KNOCKBACK = GameRuleType.create();
     public static final GameRuleType TRIDENTS_LOYAL_IN_VOID = GameRuleType.create();
+    public static final GameRuleType SPREAD_CONTAINER_LOOT = GameRuleType.create();
     public static final GameRuleType MODIFY_INVENTORY = GameRuleType.create();
     public static final GameRuleType MODIFY_ARMOR = GameRuleType.create();
     public static final GameRuleType SWAP_OFFHAND = GameRuleType.create().enforces(PlayerSwapWithOffhandEvent.EVENT, result -> (player) -> result);

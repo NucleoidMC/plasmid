@@ -1,11 +1,11 @@
 package xyz.nucleoid.plasmid.impl.portal.backend.game;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import eu.pb4.sgui.api.ClickType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.api.game.config.CustomValuesConfig;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
 import xyz.nucleoid.plasmid.impl.portal.config.GamePortalConfig;
 
@@ -28,7 +28,7 @@ public record InvalidGamePortalBackend(Identifier identifier) implements GamePor
     }
 
     @Override
-    public void applyTo(ServerPlayerEntity player, boolean alt) {
+    public void applyTo(PortalUserContext context, ClickType clickType) {
 
     }
 }

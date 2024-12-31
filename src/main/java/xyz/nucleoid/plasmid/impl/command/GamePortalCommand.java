@@ -5,6 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import eu.pb4.sgui.api.ClickType;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -12,6 +13,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.impl.command.argument.GamePortalArgument;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -51,7 +53,7 @@ public final class GamePortalCommand {
 
     private static int openPortal(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         var portal = GamePortalArgument.get(context, "portal");
-        portal.requestJoin(context.getSource().getPlayer(), false);
+        portal.applyTo(PortalUserContext.of(context.getSource().getPlayerOrThrow()), ClickType.MOUSE_RIGHT);
         return 1;
     }
 

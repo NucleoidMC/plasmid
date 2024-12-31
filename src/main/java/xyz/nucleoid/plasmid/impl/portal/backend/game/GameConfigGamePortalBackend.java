@@ -6,6 +6,7 @@ import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
 
 import java.util.List;
@@ -61,7 +62,7 @@ public interface GameConfigGamePortalBackend extends GamePortalBackend {
     }
 
     @Override
-    default ActionType getActionType() {
-        return ActionType.PLAY;
+    default List<Action> getActions(PortalUserContext context) {
+        return List.of(Action.PLAY);
     }
 }

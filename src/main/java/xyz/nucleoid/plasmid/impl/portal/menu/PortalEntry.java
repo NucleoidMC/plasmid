@@ -3,9 +3,10 @@ package xyz.nucleoid.plasmid.impl.portal.menu;
 import java.util.List;
 import java.util.function.Consumer;
 
+import eu.pb4.sgui.api.ClickType;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.impl.portal.GamePortal;
@@ -21,8 +22,8 @@ public record PortalEntry(
     }
 
     @Override
-    public void click(ServerPlayerEntity player, boolean alt) {
-        this.portal.requestJoin(player, alt);
+    public void click(PortalUserContext context, ClickType type) {
+        this.portal.applyTo(context, type);
     }
 
     @Override
@@ -46,12 +47,7 @@ public record PortalEntry(
     }
 
     @Override
-    public GamePortalBackend.ActionType getActionType() {
-        return this.portal.getBackend().getActionType();
-    }
-
-    @Override
-    public GamePortalBackend.ActionType getAltActionType() {
-        return this.portal.getBackend().getAltActionType();
+    public List<GamePortalBackend.Action> getActions(PortalUserContext context) {
+        return this.portal.getBackend().getActions(context);
     }
 }

@@ -1,9 +1,9 @@
 package xyz.nucleoid.plasmid.impl.portal.backend.menu;
 
+import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;
@@ -20,11 +20,8 @@ import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
 import xyz.nucleoid.plasmid.api.util.Guis;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
-import xyz.nucleoid.plasmid.impl.portal.backend.game.ConcurrentGamePortalBackend;
-import xyz.nucleoid.plasmid.impl.portal.config.MenuPortalConfig;
-import xyz.nucleoid.plasmid.impl.portal.menu.GameMenuEntry;
-import xyz.nucleoid.plasmid.impl.portal.menu.MenuEntry;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -67,8 +64,8 @@ public final class ActiveGamePortalBackend implements GamePortalBackend {
     }
 
     @Override
-    public void applyTo(ServerPlayerEntity player, boolean alt) {
-        new GameJoinUi(player, this.name, this.intent).open();
+    public void applyTo(PortalUserContext context, ClickType type) {
+        context.openUi(player -> new GameJoinUi(player, context, this.name, this.intent).open());
     }
 
     private static final class GameJoinUi extends SimpleGui {
@@ -81,7 +78,7 @@ public final class ActiveGamePortalBackend implements GamePortalBackend {
         private int page = 0;
         private int pageSize;
 
-        public GameJoinUi(ServerPlayerEntity player, Text name, JoinIntent intent) {
+        public GameJoinUi(ServerPlayerEntity player, PortalUserContext context, Text name, JoinIntent intent) {
             super(ScreenHandlerType.GENERIC_9X6, player, true);
             this.joinIntent = intent;
             this.player = player;
@@ -219,9 +216,9 @@ public final class ActiveGamePortalBackend implements GamePortalBackend {
                 );
             }
 
-            var actionType = this.joinIntent == JoinIntent.PLAY ? GamePortalBackend.ActionType.PLAY : GamePortalBackend.ActionType.SPECTATE;
+            var actionType = this.joinIntent == JoinIntent.PLAY ? Action.PLAY : Action.SPECTATE;
 
-            if (actionType != GamePortalBackend.ActionType.NONE) {
+            if (actionType != Action.NONE) {
                 element.addLoreLine(Text.empty().append(Text.literal(" [ ").formatted(Formatting.GRAY))
                         .append(actionType.text())
                         .append(Text.literal(" ]").formatted(Formatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));

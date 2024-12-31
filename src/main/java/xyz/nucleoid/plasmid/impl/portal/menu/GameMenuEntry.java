@@ -3,9 +3,10 @@ package xyz.nucleoid.plasmid.impl.portal.menu;
 import java.util.List;
 import java.util.function.Consumer;
 
+import eu.pb4.sgui.api.ClickType;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.impl.portal.backend.game.ConcurrentGamePortalBackend;
@@ -17,8 +18,8 @@ public record GameMenuEntry(
         ItemStack icon
 ) implements MenuEntry {
     @Override
-    public void click(ServerPlayerEntity player, boolean alt) {
-        game.applyTo(player, alt);
+    public void click(PortalUserContext context, ClickType type) {
+        game.applyTo(context, type);
     }
 
     @Override
@@ -27,8 +28,8 @@ public record GameMenuEntry(
     }
 
     @Override
-    public GamePortalBackend.ActionType getActionType() {
-        return this.game.getActionType();
+    public List<GamePortalBackend.Action> getActions(PortalUserContext context) {
+        return this.game.getActions(context);
     }
 
     @Override

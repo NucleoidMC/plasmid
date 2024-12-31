@@ -1,11 +1,12 @@
 package xyz.nucleoid.plasmid.impl.portal.backend.menu;
 
+import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
 import xyz.nucleoid.plasmid.api.util.Guis;
 import xyz.nucleoid.plasmid.impl.portal.menu.MenuEntry;
@@ -77,11 +78,11 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
         }
     }
 
-    private List<GuiElementInterface> getGuiElements() {
+    private List<GuiElementInterface> getGuiElements(PortalUserContext context) {
         List<GuiElementInterface> elements = new ArrayList<>();
 
         for (var entry : this.getEntries()) {
-            var uiEntry = entry.createGuiElement();
+            var uiEntry = entry.createGuiElement(context);
             elements.add(uiEntry);
         }
 
@@ -100,8 +101,7 @@ public final class AdvancedMenuPortalBackend implements GamePortalBackend {
     }
 
     @Override
-    public void applyTo(ServerPlayerEntity player, boolean alt) {
-        var ui = Guis.createSelectorGui(player, this.name.copy(), true, this.getGuiElements());
-        ui.open();
+    public void applyTo(PortalUserContext context, ClickType type) {
+        context.openUi(player -> Guis.createSelectorGui(player, this.name.copy(), true, this.getGuiElements(context)).open());
     }
 }

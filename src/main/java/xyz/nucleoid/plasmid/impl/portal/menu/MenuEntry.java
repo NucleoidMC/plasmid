@@ -1,14 +1,15 @@
 package xyz.nucleoid.plasmid.impl.portal.menu;
 
+import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenTexts;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 
@@ -22,7 +23,7 @@ public interface MenuEntry {
 
     ItemStack icon();
 
-    void click(ServerPlayerEntity player, boolean alt);
+    void click(PortalUserContext context, ClickType type);
 
     default int getPlayerCount() {
         return -1;
@@ -45,20 +46,15 @@ public interface MenuEntry {
         return false;
     }
 
-    default GamePortalBackend.ActionType getActionType() {
-        return GamePortalBackend.ActionType.NONE;
+    default List<GamePortalBackend.Action> getActions(PortalUserContext context) {
+        return List.of();
     }
-
-    default GamePortalBackend.ActionType getAltActionType() {
-        return GamePortalBackend.ActionType.NONE;
-    }
-
 
     default void provideGameSpaces(Consumer<GameSpace> consumer) {
 
     }
 
-    default GuiElement createGuiElement() {
+    default GuiElement createGuiElement(PortalUserContext context) {
         var element = GuiElementBuilder.from(this.icon().copy()).hideDefaultTooltip()
                 .setName(Text.empty().append(this.name()));
 
@@ -109,24 +105,14 @@ public interface MenuEntry {
             );
         }
 
-        var actionType = this.getActionType();
-
-        if (actionType != GamePortalBackend.ActionType.NONE) {
+        for (var type : this.getActions(context)) {
             element.addLoreLine(Text.empty().append(Text.literal(" [ ").formatted(Formatting.GRAY))
-                    .append(actionType.text())
-                    .append(Text.literal(" ]").formatted(Formatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));
-        }
-
-        var altActionType = this.getAltActionType();
-
-        if (altActionType != GamePortalBackend.ActionType.NONE) {
-            element.addLoreLine(Text.empty().append(Text.literal(" [ ").formatted(Formatting.GRAY))
-                    .append(actionType.text())
+                    .append(type.text())
                     .append(Text.literal(" ]").formatted(Formatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));
         }
 
         element.setCallback((a, b, c, gui) -> {
-            this.click(gui.getPlayer(), b.shift);
+            this.click(context, b);
         });
 
         return element.build();

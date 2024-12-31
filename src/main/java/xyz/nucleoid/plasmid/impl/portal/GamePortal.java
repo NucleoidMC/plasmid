@@ -1,16 +1,15 @@
 package xyz.nucleoid.plasmid.impl.portal;
 
+import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.CustomValuesConfig;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 import xyz.nucleoid.plasmid.impl.portal.backend.GamePortalBackend;
-import xyz.nucleoid.plasmid.impl.portal.config.GamePortalConfig;
 
 import java.util.List;
 import java.util.Set;
@@ -67,7 +66,7 @@ public final class GamePortal {
         return this.backend.getMaxPlayerCount();
     }
 
-    public void requestJoin(ServerPlayerEntity player, boolean alt) {
+    public void applyTo(PortalUserContext player, ClickType alt) {
         this.backend.applyTo(player, alt);
     }
 

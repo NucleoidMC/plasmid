@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.mixin.game.portal;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
+import eu.pb4.sgui.api.ClickType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.Brightness;
 import net.minecraft.entity.decoration.DisplayEntity;
@@ -24,6 +25,7 @@ import xyz.nucleoid.plasmid.impl.portal.GamePortal;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalDisplay;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
 import xyz.nucleoid.plasmid.impl.compatibility.DisguiseLibCompatibility;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements GamePortalInterface {
@@ -45,7 +47,7 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Override
     public boolean interactWithPortal(ServerPlayerEntity player) {
         if (this.portal != null) {
-            this.portal.requestJoin(player, false);
+            this.portal.applyTo(PortalUserContext.of(player), ClickType.MOUSE_RIGHT);
             return true;
         }
         return false;

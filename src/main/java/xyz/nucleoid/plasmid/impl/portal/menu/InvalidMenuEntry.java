@@ -1,10 +1,11 @@
 package xyz.nucleoid.plasmid.impl.portal.menu;
 
+import eu.pb4.sgui.api.ClickType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +31,8 @@ public record InvalidMenuEntry(Text name) implements MenuEntry {
     }
 
     @Override
-    public void click(ServerPlayerEntity player, boolean alt) {
+    public void click(PortalUserContext context, ClickType type) {
+
     }
 
     @Override

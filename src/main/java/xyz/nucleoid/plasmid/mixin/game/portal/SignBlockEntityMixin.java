@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.mixin.game.portal;
 
+import eu.pb4.sgui.api.ClickType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -27,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.impl.portal.GamePortal;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalDisplay;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 
 @Mixin(SignBlockEntity.class)
 public abstract class SignBlockEntityMixin extends BlockEntity implements GamePortalInterface {
@@ -106,7 +108,7 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     @Inject(method = "runCommandClickEvent", at = @At("HEAD"), cancellable = true)
     private void runCommandClickEvent(PlayerEntity player, World world, BlockPos pos, boolean front, CallbackInfoReturnable<Boolean> ci) {
         if (this.portal != null && player instanceof ServerPlayerEntity serverPlayer) {
-            this.portal.requestJoin(serverPlayer, false);
+            this.portal.applyTo(PortalUserContext.of(serverPlayer), ClickType.MOUSE_RIGHT);
             ci.setReturnValue(true);
         }
     }

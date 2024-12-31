@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.logging.LogUtils;
+import eu.pb4.sgui.api.ClickType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.nbt.NbtOps;
@@ -31,6 +32,7 @@ import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
 import xyz.nucleoid.plasmid.api.util.Scheduler;
+import xyz.nucleoid.plasmid.impl.portal.backend.PortalUserContext;
 import xyz.nucleoid.plasmid.impl.portal.config.ActiveGamePortalConfig;
 import xyz.nucleoid.plasmid.impl.portal.config.GamePortalConfig;
 
@@ -253,7 +255,7 @@ public final class GameCommand {
 
     private static int joinGame(CommandContext<ServerCommandSource> context, JoinIntent intent) throws CommandSyntaxException {
         GamePortalConfig.create(context.getSource().getServer(), Identifier.of("plasmid", "join_command"),
-                ActiveGamePortalConfig.of(Text.translatable("text.plasmid.ui.game_join.title"), intent)).applyTo(context.getSource().getPlayerOrThrow(), false);
+                ActiveGamePortalConfig.of(Text.translatable("text.plasmid.ui.game_join.title"), intent)).applyTo(PortalUserContext.of(context.getSource().getPlayerOrThrow()), ClickType.MOUSE_RIGHT);
         return Command.SINGLE_SUCCESS;
     }
 

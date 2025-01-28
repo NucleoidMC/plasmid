@@ -8,6 +8,7 @@
     "chat.PlayerEntityMixin",
     "chat.PlayerListS2CPacketEntryAccessor",
     "chat.ServerPlayerEntityMixin",
+    "game.common.LivingEntityMixin",
     "game.portal.EntityMixin",
     "game.portal.SignBlockEntityMixin",
     "game.rule.EquippableComponentMixin",

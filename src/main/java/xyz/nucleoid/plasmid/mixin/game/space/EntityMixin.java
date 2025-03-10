@@ -9,6 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,18 +18,16 @@ import xyz.nucleoid.plasmid.api.game.GameSpaceManager;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.player.isolation.TeleportIsolated;
 
-@Mixin(ServerPlayerEntity.class)
-public abstract class ServerPlayerEntityMixin extends PlayerEntity implements TeleportIsolated {
+@Mixin(Entity.class)
+public abstract class EntityMixin implements TeleportIsolated {
+    @Shadow public abstract World getWorld();
+
     @Unique
     private boolean teleportIsolation = true;
 
-    private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
-        super(world, pos, yaw, profile);
-    }
-
-    @Inject(method = "teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "teleportTo", at = @At("HEAD"), cancellable = true)
     private void preventOutOfGameTeleports(TeleportTarget teleportTarget, CallbackInfoReturnable<Object> cir) {
-        if (this.teleportIsolation && GameSpaceManager.get().byPlayer(this) != GameSpaceManager.get().byWorld(teleportTarget.world())) {
+        if (this.teleportIsolation && GameSpaceManager.get().byWorld(this.getWorld()) != GameSpaceManager.get().byWorld(teleportTarget.world())) {
             cir.setReturnValue(this);
         }
     }

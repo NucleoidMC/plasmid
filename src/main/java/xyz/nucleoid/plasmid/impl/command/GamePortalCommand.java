@@ -5,6 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -31,13 +32,13 @@ public final class GamePortalCommand {
             literal("game")
                 .then(literal("portal")
                     .then(literal("connect")
-                        .requires(source -> source.hasPermissionLevel(3))
+                        .requires(Permissions.require("plasmid.command.game.portal.connect", 3))
                         .then(GamePortalArgument.argument("portal")
                         .then(argument("entity", EntityArgumentType.entity()).executes(GamePortalCommand::connectEntity))
                         .then(argument("pos", BlockPosArgumentType.blockPos()).executes(GamePortalCommand::connectBlock))
                     ))
                     .then(literal("disconnect")
-                        .requires(source -> source.hasPermissionLevel(3))
+                        .requires(Permissions.require("plasmid.command.game.portal.disconnect", 3))
                         .then(argument("entity", EntityArgumentType.entity()).executes(GamePortalCommand::disconnectEntity))
                         .then(argument("pos", BlockPosArgumentType.blockPos()).executes(GamePortalCommand::disconnectBlock))
                     )

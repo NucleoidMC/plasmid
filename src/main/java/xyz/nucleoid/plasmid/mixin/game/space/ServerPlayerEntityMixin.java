@@ -26,7 +26,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Te
         super(world, pos, yaw, profile);
     }
 
-    @Inject(method = "teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "teleportTo", at = @At("HEAD"), cancellable = true)
     private void preventOutOfGameTeleports(TeleportTarget teleportTarget, CallbackInfoReturnable<Object> cir) {
         if (this.teleportIsolation && GameSpaceManager.get().byPlayer(this) != GameSpaceManager.get().byWorld(teleportTarget.world())) {
             cir.setReturnValue(this);

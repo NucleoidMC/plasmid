@@ -73,7 +73,7 @@ public class OldCombatTests {
         var component = stack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
 
         // Attack speed
-        var attackSpeed = getAttributeModifierEntry(component, EntityAttributes.ATTACK_SPEED);
+        var attackSpeed = getAttributeModifierEntry(component, EntityAttributes.GENERIC_ATTACK_SPEED);
         assertNotNull(attackSpeed, "Missing attack speed attribute modifier for " + item);
 
         assertEquals(AttributeModifierSlot.MAINHAND, attackSpeed.slot(), "Incorrect attack speed attribute modifier slot for " + item);
@@ -81,7 +81,7 @@ public class OldCombatTests {
         assertEquals(10000.0F, attackSpeed.modifier().value(), "Incorrect attack speed attribute modifier value for " + item);
 
         // Attack damage
-        var attackDamage = getAttributeModifierEntry(component, EntityAttributes.ATTACK_DAMAGE);
+        var attackDamage = getAttributeModifierEntry(component, EntityAttributes.GENERIC_ATTACK_DAMAGE);
         assertNotNull(attackDamage, "Missing attack damage attribute modifier for " + item);
 
         assertEquals(AttributeModifierSlot.MAINHAND, attackDamage.slot(), "Incorrect attack damage attribute modifier slot for " + item);

@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.mixin.game.rule;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.SetCursorItemS2CPacket;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ConnectedClientData;
@@ -53,7 +52,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
                 var stack = screenHandler.getSlot(packet.getSlot()).getStack();
 
                 this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(packet.getSyncId(), screenHandler.nextRevision(), packet.getSlot(), stack));
-                this.sendPacket(new SetCursorItemS2CPacket(screenHandler.getCursorStack()));
+                this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(packet.getSyncId(), screenHandler.nextRevision(), -1, screenHandler.getCursorStack()));
 
                 ci.cancel();
             }

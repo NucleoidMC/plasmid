@@ -21,7 +21,7 @@ import java.util.Optional;
 
 public final class PersistentGame {
     public static GameOpenProcedure open(GameOpenContext<Unit> context) {
-        var biome =  context.server().getRegistryManager().getOrThrow(RegistryKeys.BIOME).getOrThrow(BiomeKeys.CHERRY_GROVE);
+        var biome =  context.server().getRegistryManager().getWrapperOrThrow(RegistryKeys.BIOME).getOrThrow(BiomeKeys.CHERRY_GROVE);
 
         var worldConfig = new RuntimeWorldConfig()
                 .setGenerator(new FlatChunkGenerator(new FlatChunkGeneratorConfig(Optional.empty(), biome, List.of())))
@@ -48,7 +48,7 @@ public final class PersistentGame {
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
                 player.setPos(0.0, 65.0, 0.0);
-                return EventResult.DENY;
+                return EventResult.DENY.asActionResult();
             });
         });
     }

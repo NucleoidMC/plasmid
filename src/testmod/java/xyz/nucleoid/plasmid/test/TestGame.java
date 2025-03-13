@@ -139,7 +139,7 @@ public final class TestGame {
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
                 player.setPos(0.0, 65.0, 0.0);
-                return EventResult.DENY;
+                return EventResult.DENY.asActionResult();
             });
 
             activity.listen(GameActivityEvents.REQUEST_START, () -> startGame(gameSpace));
@@ -194,7 +194,7 @@ public final class TestGame {
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
                 player.setPos(0.0, 65.0, 0.0);
-                return EventResult.DENY;
+                return EventResult.DENY.asActionResult();
             });
 
             /*var world = gameSpace.getWorlds().iterator().next();

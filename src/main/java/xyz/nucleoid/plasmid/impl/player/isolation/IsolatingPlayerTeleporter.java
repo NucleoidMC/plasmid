@@ -103,8 +103,7 @@ public final class IsolatingPlayerTeleporter {
             world.getDimensionEntry(), world.getRegistryKey(),
             BiomeAccess.hashSeed(world.getSeed()),
             player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(),
-            world.isDebugWorld(), world.isFlat(), player.getLastDeathPos(), player.getPortalCooldown(),
-            world.getSeaLevel()
+            world.isDebugWorld(), world.isFlat(), player.getLastDeathPos(), player.getPortalCooldown()
         );
 
         var networkHandler = player.networkHandler;

@@ -63,7 +63,7 @@ public final class Plasmid implements ModInitializer {
 
         GameType.register(Identifier.of(Plasmid.ID, "random"), RandomGameConfig.CODEC, RandomGame::open);
         GameType.register(Identifier.of(Plasmid.ID, "invalid"), MapCodec.unit(""), (context) -> {
-            var id = context.server().getRegistryManager().getOrThrow(GameConfigs.REGISTRY_KEY).getId(context.game());
+            var id = context.server().getRegistryManager().get(GameConfigs.REGISTRY_KEY).getId(context.game());
             throw new GameOpenException(Text.translatable("text.plasmid.map.open.invalid_game", id != null ? id.toString() : context.game()));
         });
 
@@ -97,7 +97,7 @@ public final class Plasmid implements ModInitializer {
                             && hand == Hand.MAIN_HAND
             ) {
                 if (portalInterface.interactWithPortal(serverPlayer)) {
-                    return ActionResult.SUCCESS_SERVER;
+                    return ActionResult.SUCCESS;
                 }
             }
 

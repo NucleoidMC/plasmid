@@ -31,7 +31,7 @@ public class TeamSelectionWaitingLobbyUiElement implements WaitingLobbyUiElement
     @Override
     public GuiElementInterface createMainElement() {
         return new GuiElementBuilder(Items.PAPER)
-                .setItemName(Text.translatable("text.plasmid.team_selection.teams"))
+                .setName(Text.translatable("text.plasmid.team_selection.teams"))
                 .build();
     }
 
@@ -47,7 +47,7 @@ public class TeamSelectionWaitingLobbyUiElement implements WaitingLobbyUiElement
                     .formatted(Formatting.BOLD, config.chatFormatting());
 
             var element = new GuiElementBuilder(ColoredBlocks.wool(config.blockDyeColor()).asItem())
-                    .setItemName(name)
+                    .setName(name)
                     .setCallback((index, type, action, gui) -> {
                         if (WaitingLobbyUiElement.isClick(type, gui)) {
                             this.selectCallback.accept(key);

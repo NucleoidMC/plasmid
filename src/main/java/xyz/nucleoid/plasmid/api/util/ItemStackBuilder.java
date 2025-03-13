@@ -60,7 +60,7 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder addEnchantment(RegistryWrapper.WrapperLookup lookup, RegistryKey<Enchantment> enchantment, int level) {
-        return this.addEnchantment(lookup.getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(enchantment), level);
+        return this.addEnchantment(lookup.getWrapperOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(enchantment), level);
     }
 
     public ItemStackBuilder addEnchantment(RegistryEntry<Enchantment> enchantment, int level) {

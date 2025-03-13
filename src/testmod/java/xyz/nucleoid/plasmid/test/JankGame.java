@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
@@ -16,7 +15,6 @@ import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.PlayerInput;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
@@ -49,7 +47,7 @@ public final class JankGame {
     private volatile static float currentX;
     private volatile static float currentXOld;
     private volatile static double currentY;
-    private volatile static PlayerInput input = PlayerInput.DEFAULT;
+    //private volatile static PlayerInput input = PlayerInput.DEFAULT;
 
     private static double mouseX = 0;
     private static double mouseY = 0;
@@ -79,7 +77,7 @@ public final class JankGame {
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
                 player.setPos(0.0, 65.0, 0.0);
-                return EventResult.DENY;
+                return EventResult.DENY.asActionResult();
             });
 
             activity.listen(GamePlayerEvents.JOIN_MESSAGE, (player, text, text2) -> null);
@@ -106,14 +104,14 @@ public final class JankGame {
 
             Consumer<ServerPlayerEntity> updateSidebar = (player) -> {
                     var text = Text.empty();
-                    text.append(Text.literal("^").formatted(input.forward() ? Formatting.GREEN : Formatting.DARK_GRAY));
+                    /*text.append(Text.literal("^").formatted(input.forward() ? Formatting.GREEN : Formatting.DARK_GRAY));
                     text.append(Text.literal("v").formatted(input.backward() ? Formatting.GREEN : Formatting.DARK_GRAY));
                     text.append(Text.literal("<").formatted(input.left() ? Formatting.GREEN : Formatting.DARK_GRAY));
                     text.append(Text.literal(">").formatted(input.right() ? Formatting.GREEN : Formatting.DARK_GRAY));
                     text.append(Text.literal("-").formatted(input.jump() ? Formatting.GREEN : Formatting.DARK_GRAY));
                     text.append(Text.literal("_").formatted(input.sneak() ? Formatting.GREEN : Formatting.DARK_GRAY));
                     text.append(Text.literal("$").formatted(input.sprint() ? Formatting.GREEN : Formatting.DARK_GRAY));
-
+*/
                     sidebar.set(b -> {
                         b.add(Text.literal("YAW: " + currentYaw));
                         b.add(Text.literal("PITCH: " + currentPitch));
@@ -129,7 +127,7 @@ public final class JankGame {
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
                 player.setPos(0.0, 65.0, 0.0);
-                return EventResult.DENY;
+                return EventResult.DENY.asActionResult();
             });
             var mover = new ArmorStandEntity(world, 0.0, 65.0, 0.0);
             world.spawnEntity(mover);
@@ -156,33 +154,33 @@ public final class JankGame {
                     }
 
                     updateSidebar.accept(player);
-                    return EventResult.DENY;
+                    return EventResult.DENY.asActionResult();
                 } else if (packet instanceof PlayerInputC2SPacket playerInputC2SPacket) {
-                    input = playerInputC2SPacket.input();
+                    //input = playerInputC2SPacket.input();
                     updateSidebar.accept(player);
-                    return EventResult.DENY;
+                    return EventResult.DENY.asActionResult();
                 }
                 
-                return EventResult.PASS;
+                return EventResult.PASS.asActionResult();
             }));
 
             var player = gameSpace.getPlayers().iterator().next();
 
             activity.listen(GameActivityEvents.TICK, () -> {
-                mover.move(MovementType.PLAYER, new Vec3d(input.right() ? -1 : input.left() ? 1 : 0,
-                        input.jump() ? 3 : input.sneak() ? -1 : 0,
-                        input.forward() ? 1 : input.backward() ? -1 : 0).multiply(input.sprint() ? 0.4 : 0.2));
+                //mover.move(MovementType.PLAYER, new Vec3d(input.right() ? -1 : input.left() ? 1 : 0,
+                //        input.jump() ? 3 : input.sneak() ? -1 : 0,
+                //        input.forward() ? 1 : input.backward() ? -1 : 0).multiply(input.sprint() ? 0.4 : 0.2));
                 mover.setYaw(currentYaw);
 
 
                 JankGame.mouseX = MathHelper.clamp(-currentYaw / 90 * 2, -8, 8) + mover.getX();
                 JankGame.mouseY = MathHelper.clamp(-currentPitch / 90 * 2, -8, 8) + mover.getZ();
 
-                player.networkHandler.sendPacket(new ParticleS2CPacket(ParticleTypes.FLAME, true, true, JankGame.mouseX, mover.getY(), JankGame.mouseY, 0, 0, 0, 0, 0));
+                //player.networkHandler.sendPacket(new ParticleS2CPacket(ParticleTypes.FLAME, true, true, JankGame.mouseX, mover.getY(), JankGame.mouseY, 0, 0, 0, 0, 0));
 
                 CAMERA.setPos(mover.getX(), mover.getY() + 10, mover.getZ());
-                player.networkHandler.sendPacket(EntityPositionSyncS2CPacket.create(CAMERA));
-                player.networkHandler.sendPacket(PlayerPositionLookS2CPacket.of(0, new PlayerPosition(Vec3d.ZERO, Vec3d.ZERO, 0, 0f), Set.of()));
+                //player.networkHandler.sendPacket(EntityPositionSyncS2CPacket.create(CAMERA));
+                //player.networkHandler.sendPacket(PlayerPositionLookS2CPacket.of(0, new PlayerPosition(Vec3d.ZERO, Vec3d.ZERO, 0, 0f), Set.of()));
             });
 
 

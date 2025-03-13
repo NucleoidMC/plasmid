@@ -14,7 +14,7 @@ public class TestBlock extends Block implements PolymerTexturedBlock {
     }
 
     @Override
-    public BlockState getPolymerBlockState(BlockState state, PacketContext context) {
+    public BlockState getPolymerBlockState(BlockState state) {
         return this.visualState;
     }
 }

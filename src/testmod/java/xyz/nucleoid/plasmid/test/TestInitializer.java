@@ -11,6 +11,7 @@ import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -30,8 +31,7 @@ public class TestInitializer implements ModInitializer {
     private static final RegistryKey<Block> TEST_BLOCK_KEY = RegistryKey.of(RegistryKeys.BLOCK, id("test_block"));
 
     public static final Block TEST_BLOCK = new TestBlock(
-            AbstractBlock.Settings.copy(Blocks.STONE)
-                    .registryKey(TEST_BLOCK_KEY),
+            AbstractBlock.Settings.copy(Blocks.STONE),
             BLOCK_CREATOR.requestBlock(BlockModelType.TRANSPARENT_BLOCK, PolymerBlockModel.of(id("block/chair")))
     );
 
@@ -39,7 +39,7 @@ public class TestInitializer implements ModInitializer {
 
     public static final Item TEST_ITEM = new PolymerBlockItem(
             TEST_BLOCK,
-            new Item.Settings().registryKey(TEST_ITEM_KEY)
+            new Item.Settings(), Items.STICK
     );
 
     public static Optional<GameResourcePack> resourcePack;

@@ -24,11 +24,11 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     }
 
     @Inject(method = "damage", at = @At(value = "RETURN", ordinal = 3), cancellable = true)
-    private void damage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    private void damage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (source.isIn(DamageTypeTags.IS_PROJECTILE)) {
             var gameSpace = GameSpaceManagerImpl.get().byPlayer((PlayerEntity) (Object) this);
             if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.PLAYER_PROJECTILE_KNOCKBACK) == EventResult.ALLOW) {
-                cir.setReturnValue(super.damage(world, source, amount));
+                cir.setReturnValue(super.damage(source, amount));
             }
         }
     }

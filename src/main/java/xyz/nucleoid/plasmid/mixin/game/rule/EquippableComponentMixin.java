@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.mixin.game.rule;
 
-import net.minecraft.component.type.EquippableComponent;
+//import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,7 +13,7 @@ import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.EventResult;
 
-@Mixin(EquippableComponent.class)
+/*@Mixin(EquippableComponent.class)
 public class EquippableComponentMixin {
     @Inject(method = "equip", at = @At("HEAD"), cancellable = true)
     private void equip(ItemStack stack, PlayerEntity user, CallbackInfoReturnable<ActionResult> ci) {
@@ -26,4 +26,4 @@ public class EquippableComponentMixin {
             ci.setReturnValue(ActionResult.FAIL);
         }
     }
-}
+}*/

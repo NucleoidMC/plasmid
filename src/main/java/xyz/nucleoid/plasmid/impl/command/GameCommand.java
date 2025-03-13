@@ -408,7 +408,7 @@ public final class GameCommand {
     }
 
     private static int listGames(CommandContext<ServerCommandSource> context) {
-        var registry = context.getSource().getRegistryManager().getOrThrow(GameConfigs.REGISTRY_KEY);
+        var registry = context.getSource().getRegistryManager().getWrapperOrThrow(GameConfigs.REGISTRY_KEY);
         var source = context.getSource();
         source.sendFeedback(() -> GameTexts.Command.gameList().formatted(Formatting.BOLD), false);
 

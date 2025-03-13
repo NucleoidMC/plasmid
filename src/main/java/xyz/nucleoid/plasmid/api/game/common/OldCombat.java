@@ -15,19 +15,19 @@ import net.minecraft.util.Identifier;
  * This works by modifying the damage and attack speed attributes to match their 1.8 levels.
  */
 public final class OldCombat {
-    private static final RegistryEntry<EntityAttribute> DAMAGE_ATTRIBUTE = EntityAttributes.ATTACK_DAMAGE;
-    private static final RegistryEntry<EntityAttribute> SPEED_ATTRIBUTE = EntityAttributes.ATTACK_SPEED;
+    private static final RegistryEntry<EntityAttribute> DAMAGE_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_DAMAGE;
+    private static final RegistryEntry<EntityAttribute> SPEED_ATTRIBUTE = EntityAttributes.GENERIC_ATTACK_SPEED;
 
     private static final Identifier DAMAGE_ID = Item.BASE_ATTACK_DAMAGE_MODIFIER_ID;
     private static final Identifier SPEED_ID = Item.BASE_ATTACK_SPEED_MODIFIER_ID;
 
     private static final ToolMaterial[] TOOL_MATERIALS = {
-            ToolMaterial.WOOD,
-            ToolMaterial.GOLD,
-            ToolMaterial.STONE,
-            ToolMaterial.IRON,
-            ToolMaterial.DIAMOND,
-            ToolMaterial.NETHERITE
+            ToolMaterials.WOOD,
+            ToolMaterials.GOLD,
+            ToolMaterials.STONE,
+            ToolMaterials.IRON,
+            ToolMaterials.DIAMOND,
+            ToolMaterials.NETHERITE
     };
 
     private static final int HOE_BASE_DAMAGE = 0;
@@ -55,7 +55,7 @@ public final class OldCombat {
         }
 
         {
-            float attackDamageBonus = stack.getItem() instanceof HoeItem ? 0 : getToolMaterial(stack).attackDamageBonus();
+            float attackDamageBonus = stack.getItem() instanceof HoeItem ? 0 : getToolMaterial(stack).getAttackDamage();
             int baseDamage = getBaseDamage(stack);
 
             EntityAttributeModifier modifier = createDamageModifier(attackDamageBonus + baseDamage);
@@ -75,19 +75,7 @@ public final class OldCombat {
     }
 
     private static ToolMaterial getToolMaterial(ItemStack item) {
-        for (var material : TOOL_MATERIALS) {
-            var repairable = item.get(DataComponentTypes.REPAIRABLE);
-
-            if (repairable != null) {
-                var repairItems = repairable.items().getTagKey();
-
-                if (repairItems.isPresent() && repairItems.get().equals(material.repairItems())) {
-                    return material;
-                }
-            }
-        }
-
-        return null;
+        return item.getItem() instanceof ToolItem toolItem ? toolItem.getMaterial() : null;
     }
 
     private static int getBaseDamage(ItemStack stack) {

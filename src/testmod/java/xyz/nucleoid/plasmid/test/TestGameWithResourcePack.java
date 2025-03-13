@@ -68,7 +68,7 @@ public final class TestGameWithResourcePack {
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
                 player.setPos(0.0, 65.0, 0.0);
-                return EventResult.DENY;
+                return EventResult.DENY.asActionResult();
             });
 
             activity.listen(GameActivityEvents.REQUEST_START, () -> startGame(activity.getGameSpace(), 0));
@@ -130,7 +130,7 @@ public final class TestGameWithResourcePack {
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
                 player.setPos(0.0, 65.0, 0.0);
-                return EventResult.DENY;
+                return EventResult.DENY.asActionResult();
             });
 
 

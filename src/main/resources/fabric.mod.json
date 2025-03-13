@@ -24,9 +24,9 @@
     }
   },
   "depends": {
-    "fabricloader": ">=0.14",
+    "fabricloader": ">=0.16",
     "fabric": "*",
-    "minecraft": ">=1.21.4-",
+    "minecraft": "1.21.1",
     "polymer-core": "*",
     "fabric-permissions-api-v0": "*",
     "java": ">=21"

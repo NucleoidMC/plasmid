@@ -11,7 +11,6 @@
     "game.portal.EntityMixin",
     "game.portal.SignBlockEntityMixin",
     "game.rule.BlockPatternMixin",
-    "game.rule.EquippableComponentMixin",
     "game.rule.HungerManagerMixin",
     "game.rule.LootTableMixin",
     "game.rule.PlayerEntityMixin",

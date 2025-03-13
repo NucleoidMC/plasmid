@@ -102,7 +102,7 @@ public class GameJoinUi extends SimpleGui {
             );
             int pageValue = this.page + 1;
 
-            var registries = this.player.getRegistryManager();
+            var registries = this.player.getRegistryManager().createRegistryLookup();
             this.setSlot(NAVBAR_POS + 3, Guis.getNumericBanner(registries, pageValue / 100));
             this.setSlot(NAVBAR_POS + 4, Guis.getNumericBanner(registries, pageValue / 10));
             this.setSlot(NAVBAR_POS + 5, Guis.getNumericBanner(registries, pageValue));

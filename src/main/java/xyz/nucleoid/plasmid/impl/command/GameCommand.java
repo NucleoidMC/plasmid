@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.logging.LogUtils;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.NbtCompoundArgumentType;
 import net.minecraft.nbt.NbtOps;
@@ -62,7 +63,7 @@ public final class GameCommand {
         dispatcher.register(
             literal("game")
                 .then(literal("open")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(Permissions.require("plasmid.command.game.open", 2))
                     .then(GameConfigArgument.argument("game_config")
                         .executes(GameCommand::openGame)
                     )
@@ -71,26 +72,25 @@ public final class GameCommand {
                     )
                 )
                 .then(literal("propose")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(Permissions.require("plasmid.command.game.propose", 2))
                     .then(GameSpaceArgument.argument("game_space")
                         .executes(GameCommand::proposeGame)
                     )
                         .executes(GameCommand::proposeCurrentGame)
                 )
                 .then(literal("start")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(Permissions.require("plasmid.command.game.start", 2))
                     .executes(GameCommand::startGame)
                 )
                 .then(literal("stop")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(Permissions.require("plasmid.command.game.stop", 2))
                     .executes(GameCommand::stopGame)
                         .then(literal("confirm")
-                            .requires(source -> source.hasPermissionLevel(2))
                             .executes(GameCommand::stopGameConfirmed)
                         )
                 )
                 .then(literal("kick")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(Permissions.require("plasmid.command.game.kick", 2))
                     .then(argument("targets", EntityArgumentType.players())
                         .executes(GameCommand::kickPlayers)
                     )
@@ -108,7 +108,7 @@ public final class GameCommand {
                      )
                 )
                 .then(literal("joinall")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(Permissions.require("plasmid.command.game.joinall", 2))
                     .executes(GameCommand::joinAllGame)
                     .then(GameSpaceArgument.argument("game_space")
                         .executes(GameCommand::joinAllQualifiedGame)

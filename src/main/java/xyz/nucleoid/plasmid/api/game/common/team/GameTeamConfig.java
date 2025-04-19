@@ -117,7 +117,7 @@ public final record GameTeamConfig(
             if (colors == Colors.NONE) {
                 return Text.literal("Team");
             } else {
-                return Text.translatable("color.minecraft." + colors.blockDyeColor().getName());
+                return Text.translatable("color.minecraft." + colors.blockDyeColor().getId());
             }
         });
     }

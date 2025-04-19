@@ -12,9 +12,19 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.registry.tag.TagKey;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import xyz.nucleoid.plasmid.api.game.common.OldCombat;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,6 +33,42 @@ public class OldCombatTests {
     public static void beforeAll() {
         SharedConstants.createGameVersion();
         Bootstrap.initialize();
+
+        // Work around tags not being bound
+        bindTag(Items.WOODEN_SWORD, ItemTags.SWORDS);
+        bindTag(Items.GOLDEN_SWORD, ItemTags.SWORDS);
+        bindTag(Items.STONE_SWORD, ItemTags.SWORDS);
+        bindTag(Items.IRON_SWORD, ItemTags.SWORDS);
+        bindTag(Items.DIAMOND_SWORD, ItemTags.SWORDS);
+        bindTag(Items.NETHERITE_SWORD, ItemTags.SWORDS);
+
+        bindTag(Items.WOODEN_PICKAXE, ItemTags.PICKAXES);
+        bindTag(Items.GOLDEN_PICKAXE, ItemTags.PICKAXES);
+        bindTag(Items.STONE_PICKAXE, ItemTags.PICKAXES);
+        bindTag(Items.IRON_PICKAXE, ItemTags.PICKAXES);
+        bindTag(Items.DIAMOND_PICKAXE, ItemTags.PICKAXES);
+        bindTag(Items.NETHERITE_PICKAXE, ItemTags.PICKAXES);
+
+        bindTag(Items.WOODEN_AXE, ItemTags.AXES);
+        bindTag(Items.GOLDEN_AXE, ItemTags.AXES);
+        bindTag(Items.STONE_AXE, ItemTags.AXES);
+        bindTag(Items.IRON_AXE, ItemTags.AXES);
+        bindTag(Items.DIAMOND_AXE, ItemTags.AXES);
+        bindTag(Items.NETHERITE_AXE, ItemTags.AXES);
+
+        bindTag(Items.WOODEN_SHOVEL, ItemTags.SHOVELS);
+        bindTag(Items.GOLDEN_SHOVEL, ItemTags.SHOVELS);
+        bindTag(Items.STONE_SHOVEL, ItemTags.SHOVELS);
+        bindTag(Items.IRON_SHOVEL, ItemTags.SHOVELS);
+        bindTag(Items.DIAMOND_SHOVEL, ItemTags.SHOVELS);
+        bindTag(Items.NETHERITE_SHOVEL, ItemTags.SHOVELS);
+
+        bindTag(Items.WOODEN_HOE, ItemTags.HOES);
+        bindTag(Items.GOLDEN_HOE, ItemTags.HOES);
+        bindTag(Items.STONE_HOE, ItemTags.HOES);
+        bindTag(Items.IRON_HOE, ItemTags.HOES);
+        bindTag(Items.DIAMOND_HOE, ItemTags.HOES);
+        bindTag(Items.NETHERITE_HOE, ItemTags.HOES);
     }
 
     @Test
@@ -66,6 +112,12 @@ public class OldCombatTests {
         assertAttributeModifiers(Items.IRON_HOE, 0);
         assertAttributeModifiers(Items.DIAMOND_HOE, 0);
         assertAttributeModifiers(Items.NETHERITE_HOE, 0);
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void bindTag(Item item, TagKey<Item> tag) {
+        var entry = item.getRegistryEntry();
+        entry.setTags(Set.of(tag));
     }
 
     private static void assertAttributeModifiers(Item item, float expectedAttackDamage) {

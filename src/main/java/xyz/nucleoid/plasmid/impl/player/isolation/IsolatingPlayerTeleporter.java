@@ -118,7 +118,7 @@ public final class IsolatingPlayerTeleporter {
         networkHandler.syncWithPlayerPosition();
         world.onDimensionChanged(player);
         networkHandler.sendPacket(new DifficultyS2CPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
-        networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(player.getInventory().selectedSlot));
+        networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(player.getInventory().getSelectedSlot()));
         player.sendAbilitiesUpdate();
         playerManager.sendCommandTree(player);
         player.getRecipeBook().sendInitRecipesPacket(player);

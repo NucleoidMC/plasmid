@@ -41,18 +41,18 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         var gameSpace = GameSpaceManagerImpl.get().byPlayer(this.player);
 
         if (gameSpace != null) {
-            if (packet.getSlot() < 0 || packet.getSlot() >= this.player.getInventory().size()) return;
+            if (packet.slot() < 0 || packet.slot() >= this.player.getInventory().size()) return;
             // See https://wiki.vg/File:Inventory-slots.png for the slot numbering
             var screenHandler = this.player.currentScreenHandler;
 
-            boolean isArmor = (packet.getSlot() >= 5 && packet.getSlot() <= 8) && screenHandler instanceof PlayerScreenHandler;
+            boolean isArmor = (packet.slot() >= 5 && packet.slot() <= 8) && screenHandler instanceof PlayerScreenHandler;
             boolean denyModifyInventory = gameSpace.getBehavior().testRule(GameRuleType.MODIFY_INVENTORY) == EventResult.DENY;
             var modifyArmor = gameSpace.getBehavior().testRule(GameRuleType.MODIFY_ARMOR);
             if ((denyModifyInventory && (!isArmor || modifyArmor != EventResult.ALLOW))
                     || (isArmor && modifyArmor == EventResult.DENY)) {
-                var stack = screenHandler.getSlot(packet.getSlot()).getStack();
+                var stack = screenHandler.getSlot(packet.slot()).getStack();
 
-                this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(packet.getSyncId(), screenHandler.nextRevision(), packet.getSlot(), stack));
+                this.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(packet.syncId(), screenHandler.nextRevision(), packet.slot(), stack));
                 this.sendPacket(new SetCursorItemS2CPacket(screenHandler.getCursorStack()));
 
                 ci.cancel();

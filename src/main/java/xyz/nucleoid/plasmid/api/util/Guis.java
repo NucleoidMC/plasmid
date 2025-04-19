@@ -9,6 +9,7 @@ import net.minecraft.block.entity.BannerPattern;
 import net.minecraft.block.entity.BannerPatterns;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BannerPatternsComponent;
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.*;
@@ -18,7 +19,6 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.Unit;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Range;
 
@@ -173,7 +173,7 @@ public final class Guis {
     private static ItemStack createBanner(BannerPatternsComponent.Builder patterns) {
         ItemStack stack = Items.GRAY_BANNER.getDefaultStack();
         stack.set(DataComponentTypes.CUSTOM_NAME, ScreenTexts.EMPTY);
-        stack.set(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE);
+        stack.apply(DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplayComponent.DEFAULT, tooltipDisplay -> tooltipDisplay.with(DataComponentTypes.BANNER_PATTERNS, true));
         stack.set(DataComponentTypes.BANNER_PATTERNS, patterns.build());
         return stack;
     }

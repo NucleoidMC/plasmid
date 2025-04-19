@@ -2,17 +2,23 @@ package xyz.nucleoid.plasmid.api.game.common;
 
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifierSlot;
+import net.minecraft.component.type.ConsumableComponent;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.*;
+import net.minecraft.item.consume.UseAction;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Unit;
+import xyz.nucleoid.plasmid.impl.component.PlasmidDataComponentTypes;
 
 /**
  * A utility class that allows old-style 1.8 combat to be applied to any given {@link ItemStack}.
  * <p>
  * This works by modifying the damage and attack speed attributes to match their 1.8 levels.
+ * In addition, sword blocking is reinstated.
  */
 public final class OldCombat {
     private static final RegistryEntry<EntityAttribute> DAMAGE_ATTRIBUTE = EntityAttributes.ATTACK_DAMAGE;
@@ -37,14 +43,31 @@ public final class OldCombat {
     private static final int SWORD_BASE_DAMAGE = 3;
 
     public static ItemStack applyTo(ItemStack stack) {
+        stack.set(PlasmidDataComponentTypes.OLD_COMBAT, Unit.INSTANCE);
+
+        if (stack.getItem() instanceof SwordItem) {
+            stack.set(DataComponentTypes.CONSUMABLE, ConsumableComponent.builder()
+                .consumeSeconds(Float.MAX_VALUE)
+                .useAction(UseAction.BLOCK)
+                .sound(RegistryEntry.of(SoundEvents.INTENTIONALLY_EMPTY))
+                .consumeParticles(false)
+                .build());
+        }
+
+        applyAttributeModifiersTo(stack);
+
+        return stack;
+    }
+
+    private static void applyAttributeModifiersTo(ItemStack stack) {
         if (!stack.contains(DataComponentTypes.TOOL)) {
-            return stack;
+            return;
         }
 
         var material = getToolMaterial(stack);
 
         if (material == null) {
-            return stack;
+            return;
         }
 
         var defaultModifiers = stack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
@@ -63,7 +86,6 @@ public final class OldCombat {
         }
 
         stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, defaultModifiers);
-        return stack;
     }
 
     private static EntityAttributeModifier createSpeedModifier() {

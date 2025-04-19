@@ -8,6 +8,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.player.PlayerPosition;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
@@ -39,7 +40,10 @@ import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerC2SPacketEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class JankGame {
@@ -142,7 +146,10 @@ public final class JankGame {
             );
 
             activity.listen(GamePlayerEvents.ADD, player -> {
-                player.networkHandler.sendPacket(CAMERA.createSpawnPacket(new EntityTrackerEntry(world, CAMERA, 1, false, player.networkHandler::sendPacket)));
+                Consumer<Packet<?>> watchingSender = player.networkHandler::sendPacket;
+                var filteredWatchingSender = getFilteredPacketSender(player.getUuid(), watchingSender);
+
+                player.networkHandler.sendPacket(CAMERA.createSpawnPacket(new EntityTrackerEntry(world, CAMERA, 1, false, watchingSender, filteredWatchingSender)));
                 player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(CAMERA.getId(), CAMERA.getDataTracker().getChangedEntries()));
                 player.networkHandler.sendPacket(VirtualEntityUtils.createRidePacket(CAMERA.getId(), IntList.of(player.getId())));
                 player.networkHandler.sendPacket(new SetCameraEntityS2CPacket(CAMERA));
@@ -206,6 +213,14 @@ public final class JankGame {
         }
 
         return template;
+    }
+
+    private static BiConsumer<Packet<?>, List<UUID>> getFilteredPacketSender(UUID uuid, Consumer<Packet<?>> sender) {
+        return (packet, except) -> {
+            if (!except.contains(uuid)) {
+                sender.accept(packet);
+            }
+        };
     }
 
     static {

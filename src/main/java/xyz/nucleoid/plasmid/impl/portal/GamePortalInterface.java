@@ -1,7 +1,6 @@
 package xyz.nucleoid.plasmid.impl.portal;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -28,10 +27,7 @@ public interface GamePortalInterface {
 
     @Nullable
     default Identifier deserializePortalId(NbtCompound root) {
-        if (root.contains(NBT_KEY, NbtElement.STRING_TYPE)) {
-            return Identifier.of(root.getString(NBT_KEY));
-        }
-        return null;
+        return root.get(NBT_KEY, Identifier.CODEC).orElse(null);
     }
 
     default boolean tryConnectTo(Identifier portalId) {

@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public class LootTableMixin {
     @WrapWithCondition(
             method = "supplyInventory",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/loot/LootTable;shuffle(Lit/unimi/dsi/fastutil/objects/ObjectArrayList;ILnet/minecraft/util/math/random/Random;)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/loot/LootTable;spreadStacks(Lit/unimi/dsi/fastutil/objects/ObjectArrayList;ILnet/minecraft/util/math/random/Random;)V")
     )
     public boolean preventContainerLootShuffling(LootTable lootTable, ObjectArrayList<ItemStack> stacks, int freeSlots, Random random, @Local LootContext context) {
         var entity = context.get(LootContextParameters.THIS_ENTITY);

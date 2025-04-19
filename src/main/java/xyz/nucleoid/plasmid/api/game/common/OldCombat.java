@@ -7,6 +7,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.*;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.Identifier;
 
 /**
@@ -55,7 +56,7 @@ public final class OldCombat {
         }
 
         {
-            float attackDamageBonus = stack.getItem() instanceof HoeItem ? 0 : getToolMaterial(stack).attackDamageBonus();
+            float attackDamageBonus = stack.isIn(ItemTags.HOES) ? 0 : getToolMaterial(stack).attackDamageBonus();
             int baseDamage = getBaseDamage(stack);
 
             EntityAttributeModifier modifier = createDamageModifier(attackDamageBonus + baseDamage);
@@ -91,16 +92,15 @@ public final class OldCombat {
     }
 
     private static int getBaseDamage(ItemStack stack) {
-        var item = stack.getItem();
-        if (item instanceof SwordItem) {
+        if (stack.isIn(ItemTags.SWORDS)) {
             return SWORD_BASE_DAMAGE;
-        } else if (item instanceof AxeItem) {
+        } else if (stack.isIn(ItemTags.AXES)) {
             return AXE_BASE_DAMAGE;
-        } else if (item instanceof PickaxeItem) {
+        } else if (stack.isIn(ItemTags.PICKAXES)) {
             return PICKAXE_BASE_DAMAGE;
-        } else if (item instanceof ShovelItem) {
+        } else if (stack.isIn(ItemTags.SHOVELS)) {
             return SHOVEL_BASE_DAMAGE;
-        } else if (item instanceof HoeItem) {
+        } else if (stack.isIn(ItemTags.HOES)) {
             return HOE_BASE_DAMAGE;
         }
         return 0;

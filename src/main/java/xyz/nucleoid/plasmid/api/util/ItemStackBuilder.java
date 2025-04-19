@@ -16,6 +16,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
+import net.minecraft.util.Unit;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,12 +75,16 @@ public final class ItemStackBuilder {
     }
 
     public ItemStackBuilder setUnbreakable() {
-        this.stack.set(DataComponentTypes.UNBREAKABLE, new UnbreakableComponent(true));
+        this.stack.set(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE);
+        this.stack.apply(DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplayComponent.DEFAULT, tooltipDisplay -> tooltipDisplay.with(DataComponentTypes.UNBREAKABLE, true));
+
         return this;
     }
 
     public ItemStackBuilder setDyeColor(int color) {
-        this.stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color, true));
+        this.stack.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(color));
+        this.stack.apply(DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplayComponent.DEFAULT, tooltipDisplay -> tooltipDisplay.with(DataComponentTypes.DYED_COLOR, true));
+
         return this;
     }
 

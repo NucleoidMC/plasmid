@@ -138,6 +138,9 @@ public final class TeamManager implements Iterable<GameTeam> {
         }
 
         this.playerToTeam.put(player.id(), team);
+        for (var gameSpacePlayer : gameSpace.getPlayers()) {
+            this.sendTeamsToPlayer(gameSpacePlayer);
+        }
 
         var state = this.teamState(team);
         if (state.allPlayers.add(player)) {
@@ -192,6 +195,7 @@ public final class TeamManager implements Iterable<GameTeam> {
 
         var entity = state.onlinePlayers.getEntity(player.id());
         if (entity != null) {
+            this.sendRemoveTeamsForPlayer(entity);
             this.removeOnlinePlayer(entity, state);
         }
         return true;

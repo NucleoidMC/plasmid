@@ -15,6 +15,10 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.stat.ServerStatHandler;
+import net.minecraft.storage.NbtReadView;
+import net.minecraft.storage.NbtWriteView;
+import net.minecraft.storage.ReadView;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Util;
 import net.minecraft.world.PlayerSaveHandler;
 import net.minecraft.world.TeleportTarget;
@@ -34,6 +38,7 @@ import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.player.isolation.PlayerManagerAccess;
 import xyz.nucleoid.plasmid.impl.player.isolation.PlayerResetter;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -59,6 +64,11 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     public abstract NbtCompound getUserData();
 
     @Shadow @Final private static Logger LOGGER;
+    @Shadow @Final private List<ServerPlayerEntity> players;
+    @Shadow @Final private Map<UUID, ServerPlayerEntity> playerMap;
+
+    @Shadow public abstract MinecraftServer getServer();
+
     @Unique
     private PlayerResetter playerResetter;
 
@@ -111,12 +121,12 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             userData = this.server.getSaveProperties().getPlayerData();
         }
 
-        NbtCompound playerData;
+        ReadView playerData;
         if (this.server.isHost(player.getGameProfile()) && userData != null) {
-            playerData = userData;
-            player.readNbt(userData);
+            playerData = NbtReadView.create(ErrorReporter.EMPTY, player.getRegistryManager(), userData);
+            player.readData(playerData);
         } else {
-            playerData = this.saveHandler.loadPlayerData(player).orElse(null);
+            playerData = this.saveHandler.loadPlayerData(player, ErrorReporter.EMPTY).orElse(null);
         }
 
         var dimension = playerData != null ? this.getDimensionFromData(playerData) : null;
@@ -128,14 +138,12 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
 
         player.setServerWorld(world);
 
-        player.readGameModeNbt(playerData);
+        player.readGameModeData(playerData);
     }
 
     @Unique
-    private RegistryKey<World> getDimensionFromData(NbtCompound playerData) {
-        return DimensionType.worldFromDimensionNbt(new Dynamic<>(NbtOps.INSTANCE, playerData.get("Dimension")))
-                .resultOrPartial(LOGGER::error)
-                .orElse(World.OVERWORLD);
+    private RegistryKey<World> getDimensionFromData(ReadView view) {
+        return view.read("Dimension", World.CODEC).orElse(World.OVERWORLD);
     }
 
     @WrapWithCondition(
@@ -156,12 +164,12 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             this.statisticsMap.remove(Util.NIL_UUID);
             this.advancementTrackers.remove(Util.NIL_UUID);
 
-            var tag = new NbtCompound();
-            player.writeNbt(tag);
+            var tag = NbtWriteView.create(ErrorReporter.EMPTY, this.getServer().getRegistryManager());
+            player.writeData(tag);
             tag.remove("UUID");
             tag.remove("Pos");
 
-            this.playerResetter = new PlayerResetter(tag);
+            this.playerResetter = new PlayerResetter(tag.getNbt());
         }
 
         return this.playerResetter;

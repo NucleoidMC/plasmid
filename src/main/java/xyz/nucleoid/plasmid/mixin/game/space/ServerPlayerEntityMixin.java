@@ -22,8 +22,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Te
     @Unique
     private boolean teleportIsolation = true;
 
-    private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
-        super(world, pos, yaw, profile);
+    private ServerPlayerEntityMixin(World world, GameProfile profile) {
+        super(world, profile);
     }
 
     @Inject(method = "teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;", at = @At("HEAD"), cancellable = true)

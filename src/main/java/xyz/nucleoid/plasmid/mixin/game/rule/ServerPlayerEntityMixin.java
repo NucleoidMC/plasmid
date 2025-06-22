@@ -17,8 +17,8 @@ import xyz.nucleoid.stimuli.event.EventResult;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin extends PlayerEntity {
-    private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
-        super(world, pos, yaw, profile);
+    private ServerPlayerEntityMixin(World world, GameProfile profile) {
+        super(world, profile);
     }
 
     @WrapWithCondition(

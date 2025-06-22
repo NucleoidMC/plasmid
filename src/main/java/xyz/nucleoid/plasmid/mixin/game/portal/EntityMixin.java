@@ -8,6 +8,8 @@ import net.minecraft.entity.decoration.Brightness;
 import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
@@ -129,18 +131,18 @@ public abstract class EntityMixin implements GamePortalInterface {
         }
     }
 
-    @Inject(method = "writeNbt", at = @At("RETURN"))
-    private void writeNbt(NbtCompound root, CallbackInfoReturnable<NbtCompound> ci) {
+    @Inject(method = "writeData", at = @At("RETURN"))
+    private void writePortalData(WriteView view, CallbackInfo ci) {
         if (this.loadedPortalId == null) {
-            this.serializePortal(root);
+            this.serializePortal(view);
         } else {
-            root.putString(GamePortalInterface.NBT_KEY, this.loadedPortalId.toString());
+            view.putString(GamePortalInterface.NBT_KEY, this.loadedPortalId.toString());
         }
     }
 
-    @Inject(method = "readNbt", at = @At("RETURN"))
-    private void readNbt(NbtCompound root, CallbackInfo ci) {
-        this.loadedPortalId = this.deserializePortalId(root);
+    @Inject(method = "readData", at = @At("RETURN"))
+    private void readPortalData(ReadView view, CallbackInfo ci) {
+        this.loadedPortalId = this.deserializePortalId(view);
     }
 
     @Inject(method = "remove", at = @At("HEAD"))

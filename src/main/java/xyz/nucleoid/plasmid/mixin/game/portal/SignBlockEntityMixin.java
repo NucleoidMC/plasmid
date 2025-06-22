@@ -11,6 +11,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -104,21 +107,21 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     }
 
     @Inject(method = "runCommandClickEvent", at = @At("HEAD"), cancellable = true)
-    private void runCommandClickEvent(PlayerEntity player, World world, BlockPos pos, boolean front, CallbackInfoReturnable<Boolean> ci) {
+    private void runCommandClickEvent(ServerWorld world, PlayerEntity player, BlockPos pos, boolean front, CallbackInfoReturnable<Boolean> ci) {
         if (this.portal != null && player instanceof ServerPlayerEntity serverPlayer) {
             this.portal.requestJoin(serverPlayer, false);
             ci.setReturnValue(true);
         }
     }
 
-    @Inject(method = "writeNbt", at = @At("RETURN"))
-    private void writeNbt(NbtCompound root, RegistryWrapper.WrapperLookup registryLookup, CallbackInfo ci) {
-        this.serializePortal(root);
+    @Inject(method = "writeData", at = @At("RETURN"))
+    private void writePortalNbt(WriteView view, CallbackInfo ci) {
+        this.serializePortal(view);
     }
 
-    @Inject(method = "readNbt", at = @At("RETURN"))
-    private void readNbt(NbtCompound root, RegistryWrapper.WrapperLookup registryLookup, CallbackInfo ci) {
-        this.loadedPortalId = this.deserializePortalId(root);
+    @Inject(method = "readData", at = @At("RETURN"))
+    private void readPortalData(ReadView view, CallbackInfo ci) {
+        this.loadedPortalId = this.deserializePortalId(view);
     }
 
     @Override

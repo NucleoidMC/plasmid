@@ -66,7 +66,7 @@ public final class IsolatingPlayerTeleporter {
      * @param player the player to teleport
      */
     public void teleportOut(ServerPlayerEntity player) {
-        this.teleportOut(player, ServerPlayerEntity::getServerWorld);
+        this.teleportOut(player, ServerPlayerEntity::getWorld);
     }
 
     private void teleport(ServerPlayerEntity player, Function<ServerPlayerEntity, ServerWorld> recreate, boolean in) {
@@ -83,7 +83,7 @@ public final class IsolatingPlayerTeleporter {
         player.getAdvancementTracker().clearCriteria();
         this.server.getBossBarManager().onPlayerDisconnect(player);
 
-        player.getServerWorld().removePlayer(player, Entity.RemovalReason.CHANGED_DIMENSION);
+        player.getWorld().removePlayer(player, Entity.RemovalReason.CHANGED_DIMENSION);
         player.unsetRemoved();
 
         playerManagerAccess.plasmid$getPlayerResetter().apply(player);
@@ -92,7 +92,7 @@ public final class IsolatingPlayerTeleporter {
             playerManagerAccess.plasmid$loadIntoPlayer(player);
         }
 
-        player.server.getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_GAME_MODE, player));
+        player.getServer().getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_GAME_MODE, player));
 
         var world = recreate.apply(player);
         player.setServerWorld(world);

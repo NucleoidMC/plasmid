@@ -39,7 +39,7 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
             }
         }
 
-        CompletableFuture.supplyAsync(() -> this.getOrOpenNew(player.server))
+        CompletableFuture.supplyAsync(() -> this.getOrOpenNew(player.getServer()))
                 .thenCompose(Function.identity())
                 .handleAsync((gameSpace, throwable) -> {
                     this.gameFuture = null;
@@ -55,7 +55,7 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
                     }
 
                     return null;
-                }, player.server);
+                }, player.getServer());
     }
 
     public CompletableFuture<GameSpace> getOrOpenNew(MinecraftServer server) {

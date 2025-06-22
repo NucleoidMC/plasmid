@@ -1,7 +1,8 @@
 package xyz.nucleoid.plasmid.impl.portal;
 
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.impl.Plasmid;
@@ -18,7 +19,7 @@ public interface GamePortalInterface {
 
     void setDisplay(GamePortalDisplay display);
 
-    default void serializePortal(NbtCompound root) {
+    default void serializePortal(WriteView root) {
         var connection = this.getPortal();
         if (connection != null) {
             root.putString(NBT_KEY, connection.getId().toString());
@@ -26,8 +27,8 @@ public interface GamePortalInterface {
     }
 
     @Nullable
-    default Identifier deserializePortalId(NbtCompound root) {
-        return root.get(NBT_KEY, Identifier.CODEC).orElse(null);
+    default Identifier deserializePortalId(ReadView root) {
+        return root.read(NBT_KEY, Identifier.CODEC).orElse(null);
     }
 
     default boolean tryConnectTo(Identifier portalId) {

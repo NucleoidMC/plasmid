@@ -17,7 +17,7 @@ import java.util.function.Function;
 public record NewGamePortalBackend(RegistryEntry<GameConfig<?>> game) implements GameConfigGamePortalBackend {
     @Override
     public void applyTo(ServerPlayerEntity player, boolean alt) {
-        CompletableFuture.supplyAsync(() -> this.openGame(player.server))
+        CompletableFuture.supplyAsync(() -> this.openGame(player.getServer()))
                 .thenCompose(Function.identity())
                 .handleAsync((gameSpace, throwable) -> {
                     GameResult result;
@@ -32,7 +32,7 @@ public record NewGamePortalBackend(RegistryEntry<GameConfig<?>> game) implements
                     }
 
                     return null;
-                }, player.server);
+                }, player.getServer());
     }
 
     private CompletableFuture<GameSpace> openGame(MinecraftServer server) {

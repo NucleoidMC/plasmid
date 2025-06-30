@@ -8,10 +8,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.stat.ServerStatHandler;
@@ -30,11 +32,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.game.manager.HasForcedGameSpace;
 import xyz.nucleoid.plasmid.impl.player.isolation.PlayerManagerAccess;
 import xyz.nucleoid.plasmid.impl.player.isolation.PlayerResetter;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Mixin(PlayerManager.class)
@@ -96,6 +101,15 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             oldPlayer.interactionManager.setGameMode(interactionManager.getGameMode(), interactionManager.getPreviousGameMode());
 
             respawnedPlayer.setClientOptions(oldPlayer.getClientOptions());
+        }
+    }
+
+    @Inject(method = "onPlayerConnect", at = @At("TAIL"))
+    private void onPlayerConnect(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci) {
+        var gameSpace = ((HasForcedGameSpace) this.server).getForcedGameSpace();
+
+        if (gameSpace != null) {
+            gameSpace.getPlayers().offer(Set.of(player), JoinIntent.PLAY);
         }
     }
 

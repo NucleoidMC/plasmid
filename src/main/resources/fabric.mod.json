@@ -8,7 +8,8 @@
   "license": "LGPLv3",
   "environment": "*",
   "entrypoints": {
-    "main": ["xyz.nucleoid.plasmid.impl.Plasmid"]
+    "main": ["xyz.nucleoid.plasmid.impl.Plasmid"],
+    "client": ["xyz.nucleoid.plasmid.client.impl.PlasmidClient"]
   },
   "mixins": [
     "plasmid.mixins.json",

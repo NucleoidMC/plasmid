@@ -29,6 +29,7 @@ import xyz.nucleoid.plasmid.api.game.GameTexts;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.api.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.game.manager.HasForcedGameSpace;
 import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
 import xyz.nucleoid.plasmid.api.util.Scheduler;
@@ -63,7 +64,7 @@ public final class GameCommand {
         dispatcher.register(
             literal("game")
                 .then(literal("open")
-                    .requires(Permissions.require("plasmid.command.game.open", 2))
+                    .requires(Permissions.require("plasmid.command.game.open", 2).and(GameCommand::isNotForcedGameSpace))
                     .then(GameConfigArgument.argument("game_config")
                         .executes(GameCommand::openGame)
                     )
@@ -72,7 +73,7 @@ public final class GameCommand {
                     )
                 )
                 .then(literal("propose")
-                    .requires(Permissions.require("plasmid.command.game.propose", 2))
+                    .requires(Permissions.require("plasmid.command.game.propose", 2).and(GameCommand::isNotForcedGameSpace))
                     .then(GameSpaceArgument.argument("game_space")
                         .executes(GameCommand::proposeGame)
                     )
@@ -90,36 +91,45 @@ public final class GameCommand {
                         )
                 )
                 .then(literal("kick")
-                    .requires(Permissions.require("plasmid.command.game.kick", 2))
+                    .requires(Permissions.require("plasmid.command.game.kick", 2).and(GameCommand::isNotForcedGameSpace))
                     .then(argument("targets", EntityArgumentType.players())
                         .executes(GameCommand::kickPlayers)
                     )
                 )
                 .then(literal("join")
+                    .requires(Permissions.require("plasmid.command.game.joinall", 2).and(GameCommand::isNotForcedGameSpace))
                     .executes(ctx -> GameCommand.joinGame(ctx, JoinIntent.PLAY))
                     .then(GameSpaceArgument.argument("game_space")
                         .executes(ctx -> GameCommand.joinQualifiedGame(ctx, JoinIntent.PLAY))
                     )
                 )
                 .then(literal("spectate")
+                    .requires(Permissions.require("plasmid.command.game.joinall", 2).and(GameCommand::isNotForcedGameSpace))
                      .executes(ctx -> GameCommand.joinGame(ctx, JoinIntent.SPECTATE))
                      .then(GameSpaceArgument.argument("game_space")
                           .executes(ctx -> GameCommand.joinQualifiedGame(ctx, JoinIntent.SPECTATE))
                      )
                 )
                 .then(literal("joinall")
-                    .requires(Permissions.require("plasmid.command.game.joinall", 2))
+                    .requires(Permissions.require("plasmid.command.game.joinall", 2).and(GameCommand::isNotForcedGameSpace))
                     .executes(GameCommand::joinAllGame)
                     .then(GameSpaceArgument.argument("game_space")
                         .executes(GameCommand::joinAllQualifiedGame)
                     )
                 )
                 .then(literal("locate")
+                        .requires(GameCommand::isNotForcedGameSpace)
                         .then(argument("player", EntityArgumentType.player())
                         .executes(GameCommand::locatePlayer))
                 )
-                .then(literal("leave").executes(GameCommand::leaveGame))
-                .then(literal("list").executes(GameCommand::listGames))
+                .then(literal("leave")
+                        .requires(GameCommand::isNotForcedGameSpace)
+                        .executes(GameCommand::leaveGame)
+                )
+                .then(literal("list")
+                        .requires(GameCommand::isNotForcedGameSpace)
+                        .executes(GameCommand::listGames)
+                )
         );
     }
     // @formatter:on
@@ -450,5 +460,9 @@ public final class GameCommand {
         }
 
         return successes;
+    }
+
+    protected static boolean isNotForcedGameSpace(ServerCommandSource source) {
+        return !HasForcedGameSpace.hasForcedGameSpace(source.getServer());
     }
 }

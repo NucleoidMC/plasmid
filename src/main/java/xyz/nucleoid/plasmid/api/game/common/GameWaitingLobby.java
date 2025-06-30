@@ -27,6 +27,7 @@ import xyz.nucleoid.plasmid.api.game.common.widget.SidebarWidget;
 import xyz.nucleoid.plasmid.impl.game.common.ui.WaitingLobbyUi;
 import xyz.nucleoid.plasmid.impl.game.common.ui.element.LeaveGameWaitingLobbyUiElement;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
+import xyz.nucleoid.plasmid.impl.game.manager.HasForcedGameSpace;
 import xyz.nucleoid.plasmid.impl.compatibility.AfkDisplayCompatibility;
 
 import java.util.ArrayList;
@@ -250,7 +251,9 @@ public final class GameWaitingLobby {
     }
 
     private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayerEntity player) {
-        layout.addTrailing(new LeaveGameWaitingLobbyUiElement(this.gameSpace, player));
+        if (!HasForcedGameSpace.hasForcedGameSpace(this.gameSpace.getServer())) {
+            layout.addTrailing(new LeaveGameWaitingLobbyUiElement(this.gameSpace, player));
+        }
     }
 
     private void updateCountdown() {

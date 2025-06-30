@@ -23,6 +23,7 @@
   "text.plasmid.entry": " - %s",
   "text.plasmid.game_config.game_config_does_not_exist": "Game config with id '%s' does not exist!",
   "text.plasmid.game_config.game_not_found": "Game config with id '%s' was not found!",
+  "text.plasmid.game.closed": "The game has closed!",
   "text.plasmid.game.portal.connect.block": "Connected '%1$s' to block at (%2$s; %3$s; %4$s)",
   "text.plasmid.game.portal.connect.entity": "Connected '%1$s' to '%2$s''",
   "text.plasmid.game.portal.connect.interface_already_connected": "The selected interface is already connected to this portal!",

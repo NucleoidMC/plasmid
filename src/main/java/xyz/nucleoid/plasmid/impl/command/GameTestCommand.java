@@ -17,7 +17,7 @@ public final class GameTestCommand {
         dispatcher.register(
             literal("game")
                 .then(literal("test")
-                    .requires(Permissions.require("plasmid.command.game.test", 2))
+                    .requires(Permissions.require("plasmid.command.game.test", 2).and(GameCommand::isNotForcedGameSpace))
                     .then(GameConfigArgument.argument("game_config")
                         .executes(GameTestCommand::openTestGame)
                     )

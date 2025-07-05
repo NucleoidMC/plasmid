@@ -89,6 +89,7 @@ public final class ManagedGameSpaceWorlds implements GameSpaceWorlds {
         setDefaultRule(rules, GameRules.DO_WEATHER_CYCLE, false);
         setDefaultRule(rules, GameRules.KEEP_INVENTORY, false);
         setDefaultRule(rules, GameRules.DO_MOB_SPAWNING, false);
+        setDefaultRule(rules, GameRules.LOCATOR_BAR, false);
     }
 
     private static void setDefaultRule(GameRuleStore rules, GameRules.Key<GameRules.BooleanRule> key, boolean value) {

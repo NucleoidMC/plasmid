@@ -17,6 +17,6 @@ public class PlasmidRegistryKeys {
     public static final RegistryKey<Registry<GameConfig<?>>> GAME_CONFIG = register("game");
 
     private static <T> RegistryKey<Registry<T>> register(String key) {
-        return RegistryKey.ofRegistry(Identifier.of(Plasmid.ID, key));
+        return RegistryKey.ofRegistry(Plasmid.id(key));
     }
 }

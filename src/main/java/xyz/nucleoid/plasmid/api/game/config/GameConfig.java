@@ -11,17 +11,16 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.api.game.GameOpenContext;
 import xyz.nucleoid.plasmid.api.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.api.game.GameType;
+import xyz.nucleoid.plasmid.api.game.GameTypes;
 import xyz.nucleoid.plasmid.api.registry.PlasmidRegistries;
 import xyz.nucleoid.plasmid.api.registry.PlasmidRegistryKeys;
 import xyz.nucleoid.plasmid.api.util.PlasmidCodecs;
-import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.impl.PlasmidConfig;
 import xyz.nucleoid.server.translations.api.language.ServerLanguage;
 import xyz.nucleoid.server.translations.api.language.ServerLanguageDefinition;
@@ -45,10 +44,9 @@ public record GameConfig<C>(
         if (!PlasmidConfig.get().ignoreInvalidGames()) {
             return DIRECT_CODEC;
         }
-        var type = (GameType<Object>) PlasmidRegistries.GAME_TYPE.get(Identifier.of(Plasmid.ID, "invalid"));
 
         return Codec.withAlternative(DIRECT_CODEC, Codec.unit(() -> new GameConfig<>(
-                type,
+                GameTypes.INVALID,
                 null,
                 null,
                 null,

@@ -55,7 +55,7 @@ import java.util.List;
 public final class TestGame {
     private static final BlockState BUTTON = Blocks.OAK_BUTTON.getDefaultState().with(ButtonBlock.FACE, BlockFace.FLOOR);
     private static final List<Method> WOOD_TYPE_BLOCK_FIELDS = Arrays.stream(WoodType.class.getMethods()).filter(x -> x.getReturnType() == Block.class).toList();
-    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(Identifier.of(Plasmid.ID, "test"));
+    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(Plasmid.id("test"));
 
     private static final GameTeam TEAM = new GameTeam(
             new GameTeamKey("players"),

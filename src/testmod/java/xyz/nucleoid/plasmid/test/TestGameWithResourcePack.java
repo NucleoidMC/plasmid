@@ -34,7 +34,7 @@ import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 public final class TestGameWithResourcePack {
-    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(Identifier.of(Plasmid.ID, "test_rp"));
+    private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(Plasmid.id("test_rp"));
 
     private static final GameTeam TEAM = new GameTeam(
             new GameTeamKey("players"),

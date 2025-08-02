@@ -17,7 +17,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
-import xyz.nucleoid.plasmid.api.game.GameType;
+import xyz.nucleoid.plasmid.api.game.GameTypes;
 import xyz.nucleoid.plasmid.api.game.common.GameResourcePack;
 
 import java.util.Optional;
@@ -46,11 +46,11 @@ public class TestInitializer implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        GameType.register(Identifier.of(ID, "test"), TestConfig.CODEC, TestGame::open);
-        GameType.register(Identifier.of(ID, "persistent"), MapCodec.unit(Unit.INSTANCE), PersistentGame::open);
-        GameType.register(Identifier.of(ID, "no_join"), TestConfig.CODEC, PlayerlessGame::open);
-        GameType.register(Identifier.of(ID, "test_rp"), TestConfig.CODEC, TestGameWithResourcePack::open);
-        GameType.register(Identifier.of(ID, "jank"), TestConfig.CODEC, JankGame::open);
+        GameTypes.register(Identifier.of(ID, "test"), TestConfig.CODEC, TestGame::open);
+        GameTypes.register(Identifier.of(ID, "persistent"), MapCodec.unit(Unit.INSTANCE), PersistentGame::open);
+        GameTypes.register(Identifier.of(ID, "no_join"), TestConfig.CODEC, PlayerlessGame::open);
+        GameTypes.register(Identifier.of(ID, "test_rp"), TestConfig.CODEC, TestGameWithResourcePack::open);
+        GameTypes.register(Identifier.of(ID, "jank"), TestConfig.CODEC, JankGame::open);
         Registry.register(Registries.BLOCK, TEST_BLOCK_KEY, TEST_BLOCK);
         Registry.register(Registries.ITEM, TEST_ITEM_KEY, TEST_ITEM);
 

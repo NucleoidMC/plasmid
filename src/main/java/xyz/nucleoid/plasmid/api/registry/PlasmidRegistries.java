@@ -12,9 +12,9 @@ import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;
 import xyz.nucleoid.plasmid.impl.portal.menu.MenuEntryConfig;
 
 public class PlasmidRegistries {
-    public static final SimpleRegistry<GameType<?>> GAME_TYPE = register(PlasmidRegistryKeys.GAME_TYPE);
-    public static final SimpleRegistry<MapCodec<? extends GamePortalConfig>> GAME_PORTAL_CONFIG = register(PlasmidRegistryKeys.GAME_PORTAL_CONFIG);
-    public static final SimpleRegistry<MapCodec<? extends MenuEntryConfig>> MENU_ENTRY = register(PlasmidRegistryKeys.MENU_ENTRY);
+    public static final Registry<GameType<?>> GAME_TYPE = register(PlasmidRegistryKeys.GAME_TYPE);
+    public static final Registry<MapCodec<? extends GamePortalConfig>> GAME_PORTAL_CONFIG = register(PlasmidRegistryKeys.GAME_PORTAL_CONFIG);
+    public static final Registry<MapCodec<? extends MenuEntryConfig>> MENU_ENTRY = register(PlasmidRegistryKeys.MENU_ENTRY);
 
     private static <T> SimpleRegistry<T> register(RegistryKey<Registry<T>> key) {
         return FabricRegistryBuilder.createSimple(key).buildAndRegister();

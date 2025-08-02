@@ -29,7 +29,6 @@ import xyz.nucleoid.server.translations.api.language.ServerLanguageDefinition;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public record GameConfig<C>(
         GameType<C> type,
@@ -40,7 +39,7 @@ public record GameConfig<C>(
         CustomValuesConfig custom,
         C config
 ) {
-    public static final Codec<GameConfig<?>> DIRECT_CODEC = PlasmidRegistries.GAME_TYPE.dispatch(GameConfig::type, GameConfig::createTypedCodec);
+    public static final Codec<GameConfig<?>> DIRECT_CODEC = PlasmidRegistries.GAME_TYPE.getCodec().dispatch(GameConfig::type, GameConfig::createTypedCodec);
     @Deprecated
     public static final Codec<GameConfig<?>> REGISTRY_CODEC = Codec.lazyInitialized(() -> {
         if (!PlasmidConfig.get().ignoreInvalidGames()) {

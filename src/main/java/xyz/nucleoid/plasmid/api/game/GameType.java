@@ -1,13 +1,13 @@
 package xyz.nucleoid.plasmid.api.game;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.api.registry.PlasmidRegistries;
+import xyz.nucleoid.plasmid.api.util.TinyRegistry;
 
 import java.util.function.Consumer;
 
@@ -26,7 +26,7 @@ public final class GameType<C> {
      * @deprecated Use {@link PlasmidRegistries#GAME_TYPE} instead.
      */
     @Deprecated
-    public static final Registry<GameType<?>> REGISTRY = PlasmidRegistries.GAME_TYPE;
+    public static final TinyRegistry<GameType<?>> REGISTRY = new TinyRegistry.Fake(PlasmidRegistries.GAME_TYPE);
 
     private final Identifier id;
     private final MapCodec<C> configCodec;

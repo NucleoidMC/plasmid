@@ -8,11 +8,11 @@ import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.api.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.api.registry.PlasmidRegistryKeys;
 
 public record RandomGameConfig(RegistryEntryList<GameConfig<?>> games) {
     public static final MapCodec<RandomGameConfig> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            RegistryCodecs.entryList(GameConfigs.REGISTRY_KEY).fieldOf("games").forGetter(config -> config.games)
+            GameConfig.ENTRY_LIST_CODEC.fieldOf("games").forGetter(config -> config.games)
     ).apply(i, RandomGameConfig::new));
 
     @Nullable

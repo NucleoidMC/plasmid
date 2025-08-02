@@ -12,7 +12,7 @@ import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;
 
 public record SingleGamePortalConfig(RegistryEntry<GameConfig<?>> game, CustomValuesConfig custom) implements GamePortalConfig {
     public static final MapCodec<SingleGamePortalConfig> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            GameConfig.CODEC.fieldOf("game").forGetter(c -> c.game),
+            GameConfig.ENTRY_CODEC.fieldOf("game").forGetter(c -> c.game),
             CustomValuesConfig.CODEC.optionalFieldOf("custom", CustomValuesConfig.empty()).forGetter(c -> c.custom)
     ).apply(i, SingleGamePortalConfig::new));
 

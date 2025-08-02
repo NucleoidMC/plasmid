@@ -13,7 +13,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.api.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.api.registry.PlasmidRegistryKeys;
 
 import java.util.Locale;
 
@@ -25,7 +25,7 @@ public final class GameConfigArgument {
     public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
         return CommandManager.argument(name, IdentifierArgumentType.identifier())
                 .suggests((ctx, builder) -> {
-                    var registry = ctx.getSource().getRegistryManager().getOrThrow(GameConfigs.REGISTRY_KEY);
+                    var registry = ctx.getSource().getRegistryManager().getOrThrow(PlasmidRegistryKeys.GAME_CONFIG);
                     var remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
                     CommandSource.forEachMatching(registry.getKeys(), remaining, RegistryKey::getValue, key -> {
@@ -38,8 +38,8 @@ public final class GameConfigArgument {
     }
 
     public static RegistryEntry.Reference<GameConfig<?>> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
-        var key = RegistryKey.of(GameConfigs.REGISTRY_KEY, IdentifierArgumentType.getIdentifier(context, name));
-        var registry = context.getSource().getRegistryManager().getOrThrow(GameConfigs.REGISTRY_KEY);
+        var key = RegistryKey.of(PlasmidRegistryKeys.GAME_CONFIG, IdentifierArgumentType.getIdentifier(context, name));
+        var registry = context.getSource().getRegistryManager().getOrThrow(PlasmidRegistryKeys.GAME_CONFIG);
         return registry.getOptional(key).orElseThrow(() -> GAME_NOT_FOUND.create(key.getValue()));
     }
 }

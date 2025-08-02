@@ -62,13 +62,13 @@ public record MenuPortalConfig(
                         Optional<ItemStack> icon) {
 
         static final Codec<Entry> CODEC_OBJECT = RecordCodecBuilder.create(i -> i.group(
-                GameConfig.CODEC.fieldOf("game").forGetter(entry -> entry.game),
+                GameConfig.ENTRY_CODEC.fieldOf("game").forGetter(entry -> entry.game),
                 PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(Entry::name),
                 MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(Entry::description),
                 MoreCodecs.ITEM_STACK.optionalFieldOf("icon").forGetter(Entry::icon)
         ).apply(i, Entry::new));
 
-        public static final Codec<Entry> CODEC = Codec.either(GameConfig.CODEC, CODEC_OBJECT)
+        public static final Codec<Entry> CODEC = Codec.either(GameConfig.ENTRY_CODEC, CODEC_OBJECT)
                 .xmap(either -> either.map((game) -> new Entry(game, Optional.empty(), Optional.empty(), Optional.empty()), Function.identity()), Either::right);
     }
 }

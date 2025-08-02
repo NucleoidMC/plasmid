@@ -223,6 +223,7 @@ public final class TestGame {
         armorStandNbt.putBoolean("NoGravity", true);
 
         var armorStandPos = Vec3d.ofBottomCenter(edge.offset(Direction.WEST));
+        armorStandNbt.put("Pos", Vec3d.CODEC, armorStandPos);
         template.addEntity(new MapEntity(armorStandPos, armorStandNbt));
 
         for (var pos : bounds) {

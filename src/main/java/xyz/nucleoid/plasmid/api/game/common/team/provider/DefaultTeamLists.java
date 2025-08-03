@@ -1,7 +1,9 @@
 package xyz.nucleoid.plasmid.api.game.common.team.provider;
 
 import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.Formatting;
 import xyz.nucleoid.plasmid.api.game.common.team.GameTeam;
 import xyz.nucleoid.plasmid.api.game.common.team.GameTeamConfig;
 import xyz.nucleoid.plasmid.api.game.common.team.GameTeamKey;
@@ -10,7 +12,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class DefaultTeamAlternatives {
+/**
+ * Default team lists for various game sizes from 1 to 16 teams.
+ *
+ * <p>Colors are handpicked and the fewer the teams, the more contrasting are the colors.
+ *
+ * @author Hugman
+ */
+public final class DefaultTeamLists {
     private static final GameTeam BLUE = createTeam(DyeColor.BLUE);
     private static final GameTeam GREEN = createTeam(DyeColor.GREEN);
     private static final GameTeam YELLOW = createTeam(DyeColor.YELLOW);
@@ -64,7 +73,7 @@ public final class DefaultTeamAlternatives {
 
     public static final Map<Integer, TeamListProvider> MAP = buildMap();
 
-    public static Map<Integer, TeamListProvider> buildMap() {
+    private static Map<Integer, TeamListProvider> buildMap() {
         var map = new HashMap<Integer, TeamListProvider>();
         for (int i = 1; i <= 16; i++) {
             map.put(i, getEntry(i));
@@ -106,34 +115,35 @@ public final class DefaultTeamAlternatives {
         return ofPool(POOL_SMALLEST, size);
     }
 
-    private static RandomTeamListProvider ofLists(List<List<GameTeam>> lists) {
+    private static TeamListProvider ofLists(List<List<GameTeam>> lists) {
         return new RandomTeamListProvider(lists.stream()
                 .map(teamList -> (TeamListProvider) new ConstantTeamListProvider(teamList))
                 .toList()
         );
     }
 
-    private static TrimTeamListProvider ofPool(List<GameTeam> pool, int size) {
+    private static TeamListProvider ofPool(List<GameTeam> pool, int size) {
         return new TrimTeamListProvider(new ConstantTeamListProvider(pool), size);
     }
 
-    private static GameTeam createTeam(DyeColor dyeColor) {
-        return new GameTeam(
-                new GameTeamKey(dyeColor.getId()),
-                GameTeamConfig.builder()
-                        .setName(Text.translatable("color.minecraft." + dyeColor.getId()))
-                        .setColors(GameTeamConfig.Colors.from(dyeColor))
-                        .build()
-        );
+    private static GameTeam createTeam(String name, DyeColor dyeColor) {
+        // black text is barely readable, so we use dark gray instead
+        var colors = dyeColor == DyeColor.BLACK ?
+                new GameTeamConfig.Colors(
+                        Formatting.DARK_GRAY,
+                        TextColor.fromRgb(dyeColor.getEntityColor()),
+                        dyeColor,
+                        TextColor.fromRgb(dyeColor.getFireworkColor())
+                )
+                : GameTeamConfig.Colors.from(dyeColor);
+
+        return new GameTeam(new GameTeamKey(name), GameTeamConfig.builder()
+                .setName(Text.translatable("color.minecraft." + name))
+                .setColors(colors)
+                .build());
     }
 
-    private static GameTeam createTeam(String name, DyeColor dyeColor) {
-        return new GameTeam(
-                new GameTeamKey(name),
-                GameTeamConfig.builder()
-                        .setName(Text.translatable("color.minecraft." + name))
-                        .setColors(GameTeamConfig.Colors.from(dyeColor))
-                        .build()
-        );
+    private static GameTeam createTeam(DyeColor dyeColor) {
+        return createTeam(dyeColor.getId(), dyeColor);
     }
 }

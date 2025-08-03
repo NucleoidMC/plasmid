@@ -7,6 +7,13 @@ import xyz.nucleoid.plasmid.api.game.common.team.GameTeamList;
 
 import java.util.List;
 
+/**
+ * Team provider that provides a constant list of teams.
+ *
+ * <p>This is the most basic team provider and can be used inline for any team list provider.
+ *
+ * @author Hugman
+ */
 public final class ConstantTeamListProvider extends TeamListProvider {
     public static final MapCodec<ConstantTeamListProvider> CODEC = GameTeam.CODEC.listOf().fieldOf("teams").xmap(ConstantTeamListProvider::new, ConstantTeamListProvider::teams);
 

@@ -8,6 +8,11 @@ import net.minecraft.util.math.intprovider.IntProvider;
 import net.minecraft.util.math.random.Random;
 import xyz.nucleoid.plasmid.api.game.common.team.GameTeamList;
 
+/**
+ * Team provider that trims a list of teams from another provider to a specified size.
+ *
+ * @author Hugman
+ */
 public final class TrimTeamListProvider extends TeamListProvider {
     private static final boolean DEFAULT_SHUFFLE = true;
 

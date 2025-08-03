@@ -6,6 +6,11 @@ import xyz.nucleoid.plasmid.api.game.common.team.GameTeamList;
 
 import java.util.List;
 
+/**
+ * Team provider that randomly selects a team list from a list of providers.
+ *
+ * @author Hugman
+ */
 public final class RandomTeamListProvider extends TeamListProvider {
     public static final MapCodec<RandomTeamListProvider> CODEC = TeamListProvider.CODEC.listOf().fieldOf("providers").xmap(RandomTeamListProvider::new, RandomTeamListProvider::providers);
 

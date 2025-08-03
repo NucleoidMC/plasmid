@@ -6,6 +6,11 @@ import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.api.registry.PlasmidRegistries;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 
+/**
+ * Types of {@link TeamListProvider} that can be registered in the registry ({@link PlasmidRegistries#TEAM_LIST_PROVIDER_TYPE}).
+ *
+ * @author Hugman
+ */
 public record TeamListProviderType<T extends TeamListProvider>(MapCodec<T> codec) {
     public static final TeamListProviderType<ConstantTeamListProvider> CONSTANT = of("constant", ConstantTeamListProvider.CODEC);
     public static final TeamListProviderType<TrimTeamListProvider> TRIM = of("trim", TrimTeamListProvider.CODEC);

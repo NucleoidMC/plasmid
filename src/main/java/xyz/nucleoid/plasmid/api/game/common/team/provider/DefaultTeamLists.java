@@ -46,21 +46,18 @@ public final class DefaultTeamLists {
     private static final GameTeam MAGENTA_AS_PURPLE = createTeam("purple", DyeColor.MAGENTA);
 
     private static final TeamListProvider RANDOM_TWO = ofLists(List.of(
-            List.of(RED, BLUE),
-            List.of(RED, YELLOW),
-            List.of(LIME_AS_GREEN, BLUE),
-            List.of(LIME_AS_GREEN, YELLOW),
-            List.of(RED, LIME_AS_GREEN),
-            List.of(LIME_AS_GREEN, PINK),
-            List.of(MAGENTA_AS_PURPLE, YELLOW),
-            List.of(YELLOW, BLUE),
-            List.of(MAGENTA_AS_PURPLE, ORANGE),
-            List.of(WHITE, BLACK)
+            List.of(LIGHT_BLUE_AS_BLUE, RED),
+            List.of(BLUE, ORANGE),
+            List.of(LIME_AS_GREEN, MAGENTA_AS_PURPLE),
+            List.of(YELLOW, PURPLE),
+            List.of(PINK, CYAN),
+            List.of(RED, GREEN),
+            List.of(LIGHT_BLUE_AS_BLUE, ORANGE)
     ));
 
     private static final TeamListProvider RANDOM_FOUR = ofLists(List.of(
             List.of(RED, BLUE, LIME_AS_GREEN, YELLOW),
-            List.of(LIME_AS_GREEN, ORANGE, PINK, LIGHT_BLUE_AS_BLUE)
+            List.of(LIME_AS_GREEN, ORANGE, PINK, CYAN)
     ));
 
     private static final List<GameTeam> POOL_SMALLEST = List.of(LIGHT_BLUE_AS_BLUE, LIME_AS_GREEN, YELLOW, RED);

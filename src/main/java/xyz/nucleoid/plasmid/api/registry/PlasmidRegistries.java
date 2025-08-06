@@ -8,6 +8,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.SimpleRegistry;
 import xyz.nucleoid.plasmid.api.game.GameType;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
+import xyz.nucleoid.plasmid.api.template.processor.MapTemplateProcessorType;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;
 import xyz.nucleoid.plasmid.impl.portal.menu.MenuEntryConfig;
 
@@ -15,6 +16,7 @@ public class PlasmidRegistries {
     public static final Registry<GameType<?>> GAME_TYPE = register(PlasmidRegistryKeys.GAME_TYPE);
     public static final Registry<MapCodec<? extends GamePortalConfig>> GAME_PORTAL_CONFIG = register(PlasmidRegistryKeys.GAME_PORTAL_CONFIG);
     public static final Registry<MapCodec<? extends MenuEntryConfig>> MENU_ENTRY = register(PlasmidRegistryKeys.MENU_ENTRY);
+    public static final Registry<MapTemplateProcessorType<?>> MAP_TEMPLATE_PROCESSOR_TYPE = register(PlasmidRegistryKeys.MAP_TEMPLATE_PROCESSOR_TYPE);
 
     private static <T> SimpleRegistry<T> register(RegistryKey<Registry<T>> key) {
         return FabricRegistryBuilder.createSimple(key).buildAndRegister();

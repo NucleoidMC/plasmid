@@ -18,12 +18,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nucleoid.plasmid.api.event.GameEvents;
 import xyz.nucleoid.plasmid.api.game.GameTypes;
+import xyz.nucleoid.plasmid.api.game.attachment.PlasmidGameAttachments;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.api.portal.GamePortalConfigs;
 import xyz.nucleoid.plasmid.api.portal.menu.MenuEntryConfigs;
 import xyz.nucleoid.plasmid.api.registry.PlasmidRegistries;
 import xyz.nucleoid.plasmid.impl.command.*;
 import xyz.nucleoid.plasmid.impl.compatibility.TrinketsCompatibility;
+import xyz.nucleoid.plasmid.api.template.processor.MapTemplateProcessorType;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalManager;
@@ -35,11 +37,14 @@ public final class Plasmid implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        Reflection.initialize(PlasmidGameAttachments.class);
+
         PlasmidRegistries.registerDynamicRegistries();
 
         Reflection.initialize(GamePortalConfigs.class);
         Reflection.initialize(MenuEntryConfigs.class);
         Reflection.initialize(GameTypes.class);
+        Reflection.initialize(MapTemplateProcessorType.class);
 
         this.registerCallbacks();
 

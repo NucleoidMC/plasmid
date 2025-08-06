@@ -18,6 +18,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.slf4j.Logger;
+import xyz.nucleoid.plasmid.api.registry.PlasmidRegistryKeys;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.impl.command.argument.GameConfigArgument;
 import xyz.nucleoid.plasmid.impl.command.argument.GameSpaceArgument;
@@ -27,7 +28,6 @@ import xyz.nucleoid.plasmid.api.game.GameOpenException;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.GameTexts;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.api.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
@@ -408,7 +408,7 @@ public final class GameCommand {
     }
 
     private static int listGames(CommandContext<ServerCommandSource> context) {
-        var registry = context.getSource().getRegistryManager().getOrThrow(GameConfigs.REGISTRY_KEY);
+        var registry = context.getSource().getRegistryManager().getOrThrow(PlasmidRegistryKeys.GAME_CONFIG);
         var source = context.getSource();
         source.sendFeedback(() -> GameTexts.Command.gameList().formatted(Formatting.BOLD), false);
 

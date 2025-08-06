@@ -6,6 +6,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
+import xyz.nucleoid.plasmid.api.registry.PlasmidRegistries;
 import xyz.nucleoid.plasmid.api.util.TinyRegistry;
 
 import java.util.function.Consumer;
@@ -21,13 +22,17 @@ import java.util.function.Consumer;
  * @see GameConfig
  */
 public final class GameType<C> {
-    public static final TinyRegistry<GameType<?>> REGISTRY = TinyRegistry.create();
+    /**
+     * @deprecated Use {@link PlasmidRegistries#GAME_TYPE} instead.
+     */
+    @Deprecated
+    public static final TinyRegistry<GameType<?>> REGISTRY = new TinyRegistry.Fake(PlasmidRegistries.GAME_TYPE);
 
     private final Identifier id;
     private final MapCodec<C> configCodec;
     private final Open<C> open;
 
-    private GameType(Identifier id, MapCodec<C> configCodec, Open<C> open) {
+    GameType(Identifier id, MapCodec<C> configCodec, Open<C> open) {
         this.id = id;
         this.configCodec = configCodec;
         this.open = open;
@@ -43,11 +48,12 @@ public final class GameType<C> {
      * @return the registered {@link GameType} instance
      * @see MapCodec
      * @see com.mojang.serialization.codecs.RecordCodecBuilder
+     *
+     * @deprecated Use {@link GameTypes#register(Identifier, MapCodec, Open)} instead.
      */
+    @Deprecated
     public static <C> GameType<C> register(Identifier identifier, MapCodec<C> configCodec, Open<C> open) {
-        var type = new GameType<>(identifier, configCodec, open);
-        REGISTRY.register(identifier, type);
-        return type;
+        return GameTypes.register(identifier, configCodec, open);
     }
 
     public GameOpenProcedure open(GameOpenContext<C> context) {
@@ -72,7 +78,7 @@ public final class GameType<C> {
 
     @Nullable
     public static GameType<?> get(Identifier identifier) {
-        return REGISTRY.get(identifier);
+        return PlasmidRegistries.GAME_TYPE.get(identifier);
     }
 
     public interface Open<C> {

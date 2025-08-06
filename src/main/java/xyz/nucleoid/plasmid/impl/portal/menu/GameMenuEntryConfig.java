@@ -20,7 +20,7 @@ public record GameMenuEntryConfig(
         Optional<ItemStack> icon
 ) implements MenuEntryConfig {
     public static final MapCodec<GameMenuEntryConfig> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            GameConfig.CODEC.fieldOf("game").forGetter(GameMenuEntryConfig::game),
+            GameConfig.ENTRY_CODEC.fieldOf("game").forGetter(GameMenuEntryConfig::game),
             PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(GameMenuEntryConfig::name),
             MoreCodecs.listOrUnit(PlasmidCodecs.TEXT).optionalFieldOf("description").forGetter(GameMenuEntryConfig::description),
             MoreCodecs.ITEM_STACK.optionalFieldOf("icon").forGetter(GameMenuEntryConfig::icon)

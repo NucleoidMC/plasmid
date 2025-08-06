@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 
 public interface GamePortalInterface {
-    String NBT_KEY = Plasmid.ID + ":portal";
+    String NBT_KEY = Plasmid.id("portal").toString();
 
     boolean interactWithPortal(ServerPlayerEntity player);
 

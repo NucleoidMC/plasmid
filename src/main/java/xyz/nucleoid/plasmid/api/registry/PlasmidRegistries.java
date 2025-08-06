@@ -7,7 +7,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.SimpleRegistry;
 import xyz.nucleoid.plasmid.api.game.GameType;
-import xyz.nucleoid.plasmid.api.game.common.team.provider.TeamListProvider;
 import xyz.nucleoid.plasmid.api.game.common.team.provider.TeamListProviderType;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;

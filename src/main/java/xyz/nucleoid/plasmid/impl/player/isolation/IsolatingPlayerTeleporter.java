@@ -6,8 +6,10 @@ import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.world.biome.source.BiomeAccess;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
+import xyz.nucleoid.plasmid.impl.game.manager.HasForcedGameSpace;
 
 import java.util.function.Function;
 
@@ -21,6 +23,8 @@ import java.util.function.Function;
  * after teleporting and no weird issues can arise from invalid state passing through dimensions.
  */
 public final class IsolatingPlayerTeleporter {
+    private static final Text GAME_ENDED_REASON = Text.translatable("text.plasmid.game.closed");
+
     private final MinecraftServer server;
 
     public IsolatingPlayerTeleporter(MinecraftServer server) {
@@ -70,6 +74,11 @@ public final class IsolatingPlayerTeleporter {
     }
 
     private void teleport(ServerPlayerEntity player, Function<ServerPlayerEntity, ServerWorld> recreate, boolean in) {
+        if (!in && HasForcedGameSpace.hasForcedGameSpace(this.server)) {
+            player.networkHandler.disconnect(GAME_ENDED_REASON);
+            return;
+        }
+
         var playerManager = this.server.getPlayerManager();
         var playerManagerAccess = (PlayerManagerAccess) playerManager;
 

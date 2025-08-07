@@ -13,3 +13,8 @@ accessible method net/minecraft/entity/Entity unsetRemoved ()V
 accessible method net/minecraft/server/network/ServerPlayerInteractionManager setGameMode (Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V
 
 accessible method net/minecraft/block/TntBlock primeTnt (Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/LivingEntity;)V
+
+accessible method net/minecraft/client/gui/screen/world/CreateWorldScreen showMessage (Lnet/minecraft/client/MinecraftClient;Lnet/minecraft/text/Text;)V
+accessible method net/minecraft/client/gui/screen/world/CreateWorldScreen createSession (Lnet/minecraft/client/MinecraftClient;Ljava/lang/String;Ljava/nio/file/Path;)Ljava/util/Optional;
+accessible method net/minecraft/client/gui/screen/world/CreateWorldScreen createServerConfig (Lnet/minecraft/resource/ResourcePackManager;Lnet/minecraft/resource/DataConfiguration;)Lnet/minecraft/server/SaveLoading$ServerConfig;
+accessible field net/minecraft/resource/ResourcePackManager providers Ljava/util/Set;

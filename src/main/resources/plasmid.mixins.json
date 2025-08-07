@@ -19,6 +19,7 @@
     "game.rule.ServerPlayNetworkHandlerMixin",
     "game.rule.TridentEntityMixin",
     "game.space.EntityMixin",
+    "game.space.MinecraftServerMixin",
     "game.space.PlayerManagerMixin",
     "game.space.ScreenHandlerMixin",
     "game.space.ServerPlayerEntityMixin"

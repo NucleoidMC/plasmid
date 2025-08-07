@@ -31,6 +31,7 @@ public final class GamePortalCommand {
         dispatcher.register(
             literal("game")
                 .then(literal("portal")
+                    .requires(GameCommand::isNotForcedGameSpace)
                     .then(literal("connect")
                         .requires(Permissions.require("plasmid.command.game.portal.connect", 3))
                         .then(GamePortalArgument.argument("portal")

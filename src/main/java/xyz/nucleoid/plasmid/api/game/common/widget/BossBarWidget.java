@@ -39,6 +39,10 @@ public final class BossBarWidget implements GameWidget {
         this.bar.setStyle(style);
     }
 
+    public void setVisible(boolean visible) {
+        this.bar.setVisible(visible);
+    }
+
     @Override
     public void addPlayer(ServerPlayerEntity player) {
         this.bar.addPlayer(player);

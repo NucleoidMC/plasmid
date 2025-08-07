@@ -39,6 +39,7 @@ import xyz.nucleoid.plasmid.impl.portal.game.NewGamePortalConfig;
 import xyz.nucleoid.plasmid.impl.portal.game.SingleGamePortalConfig;
 import xyz.nucleoid.plasmid.impl.command.*;
 import xyz.nucleoid.plasmid.impl.compatibility.TrinketsCompatibility;
+import xyz.nucleoid.plasmid.impl.component.PlasmidDataComponentTypes;
 import xyz.nucleoid.plasmid.impl.portal.menu.*;
 
 public final class Plasmid implements ModInitializer {
@@ -66,6 +67,8 @@ public final class Plasmid implements ModInitializer {
             var id = context.server().getRegistryManager().getOrThrow(GameConfigs.REGISTRY_KEY).getId(context.game());
             throw new GameOpenException(Text.translatable("text.plasmid.map.open.invalid_game", id != null ? id.toString() : context.game()));
         });
+
+        PlasmidDataComponentTypes.register();
 
         this.registerCallbacks();
 

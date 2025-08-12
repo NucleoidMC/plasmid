@@ -76,7 +76,7 @@
   "text.plasmid.map.delete.error": "Ocorreu um erro ao deletar a area de trabalho '%s'!",
   "text.plasmid.map.delete.map_mismatch": "As areas de trabalho selecionadas não correspondem! Você tem certeza que deseja deleta-las?",
   "text.plasmid.map.delete.success": "Area de trabalho deletada '%s'!",
-  "text.plasmid.map.export.error": "Houve uma falha ao exportar o mapa!",
+  "text.plasmid.map.export.error": "Houve uma falha ao exportar o mapa! Uma exceção inesperada foi lançada",
   "text.plasmid.map.export.success": "Mapa compilado e exportado'%s'",
   "text.plasmid.map.export.vertical_bounds_warning.line.1": "Aviso: Mapa ultrapassa os limites verticais do mundo!",
   "text.plasmid.map.export.vertical_bounds_warning.line.2": "Voce possa querer mudar a origem do mapa.",

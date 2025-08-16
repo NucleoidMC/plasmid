@@ -16,9 +16,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -30,11 +28,9 @@ import xyz.nucleoid.map_templates.MapEntity;
 import xyz.nucleoid.map_templates.MapTemplate;
 import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.plasmid.api.game.common.team.*;
-import xyz.nucleoid.plasmid.api.game.common.team.GameTeamConfig.Colors;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
 import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
-import xyz.nucleoid.plasmid.api.game.common.config.WaitingLobbyConfig;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
@@ -48,7 +44,6 @@ import xyz.nucleoid.stimuli.event.block.BlockUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -85,30 +80,10 @@ public final class TestGame {
 
             GameWaitingLobby.addTo(activity, context.config().players());
 
-            int teamCount = context.config().teamCount();
-
-            if (teamCount > 0) {
-                var random = world.getRandom();
-                var teams = new ArrayList<GameTeam>();
-
-                for (int i = 0; i < teamCount; i++) {
-                    var dyeColor = Util.getRandom(DyeColor.values(), random);
-                    var color = Colors.from(dyeColor);
-
-                    var name = Text.literal("<Team " + i + ">");
-
-                    var key = new GameTeamKey("team_" + i);
-
-                    var config = GameTeamConfig.builder()
-                        .setName(name)
-                        .setColors(color)
-                        .build();
-
-                    teams.add(new GameTeam(key, config));
-                }
-
-                TeamSelectionLobby.addTo(activity, new GameTeamList(teams));
-            }
+            context.config().teams().ifPresent(teamListProvider -> {
+                var teamList = teamListProvider.get(world.getRandom());
+                TeamSelectionLobby.addTo(activity, teamList);
+            });
 
             activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
             activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);

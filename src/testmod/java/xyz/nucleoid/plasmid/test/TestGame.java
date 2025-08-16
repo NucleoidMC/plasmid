@@ -7,6 +7,8 @@ import net.minecraft.block.ButtonBlock;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.enums.BlockFace;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -15,6 +17,7 @@ import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
@@ -29,8 +32,11 @@ import xyz.nucleoid.map_templates.BlockBounds;
 import xyz.nucleoid.map_templates.MapEntity;
 import xyz.nucleoid.map_templates.MapTemplate;
 import xyz.nucleoid.plasmid.api.game.*;
+import xyz.nucleoid.plasmid.api.game.attachment.PlasmidGameAttachments;
 import xyz.nucleoid.plasmid.api.game.common.team.*;
 import xyz.nucleoid.plasmid.api.game.common.team.GameTeamConfig.Colors;
+import xyz.nucleoid.plasmid.api.template.processor.TeamColorMapTemplateProcessor;
+import xyz.nucleoid.plasmid.api.util.ColoredBlocks;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
 import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
@@ -55,6 +61,7 @@ import java.util.List;
 public final class TestGame {
     private static final BlockState BUTTON = Blocks.OAK_BUTTON.getDefaultState().with(ButtonBlock.FACE, BlockFace.FLOOR);
     private static final List<Method> WOOD_TYPE_BLOCK_FIELDS = Arrays.stream(WoodType.class.getMethods()).filter(x -> x.getReturnType() == Block.class).toList();
+    private static final List<Method> COLORED_BLOCKS_METHODS = Arrays.stream(ColoredBlocks.class.getMethods()).filter(x -> x.getReturnType() == Block.class).toList();
     private static final StatisticKey<Double> TEST_KEY = StatisticKey.doubleKey(Plasmid.id("test"));
 
     private static final GameTeam TEAM = new GameTeam(
@@ -65,30 +72,14 @@ public final class TestGame {
     );
 
     public static GameOpenProcedure open(GameOpenContext<TestConfig> context) {
-        var template = TestGame.generateMapTemplate(context.game().config().state());
-
-        var worldConfig = new RuntimeWorldConfig()
-                .setGenerator(new TemplateChunkGenerator(context.server(), template))
-                .setTimeOfDay(6000)
-                .setGameRule(GameRules.KEEP_INVENTORY, true);
-
-        return context.openWithWorld(worldConfig, (activity, world) -> {
+        return context.open(activity -> {
             var gameSpace = activity.getGameSpace();
-
-            activity.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
-            activity.listen(GamePlayerEvents.ACCEPT, acceptor ->
-                    acceptor.teleport(world, new Vec3d(0.0, 65.0, 0.0))
-                            .thenRunForEach(joiningPlayer -> {
-                                joiningPlayer.changeGameMode(GameMode.ADVENTURE);
-                            })
-            );
-
-            GameWaitingLobby.addTo(activity, context.config().players());
 
             int teamCount = context.config().teamCount();
 
+            GameTeamList teamList = null;
             if (teamCount > 0) {
-                var random = world.getRandom();
+                var random = context.server().getOverworld().getRandom();
                 var teams = new ArrayList<GameTeam>();
 
                 for (int i = 0; i < teamCount; i++) {
@@ -100,15 +91,42 @@ public final class TestGame {
                     var key = new GameTeamKey("team_" + i);
 
                     var config = GameTeamConfig.builder()
-                        .setName(name)
-                        .setColors(color)
-                        .build();
+                            .setName(name)
+                            .setColors(color)
+                            .build();
 
                     teams.add(new GameTeam(key, config));
                 }
 
-                TeamSelectionLobby.addTo(activity, new GameTeamList(teams));
+                teamList = new GameTeamList(teams);
+                gameSpace.setAttachment(PlasmidGameAttachments.TEAM_LIST, teamList);
             }
+
+            activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
+
+            var template = TestGame.generateMapTemplate(context.game().config().state(), teamList);
+
+            new TeamColorMapTemplateProcessor(List.of(DyeColor.values()))
+                    .processTemplate(activity, template);
+
+            var worldConfig = new RuntimeWorldConfig()
+                    .setGenerator(new TemplateChunkGenerator(context.server(), template))
+                    .setTimeOfDay(6000)
+                    .setGameRule(GameRules.KEEP_INVENTORY, true);
+
+            var world = gameSpace.getWorlds().add(worldConfig);
+
+            activity.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
+            activity.listen(GamePlayerEvents.ACCEPT, acceptor ->
+                    acceptor.teleport(world, new Vec3d(0.0, 65.0, 0.0))
+                            .thenRunForEach(joiningPlayer -> {
+                                joiningPlayer.changeGameMode(GameMode.ADVENTURE);
+                            })
+            );
+
+            GameWaitingLobby.addTo(activity, context.config().players());
+
+            TeamSelectionLobby.addTo(activity, teamList);
 
             activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
             activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);
@@ -209,10 +227,10 @@ public final class TestGame {
         return GameResult.ok();
     }
 
-    private static MapTemplate generateMapTemplate(BlockState state) {
+    private static MapTemplate generateMapTemplate(BlockState state, GameTeamList teamList) {
         var template = MapTemplate.createEmpty();
 
-        var bounds = BlockBounds.of(-5, 64, -5, 5, 64, 5);
+        var bounds = BlockBounds.of(-25, 64, -5, 5, 64, 5);
         var max = bounds.max();
 
         var edge = new BlockPos(max.getX(), max.getY() + 1, max.getZ());
@@ -223,6 +241,7 @@ public final class TestGame {
         armorStandNbt.putBoolean("NoGravity", true);
 
         var armorStandPos = Vec3d.ofBottomCenter(edge.offset(Direction.WEST));
+        armorStandNbt.put("Pos", Vec3d.CODEC, armorStandPos);
         template.addEntity(new MapEntity(armorStandPos, armorStandNbt));
 
         for (var pos : bounds) {
@@ -239,9 +258,31 @@ public final class TestGame {
                 for (var field : WOOD_TYPE_BLOCK_FIELDS) {
                     state = ((Block) field.invoke(type)).getDefaultState().withIfExists(LeavesBlock.PERSISTENT, true);
                     template.setBlockState(mut.setX(x), state);
-                    x++;
+                    x--;
                 }
                 y--;
+            }
+
+            y = 66 + DyeColor.values().length;
+            int i = 0;
+            for(var dyeColor : DyeColor.values()) {
+                int x = -2-WOOD_TYPE_BLOCK_FIELDS.size();
+                mut.setY(y--);
+
+                if(teamList.list().size() > i) {
+                    var displayNbt = new NbtCompound();
+                    displayNbt.putString("id", EntityType.getId(EntityType.TEXT_DISPLAY).toString());
+                    displayNbt.put("text", TextCodecs.CODEC, teamList.list().get(i++).config().name());
+                    displayNbt.put("billboard", DisplayEntity.BillboardMode.CODEC, DisplayEntity.BillboardMode.VERTICAL);
+                    var displayPos = Vec3d.ofBottomCenter(mut.setX(x--));
+                    displayNbt.put("Pos", Vec3d.CODEC, displayPos);
+                    template.addEntity(new MapEntity(displayPos, displayNbt));
+                }
+
+                for (var field : COLORED_BLOCKS_METHODS) {
+                    state = ((Block) field.invoke(null, dyeColor)).getDefaultState();
+                    template.setBlockState(mut.setX(x--), state);
+                }
             }
         } catch (Throwable e) {
             e.printStackTrace();

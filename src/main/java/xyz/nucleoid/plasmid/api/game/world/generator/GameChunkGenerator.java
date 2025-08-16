@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.api.game.world.generator;
 
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ChunkRegion;
@@ -32,9 +33,12 @@ public abstract class GameChunkGenerator extends TransientChunkGenerator {
         this(createBiomeSource(server, BiomeKeys.THE_VOID));
     }
 
+    protected static FixedBiomeSource createBiomeSource(RegistryWrapper.WrapperLookup registries, RegistryKey<Biome> biome) {
+        return new FixedBiomeSource(registries.getOrThrow(RegistryKeys.BIOME).getOrThrow(biome));
+    }
+
     protected static FixedBiomeSource createBiomeSource(MinecraftServer server, RegistryKey<Biome> biome) {
-        var registryManager = server.getRegistryManager();
-        return new FixedBiomeSource(registryManager.getOrThrow(RegistryKeys.BIOME).getOrThrow(biome));
+        return createBiomeSource(server.getRegistryManager(), biome);
     }
 
     @Override

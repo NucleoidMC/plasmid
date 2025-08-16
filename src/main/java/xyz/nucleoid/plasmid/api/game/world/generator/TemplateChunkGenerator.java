@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.api.game.world.generator;
 import net.minecraft.block.BlockState;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.math.BlockPos;
@@ -30,11 +31,15 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     private final MapTemplate template;
     private final BlockBounds worldBounds;
 
-    public TemplateChunkGenerator(MinecraftServer server, MapTemplate template) {
-        super(createBiomeSource(server, template.getBiome()));
+    public TemplateChunkGenerator(RegistryWrapper.WrapperLookup registries, MapTemplate template) {
+        super(createBiomeSource(registries, template.getBiome()));
 
         this.template = template;
         this.worldBounds = template.getBounds();
+    }
+
+    public TemplateChunkGenerator(MinecraftServer server, MapTemplate template) {
+        this(server.getRegistryManager(), template);
     }
 
     @Override

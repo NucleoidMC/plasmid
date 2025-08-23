@@ -33,7 +33,7 @@ public final class ConstantTeamListProvider extends TeamListProvider {
     }
 
     @Override
-    public TeamListProviderType<?> getType() {
-        return TeamListProviderType.CONSTANT;
+    public MapCodec<ConstantTeamListProvider> getCodec() {
+        return CODEC;
     }
 }

@@ -73,7 +73,7 @@ public final class SizedAlternativesTeamListProvider extends TeamListProvider {
     }
 
     @Override
-    public TeamListProviderType<?> getType() {
-        return TeamListProviderType.SIZED_ALTERNATIVES;
+    public MapCodec<? extends TeamListProvider> getCodec() {
+        return CODEC;
     }
 }

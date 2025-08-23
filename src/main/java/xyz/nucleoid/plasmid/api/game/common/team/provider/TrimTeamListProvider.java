@@ -57,7 +57,7 @@ public final class TrimTeamListProvider extends TeamListProvider {
     }
 
     @Override
-    public TeamListProviderType<?> getType() {
-        return TeamListProviderType.TRIM;
+    public MapCodec<? extends TeamListProvider> getCodec() {
+        return CODEC;
     }
 }

@@ -30,7 +30,7 @@ public final class RandomTeamListProvider extends TeamListProvider {
     }
 
     @Override
-    public TeamListProviderType<?> getType() {
-        return TeamListProviderType.RANDOM;
+    public MapCodec<? extends TeamListProvider> getCodec() {
+        return CODEC;
     }
 }

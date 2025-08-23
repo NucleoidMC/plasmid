@@ -13,19 +13,17 @@ import java.util.function.Function;
 /**
  * Provides a {@link GameTeamList}.
  *
- * @see TeamListProviderTypes
- *
  * @author Hugman
+ * @see TeamListProviderTypes
  */
-public abstract class TeamListProvider {
-    private static final Codec<TeamListProvider> BASE_CODEC = PlasmidRegistries.TEAM_LIST_PROVIDER_TYPE.getCodec().dispatch(TeamListProvider::getCodec, Function.identity());
-    private static final Codec<TeamListProvider> INLINE_LIST_CODEC = Codec.either(GameTeamList.CODEC, BASE_CODEC).xmap(
+public interface TeamListProvider {
+    Codec<TeamListProvider> CODEC = Codec.either(IntProvider.POSITIVE_CODEC, Codec.either(GameTeamList.CODEC, PlasmidRegistries.TEAM_LIST_PROVIDER_TYPE.getCodec().dispatch(TeamListProvider::getCodec, Function.identity())
+    ).xmap(
             either -> either.map(TeamListProvider::of, provider -> provider),
             provider -> provider instanceof ConstantTeamListProvider constant ?
                     Either.left(new GameTeamList(constant.teams())) :
                     Either.right(provider)
-    );
-    public static final Codec<TeamListProvider> CODEC = Codec.either(IntProvider.POSITIVE_CODEC, INLINE_LIST_CODEC).xmap(
+    )).xmap(
             either -> either.map(TeamListProvider::of, provider -> provider),
             provider -> {
                 if (provider instanceof SizedAlternativesTeamListProvider alternatives) {
@@ -38,19 +36,19 @@ public abstract class TeamListProvider {
             }
     );
 
-    public abstract GameTeamList get(Random random);
+    GameTeamList get(Random random);
 
-    public abstract MapCodec<? extends TeamListProvider> getCodec();
+    MapCodec<? extends TeamListProvider> getCodec();
 
-    public static TeamListProvider of(GameTeamList teams) {
+    static TeamListProvider of(GameTeamList teams) {
         return new ConstantTeamListProvider(teams.list());
     }
 
-    public static TeamListProvider of(IntProvider intProvider) {
+    static TeamListProvider of(IntProvider intProvider) {
         return new SizedAlternativesTeamListProvider(intProvider, DefaultTeamLists.MAP);
     }
 
-    public static TeamListProvider of(int size) {
+    static TeamListProvider of(int size) {
         return new SizedAlternativesTeamListProvider(size, DefaultTeamLists.MAP);
     }
 }

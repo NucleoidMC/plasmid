@@ -14,18 +14,8 @@ import java.util.List;
  *
  * @author Hugman
  */
-public final class ConstantTeamListProvider extends TeamListProvider {
+public record ConstantTeamListProvider(List<GameTeam> teams) implements TeamListProvider {
     public static final MapCodec<ConstantTeamListProvider> CODEC = GameTeam.CODEC.listOf().fieldOf("teams").xmap(ConstantTeamListProvider::new, ConstantTeamListProvider::teams);
-
-    private final List<GameTeam> teams;
-
-    public ConstantTeamListProvider(List<GameTeam> teams) {
-        this.teams = teams;
-    }
-
-    public List<GameTeam> teams() {
-        return teams;
-    }
 
     @Override
     public GameTeamList get(Random random) {

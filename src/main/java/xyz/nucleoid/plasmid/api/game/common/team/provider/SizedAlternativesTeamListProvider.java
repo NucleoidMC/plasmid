@@ -16,7 +16,10 @@ import java.util.Map;
  *
  * @author Hugman
  */
-public final class SizedAlternativesTeamListProvider extends TeamListProvider {
+public record SizedAlternativesTeamListProvider(
+        IntProvider size,
+        Map<Integer, TeamListProvider> map
+) implements TeamListProvider {
     private static final Map<Integer, TeamListProvider> DEFAULT_ALTERNATIVES = DefaultTeamLists.MAP;
 
     public static final MapCodec<SizedAlternativesTeamListProvider> CODEC = RecordCodecBuilder.<SizedAlternativesTeamListProvider>mapCodec(instance -> instance.group(
@@ -25,13 +28,6 @@ public final class SizedAlternativesTeamListProvider extends TeamListProvider {
                     ).apply(instance, SizedAlternativesTeamListProvider::new)
             )
             .validate(SizedAlternativesTeamListProvider::validate);
-    private final IntProvider size;
-    private final Map<Integer, TeamListProvider> map;
-
-    public SizedAlternativesTeamListProvider(IntProvider size, Map<Integer, TeamListProvider> map) {
-        this.size = size;
-        this.map = map;
-    }
 
     public SizedAlternativesTeamListProvider(int size, Map<Integer, TeamListProvider> map) {
         this(ConstantIntProvider.create(size), map);
@@ -43,14 +39,6 @@ public final class SizedAlternativesTeamListProvider extends TeamListProvider {
 
     public SizedAlternativesTeamListProvider(int size) {
         this(ConstantIntProvider.create(size));
-    }
-
-    public IntProvider size() {
-        return size;
-    }
-
-    public Map<Integer, TeamListProvider> map() {
-        return map;
     }
 
     private static DataResult<SizedAlternativesTeamListProvider> validate(SizedAlternativesTeamListProvider provider) {

@@ -13,7 +13,11 @@ import xyz.nucleoid.plasmid.api.game.common.team.GameTeamList;
  *
  * @author Hugman
  */
-public final class TrimTeamListProvider extends TeamListProvider {
+public record TrimTeamListProvider(
+        TeamListProvider provider,
+        IntProvider size,
+        boolean shuffle
+) implements TeamListProvider {
     private static final boolean DEFAULT_SHUFFLE = true;
 
     public static final MapCodec<TrimTeamListProvider> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -21,30 +25,9 @@ public final class TrimTeamListProvider extends TeamListProvider {
             IntProvider.POSITIVE_CODEC.fieldOf("size").forGetter(TrimTeamListProvider::size),
             Codec.BOOL.optionalFieldOf("shuffle", DEFAULT_SHUFFLE).forGetter(TrimTeamListProvider::shuffle)
     ).apply(instance, TrimTeamListProvider::new));
-    private final TeamListProvider provider;
-    private final IntProvider size;
-    private final boolean shuffle;
-
-    public TrimTeamListProvider(TeamListProvider provider, IntProvider size, boolean shuffle) {
-        this.provider = provider;
-        this.size = size;
-        this.shuffle = shuffle;
-    }
 
     public TrimTeamListProvider(TeamListProvider provider, int size) {
         this(provider, ConstantIntProvider.create(size), DEFAULT_SHUFFLE);
-    }
-
-    public TeamListProvider provider() {
-        return provider;
-    }
-
-    public IntProvider size() {
-        return size;
-    }
-
-    public boolean shuffle() {
-        return shuffle;
     }
 
     @Override

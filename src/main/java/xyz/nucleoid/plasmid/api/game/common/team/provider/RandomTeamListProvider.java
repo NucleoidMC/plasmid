@@ -11,18 +11,8 @@ import java.util.List;
  *
  * @author Hugman
  */
-public final class RandomTeamListProvider extends TeamListProvider {
+public record RandomTeamListProvider(List<TeamListProvider> providers) implements TeamListProvider {
     public static final MapCodec<RandomTeamListProvider> CODEC = TeamListProvider.CODEC.listOf().fieldOf("providers").xmap(RandomTeamListProvider::new, RandomTeamListProvider::providers);
-
-    private final List<TeamListProvider> providers;
-
-    public RandomTeamListProvider(List<TeamListProvider> providers) {
-        this.providers = providers;
-    }
-
-    public List<TeamListProvider> providers() {
-        return providers;
-    }
 
     @Override
     public GameTeamList get(Random random) {

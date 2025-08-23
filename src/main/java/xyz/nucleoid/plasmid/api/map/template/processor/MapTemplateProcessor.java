@@ -16,7 +16,7 @@ import java.util.function.Function;
  * @see MapTemplateProcessorTypes
  */
 public interface MapTemplateProcessor {
-    Codec<MapTemplateProcessor> CODEC = PlasmidRegistries.MAP_TEMPLATE_PROCESSOR.getCodec().dispatch(MapTemplateProcessor::getCodec, Function.identity());
+    Codec<MapTemplateProcessor> CODEC = PlasmidRegistries.MAP_TEMPLATE_PROCESSOR_TYPE.getCodec().dispatch(MapTemplateProcessor::getCodec, Function.identity());
 
     void processTemplate(MapTemplate template, ContextParameterMap.Builder parameters);
 

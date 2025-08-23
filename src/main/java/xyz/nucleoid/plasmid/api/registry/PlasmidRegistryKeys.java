@@ -15,7 +15,7 @@ public class PlasmidRegistryKeys {
     public static final RegistryKey<Registry<MapCodec<? extends GamePortalConfig>>> GAME_PORTAL_CONFIG = createKey("game_portal_config");
     public static final RegistryKey<Registry<MapCodec<? extends MenuEntryConfig>>> MENU_ENTRY = createKey("menu_entry");
     public static final RegistryKey<Registry<GameConfig<?>>> GAME_CONFIG = createKey("game");
-    public static final RegistryKey<Registry<MapCodec<? extends MapTemplateProcessor>>> MAP_TEMPLATE_PROCESSOR = createKey("map_template_processor");
+    public static final RegistryKey<Registry<MapCodec<? extends MapTemplateProcessor>>> MAP_TEMPLATE_PROCESSOR_TYPE = createKey("map_template_processor_type");
 
     private static <T> RegistryKey<Registry<T>> createKey(String key) {
         return RegistryKey.ofRegistry(Plasmid.id(key));

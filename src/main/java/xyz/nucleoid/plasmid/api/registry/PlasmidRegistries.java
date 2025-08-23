@@ -16,7 +16,7 @@ public class PlasmidRegistries {
     public static final Registry<GameType<?>> GAME_TYPE = register(PlasmidRegistryKeys.GAME_TYPE);
     public static final Registry<MapCodec<? extends GamePortalConfig>> GAME_PORTAL_CONFIG = register(PlasmidRegistryKeys.GAME_PORTAL_CONFIG);
     public static final Registry<MapCodec<? extends MenuEntryConfig>> MENU_ENTRY = register(PlasmidRegistryKeys.MENU_ENTRY);
-    public static final Registry<MapCodec<? extends MapTemplateProcessor>> MAP_TEMPLATE_PROCESSOR = register(PlasmidRegistryKeys.MAP_TEMPLATE_PROCESSOR);
+    public static final Registry<MapCodec<? extends MapTemplateProcessor>> MAP_TEMPLATE_PROCESSOR_TYPE = register(PlasmidRegistryKeys.MAP_TEMPLATE_PROCESSOR_TYPE);
 
     private static <T> SimpleRegistry<T> register(RegistryKey<Registry<T>> key) {
         return FabricRegistryBuilder.createSimple(key).buildAndRegister();

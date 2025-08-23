@@ -16,6 +16,6 @@ public class MapTemplateProcessorTypes {
     }
 
     public static <T extends MapTemplateProcessor> MapCodec<T> of(Identifier identifier, MapCodec<T> codec) {
-        return Registry.register(PlasmidRegistries.MAP_TEMPLATE_PROCESSOR, identifier, codec);
+        return Registry.register(PlasmidRegistries.MAP_TEMPLATE_PROCESSOR_TYPE, identifier, codec);
     }
 }

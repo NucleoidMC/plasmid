@@ -34,8 +34,8 @@ public record TeamColorMapTemplateProcessor(List<DyeColor> baseColors) implement
     private static final ContextType CONTEXT_TYPE = new ContextType.Builder().require(MapLoadContexts.TEAM_LIST).build();
 
     @Override
-    public MapTemplateProcessorType<?> getType() {
-        return MapTemplateProcessorType.TEAM_COLORS;
+    public MapCodec<? extends MapTemplateProcessor> getCodec() {
+        return CODEC;
     }
 
     @Override

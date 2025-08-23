@@ -19,8 +19,8 @@ public record ReplaceBlockEntitiesTemplateProcessor(Map<String, String> searchAn
     public static final MapCodec<ReplaceBlockEntitiesTemplateProcessor> CODEC = Codec.unboundedMap(Codec.STRING, Codec.STRING).fieldOf("search_and_replace").xmap(ReplaceBlockEntitiesTemplateProcessor::new, ReplaceBlockEntitiesTemplateProcessor::searchAndReplace);
 
     @Override
-    public MapTemplateProcessorType<?> getType() {
-        return MapTemplateProcessorType.REPLACE_BLOCK_ENTITIES;
+    public MapCodec<? extends MapTemplateProcessor> getCodec() {
+        return CODEC;
     }
 
     @Override

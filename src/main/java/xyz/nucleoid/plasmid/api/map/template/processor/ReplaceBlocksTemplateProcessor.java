@@ -22,8 +22,8 @@ public record ReplaceBlocksTemplateProcessor(Map<Block, Block> blocks) implement
     public static final MapCodec<ReplaceBlocksTemplateProcessor> CODEC = Codec.unboundedMap(Registries.BLOCK.getCodec(), Registries.BLOCK.getCodec()).fieldOf("blocks").xmap(ReplaceBlocksTemplateProcessor::new, ReplaceBlocksTemplateProcessor::blocks);
 
     @Override
-    public MapTemplateProcessorType<?> getType() {
-        return MapTemplateProcessorType.REPLACE_BLOCKS;
+    public MapCodec<? extends MapTemplateProcessor> getCodec() {
+        return CODEC;
     }
 
     @Override

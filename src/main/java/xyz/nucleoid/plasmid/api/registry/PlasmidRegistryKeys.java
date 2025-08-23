@@ -5,7 +5,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import xyz.nucleoid.plasmid.api.game.GameType;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.api.map.template.processor.MapTemplateProcessorType;
+import xyz.nucleoid.plasmid.api.map.template.processor.MapTemplateProcessor;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;
 import xyz.nucleoid.plasmid.impl.portal.menu.MenuEntryConfig;
@@ -15,7 +15,7 @@ public class PlasmidRegistryKeys {
     public static final RegistryKey<Registry<MapCodec<? extends GamePortalConfig>>> GAME_PORTAL_CONFIG = createKey("game_portal_config");
     public static final RegistryKey<Registry<MapCodec<? extends MenuEntryConfig>>> MENU_ENTRY = createKey("menu_entry");
     public static final RegistryKey<Registry<GameConfig<?>>> GAME_CONFIG = createKey("game");
-    public static final RegistryKey<Registry<MapTemplateProcessorType<?>>> MAP_TEMPLATE_PROCESSOR_TYPE = createKey("map_template_processor_type");
+    public static final RegistryKey<Registry<MapCodec<? extends MapTemplateProcessor>>> MAP_TEMPLATE_PROCESSOR = createKey("map_template_processor");
 
     private static <T> RegistryKey<Registry<T>> createKey(String key) {
         return RegistryKey.ofRegistry(Plasmid.id(key));

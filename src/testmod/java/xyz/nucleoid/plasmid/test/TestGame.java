@@ -7,7 +7,6 @@ import net.minecraft.block.ButtonBlock;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.enums.BlockFace;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -22,6 +21,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.util.context.ContextParameterMap;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -32,15 +32,14 @@ import xyz.nucleoid.map_templates.BlockBounds;
 import xyz.nucleoid.map_templates.MapEntity;
 import xyz.nucleoid.map_templates.MapTemplate;
 import xyz.nucleoid.plasmid.api.game.*;
-import xyz.nucleoid.plasmid.api.game.attachment.PlasmidGameAttachments;
 import xyz.nucleoid.plasmid.api.game.common.team.*;
 import xyz.nucleoid.plasmid.api.game.common.team.GameTeamConfig.Colors;
-import xyz.nucleoid.plasmid.api.template.processor.TeamColorMapTemplateProcessor;
+import xyz.nucleoid.plasmid.api.map.MapLoadContexts;
+import xyz.nucleoid.plasmid.api.map.template.processor.TeamColorMapTemplateProcessor;
 import xyz.nucleoid.plasmid.api.util.ColoredBlocks;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
 import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
-import xyz.nucleoid.plasmid.api.game.common.config.WaitingLobbyConfig;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
@@ -99,7 +98,6 @@ public final class TestGame {
                 }
 
                 teamList = new GameTeamList(teams);
-                gameSpace.setAttachment(PlasmidGameAttachments.TEAM_LIST, teamList);
             }
 
             activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
@@ -107,7 +105,7 @@ public final class TestGame {
             var template = TestGame.generateMapTemplate(context.game().config().state(), teamList);
 
             new TeamColorMapTemplateProcessor(List.of(DyeColor.values()))
-                    .processTemplate(activity, template);
+                    .processTemplate(template, new ContextParameterMap.Builder().addNullable(MapLoadContexts.TEAM_LIST, teamList));
 
             var worldConfig = new RuntimeWorldConfig()
                     .setGenerator(new TemplateChunkGenerator(context.server(), template))

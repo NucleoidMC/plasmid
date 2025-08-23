@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.api.template.processor;
+package xyz.nucleoid.plasmid.api.map.template.processor;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.registry.Registry;

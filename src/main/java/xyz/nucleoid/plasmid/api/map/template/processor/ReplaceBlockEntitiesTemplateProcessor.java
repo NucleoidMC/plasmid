@@ -1,10 +1,10 @@
-package xyz.nucleoid.plasmid.api.template.processor;
+package xyz.nucleoid.plasmid.api.map.template.processor;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.context.ContextParameterMap;
 import xyz.nucleoid.map_templates.MapTemplate;
-import xyz.nucleoid.plasmid.api.game.GameActivity;
 
 import java.util.Map;
 
@@ -24,7 +24,7 @@ public record ReplaceBlockEntitiesTemplateProcessor(Map<String, String> searchAn
     }
 
     @Override
-    public void processTemplate(GameActivity activity, MapTemplate template) {
+    public void processTemplate(MapTemplate template, ContextParameterMap.Builder parameters) {
         template.getBounds().forEach(pos -> {
             var nbtCompound = template.getBlockEntityNbt(pos);
             if (nbtCompound instanceof NbtCompound) {

@@ -8,7 +8,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.SimpleRegistry;
 import xyz.nucleoid.plasmid.api.game.GameType;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.api.template.processor.MapTemplateProcessorType;
+import xyz.nucleoid.plasmid.api.map.template.processor.MapTemplateProcessorType;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;
 import xyz.nucleoid.plasmid.impl.portal.menu.MenuEntryConfig;
 

@@ -1,14 +1,15 @@
-package xyz.nucleoid.plasmid.api.template.processor;
+package xyz.nucleoid.plasmid.api.map.template.processor;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.Block;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
+import net.minecraft.util.context.ContextParameterMap;
+import net.minecraft.util.context.ContextType;
 import xyz.nucleoid.map_templates.MapTemplate;
-import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameOpenException;
-import xyz.nucleoid.plasmid.api.game.attachment.PlasmidGameAttachments;
+import xyz.nucleoid.plasmid.api.map.MapLoadContexts;
 import xyz.nucleoid.plasmid.api.util.ColoredBlocks;
 import xyz.nucleoid.plasmid.api.util.ColoredItems;
 
@@ -18,20 +19,19 @@ import java.util.List;
 /**
  * Template processor that recolors blocks and items found in block entities (by their ID) in a template with team-specific colors.
  *
- * <p><strong>This processor requires {@link PlasmidGameAttachments#TEAM_LIST} be attached to your activity before loading the processors.</strong>
+ * <p><strong>This processor requires {@link MapLoadContexts#TEAM_LIST} in the parameters before loading the processors.</strong>
  *
  * @param baseColors the colors to recolor. Each entry must correspond to a team of the loaded game.
- *
+ * @author Hugman
  * @see ColoredBlocks
  * @see ColoredItems
- *
  * @see ReplaceBlocksTemplateProcessor
  * @see ReplaceBlockEntitiesTemplateProcessor
- *
- * @author Hugman
  */
 public record TeamColorMapTemplateProcessor(List<DyeColor> baseColors) implements MapTemplateProcessor {
     public static final MapCodec<TeamColorMapTemplateProcessor> CODEC = DyeColor.CODEC.listOf().fieldOf("base_colors").xmap(TeamColorMapTemplateProcessor::new, TeamColorMapTemplateProcessor::baseColors);
+
+    private static final ContextType CONTEXT_TYPE = new ContextType.Builder().require(MapLoadContexts.TEAM_LIST).build();
 
     @Override
     public MapTemplateProcessorType<?> getType() {
@@ -39,8 +39,9 @@ public record TeamColorMapTemplateProcessor(List<DyeColor> baseColors) implement
     }
 
     @Override
-    public void processTemplate(GameActivity activity, MapTemplate template) {
-        var teamList = activity.getGameSpace().getAttachmentOrThrow(PlasmidGameAttachments.TEAM_LIST).list();
+    public void processTemplate(MapTemplate template, ContextParameterMap.Builder parameters) {
+        parameters.build(CONTEXT_TYPE);
+        var teamList = parameters.getOrThrow(MapLoadContexts.TEAM_LIST).list();
 
         if (teamList.size() > this.baseColors.size()) {
             throw new GameOpenException(Text.literal("Not enough base colors provided for the number of teams."));
@@ -68,11 +69,11 @@ public record TeamColorMapTemplateProcessor(List<DyeColor> baseColors) implement
             blockEntityReplace.put(Registries.ITEM.getId(ColoredItems.harness(baseColor)).toString(), Registries.ITEM.getId(ColoredItems.harness(teamColor)).toString());
         }
 
-        new ReplaceBlocksTemplateProcessor(blockMap).processTemplate(activity, template);
+        new ReplaceBlocksTemplateProcessor(blockMap).processTemplate(template, parameters);
 
         for (var entry : blockMap.entrySet()) {
             blockEntityReplace.put(Registries.BLOCK.getId(entry.getKey()).toString(), Registries.BLOCK.getId(entry.getValue()).toString());
         }
-        new ReplaceBlockEntitiesTemplateProcessor(blockEntityReplace).processTemplate(activity, template);
+        new ReplaceBlockEntitiesTemplateProcessor(blockEntityReplace).processTemplate(template, parameters);
     }
 }

@@ -1,4 +1,4 @@
-package xyz.nucleoid.plasmid.api.template.processor;
+package xyz.nucleoid.plasmid.api.map.template.processor;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -6,8 +6,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Property;
+import net.minecraft.util.context.ContextParameterMap;
 import xyz.nucleoid.map_templates.MapTemplate;
-import xyz.nucleoid.plasmid.api.game.GameActivity;
 
 import java.util.Map;
 
@@ -27,7 +27,7 @@ public record ReplaceBlocksTemplateProcessor(Map<Block, Block> blocks) implement
     }
 
     @Override
-    public void processTemplate(GameActivity activity, MapTemplate template) {
+    public void processTemplate(MapTemplate template, ContextParameterMap.Builder parameters) {
         template.getBounds().forEach(pos -> {
             var state = template.getBlockState(pos);
             var block = state.getBlock();

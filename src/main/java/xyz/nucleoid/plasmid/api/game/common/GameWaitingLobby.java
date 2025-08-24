@@ -1,6 +1,7 @@
 package xyz.nucleoid.plasmid.api.game.common;
 
 import eu.pb4.polymer.core.api.utils.PolymerUtils;
+import eu.pb4.sgui.api.GuiHelpers;
 import net.minecraft.entity.boss.BossBar;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -212,8 +213,12 @@ public final class GameWaitingLobby {
                 this.countdownStart = -1;
             } else {
                 for (var player : this.gameSpace.getPlayers()) {
-                    player.closeHandledScreen();
-                    PolymerUtils.reloadInventory(player);
+                    var gui = GuiHelpers.getCurrentGui(player);
+
+                    if (gui instanceof WaitingLobbyUi) {
+                        player.onHandledScreenClosed();
+                        PolymerUtils.reloadInventory(player);
+                    }
                 }
             }
         }

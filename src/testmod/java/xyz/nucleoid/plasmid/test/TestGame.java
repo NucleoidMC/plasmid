@@ -18,7 +18,6 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextCodecs;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextParameterMap;
@@ -53,7 +52,6 @@ import xyz.nucleoid.stimuli.event.block.BlockUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -74,31 +72,20 @@ public final class TestGame {
         return context.open(activity -> {
             var gameSpace = activity.getGameSpace();
 
-            int teamCount = context.config().teamCount();
+            activity.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
+            activity.listen(GamePlayerEvents.ACCEPT, acceptor ->
+                    acceptor.teleport(world, new Vec3d(0.0, 65.0, 0.0))
+                            .thenRunForEach(joiningPlayer -> {
+                                joiningPlayer.changeGameMode(GameMode.ADVENTURE);
+                            })
+            );
 
-            GameTeamList teamList = null;
-            if (teamCount > 0) {
-                var random = context.server().getOverworld().getRandom();
-                var teams = new ArrayList<GameTeam>();
+            GameWaitingLobby.addTo(activity, context.config().players());
 
-                for (int i = 0; i < teamCount; i++) {
-                    var dyeColor = Util.getRandom(DyeColor.values(), random);
-                    var color = Colors.from(dyeColor);
-
-                    var name = Text.literal("<Team " + i + ">");
-
-                    var key = new GameTeamKey("team_" + i);
-
-                    var config = GameTeamConfig.builder()
-                            .setName(name)
-                            .setColors(color)
-                            .build();
-
-                    teams.add(new GameTeam(key, config));
-                }
-
-                teamList = new GameTeamList(teams);
-            }
+            context.config().teams().ifPresent(teamListProvider -> {
+                var teamList = teamListProvider.get(world.getRandom());
+                TeamSelectionLobby.addTo(activity, teamList);
+            });
 
             activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
 

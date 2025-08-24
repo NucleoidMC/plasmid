@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.nucleoid.plasmid.api.event.GameEvents;
 import xyz.nucleoid.plasmid.api.game.GameTypes;
+import xyz.nucleoid.plasmid.api.game.common.team.provider.TeamListProviderTypes;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.api.map.template.processor.MapTemplateProcessorTypes;
 import xyz.nucleoid.plasmid.api.portal.GamePortalConfigs;
@@ -41,6 +42,7 @@ public final class Plasmid implements ModInitializer {
         Reflection.initialize(GamePortalConfigs.class);
         Reflection.initialize(MenuEntryConfigs.class);
         Reflection.initialize(GameTypes.class);
+        Reflection.initialize(TeamListProviderTypes.class);
         Reflection.initialize(MapTemplateProcessorTypes.class);
 
         this.registerCallbacks();

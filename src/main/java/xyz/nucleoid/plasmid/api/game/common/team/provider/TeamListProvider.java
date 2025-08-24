@@ -17,7 +17,7 @@ import java.util.function.Function;
  * @see TeamListProviderTypes
  */
 public interface TeamListProvider {
-    Codec<TeamListProvider> CODEC = Codec.either(IntProvider.POSITIVE_CODEC, Codec.either(GameTeamList.CODEC, PlasmidRegistries.TEAM_LIST_PROVIDER_TYPE.getCodec().dispatch(TeamListProvider::getCodec, Function.identity())
+    Codec<TeamListProvider> CODEC = Codec.either(IntProvider.POSITIVE_CODEC, Codec.either(GameTeamList.CODEC, ((Codec<TeamListProvider>)PlasmidRegistries.TEAM_LIST_PROVIDER_TYPE.getCodec().dispatch(TeamListProvider::getCodec, Function.identity()))
     ).xmap(
             either -> either.map(TeamListProvider::of, provider -> provider),
             provider -> provider instanceof ConstantTeamListProvider constant ?

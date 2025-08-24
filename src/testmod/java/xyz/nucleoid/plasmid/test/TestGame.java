@@ -1,10 +1,6 @@
 package xyz.nucleoid.plasmid.test;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ButtonBlock;
-import net.minecraft.block.LeavesBlock;
+import net.minecraft.block.*;
 import net.minecraft.block.enums.BlockFace;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.decoration.DisplayEntity;
@@ -18,8 +14,8 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextCodecs;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextParameterMap;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -31,14 +27,9 @@ import xyz.nucleoid.map_templates.BlockBounds;
 import xyz.nucleoid.map_templates.MapEntity;
 import xyz.nucleoid.map_templates.MapTemplate;
 import xyz.nucleoid.plasmid.api.game.*;
-import xyz.nucleoid.plasmid.api.game.common.team.*;
-import xyz.nucleoid.plasmid.api.game.common.team.GameTeamConfig.Colors;
-import xyz.nucleoid.plasmid.api.map.MapLoadContexts;
-import xyz.nucleoid.plasmid.api.map.template.processor.TeamColorMapTemplateProcessor;
-import xyz.nucleoid.plasmid.api.util.ColoredBlocks;
-import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
 import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
+import xyz.nucleoid.plasmid.api.game.common.team.*;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
@@ -46,7 +37,11 @@ import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.api.game.stats.GameStatisticBundle;
 import xyz.nucleoid.plasmid.api.game.stats.StatisticKey;
 import xyz.nucleoid.plasmid.api.game.world.generator.TemplateChunkGenerator;
+import xyz.nucleoid.plasmid.api.map.MapLoadContexts;
+import xyz.nucleoid.plasmid.api.map.template.processor.TeamColorMapTemplateProcessor;
+import xyz.nucleoid.plasmid.api.util.ColoredBlocks;
 import xyz.nucleoid.plasmid.api.util.WoodType;
+import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.block.BlockUseEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
@@ -72,22 +67,11 @@ public final class TestGame {
         return context.open(activity -> {
             var gameSpace = activity.getGameSpace();
 
-            activity.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
-            activity.listen(GamePlayerEvents.ACCEPT, acceptor ->
-                    acceptor.teleport(world, new Vec3d(0.0, 65.0, 0.0))
-                            .thenRunForEach(joiningPlayer -> {
-                                joiningPlayer.changeGameMode(GameMode.ADVENTURE);
-                            })
-            );
-
-            GameWaitingLobby.addTo(activity, context.config().players());
-
-            context.config().teams().ifPresent(teamListProvider -> {
-                var teamList = teamListProvider.get(world.getRandom());
-                TeamSelectionLobby.addTo(activity, teamList);
-            });
-
-            activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
+            GameTeamList teamList = context.config().teams().map(teamListProvider -> {
+                var teams = teamListProvider.get(context.server().getOverworld().getRandom());
+                TeamSelectionLobby.addTo(activity, teams);
+                return teams;
+            }).orElse(null);
 
             var template = TestGame.generateMapTemplate(context.game().config().state(), teamList);
 
@@ -110,8 +94,6 @@ public final class TestGame {
             );
 
             GameWaitingLobby.addTo(activity, context.config().players());
-
-            TeamSelectionLobby.addTo(activity, teamList);
 
             activity.allow(GameRuleType.PVP).allow(GameRuleType.MODIFY_ARMOR);
             activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);
@@ -146,7 +128,6 @@ public final class TestGame {
             });
 
             activity.listen(GameActivityEvents.REQUEST_START, () -> startGame(gameSpace));
-
         });
     }
 
@@ -248,13 +229,16 @@ public final class TestGame {
                 y--;
             }
 
+            if (teamList == null) {
+                return template;
+            }
             y = 66 + DyeColor.values().length;
             int i = 0;
-            for(var dyeColor : DyeColor.values()) {
-                int x = -2-WOOD_TYPE_BLOCK_FIELDS.size();
+            for (var dyeColor : DyeColor.values()) {
+                int x = -2 - WOOD_TYPE_BLOCK_FIELDS.size();
                 mut.setY(y--);
 
-                if(teamList.list().size() > i) {
+                if (teamList.list().size() > i) {
                     var displayNbt = new NbtCompound();
                     displayNbt.putString("id", EntityType.getId(EntityType.TEXT_DISPLAY).toString());
                     displayNbt.put("text", TextCodecs.CODEC, teamList.list().get(i++).config().name());
@@ -272,7 +256,6 @@ public final class TestGame {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-
 
         return template;
     }

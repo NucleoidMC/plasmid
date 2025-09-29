@@ -24,8 +24,8 @@ public abstract class TridentEntityMixin extends PersistentProjectileEntity {
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void tick(CallbackInfo ci) {
-        if (!this.dealtDamage && this.getY() <= this.getWorld().getBottomY() && !this.getWorld().isClient()) {
-            var gameSpace = GameSpaceManagerImpl.get().byWorld(this.getWorld());
+        if (!this.dealtDamage && this.getY() <= this.getEntityWorld().getBottomY() && !this.getEntityWorld().isClient()) {
+            var gameSpace = GameSpaceManagerImpl.get().byWorld(this.getEntityWorld());
             if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.TRIDENTS_LOYAL_IN_VOID) == EventResult.ALLOW) {
                 this.dealtDamage = true;
                 this.setVelocity(0.0, 0.0, 0.0);

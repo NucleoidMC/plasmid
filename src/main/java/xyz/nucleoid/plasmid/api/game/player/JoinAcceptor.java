@@ -36,7 +36,7 @@ public interface JoinAcceptor {
     default Set<UUID> playerIds() {
         return this.players()
                 .stream()
-                .map(GameProfile::getId)
+                .map(GameProfile::id)
                 .collect(Collectors.toSet());
     }
 
@@ -46,7 +46,7 @@ public interface JoinAcceptor {
     default Set<String> playerNames() {
         return this.players()
                 .stream()
-                .map(GameProfile::getName)
+                .map(GameProfile::name)
                 .collect(Collectors.toSet());
     }
 

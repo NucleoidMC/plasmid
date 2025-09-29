@@ -17,7 +17,7 @@ public record PlayerRef(UUID id) {
     }
 
     public static PlayerRef of(GameProfile profile) {
-        return new PlayerRef(profile.getId());
+        return new PlayerRef(profile.id());
     }
 
     public static PlayerRef ofUnchecked(UUID id) {

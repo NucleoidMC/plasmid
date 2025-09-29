@@ -28,7 +28,7 @@ public final class SingleGamePortalBackend implements GameConfigGamePortalBacken
 
     @Override
     public void applyTo(ServerPlayerEntity player, boolean alt) {
-        CompletableFuture.supplyAsync(() -> this.getOrOpen(player.getServer()))
+        CompletableFuture.supplyAsync(() -> this.getOrOpen(player.getEntityWorld().getServer()))
                 .thenCompose(Function.identity())
                 .handleAsync((gameSpace, throwable) -> {
                     GameResult result;
@@ -43,7 +43,7 @@ public final class SingleGamePortalBackend implements GameConfigGamePortalBacken
                     }
 
                     return null;
-                }, player.getServer());
+                }, player.getEntityWorld().getServer());
     }
 
     @Override

@@ -398,7 +398,7 @@ public final class TeamManager implements Iterable<GameTeam> {
     }
 
     private TeamS2CPacket changePlayerTeam(ServerPlayerEntity player, State team, TeamS2CPacket.Operation operation) {
-        return TeamS2CPacket.changePlayerTeam(team.scoreboardTeam, player.getGameProfile().getName(), operation);
+        return TeamS2CPacket.changePlayerTeam(team.scoreboardTeam, player.getGameProfile().name(), operation);
     }
 
     private PlayerListS2CPacket updatePlayerName(ServerPlayerEntity player) {

@@ -41,7 +41,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             return;
         }
 
-        if (!this.getWorld().isClient()) {
+        if (!this.getEntityWorld().isClient()) {
             var serverPlayer = (ServerPlayerEntity) (Object) this;
 
             var gameSpace = GameSpaceManagerImpl.get().byPlayer(serverPlayer);

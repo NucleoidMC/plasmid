@@ -42,7 +42,7 @@ public class GameJoinUi extends SimpleGui {
     }
 
     private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace, JoinIntent joinIntent) {
-        player.getServer().execute(() -> {
+        player.getEntityWorld().getServer().execute(() -> {
             var result = GamePlayerJoiner.tryJoin(player, gameSpace, joinIntent);
             if (result.isError()) {
                 player.sendMessage(result.errorCopy().formatted(Formatting.RED));

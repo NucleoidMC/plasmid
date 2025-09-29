@@ -5,9 +5,10 @@ import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
 import eu.pb4.sidebars.api.SidebarUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.EntityPosition;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.entity.player.PlayerPosition;
+import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
@@ -45,6 +46,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public final class JankGame {
     private static ArmorStandEntity CAMERA = new ArmorStandEntity(PolymerCommonUtils.getFakeWorld(), 0, 80, 0);
@@ -147,9 +149,25 @@ public final class JankGame {
 
             activity.listen(GamePlayerEvents.ADD, player -> {
                 Consumer<Packet<?>> watchingSender = player.networkHandler::sendPacket;
-                var filteredWatchingSender = getFilteredPacketSender(player.getUuid(), watchingSender);
 
-                player.networkHandler.sendPacket(CAMERA.createSpawnPacket(new EntityTrackerEntry(world, CAMERA, 1, false, watchingSender, filteredWatchingSender)));
+                player.networkHandler.sendPacket(CAMERA.createSpawnPacket(new EntityTrackerEntry(world, CAMERA, 1, false, new EntityTrackerEntry.TrackerPacketSender() {
+                    @Override
+                    public void sendToListeners(Packet<? super ClientPlayPacketListener> packet) {
+                        watchingSender.accept(packet);
+                    }
+
+                    @Override
+                    public void sendToSelfAndListeners(Packet<? super ClientPlayPacketListener> packet) {
+                        watchingSender.accept(packet);
+                    }
+
+                    @Override
+                    public void sendToListenersIf(Packet<? super ClientPlayPacketListener> packet, Predicate<ServerPlayerEntity> predicate) {
+                        if (predicate.test(player)) {
+                            player.networkHandler.sendPacket(packet);
+                        }
+                    }
+                })));
                 player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(CAMERA.getId(), CAMERA.getDataTracker().getChangedEntries()));
                 player.networkHandler.sendPacket(VirtualEntityUtils.createRidePacket(CAMERA.getId(), IntList.of(player.getId())));
                 player.networkHandler.sendPacket(new SetCameraEntityS2CPacket(CAMERA));
@@ -189,7 +207,7 @@ public final class JankGame {
 
                 CAMERA.setPos(mover.getX(), mover.getY() + 10, mover.getZ());
                 player.networkHandler.sendPacket(EntityPositionSyncS2CPacket.create(CAMERA));
-                player.networkHandler.sendPacket(PlayerPositionLookS2CPacket.of(0, new PlayerPosition(Vec3d.ZERO, Vec3d.ZERO, 0, 0f), Set.of()));
+                player.networkHandler.sendPacket(PlayerPositionLookS2CPacket.of(0, new EntityPosition(Vec3d.ZERO, Vec3d.ZERO, 0, 0f), Set.of()));
             });
 
 

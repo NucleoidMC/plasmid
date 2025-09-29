@@ -103,7 +103,7 @@ public final class TestGame {
             activity.allow(GameRuleType.INTERACTION);
 
             activity.listen(BlockUseEvent.EVENT, (player, hand, hitResult) -> {
-                var state = player.getWorld().getBlockState(hitResult.getBlockPos());
+                var state = player.getEntityWorld().getBlockState(hitResult.getBlockPos());
 
                 if (state == BUTTON) {
                     // These should be mutually exclusive

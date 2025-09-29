@@ -32,7 +32,7 @@ public interface JoinOffer {
     default Set<UUID> playerIds() {
         return this.players()
                 .stream()
-                .map(GameProfile::getId)
+                .map(GameProfile::id)
                 .collect(Collectors.toSet());
     }
 
@@ -42,7 +42,7 @@ public interface JoinOffer {
     default Set<String> playerNames() {
         return this.players()
                 .stream()
-                .map(GameProfile::getName)
+                .map(GameProfile::name)
                 .collect(Collectors.toSet());
     }
 

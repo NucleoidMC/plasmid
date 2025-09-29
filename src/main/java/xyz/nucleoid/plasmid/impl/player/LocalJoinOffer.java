@@ -24,7 +24,7 @@ public record LocalJoinOffer(Collection<ServerPlayerEntity> serverPlayers, JoinI
     public Set<UUID> playerIds() {
         return this.serverPlayers
                 .stream()
-                .map(player -> player.getGameProfile().getId())
+                .map(player -> player.getGameProfile().id())
                 .collect(Collectors.toSet());
     }
 
@@ -32,7 +32,7 @@ public record LocalJoinOffer(Collection<ServerPlayerEntity> serverPlayers, JoinI
     public Set<String> playerNames() {
         return this.serverPlayers
                 .stream()
-                .map(player -> player.getGameProfile().getName())
+                .map(player -> player.getGameProfile().name())
                 .collect(Collectors.toSet());
     }
 

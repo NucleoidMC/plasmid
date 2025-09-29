@@ -6,7 +6,6 @@ import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.Brightness;
 import net.minecraft.entity.decoration.DisplayEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
@@ -21,7 +20,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.impl.portal.GamePortal;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalDisplay;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
@@ -33,7 +31,7 @@ public abstract class EntityMixin implements GamePortalInterface {
     public World world;
 
     @Shadow
-    public abstract Vec3d getPos();
+    public abstract Vec3d getEntityPos();
 
     @Unique
     private TextDisplayElement textDisplayElement;

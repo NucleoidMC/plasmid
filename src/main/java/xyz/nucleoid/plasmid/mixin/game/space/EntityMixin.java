@@ -20,14 +20,14 @@ import xyz.nucleoid.plasmid.impl.player.isolation.TeleportIsolated;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements TeleportIsolated {
-    @Shadow public abstract World getWorld();
+    @Shadow public abstract World getEntityWorld();
 
     @Unique
     private boolean teleportIsolation = true;
 
     @Inject(method = "teleportTo", at = @At("HEAD"), cancellable = true)
     private void preventOutOfGameTeleports(TeleportTarget teleportTarget, CallbackInfoReturnable<Object> cir) {
-        if (this.teleportIsolation && GameSpaceManager.get().byWorld(this.getWorld()) != GameSpaceManager.get().byWorld(teleportTarget.world())) {
+        if (this.teleportIsolation && GameSpaceManager.get().byWorld(this.getEntityWorld()) != GameSpaceManager.get().byWorld(teleportTarget.world())) {
             cir.setReturnValue(this);
         }
     }

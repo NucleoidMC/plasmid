@@ -122,11 +122,17 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         }
 
         ReadView playerData;
-        if (this.server.isHost(player.getGameProfile()) && userData != null) {
+        if (this.server.isHost(player.getPlayerConfigEntry()) && userData != null) {
             playerData = NbtReadView.create(ErrorReporter.EMPTY, player.getRegistryManager(), userData);
             player.readData(playerData);
         } else {
-            playerData = this.saveHandler.loadPlayerData(player, ErrorReporter.EMPTY).orElse(null);
+            playerData = this.saveHandler.loadPlayerData(player.getPlayerConfigEntry())
+                    .map(compound -> NbtReadView.create(ErrorReporter.EMPTY, player.getRegistryManager(), compound))
+                    .orElse(null);
+        }
+
+        if (playerData != null) {
+            player.readData(playerData);
         }
 
         var dimension = playerData != null ? this.getDimensionFromData(playerData) : null;
@@ -137,8 +143,6 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         }
 
         player.setServerWorld(world);
-
-        player.readGameModeData(playerData);
     }
 
     @Unique

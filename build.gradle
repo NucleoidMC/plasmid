@@ -109,7 +109,7 @@ dependencies {
 
   modImplementation include("me.lucko:fabric-permissions-api:${project.permission_api_version}")
 
-  modCompileOnly('xyz.nucleoid:disguiselib-fabric:1.3.2')
+  modCompileOnly('xyz.nucleoid:disguiselib-fabric:1.3.3')
   modCompileOnly('maven.modrinth:afkdisplay:1.1.0')
   modCompileOnly("eu.pb4:polymer-autohost:${project.polymer_version}")
   modCompileOnly("dev.emi:trinkets:3.10.0")

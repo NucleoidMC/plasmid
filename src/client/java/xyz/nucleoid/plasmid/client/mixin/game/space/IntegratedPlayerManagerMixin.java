@@ -12,7 +12,7 @@ public abstract class IntegratedPlayerManagerMixin {
 
     @ModifyExpressionValue(
             method = "savePlayerData",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/integrated/IntegratedServer;isHost(Lcom/mojang/authlib/GameProfile;)Z")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/integrated/IntegratedServer;isHost(Lnet/minecraft/server/PlayerConfigEntry;)Z")
     )
     private boolean canSavePlayerData(boolean original, ServerPlayerEntity player) {
         return original && !GameSpaceManagerImpl.get().inGame(player);

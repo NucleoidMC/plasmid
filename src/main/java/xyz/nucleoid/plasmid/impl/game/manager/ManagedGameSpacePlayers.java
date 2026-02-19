@@ -155,6 +155,24 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         return true;
     }
 
+    public void respawn(ServerPlayerEntity oldPlayer, ServerPlayerEntity respawnedPlayer) {
+        if (!this.set.contains(oldPlayer)) {
+            return;
+        }
+
+        this.set.remove(oldPlayer);
+        this.set.add(respawnedPlayer);
+
+        if (this.players.remove(oldPlayer)) {
+            this.players.add(respawnedPlayer);
+        }
+        if (this.spectators.remove(oldPlayer)) {
+            this.spectators.add(respawnedPlayer);
+        }
+
+        this.space.onPlayerRespawn(oldPlayer, respawnedPlayer);
+    }
+
     void clear() {
         this.set.clear();
     }

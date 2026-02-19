@@ -27,9 +27,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.api.game.player.RespawnResult;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.player.isolation.PlayerManagerAccess;
 import xyz.nucleoid.plasmid.impl.player.isolation.PlayerResetter;
@@ -70,6 +73,26 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         }
     }
 
+    @Redirect(
+            method = "respawnPlayer",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/network/ServerPlayerEntity;getRespawnTarget(ZLnet/minecraft/world/TeleportTarget$PostDimensionTransition;)Lnet/minecraft/world/TeleportTarget;"
+            )
+    )
+    private TeleportTarget respawnPlayer(ServerPlayerEntity player, boolean alive, TeleportTarget.PostDimensionTransition postDimensionTransition) {
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(player);
+        if (gameSpace != null) {
+            RespawnResult result = gameSpace.getBehavior().invoker(GamePlayerEvents.REQUEST_RESPAWN).onRequestRespawn(gameSpace, player);
+            if (result instanceof RespawnResult.Respawn respawn) {
+                TeleportTarget target = respawn.target();
+                return new TeleportTarget(target.world(), target.position(), target.velocity(), target.yaw(), target.pitch(), target.missingRespawnBlock(), false /*asPassenger() is ambiguous*/, target.relatives(), TeleportTarget.SEND_TRAVEL_THROUGH_PORTAL_PACKET /*mark*/);
+            }
+        }
+
+        return player.getRespawnTarget(alive, postDimensionTransition);
+    }
+
     @Inject(
             method = "respawnPlayer",
             at = @At(
@@ -86,10 +109,16 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         var gameSpace = GameSpaceManagerImpl.get().byPlayer(oldPlayer);
 
         if (gameSpace != null) {
-            gameSpace.getPlayers().remove(oldPlayer);
+            if (respawnTarget.postTeleportTransition() == TeleportTarget.SEND_TRAVEL_THROUGH_PORTAL_PACKET) {
+                gameSpace.getPlayers().respawn(oldPlayer, respawnedPlayer);
 
-            this.plasmid$loadIntoPlayer(respawnedPlayer);
-            respawnedPlayer.setServerWorld(respawnWorld);
+                gameSpace.getBehavior().invoker(GamePlayerEvents.RESPAWN).onRespawn(oldPlayer, respawnedPlayer, alive);
+            } else {
+                gameSpace.getPlayers().remove(oldPlayer);
+
+                this.plasmid$loadIntoPlayer(respawnedPlayer);
+                respawnedPlayer.setServerWorld(respawnWorld);
+            }
 
             // this is later used to apply back to the respawned player, and we want to maintain that
             var interactionManager = respawnedPlayer.interactionManager;

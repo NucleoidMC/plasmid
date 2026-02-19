@@ -257,6 +257,11 @@ public final class ManagedGameSpace implements GameSpace {
         }
     }
 
+    void onPlayerRespawn(ServerPlayerEntity oldPlayer, ServerPlayerEntity respawnedPlayer) {
+        this.manager.removePlayerFromGameSpace(this, oldPlayer);
+        this.manager.addPlayerToGameSpace(this, respawnedPlayer);
+    }
+
     void onAddWorld(RuntimeWorldHandle worldHandle) {
         this.manager.addDimensionToGameSpace(this, worldHandle.asWorld().getRegistryKey());
     }

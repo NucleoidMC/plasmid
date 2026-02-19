@@ -8,6 +8,7 @@ import xyz.nucleoid.plasmid.api.game.player.JoinAcceptor;
 import xyz.nucleoid.plasmid.api.game.player.JoinAcceptorResult;
 import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
 import xyz.nucleoid.plasmid.api.game.player.JoinOfferResult;
+import xyz.nucleoid.plasmid.api.game.player.RespawnResult;
 import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameTexts;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
@@ -200,6 +201,42 @@ public final class GamePlayerEvents {
         }
     });
 
+    /**
+     * Called when a player is about to respawn.
+     * This event is invoked before the new {@link ServerPlayerEntity} is created.
+     * <p>
+     * Listeners should return {@link RespawnResult.Respawn} with the target world to keep the player in the game.
+     * Otherwise, the player will be thrown out of the game.
+     */
+    public static final StimulusEvent<RequestRespawn> REQUEST_RESPAWN = StimulusEvent.create(RequestRespawn.class, ctx -> (gameSpace, player) -> {
+        try {
+            for (var listener : ctx.getListeners()) {
+                var result = listener.onRequestRespawn(gameSpace, player);
+                if (!(result instanceof RespawnResult.Pass)) {
+                    return result;
+                }
+            }
+        } catch (Throwable throwable) {
+            ctx.handleException(throwable);
+        }
+        return RespawnResult.PASS;
+    });
+
+    /**
+     * Called after the new player entity has been created and assigned to the correct world.
+     * <p>
+     * Should be used to make the player ready (save the new reference, set inventory...).
+     */
+    public static final StimulusEvent<Respawn> RESPAWN = StimulusEvent.create(Respawn.class, ctx -> (oldPlayer, respawnedPlayer, alive) -> {
+        try {
+            for (var listener : ctx.getListeners()) {
+                listener.onRespawn(oldPlayer, respawnedPlayer, alive);
+            }
+        } catch (Throwable throwable) {
+            ctx.handleException(throwable);
+        }
+    });
+
     public interface Add {
         void onAddPlayer(ServerPlayerEntity player);
     }
@@ -228,5 +265,13 @@ public final class GamePlayerEvents {
     public interface LeaveMessage {
         @Nullable
         Text onLeaveMessageCreation(ServerPlayerEntity player, @Nullable Text currentText, Text defaultText);
+    }
+
+    public interface RequestRespawn {
+        RespawnResult onRequestRespawn(GameSpace gameSpace, ServerPlayerEntity player);
+    }
+
+    public interface Respawn {
+        void onRespawn(ServerPlayerEntity oldPlayer, ServerPlayerEntity respawnedPlayer, boolean alive);
     }
 }

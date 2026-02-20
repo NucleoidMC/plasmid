@@ -22,7 +22,7 @@ public sealed interface RespawnResult permits RespawnResult.Pass, RespawnResult.
         static Respawn at(ServerWorld world, Vec3d pos, Vec3d velocity) {
             return at(world, pos, velocity, 0, 0);
         }
-        static Respawn at(ServerWorld world, Vec3d pos, Vec3d velocity, int yaw, int pitch) {
+        static Respawn at(ServerWorld world, Vec3d pos, Vec3d velocity, float yaw, float pitch) {
             return at(new TeleportTarget(world, pos, velocity, yaw, pitch, TeleportTarget.NO_OP));
         }
         static Respawn at(TeleportTarget target) {

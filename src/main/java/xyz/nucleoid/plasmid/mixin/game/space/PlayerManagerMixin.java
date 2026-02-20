@@ -20,6 +20,7 @@ import net.minecraft.world.PlayerSaveHandler;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
+import org.lwjgl.opengl.NVVertexArrayRange;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -86,7 +87,9 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
             RespawnResult result = gameSpace.getBehavior().invoker(GamePlayerEvents.REQUEST_RESPAWN).onRequestRespawn(gameSpace, player);
             if (result instanceof RespawnResult.Respawn respawn) {
                 TeleportTarget target = respawn.target();
-                return new TeleportTarget(target.world(), target.position(), target.velocity(), target.yaw(), target.pitch(), target.missingRespawnBlock(), false /*asPassenger() is ambiguous*/, target.relatives(), TeleportTarget.SEND_TRAVEL_THROUGH_PORTAL_PACKET /*mark*/);
+                if (target instanceof TeleportTarget(var world, var pos, var vel, var yaw, var pitch, var missing, var asPassenger, var rel, var post)) {
+                    return new TeleportTarget(world, pos, vel, yaw, pitch, missing, asPassenger, rel, TeleportTarget.SEND_TRAVEL_THROUGH_PORTAL_PACKET /*mark*/);
+                }
             }
         }
 

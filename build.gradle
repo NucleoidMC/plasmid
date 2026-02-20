@@ -4,10 +4,7 @@ plugins {
   id "com.modrinth.minotaur" version "2.+"
 }
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
-
-archivesBaseName = project.archives_base_name
+base.archivesName = project.archives_base_name
 group = project.maven_group
 
 sourceSets {
@@ -42,7 +39,7 @@ def env = System.getenv()
 def minor = env.get("MINOR_VERSION")
 
 version = "${project.mod_version}"
-def versionGame = version;
+def versionGame = version
 
 def build = env.get("BUILD_NUMBER")
 
@@ -135,6 +132,9 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
+
   withSourcesJar()
 }
 

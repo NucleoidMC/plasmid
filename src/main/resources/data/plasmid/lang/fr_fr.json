@@ -133,7 +133,7 @@
   "text.plasmid.map.delete.success": "Espace de travail '%s' supprimé !",
   "text.plasmid.map.export.success": "Carte '%s' compilée et exportée",
   "text.plasmid.map.export.vertical_bounds_warning.line.2": "Il se peut que vous souhaitiez modifier l'origine de la carte.",
-  "text.plasmid.map.export.vertical_bounds_warning.line.3": "(Note : l'origine de la carte correspond à la position que deviendra (0, 0, 0) lors de l'exportation)",
+  "text.plasmid.map.export.vertical_bounds_warning.line.3": "(Note : l'origine de la carte correspond à la position que deviendra (0, 0, 0) lors de l'exportation)",
   "text.plasmid.map.import.no_template_found": "Aucun modèle n'a été trouvé à '%s' !",
   "text.plasmid.game.portal.disconnect.block": "Tous les portails du bloc à (%1$s ; %2$s ; %3$s) déconnectés"
 }

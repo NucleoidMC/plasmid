@@ -137,5 +137,11 @@
   "text.plasmid.team_selection.suffixed_team": "Equipo %s",
   "text.plasmid.test": "Prueba",
   "statistic.plasmid.points": "Puntos",
-  "statistic.plasmid.quickest_time": "Tiempo más rápido"
+  "statistic.plasmid.quickest_time": "Tiempo más rápido",
+  "text.plasmid.game.kick": "¡%s fue expulsado del juego!",
+  "text.plasmid.game.kick.by": "¡%s fue expulsado del juego por %s!",
+  "text.plasmid.game.open.opened.testing": "¡%1$s ha abierto %2$s para testeo! ",
+  "text.plasmid.ui.game_join.spectators": "Actualmente observando: %s",
+  "text.plasmid.ui.game_join.action.play": "¡Haz clic para jugar!",
+  "text.plasmid.ui.game_join.action.spectate": "¡Haz clic para observar!"
 }

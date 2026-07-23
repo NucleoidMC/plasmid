@@ -437,6 +437,17 @@ public final class GameWaitingLobby {
             return true;
         }
 
+        // if all filtered players are in this lobby
+        int playersThatCanJoin = 0;
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if (this.gameSpace.isPlayerAllowed(PlayerRef.of(player))) {
+                playersThatCanJoin++;
+            }
+        }
+        if (count >= playersThatCanJoin) {
+            return true;
+        }
+
         // if there are no players outside of a game on the server
         for (var world : server.getAllLevels()) {
             if (hasActivePlayer(world) && !GameSpaceManagerImpl.get().hasGame(world)) {

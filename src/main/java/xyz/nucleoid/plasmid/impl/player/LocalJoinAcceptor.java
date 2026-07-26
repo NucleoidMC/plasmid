@@ -1,11 +1,6 @@
 package xyz.nucleoid.plasmid.impl.player;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameMode;
 import xyz.nucleoid.plasmid.api.game.player.JoinAcceptor;
 import xyz.nucleoid.plasmid.api.game.player.JoinAcceptorResult;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
@@ -14,16 +9,20 @@ import xyz.nucleoid.plasmid.api.util.PlayerPos;
 
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.Vec3;
 
-public record LocalJoinAcceptor(Collection<ServerPlayerEntity> serverPlayers, JoinIntent intent) implements JoinAcceptor {
+public record LocalJoinAcceptor(Collection<ServerPlayer> serverPlayers, JoinIntent intent) implements JoinAcceptor {
     @Override
     public Set<GameProfile> players() {
         return this.serverPlayers
                 .stream()
-                .map(PlayerEntity::getGameProfile)
+                .map(Player::getGameProfile)
                 .collect(Collectors.toSet());
     }
 
@@ -31,7 +30,7 @@ public record LocalJoinAcceptor(Collection<ServerPlayerEntity> serverPlayers, Jo
     public Set<UUID> playerIds() {
         return this.serverPlayers
                 .stream()
-                .map(player -> player.getGameProfile().getId())
+                .map(player -> player.getGameProfile().id())
                 .collect(Collectors.toSet());
     }
 
@@ -39,13 +38,13 @@ public record LocalJoinAcceptor(Collection<ServerPlayerEntity> serverPlayers, Jo
     public Set<String> playerNames() {
         return this.serverPlayers
                 .stream()
-                .map(player -> player.getGameProfile().getName())
+                .map(player -> player.getGameProfile().name())
                 .collect(Collectors.toSet());
     }
 
     @Override
     public JoinAcceptorResult.Teleport teleport(Map<UUID, PlayerPos> positions) {
-        if (this.serverPlayers.stream().anyMatch(player -> !positions.containsKey(player.getUuid()))) {
+        if (this.serverPlayers.stream().anyMatch(player -> !positions.containsKey(player.getUUID()))) {
             throw new IllegalArgumentException("Positions for all players must be specified");
         }
         return new LocalJoinAcceptor.Teleport(positions);
@@ -55,18 +54,18 @@ public record LocalJoinAcceptor(Collection<ServerPlayerEntity> serverPlayers, Jo
     public JoinAcceptorResult.Teleport teleport(Function<GameProfile, PlayerPos> positions) {
         return new LocalJoinAcceptor.Teleport(
                 this.serverPlayers.stream().collect(Collectors.toMap(
-                        ServerPlayerEntity::getUuid,
+                        ServerPlayer::getUUID,
                         player -> positions.apply(player.getGameProfile())
                 ))
         );
     }
 
     @Override
-    public JoinAcceptorResult.Teleport teleport(ServerWorld world, Vec3d position, float yaw, float pitch) {
-        var playerPos = new PlayerPos(world, position, yaw, pitch);
+    public JoinAcceptorResult.Teleport teleport(ServerLevel level, Vec3 position, float yaw, float pitch) {
+        var playerPos = new PlayerPos(level, position, yaw, pitch);
         return new LocalJoinAcceptor.Teleport(
                 this.serverPlayers.stream().collect(Collectors.toMap(
-                        ServerPlayerEntity::getUuid,
+                        ServerPlayer::getUUID,
                         player -> playerPos
                 ))
         );
@@ -93,11 +92,11 @@ public record LocalJoinAcceptor(Collection<ServerPlayerEntity> serverPlayers, Jo
             }
         }
 
-        public ServerWorld applyTeleport(ServerPlayerEntity player) {
-            var pos = this.positions.get(player.getUuid());
+        public ServerLevel applyTeleport(ServerPlayer player) {
+            var pos = this.positions.get(player.getUUID());
 
-            player.changeGameMode(GameMode.SURVIVAL);
-            player.refreshPositionAndAngles(
+            player.setGameMode(GameType.SURVIVAL);
+            player.snapTo(
                     pos.x(),
                     pos.y(),
                     pos.z(),

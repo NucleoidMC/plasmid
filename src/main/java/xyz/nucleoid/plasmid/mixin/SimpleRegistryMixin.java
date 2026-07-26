@@ -1,47 +1,48 @@
 package xyz.nucleoid.plasmid.mixin;
 
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.SimpleRegistry;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryInfo;
-import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import xyz.nucleoid.plasmid.api.game.GameType;
+import xyz.nucleoid.plasmid.api.game.GameTypes;
 import xyz.nucleoid.plasmid.api.game.config.CustomValuesConfig;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.api.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.api.registry.PlasmidRegistryKeys;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.impl.PlasmidConfig;
 
 import java.util.Map;
-import java.util.stream.Collectors;
+import net.minecraft.core.Holder;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.RegistrationInfo;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 
 @Deprecated
-@Mixin(SimpleRegistry.class)
+@Mixin(MappedRegistry.class)
 public abstract class SimpleRegistryMixin {
-    @Shadow public abstract RegistryKey<? extends Registry<Object>> getKey();
+    @Shadow
+    public abstract ResourceKey<? extends Registry<Object>> key();
 
-    @Shadow @Final private Map<RegistryKey<Object>, RegistryEntry.Reference<Object>> keyToEntry;
+    @Shadow
+    @Final
+    private Map<ResourceKey<Object>, Holder.Reference<Object>> byKey;
 
-    @Shadow public abstract RegistryEntry.Reference<Object> add(RegistryKey<Object> key, Object value, RegistryEntryInfo info);
+    @Shadow
+    public abstract Holder.Reference<Object> register(ResourceKey<Object> key, Object value, RegistrationInfo info);
 
     @Inject(method = "freeze", at = @At("HEAD"))
     private void maybeRegisterInvalidConfigs(CallbackInfoReturnable<Registry<Object>> cir) {
-        if (!PlasmidConfig.get().ignoreInvalidGames() || !this.getKey().equals(GameConfigs.REGISTRY_KEY)) {
+        if (!PlasmidConfig.get().ignoreInvalidGames() || !this.key().equals(PlasmidRegistryKeys.GAME_CONFIG)) {
             return;
         }
-        var type = (GameType<Object>) GameType.REGISTRY.get(Identifier.of(Plasmid.ID, "invalid"));
 
-        var keys = this.keyToEntry.entrySet().stream().filter((entry) -> !entry.getValue().hasKeyAndValue()).toList();
+        var keys = this.byKey.entrySet().stream().filter((entry) -> !entry.getValue().isBound()).toList();
         for (var key : keys) {
-            Plasmid.LOGGER.error("Something depends on non-existing game config '{}'!", key.getKey().getValue());
-            this.add(key.getKey(), new GameConfig<>(type, null, null, null, null, CustomValuesConfig.empty(), key.getKey().getValue().toString()),RegistryEntryInfo.DEFAULT);
+            Plasmid.LOGGER.error("Something depends on non-existing game config '{}'!", key.getKey().identifier());
+            this.register(key.getKey(), new GameConfig<>(GameTypes.INVALID, null, null, null, null, CustomValuesConfig.empty(), key.getKey().identifier().toString()), RegistrationInfo.BUILT_IN);
         }
     }
 }

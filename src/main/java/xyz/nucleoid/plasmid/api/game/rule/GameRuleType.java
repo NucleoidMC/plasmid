@@ -1,9 +1,5 @@
 package xyz.nucleoid.plasmid.api.game.rule;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.block.TntBlock;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.tag.DamageTypeTags;
 import xyz.nucleoid.stimuli.event.DroppedItemsResult;
 import xyz.nucleoid.stimuli.event.EventRegistrar;
 import xyz.nucleoid.stimuli.event.EventResult;
@@ -28,6 +24,10 @@ import xyz.nucleoid.stimuli.event.world.IceMeltEvent;
 import xyz.nucleoid.stimuli.event.world.NetherPortalOpenEvent;
 
 import java.util.Comparator;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.TntBlock;
 
 public final class GameRuleType {
     public static final Comparator<GameRuleType> COMPARATOR = Comparator.comparing(type -> type.priority);
@@ -46,7 +46,7 @@ public final class GameRuleType {
 
     public static final GameRuleType PVP = GameRuleType.create()
             .enforces(PlayerDamageEvent.EVENT, result -> (player, source, amount) -> {
-                if (source.getSource() instanceof PlayerEntity) {
+                if (source.getDirectEntity() instanceof Player) {
                     return result;
                 } else {
                     return EventResult.PASS;
@@ -60,7 +60,7 @@ public final class GameRuleType {
 
     public static final GameRuleType FALL_DAMAGE = GameRuleType.create()
             .enforces(PlayerDamageEvent.EVENT, result -> (player, source, amount) -> {
-                if (source.isIn(DamageTypeTags.IS_FALL)) {
+                if (source.is(DamageTypeTags.IS_FALL)) {
                     return result;
                 } else {
                     return EventResult.PASS;
@@ -96,8 +96,8 @@ public final class GameRuleType {
     public static final GameRuleType UNSTABLE_TNT = GameRuleType.create()
             .enforces(BlockPlaceEvent.AFTER, result -> (player, world, pos, state) -> {
                 if (result != EventResult.DENY && state.getBlock() == Blocks.TNT) {
-                    TntBlock.primeTnt(player.getWorld(), pos, player);
-                    player.getWorld().setBlockState(pos, Blocks.AIR.getDefaultState());
+                    TntBlock.prime(player.level(), pos, player);
+                    player.level().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
                 }
             });
 

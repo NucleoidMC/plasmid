@@ -1,15 +1,15 @@
 package xyz.nucleoid.plasmid.impl.player;
 
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.player.PlayerSet;
 
 import java.util.Iterator;
 import java.util.UUID;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
 
-public record ServerPlayerSet(PlayerManager players) implements PlayerSet {
+public record ServerPlayerSet(PlayerList players) implements PlayerSet {
     @Override
     public boolean contains(UUID id) {
         return this.players.getPlayer(id) != null;
@@ -17,17 +17,17 @@ public record ServerPlayerSet(PlayerManager players) implements PlayerSet {
 
     @Override
     @Nullable
-    public ServerPlayerEntity getEntity(UUID id) {
+    public ServerPlayer getEntity(UUID id) {
         return this.players.getPlayer(id);
     }
 
     @Override
     public int size() {
-        return this.players.getPlayerList().size();
+        return this.players.getPlayers().size();
     }
 
     @Override
-    public @NotNull Iterator<ServerPlayerEntity> iterator() {
-        return this.players.getPlayerList().iterator();
+    public @NotNull Iterator<ServerPlayer> iterator() {
+        return this.players.getPlayers().iterator();
     }
 }

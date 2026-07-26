@@ -1,11 +1,11 @@
 package xyz.nucleoid.plasmid.api.game.event;
 
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.function.Consumer;
+import net.minecraft.network.chat.Component;
 
 /**
  * Events relating to the lifecycle of a {@link GameActivity} within a {@link GameSpace}.
@@ -116,7 +116,7 @@ public final class GameActivityEvents {
             return null;
         } catch (Throwable throwable) {
             ctx.handleException(throwable);
-            return GameResult.error(Text.translatable("text.plasmid.game.start_result.error"));
+            return GameResult.error(Component.translatable("text.plasmid.game.start_result.error"));
         }
     });
 

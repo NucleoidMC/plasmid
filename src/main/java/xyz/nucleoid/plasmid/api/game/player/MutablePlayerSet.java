@@ -3,8 +3,8 @@ package xyz.nucleoid.plasmid.api.game.player;
 import com.google.common.collect.AbstractIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
@@ -16,16 +16,16 @@ import java.util.UUID;
 import java.util.function.Function;
 
 public final class MutablePlayerSet implements PlayerSet {
-    private final Function<UUID, ServerPlayerEntity> playerGetter;
+    private final Function<UUID, ServerPlayer> playerGetter;
 
     private final Set<UUID> players = new ObjectOpenHashSet<>();
 
     public MutablePlayerSet(MinecraftServer server) {
-        this.playerGetter = server.getPlayerManager()::getPlayer;
+        this.playerGetter = server.getPlayerList()::getPlayer;
     }
 
-    public MutablePlayerSet(ServerWorld world) {
-        this.playerGetter = (uuid) -> world.getPlayerByUuid(uuid) instanceof ServerPlayerEntity player ? player : null;
+    public MutablePlayerSet(ServerLevel level) {
+        this.playerGetter = (uuid) -> level.getPlayerByUUID(uuid) instanceof ServerPlayer player ? player : null;
     }
 
     public MutablePlayerSet(GameSpace gameSpace) {
@@ -36,16 +36,16 @@ public final class MutablePlayerSet implements PlayerSet {
         this.players.clear();
     }
 
-    public boolean add(ServerPlayerEntity player) {
-        return this.players.add(player.getUuid());
+    public boolean add(ServerPlayer player) {
+        return this.players.add(player.getUUID());
     }
 
     public boolean add(PlayerRef ref) {
         return this.players.add(ref.id());
     }
 
-    public boolean remove(ServerPlayerEntity player) {
-        return this.players.remove(player.getUuid());
+    public boolean remove(ServerPlayer player) {
+        return this.players.remove(player.getUUID());
     }
 
     public boolean remove(PlayerRef ref) {
@@ -58,7 +58,7 @@ public final class MutablePlayerSet implements PlayerSet {
 
     @Nullable
     @Override
-    public ServerPlayerEntity getEntity(UUID id) {
+    public ServerPlayer getEntity(UUID id) {
         return this.players.contains(id) ? this.playerGetter.apply(id) : null;
     }
 
@@ -68,13 +68,13 @@ public final class MutablePlayerSet implements PlayerSet {
     }
 
     @Override
-    public @NotNull Iterator<ServerPlayerEntity> iterator() {
+    public @NotNull Iterator<ServerPlayer> iterator() {
         var playerGetter = this.playerGetter;
         var ids = this.players.iterator();
 
         return new AbstractIterator<>() {
             @Override
-            protected ServerPlayerEntity computeNext() {
+            protected ServerPlayer computeNext() {
                 while (ids.hasNext()) {
                     var id = ids.next();
                     var player = playerGetter.apply(id);

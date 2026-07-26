@@ -1,8 +1,5 @@
 package xyz.nucleoid.plasmid.api.game.common;
 
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.common.widget.BossBarWidget;
 import xyz.nucleoid.plasmid.api.game.common.widget.GameWidget;
@@ -14,7 +11,11 @@ import xyz.nucleoid.plasmid.api.game.common.widget.SidebarWidget;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Predicate;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.BossEvent;
 
 /**
  * Utilities for applying various {@link GameWidget} implementations for all players within a {@link GameSpace}.
@@ -54,7 +55,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param title the title for the sidebar
      * @return the created {@link SidebarWidget}
      */
-    public SidebarWidget addSidebar(Text title) {
+    public SidebarWidget addSidebar(Component title) {
         return this.addWidget(new SidebarWidget(title));
     }
 
@@ -73,7 +74,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param playerChecker function returning true for players that can see this sidebar
      * @return the created {@link SidebarWidget}
      */
-    public SidebarWidget addSidebar(Text title, Predicate<ServerPlayerEntity> playerChecker) {
+    public SidebarWidget addSidebar(Component title, Predicate<ServerPlayer> playerChecker) {
         return this.addWidget(new SidebarWidget(title, playerChecker));
     }
 
@@ -83,7 +84,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param playerChecker function returning true for players that can see this sidebar
      * @return the created {@link SidebarWidget}
      */
-    public SidebarWidget addSidebar(Predicate<ServerPlayerEntity> playerChecker) {
+    public SidebarWidget addSidebar(Predicate<ServerPlayer> playerChecker) {
         return this.addWidget(new SidebarWidget(playerChecker));
     }
 
@@ -93,7 +94,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param title the title for the sidebar
      * @return the created {@link SidebarWidget}
      */
-    public ScrollableSidebarWidget addScrollableSidebar(Text title, int ticksPerLine) {
+    public ScrollableSidebarWidget addScrollableSidebar(Component title, int ticksPerLine) {
         return this.addWidget(new ScrollableSidebarWidget(title, ticksPerLine));
     }
 
@@ -112,7 +113,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param playerChecker function returning true for players that can see this sidebar
      * @return the created {@link SidebarWidget}
      */
-    public ScrollableSidebarWidget addScrollableSidebar(Text title, int ticksPerLine, Predicate<ServerPlayerEntity> playerChecker) {
+    public ScrollableSidebarWidget addScrollableSidebar(Component title, int ticksPerLine, Predicate<ServerPlayer> playerChecker) {
         return this.addWidget(new ScrollableSidebarWidget(title, ticksPerLine, playerChecker));
     }
 
@@ -122,7 +123,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param playerChecker function returning true for players that can see this sidebar
      * @return the created {@link SidebarWidget}
      */
-    public ScrollableSidebarWidget addScrollableSidebar(int ticksPerLine, Predicate<ServerPlayerEntity> playerChecker) {
+    public ScrollableSidebarWidget addScrollableSidebar(int ticksPerLine, Predicate<ServerPlayer> playerChecker) {
         return this.addWidget(new ScrollableSidebarWidget(ticksPerLine, playerChecker));
     }
 
@@ -132,7 +133,7 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param title the title for the boss bar
      * @return the created {@link BossBarWidget}
      */
-    public BossBarWidget addBossBar(Text title) {
+    public BossBarWidget addBossBar(Component title) {
         return this.addWidget(new BossBarWidget(title));
     }
 
@@ -144,8 +145,8 @@ public final class GlobalWidgets implements AutoCloseable {
      * @param style the style for the bossbar
      * @return the created {@link BossBarWidget}
      */
-    public BossBarWidget addBossBar(Text title, BossBar.Color color, BossBar.Style style) {
-        return this.addWidget(new BossBarWidget(title, color, style));
+    public BossBarWidget addBossBar(Component title, BossEvent.BossBarColor color, BossEvent.BossBarOverlay style) {
+        return this.addWidget(new BossBarWidget(UUID.randomUUID(), title, color, style));
     }
 
     /**
@@ -174,13 +175,13 @@ public final class GlobalWidgets implements AutoCloseable {
         }
     }
 
-    private void onAddPlayer(ServerPlayerEntity player) {
+    private void onAddPlayer(ServerPlayer player) {
         for (var widget : this.widgets) {
             widget.addPlayer(player);
         }
     }
 
-    private void onRemovePlayer(ServerPlayerEntity player) {
+    private void onRemovePlayer(ServerPlayer player) {
         for (var widget : this.widgets) {
             widget.removePlayer(player);
         }

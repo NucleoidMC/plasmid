@@ -1,13 +1,10 @@
 package xyz.nucleoid.plasmid.mixin.game.space;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.TeleportTarget;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.portal.TeleportTransition;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,18 +14,18 @@ import xyz.nucleoid.plasmid.api.game.GameSpaceManager;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.player.isolation.TeleportIsolated;
 
-@Mixin(ServerPlayerEntity.class)
-public abstract class ServerPlayerEntityMixin extends PlayerEntity implements TeleportIsolated {
+@Mixin(ServerPlayer.class)
+public abstract class ServerPlayerEntityMixin extends Player implements TeleportIsolated {
     @Unique
     private boolean teleportIsolation = true;
 
-    private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
-        super(world, pos, yaw, profile);
+    private ServerPlayerEntityMixin(Level world, GameProfile profile) {
+        super(world, profile);
     }
 
-    @Inject(method = "teleportTo(Lnet/minecraft/world/TeleportTarget;)Lnet/minecraft/server/network/ServerPlayerEntity;", at = @At("HEAD"), cancellable = true)
-    private void preventOutOfGameTeleports(TeleportTarget teleportTarget, CallbackInfoReturnable<Object> cir) {
-        if (this.teleportIsolation && GameSpaceManager.get().byPlayer(this) != GameSpaceManager.get().byWorld(teleportTarget.world())) {
+    @Inject(method = "teleport(Lnet/minecraft/world/level/portal/TeleportTransition;)Lnet/minecraft/server/level/ServerPlayer;", at = @At("HEAD"), cancellable = true)
+    private void preventOutOfGameTeleports(TeleportTransition teleportTarget, CallbackInfoReturnable<Object> cir) {
+        if (this.teleportIsolation && GameSpaceManager.get().byPlayer(this) != GameSpaceManager.get().byLevel(teleportTarget.newLevel())) {
             cir.setReturnValue(this);
         }
     }

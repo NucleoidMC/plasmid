@@ -1,20 +1,20 @@
 package xyz.nucleoid.plasmid.api.game.player;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.util.PlayerRef;
 import xyz.nucleoid.plasmid.impl.player.EmptyPlayerSet;
 import xyz.nucleoid.plasmid.impl.player.ServerPlayerSet;
-import xyz.nucleoid.plasmid.impl.player.ServerWorldPlayerSet;
+import xyz.nucleoid.plasmid.impl.player.ServerLevelPlayerSet;
 
 import java.util.Iterator;
 import java.util.UUID;
 
 /**
- * Represents a set of {@link ServerPlayerEntity} on a server. These players are not guaranteed to be currently online,
+ * Represents a set of {@link ServerPlayer} on a server. These players are not guaranteed to be currently online,
  * but all functionality will operate only on currently online players.
  * <p>
  * Can be iterated, and additionally implements {@link PlayerOps} which allows for quickly applying various operations
@@ -26,11 +26,11 @@ public interface PlayerSet extends PlayerIterable {
     PlayerSet EMPTY = EmptyPlayerSet.INSTANCE;
 
     static PlayerSet ofServer(MinecraftServer server) {
-        return new ServerPlayerSet(server.getPlayerManager());
+        return new ServerPlayerSet(server.getPlayerList());
     }
 
-    static PlayerSet ofWorld(ServerWorld world) {
-        return new ServerWorldPlayerSet(world);
+    static PlayerSet ofLevel(ServerLevel level) {
+        return new ServerLevelPlayerSet(level);
     }
 
     /**
@@ -54,24 +54,24 @@ public interface PlayerSet extends PlayerIterable {
     }
 
     /**
-     * Queries whether this {@link PlayerSet} contains the given {@link ServerPlayerEntity}.
+     * Queries whether this {@link PlayerSet} contains the given {@link ServerPlayer}.
      *
-     * @param player the {@link ServerPlayerEntity} to query
-     * @return {@code true} if this {@link ServerPlayerEntity} is contained within this {@link PlayerSet}
+     * @param player the {@link ServerPlayer} to query
+     * @return {@code true} if this {@link ServerPlayer} is contained within this {@link PlayerSet}
      */
-    default boolean contains(ServerPlayerEntity player) {
-        return this.contains(player.getUuid());
+    default boolean contains(ServerPlayer player) {
+        return this.contains(player.getUUID());
     }
 
     /**
-     * Looks up a corresponding online {@link ServerPlayerEntity} that is contained within this {@link PlayerSet}
+     * Looks up a corresponding online {@link ServerPlayer} that is contained within this {@link PlayerSet}
      * given a player {@link UUID}.
      *
      * @param id the id to look up in this set
-     * @return the corresponding online {@link ServerPlayerEntity}, or {@code null} if not contained or offline
+     * @return the corresponding online {@link ServerPlayer}, or {@code null} if not contained or offline
      */
     @Nullable
-    ServerPlayerEntity getEntity(UUID id);
+    ServerPlayer getEntity(UUID id);
 
     /**
      * Returns the number of players contained within this {@link PlayerSet}, including offline players.
@@ -102,9 +102,9 @@ public interface PlayerSet extends PlayerIterable {
     }
 
     /**
-     * @return an iterator over the online {@link ServerPlayerEntity} within this {@link PlayerSet}
+     * @return an iterator over the online {@link ServerPlayer} within this {@link PlayerSet}
      */
     @Override
     @NotNull
-    Iterator<ServerPlayerEntity> iterator();
+    Iterator<ServerPlayer> iterator();
 }

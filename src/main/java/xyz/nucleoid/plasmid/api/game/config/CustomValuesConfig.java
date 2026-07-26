@@ -4,10 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.util.Identifier;
-
 import java.util.Map;
 import java.util.Optional;
+import net.minecraft.resources.Identifier;
 
 public final class CustomValuesConfig {
     public static final Codec<CustomValuesConfig> CODEC = Codec.unboundedMap(Identifier.CODEC, Codec.PASSTHROUGH)

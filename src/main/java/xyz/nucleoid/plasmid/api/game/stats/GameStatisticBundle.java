@@ -5,12 +5,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.server.network.ServerPlayerEntity;
 import xyz.nucleoid.plasmid.api.util.PlayerRef;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * Wrapper containing a map players' {@link StatisticMap}s
@@ -38,8 +38,8 @@ public class GameStatisticBundle {
         return this.forPlayer(player.id());
     }
 
-    public StatisticMap forPlayer(ServerPlayerEntity player) {
-        return this.forPlayer(player.getUuid());
+    public StatisticMap forPlayer(ServerPlayer player) {
+        return this.forPlayer(player.getUUID());
     }
 
     public StatisticMap forPlayer(UUID uuid) {

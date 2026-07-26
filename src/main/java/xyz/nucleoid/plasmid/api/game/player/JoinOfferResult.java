@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.api.game.player;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public sealed interface JoinOfferResult permits JoinOfferResult.Pass, JoinOfferResult.Accept, JoinOfferResult.Reject {
     Pass PASS = new Pass();
@@ -17,6 +17,6 @@ public sealed interface JoinOfferResult permits JoinOfferResult.Pass, JoinOfferR
     }
 
     non-sealed interface Reject extends JoinOfferResult {
-        Text reason();
+        Component reason();
     }
 }

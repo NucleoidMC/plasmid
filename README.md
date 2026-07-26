@@ -79,7 +79,7 @@ public record ExampleGameConfig(String greeting) {
 This will correspond to a JSON file that looks something like:
 ```json
 {
-  "greeting": "Hello World!"
+  "greeting": "Hello Level!"
 }
 ```
 
@@ -110,7 +110,7 @@ For our purposes, our game config at `data/plasmid_example/games/hello_world_exa
 ```json
 {
   "type": "plasmid_example:example",
-  "greeting": "Hello, World!"
+  "greeting": "Hello, Level!"
 }
 ```
 
@@ -119,7 +119,7 @@ This may look like:
 ```json5
 {
   "type": "plasmid_example:example",
-  "name": "Hello World Example!",
+  "name": "Hello Level Example!",
   "description": ["Look at my cool game!", "It greets you when you join."],
   "icon": "minecraft:apple"
   // ...
@@ -139,7 +139,7 @@ For example, we may define our `data/plasmid_example/lang/en_us.json` as:
 ```json
 {
   "gameType.plasmid_example.example": "Plasmid Example!",
-  "game.plasmid_example.hello_world_example": "Hello World Example!"
+  "game.plasmid_example.hello_world_example": "Hello Level Example!"
 }
 ```
 
@@ -163,11 +163,11 @@ public class ExampleGame {
         TemplateChunkGenerator generator = new TemplateChunkGenerator(context.server(), template);
 
         // set up how the world that this minigame will take place in should be constructed
-        RuntimeWorldConfig worldConfig = new RuntimeWorldConfig()
+        RuntimeLevelConfig worldConfig = new RuntimeLevelConfig()
                 .setGenerator(generator)
                 .setTimeOfDay(6000);
 
-        return context.openWithWorld(worldConfig, (activity, world) -> {
+        return context.openWithLevel(worldConfig, (activity, world) -> {
             // to be implemented
         });
     }
@@ -176,9 +176,9 @@ public class ExampleGame {
 
 There is a lot to unpack here, but it's not too complex if we break it down. Our `open` will be called whenever a player starts this game. The function takes a `GameOpenContext`, which holds the data from our JSON config (`context.config()`), and must return a `GameOpenProcedure`, which instructs Plasmid how it should continue to set up the game. It is worth nothing that this function is run asynchronously on the thread pool, so it is safe to run whatever slow code here before the game starts.
 
-The `GameOpenProcedure` is created from the `GameOpenContext.openWithWorld` function, and takes in a `RuntimeWorldConfig` as well as a lambda that accepts a `GameActivity` and `ServerWorld`. A runtime world is a concept within Plasmid that represents the fully isolated and temporary world that the game takes place within. It is automatically deleted when the game finishes. When a player joins the game, their inventory will be cleared, and when they leave, it will be restored back to them. A game activity is a specific set of logic that is running within a game: this is what we will configure to change game behaviour. We can switch the activity within a game at any point.
+The `GameOpenProcedure` is created from the `GameOpenContext.openWithLevel` function, and takes in a `RuntimeLevelConfig` as well as a lambda that accepts a `GameActivity` and `ServerLevel`. A runtime world is a concept within Plasmid that represents the fully isolated and temporary world that the game takes place within. It is automatically deleted when the game finishes. When a player joins the game, their inventory will be cleared, and when they leave, it will be restored back to them. A game activity is a specific set of logic that is running within a game: this is what we will configure to change game behaviour. We can switch the activity within a game at any point.
 
-The `RuntimeWorldConfig` describes how this world should be created. The most important thing to be configured within here is the chunk generator: this tells the game how the world should generate. It would be possible to, for example, pass the overworld chunk generator here, but for our purpose, we're creating an empty world with a single stone block. This is handled through the convenience `TemplateChunkGenerator`: this takes a `MapTemplate`, which is just a very basic world that contains some blocks! The generator then loads from that into the world itself.
+The `RuntimeLevelConfig` describes how this world should be created. The most important thing to be configured within here is the chunk generator: this tells the game how the world should generate. It would be possible to, for example, pass the overworld chunk generator here, but for our purpose, we're creating an empty world with a single stone block. This is handled through the convenience `TemplateChunkGenerator`: this takes a `MapTemplate`, which is just a very basic world that contains some blocks! The generator then loads from that into the world itself.
 
 Finally, we need to address what to do in the lambda with the `GameActivity` parameter. The code inside this lambda will run on the *main server thread*, and is used to run the actual game setup code. This mainly involves registering event listeners, or setting global rules.
 
@@ -186,7 +186,7 @@ Event tip: we make use of [Stimuli](https://github.com/NucleoidMC/stimuli) for h
 
 For example:
 ```java
-return context.openWithWorld(worldConfig, (activity, world) -> {
+return context.openWithLevel(worldConfig, (activity, world) -> {
     activity.deny(GameRuleType.FALL_DAMAGE);
 
     activity.listen(GamePlayerEvents.ADD, player -> {
@@ -225,7 +225,7 @@ activity.listen(GamePlayerEvents.ADD, player -> {
 });
 ```
 
-So we've added logic to send a message within the listener, but what is a `GameSpace`? A `GameSpace` is a concept introduced by Plasmid which, as the name implies, represents the _space_ within which a game is occurring. For all our purposes, that space is just this one dimension that the game is playing within. The `GameSpace` is useful for us in that it keeps track of all the players within it, as well as the `ServerWorld` that the game is taking place within. Here, we access the `GameSpace` through `GameActivity.getGameSpace()`.
+So we've added logic to send a message within the listener, but what is a `GameSpace`? A `GameSpace` is a concept introduced by Plasmid which, as the name implies, represents the _space_ within which a game is occurring. For all our purposes, that space is just this one dimension that the game is playing within. The `GameSpace` is useful for us in that it keeps track of all the players within it, as well as the `ServerLevel` that the game is taking place within. Here, we access the `GameSpace` through `GameActivity.getGameSpace()`.
 
 Working with players additionally goes through a different Plasmid API: a `PlayerSet`. A `PlayerSet` represents just a list of players, and it can be iterated over or queried, but additionally provides utilities for performing bulk operations over many players. For example, sending a message! Here, we use `PlayerSet.sendMessage()` to send our greeting to every player within the game.
 
@@ -236,9 +236,9 @@ Turns out, that works just fine, and we are left with our final `ExampleGame` se
 public final class ExampleGame {
     private final ExampleGameConfig config;
     private final GameSpace gameSpace;
-    private final ServerWorld world;
+    private final ServerLevel world;
 
-    public ExampleGame(ExampleGameConfig config, GameSpace gameSpace, ServerWorld world) {
+    public ExampleGame(ExampleGameConfig config, GameSpace gameSpace, ServerLevel world) {
         this.config = config;
         this.gameSpace = gameSpace;
         this.world = world;
@@ -256,11 +256,11 @@ public final class ExampleGame {
         TemplateChunkGenerator generator = new TemplateChunkGenerator(context.server(), template);
 
         // set up how the world that this minigame will take place in should be constructed
-        RuntimeWorldConfig worldConfig = new RuntimeWorldConfig()
+        RuntimeLevelConfig worldConfig = new RuntimeLevelConfig()
                 .setGenerator(generator)
                 .setTimeOfDay(6000);
 
-        return context.openWithWorld(worldConfig, (activity, world) -> {
+        return context.openWithLevel(worldConfig, (activity, world) -> {
             ExampleGame game = new ExampleGame(config, activity.getGameSpace(), world);
 
             activity.deny(GameRuleType.FALL_DAMAGE);

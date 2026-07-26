@@ -1,9 +1,8 @@
 package xyz.nucleoid.plasmid.api.game.player;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import net.minecraft.server.level.ServerPlayer;
 
 public sealed interface JoinAcceptorResult permits JoinAcceptorResult.Pass, JoinAcceptorResult.Teleport {
     Pass PASS = new Pass();
@@ -20,11 +19,11 @@ public sealed interface JoinAcceptorResult permits JoinAcceptorResult.Pass, Join
             return this.thenRun((players, intent) -> consumer.accept(players));
         }
 
-        default Teleport thenRunForEach(Consumer<ServerPlayerEntity> consumer) {
+        default Teleport thenRunForEach(Consumer<ServerPlayer> consumer) {
             return this.thenRun((players, intent) -> players.forEach(consumer));
         }
 
-        default Teleport thenRunForEach(BiConsumer<ServerPlayerEntity, JoinIntent> consumer) {
+        default Teleport thenRunForEach(BiConsumer<ServerPlayer, JoinIntent> consumer) {
             return this.thenRun((players, intent) -> players.forEach(player -> consumer.accept(player, intent)));
         }
     }

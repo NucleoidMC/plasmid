@@ -3,11 +3,11 @@ package xyz.nucleoid.plasmid.api.game.common;
 import com.google.common.hash.Hashing;
 import eu.pb4.polymer.resourcepack.api.ResourcePackCreator;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.network.packet.s2c.common.ResourcePackRemoveS2CPacket;
-import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.impl.PlasmidWebServer;
@@ -32,7 +32,7 @@ public final class GameResourcePack {
     private final String url;
     private final String hash;
     private boolean required;
-    private Text prompt;
+    private Component prompt;
 
     private boolean isLocal;
 
@@ -76,7 +76,7 @@ public final class GameResourcePack {
      *
      * @return this {@link GameResourcePack} instance
      */
-    public GameResourcePack setPrompt(Text prompt) {
+    public GameResourcePack setPrompt(Component prompt) {
         this.prompt = prompt;
         return this;
     }
@@ -92,12 +92,12 @@ public final class GameResourcePack {
         activity.listen(GamePlayerEvents.REMOVE, this::unload);
     }
 
-    private void sendTo(ServerPlayerEntity player) {
-        player.networkHandler.sendPacket(new ResourcePackSendS2CPacket(this.uuid, this.url, this.hash, this.required, Optional.ofNullable(this.prompt)));
+    private void sendTo(ServerPlayer player) {
+        player.connection.send(new ClientboundResourcePackPushPacket(this.uuid, this.url, this.hash, this.required, Optional.ofNullable(this.prompt)));
     }
 
-    private void unload(ServerPlayerEntity player) {
-        player.networkHandler.sendPacket(new ResourcePackRemoveS2CPacket(Optional.of(this.uuid)));
+    private void unload(ServerPlayer player) {
+        player.connection.send(new ClientboundResourcePackPopPacket(Optional.of(this.uuid)));
     }
 
     public static Optional<GameResourcePack> from(Identifier identifier, ResourcePackCreator creator) {
@@ -105,12 +105,9 @@ public final class GameResourcePack {
             var relative = identifier.getNamespace() + "/" + identifier.getPath() + ".zip";
             var path = RESOURCE_PACKS_ROOT.resolve(relative);
             Files.createDirectories(path.getParent());
-            creator.build(path);
-
-            var hash = com.google.common.io.Files.asByteSource(path.toFile()).hash(Hashing.sha1()).toString();
-
+            var res = creator.build(path);
             var url = PlasmidWebServer.registerResourcePack(relative, path);
-            return Optional.of(new GameResourcePack(UUID.nameUUIDFromBytes(hash.getBytes(StandardCharsets.UTF_8)), url, hash, null));
+            return Optional.of(new GameResourcePack(UUID.nameUUIDFromBytes(res.hash().getBytes(StandardCharsets.UTF_8)), url, res.hash(), null));
         } catch (Throwable e) {
             Plasmid.LOGGER.error("Failed to create a resource pack '" + identifier + "'!", e);
             return Optional.empty();

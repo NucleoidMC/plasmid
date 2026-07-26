@@ -1,21 +1,20 @@
 package xyz.nucleoid.plasmid.impl.game.manager;
 
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.player.*;
 import xyz.nucleoid.plasmid.impl.player.LocalJoinAcceptor;
 import xyz.nucleoid.plasmid.impl.player.LocalJoinOffer;
-import xyz.nucleoid.plasmid.api.game.player.MutablePlayerSet;
 import xyz.nucleoid.plasmid.impl.player.isolation.IsolatingPlayerTeleporter;
 import xyz.nucleoid.plasmid.api.game.GameCloseReason;
 import xyz.nucleoid.plasmid.api.game.GameResult;
 import xyz.nucleoid.plasmid.api.game.GameSpacePlayers;
-import xyz.nucleoid.plasmid.api.game.GameTexts;
+import xyz.nucleoid.plasmid.api.game.GameComponents;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.UUID;
+import net.minecraft.server.level.ServerPlayer;
 
 public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     private final ManagedGameSpace space;
@@ -33,9 +32,9 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
     @Override
-    public GameResult simulateOffer(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+    public GameResult simulateOffer(Collection<ServerPlayer> players, JoinIntent intent) {
         if (players.stream().anyMatch(this.set::contains)) {
-            return GameResult.error(GameTexts.Join.alreadyJoined());
+            return GameResult.error(GameComponents.Join.alreadyJoined());
         }
 
         var offer = new LocalJoinOffer(players, intent);
@@ -43,12 +42,12 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         return switch (this.space.offerPlayers(offer)) {
             case JoinOfferResult.Accept accept -> GameResult.ok();
             case JoinOfferResult.Reject reject -> GameResult.error(reject.reason());
-            default -> GameResult.error(GameTexts.Join.genericError());
+            default -> GameResult.error(GameComponents.Join.genericError());
         };
     }
 
     @Override
-    public GameResult offer(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+    public GameResult offer(Collection<ServerPlayer> players, JoinIntent intent) {
         var result = this.attemptOffer(players, intent);
 
         if (result.isError()) {
@@ -58,9 +57,9 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         return result;
     }
 
-    private GameResult attemptOffer(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+    private GameResult attemptOffer(Collection<ServerPlayer> players, JoinIntent intent) {
         if (players.stream().anyMatch(this.set::contains)) {
-            return GameResult.error(GameTexts.Join.alreadyJoined());
+            return GameResult.error(GameComponents.Join.alreadyJoined());
         }
 
         var offer = new LocalJoinOffer(players, intent);
@@ -68,11 +67,11 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         return switch (this.space.offerPlayers(offer)) {
             case JoinOfferResult.Accept accept -> this.accept(players, intent);
             case JoinOfferResult.Reject reject -> GameResult.error(reject.reason());
-            default -> GameResult.error(GameTexts.Join.genericError());
+            default -> GameResult.error(GameComponents.Join.genericError());
         };
     }
 
-    private GameResult accept(Collection<ServerPlayerEntity> players, JoinIntent intent) {
+    private GameResult accept(Collection<ServerPlayer> players, JoinIntent intent) {
         var acceptor = new LocalJoinAcceptor(players, intent);
 
         switch (this.space.acceptPlayers(acceptor)) {
@@ -91,7 +90,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
                     return GameResult.ok();
                 } catch (Throwable throwable) {
                     this.space.getLifecycle().onError(this.space, throwable, "handling LocalJoinAcceptor.Teleport");
-                    return GameResult.error(GameTexts.Join.unexpectedError());
+                    return GameResult.error(GameComponents.Join.unexpectedError());
                 }
             }
             default -> throw new IllegalStateException("Accept event must be handled");
@@ -105,7 +104,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
     @Override
-    public boolean kick(ServerPlayerEntity player) {
+    public boolean kick(ServerPlayer player) {
         if (this.remove(player)) {
             this.teleporter.teleportOut(player);
             return true;
@@ -123,7 +122,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
     @Override
-    public void modifyIntent(ServerPlayerEntity player, JoinIntent joinIntent) {
+    public void modifyIntent(ServerPlayer player, JoinIntent joinIntent) {
         this.spectators.remove(player);
         this.players.remove(player);
         this.byIntent(joinIntent).add(player);
@@ -139,7 +138,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         return this.players;
     }
 
-    public boolean remove(ServerPlayerEntity player) {
+    public boolean remove(ServerPlayer player) {
         if (!this.set.contains(player)) {
             return false;
         }
@@ -155,7 +154,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
         return true;
     }
 
-    public void respawn(ServerPlayerEntity oldPlayer, ServerPlayerEntity respawnedPlayer) {
+    public void respawn(ServerPlayer oldPlayer, ServerPlayer respawnedPlayer) {
         if (!this.set.contains(oldPlayer)) {
             return;
         }
@@ -184,7 +183,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
 
     @Override
     @Nullable
-    public ServerPlayerEntity getEntity(UUID id) {
+    public ServerPlayer getEntity(UUID id) {
         return this.set.getEntity(id);
     }
 
@@ -194,7 +193,7 @@ public final class ManagedGameSpacePlayers implements GameSpacePlayers {
     }
 
     @Override
-    public @NotNull Iterator<ServerPlayerEntity> iterator() {
+    public @NotNull Iterator<ServerPlayer> iterator() {
         return this.set.iterator();
     }
 

@@ -1,15 +1,15 @@
 package xyz.nucleoid.plasmid.api.game.player;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
-import xyz.nucleoid.plasmid.api.game.GameTexts;
+import xyz.nucleoid.plasmid.api.game.GameComponents;
 import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import net.minecraft.network.chat.Component;
 
 /**
  * Represents a request for of a player or group of players to join a {@link GameSpace}.
@@ -32,7 +32,7 @@ public interface JoinOffer {
     default Set<UUID> playerIds() {
         return this.players()
                 .stream()
-                .map(GameProfile::getId)
+                .map(GameProfile::id)
                 .collect(Collectors.toSet());
     }
 
@@ -42,7 +42,7 @@ public interface JoinOffer {
     default Set<String> playerNames() {
         return this.players()
                 .stream()
-                .map(GameProfile::getName)
+                .map(GameProfile::name)
                 .collect(Collectors.toSet());
     }
 
@@ -72,9 +72,9 @@ public interface JoinOffer {
      *
      * @param reason a text message that explains why these players were rejected
      * @return a "reject" offer result
-     * @see GameTexts.Join
+     * @see GameComponents.Join
      */
-    JoinOfferResult.Reject reject(Text reason);
+    JoinOfferResult.Reject reject(Component reason);
 
     /**
      * Returns an offer result that does nothing with this offer, passing on any handling to any other listener.
@@ -94,7 +94,7 @@ public interface JoinOffer {
      * @return an "accept" offer result for spectators and "reject" offer result for participants
      */
     default JoinOfferResult acceptSpectators() {
-        return this.acceptSpectatorsOrElse((x) -> x.reject(GameTexts.Join.spectatorsOnly()));
+        return this.acceptSpectatorsOrElse((x) -> x.reject(GameComponents.Join.spectatorsOnly()));
     }
 
     /**
@@ -119,7 +119,7 @@ public interface JoinOffer {
      * @return an "accept" offer result for participants and "reject" offer result for spectators
      */
     default JoinOfferResult acceptParticipants() {
-        return this.acceptParticipantsOrElse((x) -> x.reject(GameTexts.Join.participantsOnly()));
+        return this.acceptParticipantsOrElse((x) -> x.reject(GameComponents.Join.participantsOnly()));
     }
 
     /**

@@ -1,8 +1,5 @@
 package xyz.nucleoid.plasmid.impl.portal.game;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
@@ -10,9 +7,12 @@ import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
 
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 
 public interface GameConfigGamePortalBackend extends GamePortalBackend {
-    RegistryEntry<GameConfig<?>> game();
+    Holder<GameConfig<?>> game();
 
     @Override
     default void provideGameSpaces(Consumer<GameSpace> consumer) {
@@ -46,7 +46,7 @@ public interface GameConfigGamePortalBackend extends GamePortalBackend {
     }
 
     @Override
-    default List<Text> getDescription() {
+    default List<Component> getDescription() {
         return this.game().value().description();
     }
 
@@ -56,7 +56,7 @@ public interface GameConfigGamePortalBackend extends GamePortalBackend {
     }
 
     @Override
-    default Text getName() {
+    default Component getName() {
         return GameConfig.name(this.game());
     }
 

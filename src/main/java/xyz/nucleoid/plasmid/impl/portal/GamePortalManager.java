@@ -5,10 +5,10 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.packs.resources.ResourceManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.impl.Plasmid;
@@ -56,7 +56,7 @@ public final class GamePortalManager {
     }
 
     @ApiStatus.Internal
-    public void reload(DynamicRegistryManager registryManager, ResourceManager manager) {
+    public void reload(RegistryAccess registryManager, ResourceManager manager) {
         this.portals.clear();
 
         var configs = this.loadConfigs(registryManager, manager);
@@ -79,13 +79,13 @@ public final class GamePortalManager {
         }
     }
 
-    private Map<Identifier, GamePortalConfig> loadConfigs(DynamicRegistryManager registryManager, ResourceManager manager) {
+    private Map<Identifier, GamePortalConfig> loadConfigs(RegistryAccess registryManager, ResourceManager manager) {
         var configs = new Object2ObjectOpenHashMap<Identifier, GamePortalConfig>();
-        var ops = registryManager.getOps(JsonOps.INSTANCE);
+        var ops = registryManager.createSerializationContext(JsonOps.INSTANCE);
 
-        manager.findResources(PATH, path -> path.getPath().endsWith(".json")).forEach((path, resource) -> {
+        manager.listResources(PATH, path -> path.getPath().endsWith(".json")).forEach((path, resource) -> {
             try {
-                try (var reader = resource.getReader()) {
+                try (var reader = resource.openAsReader()) {
                     var json = JsonParser.parseReader(reader);
                     var identifier = identifierFromPath(path);
                     GamePortalConfig.CODEC.parse(ops, json)
@@ -110,7 +110,7 @@ public final class GamePortalManager {
     private static Identifier identifierFromPath(Identifier location) {
         var path = location.getPath();
         path = path.substring(PATH.length() + 1, path.length() - ".json".length());
-        return Identifier.of(location.getNamespace(), path);
+        return Identifier.fromNamespaceAndPath(location.getNamespace(), path);
     }
 
     public void tick() {
@@ -119,7 +119,7 @@ public final class GamePortalManager {
             return;
         }
 
-        long time = server.getOverworld().getTime();
+        long time = server.overworld().getGameTime();
         if (time - this.lastDisplayUpdateTime > DISPLAY_UPDATE_INTERVAL) {
             this.updatePortalDisplays();
             this.lastDisplayUpdateTime = time;

@@ -3,11 +3,11 @@ package xyz.nucleoid.plasmid.test;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.Bootstrap;
 import net.minecraft.SharedConstants;
-import net.minecraft.scoreboard.AbstractTeam;
-import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.Bootstrap;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.scores.Team;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import xyz.nucleoid.plasmid.api.game.common.team.GameTeamConfig;
@@ -18,8 +18,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class GameTeamTests {
     @BeforeAll
     public static void beforeAll() {
-        SharedConstants.createGameVersion();
-        Bootstrap.initialize();
+        SharedConstants.tryDetectVersion();
+        Bootstrap.bootStrap();
     }
 
     @Test
@@ -37,13 +37,13 @@ public class GameTeamTests {
         """;
 
         var expected = new GameTeamConfig(
-                Text.literal("Team Name"),
+                Component.literal("Team Name"),
                 Colors.from(DyeColor.BLUE),
                 true,
-                AbstractTeam.CollisionRule.NEVER,
-                AbstractTeam.VisibilityRule.NEVER,
-                Text.empty(),
-                Text.empty()
+                Team.CollisionRule.NEVER,
+                Team.Visibility.NEVER,
+                Component.empty(),
+                Component.empty()
         );
 
         assertParsedEquals(json, expected, GameTeamConfig.CODEC);
@@ -67,13 +67,13 @@ public class GameTeamTests {
         """;
 
         var expected = new GameTeamConfig(
-                Text.translatable("color.minecraft.red"),
+                Component.translatable("color.minecraft.red"),
                 Colors.from(DyeColor.RED),
                 false,
-                AbstractTeam.CollisionRule.PUSH_OTHER_TEAMS,
-                AbstractTeam.VisibilityRule.HIDE_FOR_OTHER_TEAMS,
-                Text.literal("Prefix"),
-                Text.literal("Suffix")
+                Team.CollisionRule.PUSH_OTHER_TEAMS,
+                Team.Visibility.HIDE_FOR_OTHER_TEAMS,
+                Component.literal("Prefix"),
+                Component.literal("Suffix")
         );
 
         assertParsedEquals(json, expected, GameTeamConfig.CODEC);
@@ -90,13 +90,13 @@ public class GameTeamTests {
         """;
 
         var expected = new GameTeamConfig(
-                Text.literal("Team"),
+                Component.literal("Team"),
                 Colors.NONE,
                 false,
-                AbstractTeam.CollisionRule.ALWAYS,
-                AbstractTeam.VisibilityRule.HIDE_FOR_OWN_TEAM,
-                Text.empty(),
-                Text.empty()
+                Team.CollisionRule.ALWAYS,
+                Team.Visibility.HIDE_FOR_OWN_TEAM,
+                Component.empty(),
+                Component.empty()
         );
 
         assertParsedEquals(json, expected, GameTeamConfig.CODEC);

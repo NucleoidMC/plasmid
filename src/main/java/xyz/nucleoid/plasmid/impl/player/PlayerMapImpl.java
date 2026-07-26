@@ -1,8 +1,8 @@
 package xyz.nucleoid.plasmid.impl.player;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
@@ -78,27 +78,27 @@ public record PlayerMapImpl<T>(Map<PlayerRef, T> map) implements PlayerMap<T> {
     }
 
     @Override
-    public boolean containsKey(ServerPlayerEntity key) {
+    public boolean containsKey(ServerPlayer key) {
         return this.containsKey(PlayerRef.of(key));
     }
 
     @Override
-    public T get(ServerPlayerEntity key) {
+    public T get(ServerPlayer key) {
         return this.get(PlayerRef.of(key));
     }
 
     @Override
-    public @Nullable T put(ServerPlayerEntity key, T value) {
+    public @Nullable T put(ServerPlayer key, T value) {
         return this.put(PlayerRef.of(key), value);
     }
 
     @Override
-    public T remove(ServerPlayerEntity key) {
+    public T remove(ServerPlayer key) {
         return this.remove(PlayerRef.of(key));
     }
 
     @Override
-    public void forEachPlayer(GameSpace gameSpace, BiConsumer<ServerPlayerEntity, T> consumer) {
+    public void forEachPlayer(GameSpace gameSpace, BiConsumer<ServerPlayer, T> consumer) {
         this.forEach((ref, value) -> {
             var player = ref.getEntity(gameSpace);
             if (player != null) {
@@ -108,7 +108,7 @@ public record PlayerMapImpl<T>(Map<PlayerRef, T> map) implements PlayerMap<T> {
     }
 
     @Override
-    public void forEachPlayer(ServerWorld world, BiConsumer<ServerPlayerEntity, T> consumer) {
+    public void forEachPlayer(ServerLevel world, BiConsumer<ServerPlayer, T> consumer) {
         this.forEach((ref, value) -> {
             var player = ref.getEntity(world);
             if (player != null) {
@@ -118,7 +118,7 @@ public record PlayerMapImpl<T>(Map<PlayerRef, T> map) implements PlayerMap<T> {
     }
 
     @Override
-    public void forEachPlayer(MinecraftServer server, BiConsumer<ServerPlayerEntity, T> consumer) {
+    public void forEachPlayer(MinecraftServer server, BiConsumer<ServerPlayer, T> consumer) {
         this.forEach((ref, value) -> {
             var player = ref.getEntity(server);
             if (player != null) {

@@ -2,28 +2,33 @@ package xyz.nucleoid.plasmid.impl.game.manager;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import xyz.nucleoid.fantasy.RuntimeWorldHandle;
+import xyz.nucleoid.fantasy.RuntimeLevelHandle;
 import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.api.game.player.JoinAcceptorResult;
 import xyz.nucleoid.plasmid.api.game.player.JoinOfferResult;
+import xyz.nucleoid.plasmid.api.game.player.PlayerSet;
+import xyz.nucleoid.plasmid.api.util.PlayerRef;
 import xyz.nucleoid.plasmid.impl.player.LocalJoinAcceptor;
 import xyz.nucleoid.plasmid.impl.player.LocalJoinOffer;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.api.event.GameEvents;
 
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+
+import static xyz.nucleoid.plasmid.impl.Plasmid.id;
 
 public final class ManagedGameSpace implements GameSpace {
     private final MinecraftServer server;
@@ -32,8 +37,9 @@ public final class ManagedGameSpace implements GameSpace {
     private final GameSpaceMetadata metadata;
 
     private final ManagedGameSpacePlayers players;
-    private final ManagedGameSpaceWorlds worlds;
+    private final ManagedGameSpaceLevels worlds;
 
+    private final ArrayList<Predicate<PlayerRef>> playerFilters = new ArrayList<>();
     private final GameLifecycle lifecycle = new GameLifecycle();
 
     private final long openTime;
@@ -51,9 +57,9 @@ public final class ManagedGameSpace implements GameSpace {
         this.metadata = metadata;
 
         this.players = new ManagedGameSpacePlayers(this);
-        this.worlds = new ManagedGameSpaceWorlds(this);
+        this.worlds = new ManagedGameSpaceLevels(this);
 
-        this.openTime = server.getOverworld().getTime();
+        this.openTime = server.overworld().getGameTime();
     }
 
     @Override
@@ -78,7 +84,7 @@ public final class ManagedGameSpace implements GameSpace {
     @Override
     public GameResult requestStart() {
         if (this.closed) {
-            return GameResult.error(GameTexts.Start.alreadyStarted());
+            return GameResult.error(GameComponents.Start.alreadyStarted());
         }
 
         var startResult = GameEvents.START_REQUEST.invoker().onRequestStart(this, null);
@@ -90,12 +96,12 @@ public final class ManagedGameSpace implements GameSpace {
         if (startResult != null) {
             return startResult;
         } else {
-            return GameResult.error(GameTexts.Start.genericError());
+            return GameResult.error(GameComponents.Start.genericError());
         }
     }
 
     public void closeWithError(String message) {
-        this.getPlayers().sendMessage(Text.literal(message).formatted(Formatting.RED));
+        this.getPlayers().sendMessage(Component.literal(message).withStyle(ChatFormatting.RED));
         this.close(GameCloseReason.ERRORED);
     }
 
@@ -127,7 +133,7 @@ public final class ManagedGameSpace implements GameSpace {
             }
 
             for (var world : this.worlds) {
-                this.manager.removeDimensionFromGameSpace(this, world.getRegistryKey());
+                this.manager.removeDimensionFromGameSpace(this, world.dimension());
             }
 
             this.players.clear();
@@ -144,8 +150,33 @@ public final class ManagedGameSpace implements GameSpace {
         return this.players;
     }
 
+    public List<Predicate<PlayerRef>> getPlayerFilters() {
+        return Collections.unmodifiableList(this.playerFilters);
+    }
+
     @Override
-    public ManagedGameSpaceWorlds getWorlds() {
+    public Predicate<PlayerRef> addPlayerFilter(Predicate<PlayerRef> filter) {
+        this.playerFilters.add(filter);
+        return filter;
+    }
+
+    @Override
+    public void removePlayerFilter(Predicate<PlayerRef> filter) {
+        this.playerFilters.remove(filter);
+    }
+
+    @Override
+    public boolean isPlayerAllowed(PlayerRef player) {
+        for (Predicate<PlayerRef> playerFilter : this.playerFilters) {
+            if (!playerFilter.test(player)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public ManagedGameSpaceLevels getLevels() {
         return this.worlds;
     }
 
@@ -161,7 +192,7 @@ public final class ManagedGameSpace implements GameSpace {
 
     @Override
     public long getTime() {
-        return this.server.getOverworld().getTime() - this.openTime;
+        return this.server.overworld().getGameTime() - this.openTime;
     }
 
     @Override
@@ -202,11 +233,11 @@ public final class ManagedGameSpace implements GameSpace {
 
     JoinOfferResult offerPlayers(LocalJoinOffer offer) {
         if (this.closed) {
-            return offer.reject(GameTexts.Join.gameClosed());
+            return offer.reject(GameComponents.Join.gameClosed());
         } else if (offer.serverPlayers().stream().anyMatch(this.manager::inGame)) {
-            return offer.reject(GameTexts.Join.inOtherGame());
-        } else if (offer.serverPlayers().stream().anyMatch(p -> !Permissions.check(p, "plasmid.join_game", true))) {
-            return offer.reject(GameTexts.Join.notAllowed());
+            return offer.reject(GameComponents.Join.inOtherGame());
+        } else if (offer.serverPlayers().stream().anyMatch(p -> !p.checkPermission(id("join_game"), true))) {
+            return offer.reject(GameComponents.Join.notAllowed());
         }
 
         return this.state.invoker(GamePlayerEvents.OFFER).onOfferPlayers(offer);
@@ -217,7 +248,7 @@ public final class ManagedGameSpace implements GameSpace {
     }
 
 
-    void onAddPlayer(ServerPlayerEntity player) {
+    void onAddPlayer(ServerPlayer player) {
         this.state.propagatingInvoker(GamePlayerEvents.JOIN).onAddPlayer(player);
         this.state.propagatingInvoker(GamePlayerEvents.ADD).onAddPlayer(player);
 
@@ -226,7 +257,7 @@ public final class ManagedGameSpace implements GameSpace {
         this.lifecycle.onAddPlayer(this, player);
 
         var spectator = this.players.spectators().contains(player);
-        Text joinMessage = (spectator ? GameTexts.Join.successSpectator(player) : GameTexts.Join.success(player)).formatted(Formatting.YELLOW);
+        Component joinMessage = (spectator ? GameComponents.Join.successSpectator(player) : GameComponents.Join.success(player)).withStyle(ChatFormatting.YELLOW);
         joinMessage = this.state.invoker(GamePlayerEvents.JOIN_MESSAGE).onJoinMessageCreation(player, joinMessage, joinMessage);
         GameEvents.PLAYER_JOIN.invoker().onPlayerJoin(this, player);
 
@@ -235,9 +266,9 @@ public final class ManagedGameSpace implements GameSpace {
         }
     }
 
-    void onPlayerRemove(ServerPlayerEntity player) {
+    void onPlayerRemove(ServerPlayer player) {
         var spectator = this.players.spectators().contains(player);
-        Text leaveMessage = (spectator ? GameTexts.Leave.spectator(player) : GameTexts.Leave.participant(player)).formatted(Formatting.YELLOW);
+        Component leaveMessage = (spectator ? GameComponents.Leave.spectator(player) : GameComponents.Leave.participant(player)).withStyle(ChatFormatting.YELLOW);
         leaveMessage = this.state.invoker(GamePlayerEvents.LEAVE_MESSAGE).onLeaveMessageCreation(player, leaveMessage, leaveMessage);
 
         this.state.invoker(GamePlayerEvents.LEAVE).onRemovePlayer(player);
@@ -251,22 +282,22 @@ public final class ManagedGameSpace implements GameSpace {
         if (leaveMessage != null) {
             for (var receiver : this.players) {
                 if (receiver != player) {
-                    receiver.sendMessage(leaveMessage);
+                    receiver.sendSystemMessage(leaveMessage);
                 }
             }
         }
     }
 
-    void onPlayerRespawn(ServerPlayerEntity oldPlayer, ServerPlayerEntity respawnedPlayer) {
+    void onPlayerRespawn(ServerPlayer oldPlayer, ServerPlayer respawnedPlayer) {
         this.manager.removePlayerFromGameSpace(this, oldPlayer);
         this.manager.addPlayerToGameSpace(this, respawnedPlayer);
     }
 
-    void onAddWorld(RuntimeWorldHandle worldHandle) {
-        this.manager.addDimensionToGameSpace(this, worldHandle.asWorld().getRegistryKey());
+    void onAddLevel(RuntimeLevelHandle worldHandle) {
+        this.manager.addDimensionToGameSpace(this, worldHandle.asLevel().dimension());
     }
 
-    void onRemoveWorld(RegistryKey<World> dimension) {
+    void onRemoveLevel(ResourceKey<Level> dimension) {
         this.manager.removeDimensionFromGameSpace(this, dimension);
     }
 }

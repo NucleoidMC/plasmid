@@ -1,15 +1,7 @@
 package xyz.nucleoid.plasmid.api.game.common;
 
 import eu.pb4.polymer.core.api.utils.PolymerUtils;
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import eu.pb4.sgui.api.SguiUtils;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.plasmid.api.game.common.config.WaitingLobbyConfig;
@@ -22,15 +14,28 @@ import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.api.game.event.GameWaitingLobbyEvents;
 import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
 import xyz.nucleoid.plasmid.api.game.player.JoinOfferResult;
+import xyz.nucleoid.plasmid.api.game.player.PlayerSet;
 import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
 import xyz.nucleoid.plasmid.api.game.common.widget.SidebarWidget;
+import xyz.nucleoid.plasmid.api.util.PlayerRef;
 import xyz.nucleoid.plasmid.impl.game.common.ui.WaitingLobbyUi;
 import xyz.nucleoid.plasmid.impl.game.common.ui.element.LeaveGameWaitingLobbyUiElement;
+import xyz.nucleoid.plasmid.impl.game.common.ui.element.ReadyGameWaitingLobbyUiElement;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.compatibility.AfkDisplayCompatibility;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.BossEvent;
 
 /**
  * A very simple waiting lobby implementation that games can easily apply to their {@link GameActivity}.
@@ -43,14 +48,14 @@ import java.util.List;
  * @see TeamSelectionLobby
  */
 public final class GameWaitingLobby {
-    private static final Text WAITING_TITLE = Text.translatable("text.plasmid.game.waiting_lobby.bar.waiting");
+    private static final Component WAITING_TITLE = Component.translatable("text.plasmid.game.waiting_lobby.bar.waiting");
     private static final int START_REQUESTED_COUNTDOWN = 20 * 3;
 
-    private static final BossBar.Color WAITING_COLOR = BossBar.Color.BLUE;
-    private static final BossBar.Color COUNTING_COLOR = BossBar.Color.GREEN;
-    private static final BossBar.Style BOSS_BAR_STYLE = BossBar.Style.NOTCHED_10;
+    private static final BossEvent.BossBarColor WAITING_COLOR = BossEvent.BossBarColor.BLUE;
+    private static final BossEvent.BossBarColor COUNTING_COLOR = BossEvent.BossBarColor.GREEN;
+    private static final BossEvent.BossBarOverlay BOSS_BAR_STYLE = BossEvent.BossBarOverlay.NOTCHED_10;
 
-    private static final Text PADDING_LINE = Text.literal(" ".repeat(36));
+    private static final Component PADDING_LINE = Component.literal(" ".repeat(36));
 
     private final GameSpace gameSpace;
     private final WaitingLobbyConfig playerConfig;
@@ -61,9 +66,11 @@ public final class GameWaitingLobby {
     private long countdownStart = -1;
     private long countdownDuration = -1;
 
+    private final ArrayList<ServerPlayer> playerVotes = new ArrayList<>();
+    private final HashMap<ServerPlayer, WaitingLobbyUiLayout> playerToLayout = new HashMap<>();
     private boolean startRequested;
     private boolean started;
-    private List<Text> sidebarText;
+    private List<Component> sidebarText;
 
     private GameWaitingLobby(GameSpace gameSpace, WaitingLobbyConfig playerConfig, BossBarWidget bar, SidebarWidget sidebar, PlayerLimiter limiter) {
         this.gameSpace = gameSpace;
@@ -106,7 +113,7 @@ public final class GameWaitingLobby {
         var title = GameConfig.shortName(sourceConfig).copy();
 
         if (title.getStyle().getColor() == null) {
-            title.setStyle(title.getStyle().withColor(Formatting.GOLD));
+            title.setStyle(title.getStyle().withColor(ChatFormatting.GOLD));
         }
 
         if (title.getStyle().toString().contains("bold=null")) {
@@ -121,7 +128,7 @@ public final class GameWaitingLobby {
     }
 
     @Nullable
-    private Text onJoinMessage(ServerPlayerEntity player, Text currentText, Text defaultText) {
+    private Component onJoinMessage(ServerPlayer player, Component currentText, Component defaultText) {
         if (currentText == null || (this.playerConfig.thresholdPlayers() == 1 && this.playerConfig.minPlayers() == 1) || this.playerConfig.playerConfig().maxPlayers().isEmpty() || this.gameSpace.getPlayers().spectators().contains(player)) {
             return currentText;
         }
@@ -133,17 +140,27 @@ public final class GameWaitingLobby {
         }
 
         var required = Math.max(Math.min(this.playerConfig.thresholdPlayers(),
-                this.gameSpace.getServer().getCurrentPlayerCount()
+                this.gameSpace.getServer().getPlayerCount()
         ), this.playerConfig.minPlayers()) - count;
 
-        return Text.empty()
+        if (count >= this.playerConfig.minPlayers()) {
+            this.showVoteReminder();
+            for (ServerPlayer plr : this.gameSpace.getPlayers().participants()) {
+                WaitingLobbyUiLayout layout = this.playerToLayout.get(plr);
+                if (layout != null) {
+                    layout.refresh();
+                }
+            }
+        }
+
+        return Component.empty()
                 .append(currentText)
                 .append(" ")
-                .append(Text.translatable("text.plasmid.game.waiting_lobby.players_needed_to_start", required).formatted(Formatting.YELLOW));
+                .append(Component.translatable("text.plasmid.game.waiting_lobby.players_needed_to_start", required).withStyle(ChatFormatting.YELLOW));
     }
 
     @Nullable
-    private Text onLeaveMessage(ServerPlayerEntity player, Text currentText, Text defaultText) {
+    private Component onLeaveMessage(ServerPlayer player, Component currentText, Component defaultText) {
         if (currentText == null || (this.playerConfig.thresholdPlayers() == 1 && this.playerConfig.minPlayers() == 1) || this.playerConfig.playerConfig().maxPlayers().isEmpty() || this.gameSpace.getPlayers().spectators().contains(player)) {
             return currentText;
         }
@@ -157,35 +174,44 @@ public final class GameWaitingLobby {
         }
 
         var required = Math.max(Math.min(this.playerConfig.thresholdPlayers(),
-                this.gameSpace.getServer().getCurrentPlayerCount()
+                this.gameSpace.getServer().getPlayerCount()
         ), this.playerConfig.minPlayers()) - count;
 
-        return Text.empty()
+        return Component.empty()
                 .append(currentText)
                 .append(" ")
-                .append(Text.translatable("text.plasmid.game.waiting_lobby.players_needed_to_start", required).formatted(Formatting.YELLOW));
+                .append(Component.translatable("text.plasmid.game.waiting_lobby.players_needed_to_start", required).withStyle(ChatFormatting.YELLOW));
     }
 
     private GameSpaceState.Builder updateState(GameSpaceState.Builder builder) {
         return builder.state(this.getTargetCountdownDuration() != -1 ? GameSpaceState.State.STARTING : GameSpaceState.State.WAITING);
     }
 
-    public void setSidebarTitle(Text text) {
+    public void setSidebarTitle(Component text) {
         this.sidebar.setTitle(text);
     }
 
-    public void setSidebarLines(List<Text> texts) {
+    public void setSidebarLines(List<Component> texts) {
         this.sidebarText = new ArrayList<>(texts.size());
 
         for (var line : texts) {
             var text = line.copy();
             if (line.getStyle().getColor() == null) {
-                text.setStyle(line.getStyle().withColor(Formatting.YELLOW));
+                text.setStyle(line.getStyle().withColor(ChatFormatting.YELLOW));
             }
             this.sidebarText.add(text);
         }
     }
-
+    private void showVoteReminder() {
+        if (this.started) {
+            return;
+        }
+        PlayerSet participants = this.gameSpace.getPlayers().participants();
+        MutableComponent styledText = Component.translatable("text.plasmid.game.waiting_lobby.player_vote_click_here", this.playerVotes.size(), String.format("%.0f", Math.ceil((double) participants.size() / 2)))
+                .withStyle((style -> style
+                        .withColor(ChatFormatting.BLUE)));
+        participants.sendActionBar(Component.translatable("text.plasmid.game.waiting_lobby.player_vote", this.playerConfig.minPlayers(), styledText));
+    }
     private void onTick() {
         if (this.started) {
             return;
@@ -205,24 +231,31 @@ public final class GameWaitingLobby {
 
             var startResult = this.gameSpace.requestStart();
             if (startResult.isError()) {
-                MutableText message = Text.translatable("text.plasmid.game.waiting_lobby.bar.cancel").append(startResult.error());
-                this.gameSpace.getPlayers().sendMessage(message.formatted(Formatting.RED));
+                MutableComponent message = Component.translatable("text.plasmid.game.waiting_lobby.bar.cancel").append(startResult.error());
+                this.gameSpace.getPlayers().sendMessage(message.withStyle(ChatFormatting.RED));
                 this.started = false;
                 this.startRequested = false;
                 this.countdownStart = -1;
             } else {
                 for (var player : this.gameSpace.getPlayers()) {
-                    player.closeHandledScreen();
+                    var gui = SguiUtils.getCurrentGui(player);
+
+                    if (gui instanceof WaitingLobbyUi) {
+                        player.doCloseContainer();
+                    }
+
                     PolymerUtils.reloadInventory(player);
                 }
             }
+        } else if (this.gameSpace.getPlayers().participants().size() >= this.playerConfig.minPlayers()) {
+            this.showVoteReminder();
         }
     }
 
     @Nullable
     private GameResult requestStart() {
         if (this.gameSpace.getPlayers().participants().size() < this.playerConfig.minPlayers()) {
-            return GameResult.error(GameTexts.Start.notEnoughPlayers());
+            return GameResult.error(GameComponents.Start.notEnoughPlayers());
         }
 
         if (!this.started) {
@@ -240,17 +273,35 @@ public final class GameWaitingLobby {
         return offer.pass();
     }
 
-    private void onAddPlayer(ServerPlayerEntity player) {
+    private void onAddPlayer(ServerPlayer player) {
         var ui = new WaitingLobbyUi(player, this.gameSpace);
         ui.open();
     }
 
-    private void onRemovePlayer(ServerPlayerEntity player) {
+    private void onRemovePlayer(ServerPlayer player) {
         this.updateCountdown();
+        if (this.playerVotes.remove(player) && this.gameSpace.getPlayers().participants().size() >= this.playerConfig.minPlayers()) {
+            this.showVoteReminder();
+        }
     }
 
-    private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayerEntity player) {
+    private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayer player) {
         layout.addTrailing(new LeaveGameWaitingLobbyUiElement(this.gameSpace, player));
+        layout.addTrailing(new ReadyGameWaitingLobbyUiElement(layout, this.gameSpace, this.playerConfig.minPlayers(), (hasVoted) -> {
+            if (hasVoted) {
+                this.playerVotes.add(player);
+            } else {
+                this.playerVotes.remove(player);
+            }
+            if (this.gameSpace.getPlayers().participants().size() >= this.playerConfig.minPlayers()) {
+                double playersNeededToStart = Math.ceil((double) this.gameSpace.getPlayers().participants().size() / 2);
+                if (playersNeededToStart <= this.playerVotes.size()) {
+                    this.updateCountdown();
+                }
+                this.showVoteReminder();
+            }
+        }));
+        this.playerToLayout.put(player, layout);
     }
 
     private void updateCountdown() {
@@ -286,9 +337,11 @@ public final class GameWaitingLobby {
         if (this.startRequested) {
             return START_REQUESTED_COUNTDOWN;
         }
-
         if (this.gameSpace.getPlayers().participants().size() >= this.playerConfig.minPlayers()) {
-            if (this.isActiveFull(this.gameSpace.getPlayers().size())) {
+            double playersNeededToStart = Math.ceil((double) this.gameSpace.getPlayers().participants().size() / 2);
+            if (playersNeededToStart <= this.playerVotes.size()) {
+                return START_REQUESTED_COUNTDOWN;
+            } else if (this.isActiveFull(this.gameSpace.getPlayers().size())) {
                 return countdown.fullSeconds() * 20L;
             } else if (this.isReady(this.gameSpace.getPlayers().participants().size())) {
                 return countdown.readySeconds() * 20L;
@@ -304,7 +357,7 @@ public final class GameWaitingLobby {
             long remainingTicks = this.getRemainingTicks(time);
             long remainingSeconds = remainingTicks / 20;
 
-            this.bar.setTitle(Text.translatable("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
+            this.bar.setTitle(Component.translatable("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
             this.bar.setStyle(COUNTING_COLOR, BOSS_BAR_STYLE);
             this.bar.setProgress((float) remainingTicks / this.countdownDuration);
         } else {
@@ -322,28 +375,28 @@ public final class GameWaitingLobby {
                 long remainingTicks = this.getRemainingTicks(time);
                 long remainingSeconds = remainingTicks / 20;
 
-                b.add(Text.translatable("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
+                b.add(Component.translatable("text.plasmid.game.waiting_lobby.bar.countdown", remainingSeconds));
             } else {
                 b.add(WAITING_TITLE);
             }
-            b.add(ScreenTexts.EMPTY);
+            b.add(CommonComponents.EMPTY);
 
             if (this.playerConfig.playerConfig().maxPlayers().isEmpty()) {
-                b.add(Text.translatable("text.plasmid.game.waiting_lobby.sidebar.players",
-                        Text.literal("" + this.gameSpace.getPlayers().participants().size()).formatted(Formatting.AQUA), "", ""));
+                b.add(Component.translatable("text.plasmid.game.waiting_lobby.sidebar.players",
+                        Component.literal("" + this.gameSpace.getPlayers().participants().size()).withStyle(ChatFormatting.AQUA), "", ""));
             } else {
-                b.add(Text.translatable("text.plasmid.game.waiting_lobby.sidebar.players",
-                        Text.literal("" + this.gameSpace.getPlayers().participants().size()).formatted(Formatting.AQUA),
-                        Text.literal("/").formatted(Formatting.GRAY),
-                        Text.literal("" + this.playerConfig.playerConfig().maxPlayers().orElse(0)).formatted(Formatting.AQUA)));
+                b.add(Component.translatable("text.plasmid.game.waiting_lobby.sidebar.players",
+                        Component.literal("" + this.gameSpace.getPlayers().participants().size()).withStyle(ChatFormatting.AQUA),
+                        Component.literal("/").withStyle(ChatFormatting.GRAY),
+                        Component.literal("" + this.playerConfig.playerConfig().maxPlayers().orElse(0)).withStyle(ChatFormatting.AQUA)));
             }
             if (this.sidebarText != null && !this.sidebarText.isEmpty()) {
-                b.add(ScreenTexts.EMPTY);
-                for (Text text : this.sidebarText) {
+                b.add(CommonComponents.EMPTY);
+                for (Component text : this.sidebarText) {
                     b.add(text);
                 }
             }
-            b.add(ScreenTexts.EMPTY);
+            b.add(CommonComponents.EMPTY);
         });
     }
 
@@ -356,7 +409,7 @@ public final class GameWaitingLobby {
                 var players = this.gameSpace.getPlayers();
 
                 float pitch = remainingSeconds == 0 ? 1.5F : 1.0F;
-                players.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0F, pitch);
+                players.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, pitch);
             }
         }
     }
@@ -380,12 +433,12 @@ public final class GameWaitingLobby {
 
         // if all players on the server are in this lobby
         var server = this.gameSpace.getServer();
-        if (count >= server.getCurrentPlayerCount()) {
+        if (count >= server.getPlayerCount()) {
             return true;
         }
 
         // if there are no players outside of a game on the server
-        for (var world : server.getWorlds()) {
+        for (var world : server.getAllLevels()) {
             if (hasActivePlayer(world) && !GameSpaceManagerImpl.get().hasGame(world)) {
                 return false;
             }
@@ -394,8 +447,8 @@ public final class GameWaitingLobby {
         return true;
     }
 
-    private static boolean hasActivePlayer(ServerWorld world) {
-        for (var player : world.getPlayers()) {
+    private static boolean hasActivePlayer(ServerLevel world) {
+        for (var player : world.players()) {
             if (AfkDisplayCompatibility.isActive(player)) {
                 return true;
             }

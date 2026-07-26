@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.api.game;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 public class GameAttachment<T> {
     private final Identifier id;

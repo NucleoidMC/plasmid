@@ -1,9 +1,9 @@
 package xyz.nucleoid.plasmid.api.game;
 
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import net.minecraft.server.level.ServerLevel;
+import xyz.nucleoid.fantasy.RuntimeLevelConfig;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
 import xyz.nucleoid.stimuli.event.EventResult;
@@ -20,13 +20,7 @@ import java.util.function.Consumer;
  * @see GameOpenProcedure
  * @see GameType.Open
  */
-public record GameOpenContext<C>(MinecraftServer server, RegistryEntry<GameConfig<C>> gameConfig) {
-
-    @Deprecated(forRemoval = true)
-    public GameOpenContext(MinecraftServer server, GameConfig<C> game) {
-        this(server, RegistryEntry.of(game));
-    }
-
+public record GameOpenContext<C>(MinecraftServer server, Holder<GameConfig<C>> gameConfig) {
     /**
      * Creates a {@link GameOpenProcedure} that opens a game given the {@code setup} function.
      * <p>
@@ -44,22 +38,22 @@ public record GameOpenContext<C>(MinecraftServer server, RegistryEntry<GameConfi
     }
 
     /**
-     * Creates a {@link GameOpenProcedure} that opens a game given the {@code setup} function and creates a world.
+     * Creates a {@link GameOpenProcedure} that opens a game given the {@code setup} function and creates a level.
      * <p>
      * This setup function should set any rules or event listeners on the given {@link GameActivity} needed for it to
      * function. The setup function furthermore runs on-thread and should not run any slow operations.
      *
      * @param setup the setup function for the newly constructed {@link GameActivity}
-     * @param worldConfig the configuration describing how the added world should be constructed
+     * @param levelConfig the configuration describing how the added level should be constructed
      * @return a {@link GameOpenProcedure} which should be returned by a game constructor
      * @see GameActivity
      * @see GameActivity#listen(StimulusEvent, Object)
      * @see GameActivity#setRule(GameRuleType, EventResult)
      */
-    public GameOpenProcedure openWithWorld(RuntimeWorldConfig worldConfig, BiConsumer<GameActivity, ServerWorld> setup) {
+    public GameOpenProcedure openWithLevel(RuntimeLevelConfig levelConfig, BiConsumer<GameActivity, ServerLevel> setup) {
         return this.open(activity -> {
-            ServerWorld world = activity.getGameSpace().getWorlds().add(worldConfig);
-            setup.accept(activity, world);
+            ServerLevel level = activity.getGameSpace().getLevels().add(levelConfig);
+            setup.accept(activity, level);
         });
     }
 

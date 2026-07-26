@@ -1,9 +1,9 @@
 package xyz.nucleoid.plasmid.impl.portal.game;
 
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
+import net.minecraft.server.level.ServerPlayer;
 import xyz.nucleoid.plasmid.api.game.GameCloseReason;
 import xyz.nucleoid.plasmid.api.game.GameLifecycle;
 import xyz.nucleoid.plasmid.api.game.GameResult;
@@ -19,16 +19,16 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class SingleGamePortalBackend implements GameConfigGamePortalBackend {
-    private final RegistryEntry<GameConfig<?>> game;
+    private final Holder<GameConfig<?>> game;
     private CompletableFuture<GameSpace> gameFuture;
 
-    public SingleGamePortalBackend(RegistryEntry<GameConfig<?>> game) {
+    public SingleGamePortalBackend(Holder<GameConfig<?>> game) {
         this.game = game;
     }
 
     @Override
-    public void applyTo(ServerPlayerEntity player, boolean alt) {
-        CompletableFuture.supplyAsync(() -> this.getOrOpen(player.server))
+    public void applyTo(ServerPlayer player, boolean alt) {
+        CompletableFuture.supplyAsync(() -> this.getOrOpen(player.level().getServer()))
                 .thenCompose(Function.identity())
                 .handleAsync((gameSpace, throwable) -> {
                     GameResult result;
@@ -39,11 +39,11 @@ public final class SingleGamePortalBackend implements GameConfigGamePortalBacken
                     }
 
                     if (result.isError()) {
-                        player.sendMessage(result.errorCopy().formatted(Formatting.RED), false);
+                        player.sendSystemMessage(result.errorCopy().withStyle(ChatFormatting.RED), false);
                     }
 
                     return null;
-                }, player.server);
+                }, player.level().getServer());
     }
 
     @Override
@@ -115,7 +115,7 @@ public final class SingleGamePortalBackend implements GameConfigGamePortalBacken
     }
 
     @Override
-    public RegistryEntry<GameConfig<?>> game() {
+    public Holder<GameConfig<?>> game() {
         return this.game;
     }
 

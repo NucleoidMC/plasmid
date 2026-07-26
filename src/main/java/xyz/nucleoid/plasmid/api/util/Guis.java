@@ -2,24 +2,25 @@ package xyz.nucleoid.plasmid.api.util;
 
 import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.SlotHolder;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
+import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import eu.pb4.sgui.api.gui.layered.Layer;
-import net.minecraft.block.entity.BannerPattern;
-import net.minecraft.block.entity.BannerPatterns;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BannerPatternsComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.*;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Unit;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.level.block.entity.BannerPattern;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import net.minecraft.world.level.block.entity.BannerPatterns;
 import org.jetbrains.annotations.Range;
 
 import java.util.Collection;
@@ -29,16 +30,16 @@ public final class Guis {
     private Guis() {
     }
 
-    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, boolean includePlayerSlots, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, GuiElementInterface... elements) {
+    public static SimpleGui createSelectorGui(ServerPlayer player, MutableComponent text, boolean includePlayerSlots, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, GuiElement... elements) {
         var gui = new SimpleGui(selectScreenType(elements.length), player, includePlayerSlots) {
             @Override
-            public boolean onClick(int index, ClickType type, SlotActionType action, GuiElementInterface element) {
+            public boolean onClick(int index, ClickType type, ContainerInput action, GuiElement element) {
                 onClick.accept(this);
                 return super.onClick(index, type, action, element);
             }
 
             @Override
-            public void onClose() {
+            public void onManualClose() {
                 onClose.accept(this);
             }
         };
@@ -49,33 +50,33 @@ public final class Guis {
         return gui;
     }
 
-    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, GuiElementInterface... elements) {
+    public static SimpleGui createSelectorGui(ServerPlayer player, MutableComponent text, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, GuiElement... elements) {
         return createSelectorGui(player, text, false, onClick, onClose, elements);
     }
 
-    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, Collection<GuiElementInterface> elements) {
+    public static SimpleGui createSelectorGui(ServerPlayer player, MutableComponent text, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, Collection<GuiElement> elements) {
         return createSelectorGui(player, text, false, onClick, onClose, elements);
     }
 
-    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, boolean includePlayerSlots, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, Collection<GuiElementInterface> elements) {
-        return createSelectorGui(player, text, includePlayerSlots, onClick, onClose, elements.toArray(new GuiElementInterface[0]));
+    public static SimpleGui createSelectorGui(ServerPlayer player, MutableComponent text, boolean includePlayerSlots, Consumer<SimpleGui> onClick, Consumer<SimpleGui> onClose, Collection<GuiElement> elements) {
+        return createSelectorGui(player, text, includePlayerSlots, onClick, onClose, elements.toArray(new GuiElement[0]));
     }
 
-    public static SimpleGui createSelectorGui(ServerPlayerEntity player, MutableText text, boolean includePlayerSlots, Collection<GuiElementInterface> elements) {
-        return createSelectorGui(player, text, includePlayerSlots, gui -> {}, gui -> {}, elements.toArray(new GuiElementInterface[0]));
+    public static SimpleGui createSelectorGui(ServerPlayer player, MutableComponent text, boolean includePlayerSlots, Collection<GuiElement> elements) {
+        return createSelectorGui(player, text, includePlayerSlots, gui -> {}, gui -> {}, elements.toArray(new GuiElement[0]));
     }
 
-    public static Layer createSelectorLayer(int height, int width, Collection<GuiElementInterface> elements) {
-        return createSelectorLayer(height, width, elements.toArray(new GuiElementInterface[0]));
+    public static Layer createSelectorLayer(int height, int width, Collection<GuiElement> elements) {
+        return createSelectorLayer(height, width, elements.toArray(new GuiElement[0]));
     }
 
-    public static Layer createSelectorLayer(int height, int width, GuiElementInterface... elements) {
+    public static Layer createSelectorLayer(int height, int width, GuiElement... elements) {
         var gui = new Layer(height, width);
         buildSelector(gui, elements);
         return gui;
     }
 
-    private static void buildSelector(SlotHolder holder, GuiElementInterface... elements) {
+    private static void buildSelector(SlotHolder holder, GuiElement... elements) {
         int lastRowCount = elements.length % holder.getWidth();
         int skippedElements = elements.length - lastRowCount;
 
@@ -90,91 +91,91 @@ public final class Guis {
         }
     }
 
-    public static ItemStack getNumericBanner(RegistryEntryLookup.RegistryLookup registries, @Range(from = 0, to = 9) int value) {
-        RegistryEntryLookup<BannerPattern> patterns = registries.getOrThrow(RegistryKeys.BANNER_PATTERN);
+    public static ItemStack getNumericBanner(HolderGetter.Provider registries, @Range(from = 0, to = 9) int value) {
+        HolderGetter<BannerPattern> patterns = registries.lookupOrThrow(Registries.BANNER_PATTERN);
         return switch (Math.abs(value) % 10) {
-            case 0 -> createBanner(new BannerPatternsComponent.Builder()
-                    .add(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_LEFT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_RIGHT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.BORDER, DyeColor.GRAY)
+            case 0 -> createBanner(new BannerPatternLayers.Builder()
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_LEFT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_RIGHT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.BORDER, DyeColor.GRAY)
             );
-            case 1 -> createBanner(new BannerPatternsComponent.Builder()
-                    .add(patterns, BannerPatterns.STRIPE_CENTER, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.SQUARE_TOP_LEFT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.CURLY_BORDER, DyeColor.GRAY)
-                    .add(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
-            case 2 -> createBanner(new BannerPatternsComponent.Builder()
-                    .add(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.RHOMBUS, DyeColor.GRAY)
-                    .add(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_DOWNLEFT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
-            case 3 -> createBanner(new BannerPatternsComponent.Builder()
-                    .add(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_MIDDLE, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.CURLY_BORDER, DyeColor.GRAY)
-                    .add(patterns, BannerPatterns.STRIPE_RIGHT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
-            case 4 -> createBanner(new BannerPatternsComponent.Builder()
-                    .add(patterns, BannerPatterns.STRIPE_LEFT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.HALF_HORIZONTAL_BOTTOM, DyeColor.GRAY)
-                    .add(patterns, BannerPatterns.STRIPE_RIGHT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_MIDDLE, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
-            case 5 -> createBanner(new BannerPatternsComponent.Builder()
-                    .add(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.RHOMBUS, DyeColor.GRAY)
-                    .add(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_DOWNRIGHT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
-            case 6 -> createBanner(new BannerPatternsComponent.Builder()
-                    .add(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_RIGHT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.HALF_HORIZONTAL, DyeColor.GRAY)
-                    .add(patterns, BannerPatterns.STRIPE_MIDDLE, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_LEFT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
-            case 7 -> createBanner(new BannerPatternsComponent.Builder()
-                    .add(patterns, BannerPatterns.STRIPE_DOWNLEFT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
-            case 8 -> createBanner(new BannerPatternsComponent.Builder()
-                    .add(patterns, BannerPatterns.STRIPE_DOWNRIGHT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
-            case 9 -> createBanner(new BannerPatternsComponent.Builder()
-                    .add(patterns, BannerPatterns.STRIPE_LEFT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.HALF_HORIZONTAL_BOTTOM, DyeColor.GRAY)
-                    .add(patterns, BannerPatterns.STRIPE_MIDDLE, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_RIGHT, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
-                    .add(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
+            case 1 -> createBanner(new BannerPatternLayers.Builder()
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_CENTER, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.SQUARE_TOP_LEFT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.CURLY_BORDER, DyeColor.GRAY)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
+            case 2 -> createBanner(new BannerPatternLayers.Builder()
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.RHOMBUS_MIDDLE, DyeColor.GRAY)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_DOWNLEFT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
+            case 3 -> createBanner(new BannerPatternLayers.Builder()
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_MIDDLE, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.CURLY_BORDER, DyeColor.GRAY)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_RIGHT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
+            case 4 -> createBanner(new BannerPatternLayers.Builder()
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_LEFT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.HALF_HORIZONTAL_MIRROR, DyeColor.GRAY)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_RIGHT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_MIDDLE, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
+            case 5 -> createBanner(new BannerPatternLayers.Builder()
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.RHOMBUS_MIDDLE, DyeColor.GRAY)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_DOWNRIGHT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
+            case 6 -> createBanner(new BannerPatternLayers.Builder()
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_RIGHT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.HALF_HORIZONTAL, DyeColor.GRAY)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_MIDDLE, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_LEFT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
+            case 7 -> createBanner(new BannerPatternLayers.Builder()
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_DOWNLEFT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
+            case 8 -> createBanner(new BannerPatternLayers.Builder()
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_DOWNRIGHT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
+            case 9 -> createBanner(new BannerPatternLayers.Builder()
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_LEFT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.HALF_HORIZONTAL_MIRROR, DyeColor.GRAY)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_MIDDLE, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_TOP, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_RIGHT, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.STRIPE_BOTTOM, DyeColor.WHITE)
+                    .addIfRegistered(patterns, BannerPatterns.BORDER, DyeColor.GRAY));
             default -> throw new IllegalStateException();
         };
     }
 
-    private static ScreenHandlerType<?> selectScreenType(int rowCount) {
-        return switch (MathHelper.ceil(((float) rowCount) / 9)) {
-            case 1 -> ScreenHandlerType.GENERIC_9X1;
-            case 2 -> ScreenHandlerType.GENERIC_9X2;
-            case 3 -> ScreenHandlerType.GENERIC_9X3;
-            case 4 -> ScreenHandlerType.GENERIC_9X4;
-            case 5 -> ScreenHandlerType.GENERIC_9X5;
-            default -> ScreenHandlerType.GENERIC_9X6;
+    private static MenuType<?> selectScreenType(int rowCount) {
+        return switch (Mth.ceil(((float) rowCount) / 9)) {
+            case 1 -> MenuType.GENERIC_9x1;
+            case 2 -> MenuType.GENERIC_9x2;
+            case 3 -> MenuType.GENERIC_9x3;
+            case 4 -> MenuType.GENERIC_9x4;
+            case 5 -> MenuType.GENERIC_9x5;
+            default -> MenuType.GENERIC_9x6;
         };
     }
 
-    private static ItemStack createBanner(BannerPatternsComponent.Builder patterns) {
-        ItemStack stack = Items.GRAY_BANNER.getDefaultStack();
-        stack.set(DataComponentTypes.CUSTOM_NAME, ScreenTexts.EMPTY);
-        stack.set(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE);
-        stack.set(DataComponentTypes.BANNER_PATTERNS, patterns.build());
+    private static ItemStack createBanner(BannerPatternLayers.Builder patterns) {
+        ItemStack stack = Items.BANNER.gray().getDefaultInstance();
+        stack.set(DataComponents.CUSTOM_NAME, CommonComponents.EMPTY);
+        stack.update(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT, tooltipDisplay -> tooltipDisplay.withHidden(DataComponents.BANNER_PATTERNS, true));
+        stack.set(DataComponents.BANNER_PATTERNS, patterns.build());
         return stack;
     }
 }

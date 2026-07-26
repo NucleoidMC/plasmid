@@ -4,35 +4,35 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.argument.MessageArgumentType;
-import net.minecraft.network.message.MessageType;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.MessageArgument;
+import net.minecraft.network.chat.ChatType;
 import xyz.nucleoid.plasmid.api.chat.ChatChannel;
 import xyz.nucleoid.plasmid.api.chat.HasChatChannel;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 public class ShoutCommand {
     // @formatter:off
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
             literal("shout")
-                .then(argument("message", MessageArgumentType.message())
+                .then(argument("message", MessageArgument.message())
                 .executes(ShoutCommand::sendMessage))
         );
     }
     // @formatter:on
 
-    public static int sendMessage(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    public static int sendMessage(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var source = context.getSource();
         var server = source.getServer();
-        var hasChatChannel = (HasChatChannel) source.getPlayerOrThrow();
-        MessageArgumentType.getSignedMessage(context, "message", message -> {
+        var hasChatChannel = (HasChatChannel) source.getPlayerOrException();
+        MessageArgument.resolveChatMessage(context, "message", message -> {
             var old = hasChatChannel.getChatChannel();
             try {
                 hasChatChannel.setChatChannel(ChatChannel.ALL);
-                server.getPlayerManager().broadcast(message, source, MessageType.params(MessageType.CHAT, source));
+                server.getPlayerList().broadcastChatMessage(message, source, ChatType.bind(ChatType.CHAT, source));
             } finally {
                 hasChatChannel.setChatChannel(old);
             }

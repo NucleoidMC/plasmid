@@ -2,11 +2,11 @@ package xyz.nucleoid.plasmid.impl.portal;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 public final class GamePortalDisplay {
-    public static final Field<Text> NAME = Field.create();
+    public static final Field<Component> NAME = Field.create();
     public static final Field<Integer> PLAYER_COUNT = Field.create();
     public static final Field<Integer> MAX_PLAYER_COUNT = Field.create();
     public static final Field<Integer> SPECTATOR_COUNT = Field.create();

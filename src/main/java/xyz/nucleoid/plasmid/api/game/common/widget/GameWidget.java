@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.api.game.common.widget;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
 
 /**
@@ -11,9 +11,9 @@ import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
  * @see GlobalWidgets
  */
 public interface GameWidget extends AutoCloseable {
-    void addPlayer(ServerPlayerEntity player);
+    void addPlayer(ServerPlayer player);
 
-    void removePlayer(ServerPlayerEntity player);
+    void removePlayer(ServerPlayer player);
 
     @Override
     void close();

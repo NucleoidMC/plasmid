@@ -1,13 +1,9 @@
 package xyz.nucleoid.plasmid.mixin.game.space;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.TeleportTarget;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.portal.TeleportTransition;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,14 +16,14 @@ import xyz.nucleoid.plasmid.impl.player.isolation.TeleportIsolated;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements TeleportIsolated {
-    @Shadow public abstract World getWorld();
+    @Shadow public abstract Level level();
 
     @Unique
     private boolean teleportIsolation = true;
 
-    @Inject(method = "teleportTo", at = @At("HEAD"), cancellable = true)
-    private void preventOutOfGameTeleports(TeleportTarget teleportTarget, CallbackInfoReturnable<Object> cir) {
-        if (this.teleportIsolation && GameSpaceManager.get().byWorld(this.getWorld()) != GameSpaceManager.get().byWorld(teleportTarget.world())) {
+    @Inject(method = "teleport", at = @At("HEAD"), cancellable = true)
+    private void preventOutOfGameTeleports(TeleportTransition teleportTarget, CallbackInfoReturnable<Object> cir) {
+        if (this.teleportIsolation && GameSpaceManager.get().byLevel(this.level()) != GameSpaceManager.get().byLevel(teleportTarget.newLevel())) {
             cir.setReturnValue(this);
         }
     }

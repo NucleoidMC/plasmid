@@ -1,24 +1,24 @@
 package xyz.nucleoid.plasmid.api.game;
 
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletionException;
+import net.minecraft.network.chat.Component;
 
 public class GameOpenException extends RuntimeException {
-    private final Text reason;
+    private final Component reason;
 
-    public GameOpenException(Text reason) {
+    public GameOpenException(Component reason) {
         super(reason.getString());
         this.reason = reason;
     }
 
-    public GameOpenException(Text reason, Throwable cause) {
+    public GameOpenException(Component reason, Throwable cause) {
         super(reason.getString(), cause);
         this.reason = reason;
     }
 
-    public Text getReason() {
+    public Component getReason() {
         return this.reason;
     }
 

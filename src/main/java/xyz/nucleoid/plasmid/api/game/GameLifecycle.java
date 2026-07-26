@@ -1,11 +1,11 @@
 package xyz.nucleoid.plasmid.api.game;
 
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.impl.game.manager.ManagedGameActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.server.level.ServerPlayer;
 
 public final class GameLifecycle {
     private final List<Listeners> listeners = new ArrayList<>();
@@ -14,13 +14,13 @@ public final class GameLifecycle {
         this.listeners.add(listeners);
     }
 
-    public void onAddPlayer(GameSpace gameSpace, ServerPlayerEntity player) {
+    public void onAddPlayer(GameSpace gameSpace, ServerPlayer player) {
         for (var listener : this.listeners) {
             listener.onAddPlayer(gameSpace, player);
         }
     }
 
-    public void onRemovePlayer(GameSpace gameSpace, ServerPlayerEntity player) {
+    public void onRemovePlayer(GameSpace gameSpace, ServerPlayer player) {
         for (var listener : this.listeners) {
             listener.onRemovePlayer(gameSpace, player);
         }
@@ -32,7 +32,7 @@ public final class GameLifecycle {
         }
     }
 
-    public void onClosed(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
+    public void onClosed(GameSpace gameSpace, List<ServerPlayer> players, GameCloseReason reason) {
         for (var listener : this.listeners) {
             listener.onClosed(gameSpace, players, reason);
         }
@@ -57,16 +57,16 @@ public final class GameLifecycle {
     }
 
     public interface Listeners {
-        default void onAddPlayer(GameSpace gameSpace, ServerPlayerEntity player) {
+        default void onAddPlayer(GameSpace gameSpace, ServerPlayer player) {
         }
 
-        default void onRemovePlayer(GameSpace gameSpace, ServerPlayerEntity player) {
+        default void onRemovePlayer(GameSpace gameSpace, ServerPlayer player) {
         }
 
         default void onClosing(GameSpace gameSpace, GameCloseReason reason) {
         }
 
-        default void onClosed(GameSpace gameSpace, List<ServerPlayerEntity> players, GameCloseReason reason) {
+        default void onClosed(GameSpace gameSpace, List<ServerPlayer> players, GameCloseReason reason) {
         }
 
         default void onError(GameSpace gameSpace, Throwable throwable, String context) {

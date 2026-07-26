@@ -6,13 +6,14 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Set;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
 
-public final class TinyRegistry<T> implements Codec<T> {
+public class TinyRegistry<T> implements Codec<T> {
     private final BiMap<Identifier, T> map = HashBiMap.create();
 
     private TinyRegistry() {

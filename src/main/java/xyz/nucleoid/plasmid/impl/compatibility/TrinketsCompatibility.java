@@ -1,10 +1,9 @@
 package xyz.nucleoid.plasmid.impl.compatibility;
 
-import dev.emi.trinkets.api.TrinketInventory;
-import dev.emi.trinkets.api.TrinketsApi;
-import dev.emi.trinkets.data.EntitySlotLoader;
+import eu.pb4.trinkets.api.TrinketInventory;
+import eu.pb4.trinkets.api.TrinketsApi;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.api.util.InventoryUtil;
 
@@ -22,24 +21,15 @@ public class TrinketsCompatibility {
 
         InventoryUtil.addCustomHandler(new InventoryUtil.CustomInventoryHandler() {
             @Override
-            public void clear(ServerPlayerEntity player) {
-                var component = TrinketsApi.getTrinketComponent(player);
-                if (component.isEmpty()) {
-                    return;
-                }
+            public void clear(ServerPlayer player) {
+                var attachment = TrinketsApi.getAttachment(player);
 
-                for (var x : component.get().getInventory().values()) {
+                for (var x : attachment.getInventory().values()) {
                     for (var y : x.values()) {
-                        y.clear();
+                        y.clearContent();
                     }
                 }
-                component.get().getInventory().clear();
-                component.get().getTrackingUpdates().forEach(TrinketInventory::clear);
-                component.get().getGroups().clear();
-                component.get().update();
-                EntitySlotLoader.SERVER.sync(List.of(player));
             }
         });
     }
-
 }

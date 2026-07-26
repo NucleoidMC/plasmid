@@ -1,12 +1,12 @@
 package xyz.nucleoid.plasmid.impl.game.common.ui;
 
-import eu.pb4.sgui.api.elements.GuiElementInterface;
-import eu.pb4.sgui.api.gui.SlotGuiInterface;
-import net.minecraft.item.ItemStack;
+import eu.pb4.sgui.api.elements.GuiElement;
+import eu.pb4.sgui.api.gui.SlotBasedGui;
+import net.minecraft.world.item.ItemStack;
 import xyz.nucleoid.plasmid.api.game.common.ui.WaitingLobbyUiElement;
 import xyz.nucleoid.plasmid.api.util.Guis;
 
-public record ExtensionGuiElement(GuiElementInterface delegate, WaitingLobbyUiLayoutEntry entry) implements GuiElementInterface {
+public record ExtensionGuiElement(GuiElement delegate, WaitingLobbyUiLayoutEntry entry) implements GuiElement {
     @Override
     public ItemStack getItemStack() {
         return this.delegate.getItemStack();
@@ -21,9 +21,9 @@ public record ExtensionGuiElement(GuiElementInterface delegate, WaitingLobbyUiLa
         };
     }
 
-    private void openExtendedGui(SlotGuiInterface parent) {
+    private void openExtendedGui(SlotBasedGui parent) {
         var player = parent.getPlayer();
-        var name = this.delegate.getItemStackForDisplay(parent).getName().copy();
+        var name = this.delegate.getItemStackForDisplay(parent).getHoverName().copy();
 
         var ui = Guis.createSelectorGui(player, name, true, gui -> {
             if (gui.isOpen()) {

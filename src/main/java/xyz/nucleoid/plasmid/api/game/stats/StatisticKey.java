@@ -2,8 +2,8 @@ package xyz.nucleoid.plasmid.api.game.stats;
 
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
 
 /**
@@ -32,14 +32,14 @@ public record StatisticKey<T extends Number>(
 
     public JsonObject encodeValue(T value) {
         JsonObject obj = new JsonObject();
-        obj.addProperty("type", this.valueType.asString());
+        obj.addProperty("type", this.valueType.getSerializedName());
         obj.addProperty("value", value);
         obj.addProperty("hidden", this.hidden);
         return obj;
     }
 
     public String getTranslationKey() {
-        return Util.createTranslationKey("statistic", this.id);
+        return Util.makeDescriptionId("statistic", this.id);
     }
 
     public static StatisticKey<Integer> intKey(Identifier id) {
@@ -69,12 +69,12 @@ public record StatisticKey<T extends Number>(
         }
     }
 
-    public enum ValueType implements StringIdentifiable {
+    public enum ValueType implements StringRepresentable {
         INT("int_total"),
         FLOAT("float_total"),
         ;
 
-        public static final Codec<ValueType> CODEC = StringIdentifiable.createCodec(ValueType::values);
+        public static final Codec<ValueType> CODEC = StringRepresentable.fromEnum(ValueType::values);
 
         private final String name;
 
@@ -83,7 +83,7 @@ public record StatisticKey<T extends Number>(
         }
 
         @Override
-        public String asString() {
+        public String getSerializedName() {
             return this.name;
         }
     }

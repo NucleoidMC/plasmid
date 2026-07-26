@@ -4,12 +4,11 @@ import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.shorts.ShortArrayFIFOQueue;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3i;
-
 import java.util.ArrayList;
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 
 /**
  * Provides functionality for traversing the graph of the 3D block grid.
@@ -72,8 +71,8 @@ public final class BlockTraversal {
         var state = new State(this.order);
         state.enqueue(origin, origin, 0);
 
-        var pos = new BlockPos.Mutable();
-        var fromPos = new BlockPos.Mutable();
+        var pos = new BlockPos.MutableBlockPos();
+        var fromPos = new BlockPos.MutableBlockPos();
 
         var offsets = this.connectivity.offsets;
 
@@ -87,7 +86,7 @@ public final class BlockTraversal {
                 fromPos.set(pos);
 
                 for (var offset : offsets) {
-                    pos.set(fromPos, offset.getX(), offset.getY(), offset.getZ());
+                    pos.setWithOffset(fromPos, offset.getX(), offset.getY(), offset.getZ());
                     state.enqueue(pos, fromPos, nextDepth);
                 }
             }
@@ -183,7 +182,7 @@ public final class BlockTraversal {
 
         private static void generateSix(Consumer<Vec3i> consumer) {
             for (var direction : Direction.values()) {
-                consumer.accept(direction.getVector());
+                consumer.accept(direction.getUnitVec3i());
             }
         }
 
@@ -214,7 +213,7 @@ public final class BlockTraversal {
         private static void generateFour(Direction.Axis orthogonalAxis, Consumer<Vec3i> consumer) {
             for (var direction : Direction.values()) {
                 if (direction.getAxis() != orthogonalAxis) {
-                    consumer.accept(direction.getVector());
+                    consumer.accept(direction.getUnitVec3i());
                 }
             }
         }

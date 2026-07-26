@@ -1,15 +1,10 @@
-accessWidener v1 named
+accessWidener	v1	official
 
-accessible method net/minecraft/entity/decoration/ArmorStandEntity setMarker (Z)V
-
-accessible field net/minecraft/entity/EntityType factory Lnet/minecraft/entity/EntityType$EntityFactory;
-accessible field net/minecraft/entity/EntityType canSpawnInside Lcom/google/common/collect/ImmutableSet;
-
-extendable method net/minecraft/util/collection/IdList get (I)Ljava/lang/Object;
-
-accessible field net/minecraft/world/GameRules$IntRule value I
-
-accessible method net/minecraft/entity/Entity unsetRemoved ()V
-accessible method net/minecraft/server/network/ServerPlayerInteractionManager setGameMode (Lnet/minecraft/world/GameMode;Lnet/minecraft/world/GameMode;)V
-
-accessible method net/minecraft/block/TntBlock primeTnt (Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/LivingEntity;)V
+accessible	method	net/minecraft/world/entity/decoration/ArmorStand	setMarker	(Z)V
+accessible	field	net/minecraft/world/entity/EntityType	factory	Lnet/minecraft/world/entity/EntityType$EntityFactory;
+extendable	method	net/minecraft/core/IdMapper	byId	(I)Ljava/lang/Object;
+accessible	method	net/minecraft/world/entity/Entity	unsetRemoved	()V
+accessible	method	net/minecraft/server/level/ServerPlayerGameMode	setGameModeForPlayer	(Lnet/minecraft/world/level/GameType;Lnet/minecraft/world/level/GameType;)V
+accessible	method	net/minecraft/world/level/block/TntBlock	prime	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/LivingEntity;)Z
+accessible	method	net/minecraft/core/Holder$Reference	bindTags	(Ljava/util/Collection;)V
+accessible class net/minecraft/core/component/DataComponentInitializers$InitializerEntry

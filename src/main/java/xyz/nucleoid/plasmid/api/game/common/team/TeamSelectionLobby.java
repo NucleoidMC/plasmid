@@ -4,8 +4,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMaps;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.api.event.GameEvents;
 import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
@@ -20,6 +18,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * A very simple team selection lobby implementation that allows players to select a team while waiting to start a game.
@@ -69,26 +69,26 @@ public final class TeamSelectionLobby {
         this.maxTeamSize.put(team, size);
     }
 
-    private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayerEntity player) {
+    private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayer player) {
         // Spectators cannot choose a team
         if (!this.gameSpace.getPlayers().participants().contains(player)) {
             return;
         }
 
         layout.addLeading(new TeamSelectionWaitingLobbyUiElement(teams, key -> {
-            return key == this.teamPreference.get(player.getUuid());
+            return key == this.teamPreference.get(player.getUUID());
         }, key -> {
             var team = this.teams.byKey(key);
             if (team != null) {
                 var config = team.config();
 
-                this.teamPreference.put(player.getUuid(), key);
+                this.teamPreference.put(player.getUUID(), key);
                 layout.refresh();
 
-                var message = Text.translatable("text.plasmid.team_selection.requested_team",
-                        Text.translatable("text.plasmid.team_selection.suffixed_team", config.name()).formatted(config.chatFormatting()));
+                var message = Component.translatable("text.plasmid.team_selection.requested_team",
+                        Component.translatable("text.plasmid.team_selection.suffixed_team", config.name()).withStyle(config.chatFormatting()));
 
-                player.sendMessage(message, false);
+                player.sendSystemMessage(message, false);
             }
         }));
     }
@@ -100,16 +100,16 @@ public final class TeamSelectionLobby {
      * @param apply a consumer that accepts each player and their corresponding team
      * @see TeamAllocator
      */
-    public void allocate(PlayerIterable players, BiConsumer<GameTeamKey, ServerPlayerEntity> apply) {
+    public void allocate(PlayerIterable players, BiConsumer<GameTeamKey, ServerPlayer> apply) {
         var teamKeys = this.teams.stream().map(GameTeam::key).collect(Collectors.toList());
-        var allocator = new TeamAllocator<GameTeamKey, ServerPlayerEntity>(teamKeys);
+        var allocator = new TeamAllocator<GameTeamKey, ServerPlayer>(teamKeys);
 
         for (var entry : Reference2IntMaps.fastIterable(this.maxTeamSize)) {
             allocator.setSizeForTeam(entry.getKey(), entry.getIntValue());
         }
 
         for (var player : players) {
-            GameTeamKey preference = this.teamPreference.get(player.getUuid());
+            GameTeamKey preference = this.teamPreference.get(player.getUUID());
             allocator.add(player, preference);
         }
 

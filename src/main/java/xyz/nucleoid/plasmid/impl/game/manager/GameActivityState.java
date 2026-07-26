@@ -1,6 +1,5 @@
 package xyz.nucleoid.plasmid.impl.game.manager;
 
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 import xyz.nucleoid.plasmid.api.event.GameEvents;
 import xyz.nucleoid.plasmid.api.game.GameBehavior;
@@ -14,6 +13,7 @@ import xyz.nucleoid.stimuli.event.StimulusEvent;
 
 import java.util.Collections;
 import java.util.function.Supplier;
+import net.minecraft.server.level.ServerPlayer;
 
 final class GameActivityState implements GameBehavior {
     private final GameSpace gameSpace;
@@ -65,7 +65,7 @@ final class GameActivityState implements GameBehavior {
     }
 
     private static void enableActivity(GameSpace gameSpace, ManagedGameActivity activity) {
-        for (ServerPlayerEntity player : gameSpace.getPlayers()) {
+        for (ServerPlayer player : gameSpace.getPlayers()) {
             activity.propagatingInvoker(GamePlayerEvents.ADD).onAddPlayer(player);
         }
 
@@ -74,7 +74,7 @@ final class GameActivityState implements GameBehavior {
 
     private static void disableActivity(GameSpace gameSpace, ManagedGameActivity activity) {
         activity.invoker(GameActivityEvents.DISABLE).onDisable();
-        for (ServerPlayerEntity player : gameSpace.getPlayers()) {
+        for (ServerPlayer player : gameSpace.getPlayers()) {
             activity.invoker(GamePlayerEvents.REMOVE).onRemovePlayer(player);
         }
     }

@@ -1,7 +1,8 @@
 package xyz.nucleoid.plasmid.impl.game.common.ui;
 
 import eu.pb4.sgui.api.elements.GuiElement;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
+import eu.pb4.sgui.api.elements.GuiElement;
+import eu.pb4.sgui.api.elements.SimpleGuiElement;
 import xyz.nucleoid.plasmid.api.game.common.ui.WaitingLobbyUiElement;
 import xyz.nucleoid.plasmid.api.game.common.ui.WaitingLobbyUiLayout;
 
@@ -16,12 +17,12 @@ import java.util.function.Consumer;
 public final class WaitingLobbyUiLayoutImpl implements WaitingLobbyUiLayout {
     private static final int SIZE = 9;
 
-    private final Consumer<GuiElementInterface[]> callback;
+    private final Consumer<GuiElement[]> callback;
 
     private final List<WaitingLobbyUiElement> leadingElements = new ArrayList<>();
     private final List<WaitingLobbyUiElement> trailingElements = new ArrayList<>();
 
-    public WaitingLobbyUiLayoutImpl(Consumer<GuiElementInterface[]> callback) {
+    public WaitingLobbyUiLayoutImpl(Consumer<GuiElement[]> callback) {
         this.callback = callback;
     }
 
@@ -47,9 +48,9 @@ public final class WaitingLobbyUiLayoutImpl implements WaitingLobbyUiLayout {
         elements.add(element);
     }
 
-    private GuiElementInterface[] build() {
-        var elements = new GuiElementInterface[SIZE];
-        Arrays.fill(elements, GuiElement.EMPTY);
+    private GuiElement[] build() {
+        var elements = new GuiElement[SIZE];
+        Arrays.fill(elements, SimpleGuiElement.EMPTY);
 
         if (this.leadingElements.isEmpty() && this.trailingElements.isEmpty()) {
             return elements;

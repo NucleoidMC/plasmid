@@ -1,42 +1,44 @@
 package xyz.nucleoid.plasmid.api.game.common.widget;
 
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.entity.boss.ServerBossBar;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.BossEvent;
 import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
+
+import java.util.UUID;
 
 /**
  * An implementation of {@link GameWidget} which displays a boss bar at the top of players' screens.
  *
- * @see ServerBossBar
+ * @see ServerBossEvent
  * @see GlobalWidgets
  */
 public final class BossBarWidget implements GameWidget {
-    private final ServerBossBar bar;
+    private final ServerBossEvent bar;
 
-    public BossBarWidget(Text title, BossBar.Color color, BossBar.Style style) {
-        this.bar = new ServerBossBar(title, color, style);
-        this.bar.setDarkenSky(false);
-        this.bar.setThickenFog(false);
-        this.bar.setDragonMusic(false);
+    public BossBarWidget(UUID uuid, Component title, BossEvent.BossBarColor color, BossEvent.BossBarOverlay style) {
+        this.bar = new ServerBossEvent(uuid, title, color, style);
+        this.bar.setDarkenScreen(false);
+        this.bar.setCreateWorldFog(false);
+        this.bar.setPlayBossMusic(false);
     }
 
-    public BossBarWidget(Text title) {
-        this(title, BossBar.Color.PURPLE, BossBar.Style.PROGRESS);
+    public BossBarWidget(Component title) {
+        this(UUID.randomUUID(), title, BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
     }
 
-    public void setTitle(Text title) {
+    public void setTitle(Component title) {
         this.bar.setName(title);
     }
 
     public void setProgress(float progress) {
-        this.bar.setPercent(progress);
+        this.bar.setProgress(progress);
     }
 
-    public void setStyle(BossBar.Color color, BossBar.Style style) {
+    public void setStyle(BossEvent.BossBarColor color, BossEvent.BossBarOverlay style) {
         this.bar.setColor(color);
-        this.bar.setStyle(style);
+        this.bar.setOverlay(style);
     }
 
     public void setVisible(boolean visible) {
@@ -44,18 +46,18 @@ public final class BossBarWidget implements GameWidget {
     }
 
     @Override
-    public void addPlayer(ServerPlayerEntity player) {
+    public void addPlayer(ServerPlayer player) {
         this.bar.addPlayer(player);
     }
 
     @Override
-    public void removePlayer(ServerPlayerEntity player) {
+    public void removePlayer(ServerPlayer player) {
         this.bar.removePlayer(player);
     }
 
     @Override
     public void close() {
-        this.bar.clearPlayers();
+        this.bar.removeAllPlayers();
         this.bar.setVisible(false);
     }
 }

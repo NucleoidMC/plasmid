@@ -1,12 +1,12 @@
 package xyz.nucleoid.plasmid.impl.portal;
 
-import eu.pb4.sgui.api.elements.GuiElementInterface;
+import eu.pb4.sgui.api.elements.GuiElement;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.item.ItemStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.CustomValuesConfig;
 
@@ -41,11 +41,11 @@ public final class GamePortal {
         return this.custom;
     }
 
-    public Text getName() {
+    public Component getName() {
         return this.backend.getName();
     }
 
-    public List<Text> getDescription() {
+    public List<Component> getDescription() {
         return this.backend.getDescription();
     }
 
@@ -65,7 +65,7 @@ public final class GamePortal {
         return this.backend.getMaxPlayerCount();
     }
 
-    public void requestJoin(ServerPlayerEntity player, boolean alt) {
+    public void requestJoin(ServerPlayer player, boolean alt) {
         this.backend.applyTo(player, alt);
     }
 
@@ -126,6 +126,6 @@ public final class GamePortal {
 
     @FunctionalInterface
     public interface GuiProvider {
-        List<GuiElementInterface> getGuiElements();
+        List<GuiElement> getGuiElements();
     }
 }

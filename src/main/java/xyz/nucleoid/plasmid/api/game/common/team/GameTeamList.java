@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-public final record GameTeamList(List<GameTeam> list) implements Iterable<GameTeam> {
+public record GameTeamList(List<GameTeam> list) implements Iterable<GameTeam> {
     public static final Codec<GameTeamList> CODEC = GameTeam.CODEC.listOf()
             .xmap(GameTeamList::new, GameTeamList::list);
 

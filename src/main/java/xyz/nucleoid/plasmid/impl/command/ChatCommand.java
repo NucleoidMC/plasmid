@@ -4,17 +4,17 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import xyz.nucleoid.plasmid.api.chat.ChatChannel;
 import xyz.nucleoid.plasmid.api.chat.HasChatChannel;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 
 public class ChatCommand {
     // @formatter:off
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
             literal("chat")
                 .then(literal("all").executes(ChatCommand::switchToAll))
@@ -23,17 +23,17 @@ public class ChatCommand {
     }
     // @formatter:on
 
-    public static int switchToAll(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        var player = ctx.getSource().getPlayerOrThrow();
+    public static int switchToAll(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var player = ctx.getSource().getPlayerOrException();
         ((HasChatChannel) player).setChatChannel(ChatChannel.ALL);
-        player.sendMessage(Text.translatable("text.plasmid.chat.switch.all").formatted(Formatting.AQUA), false);
+        player.sendSystemMessage(Component.translatable("text.plasmid.chat.switch.all").withStyle(ChatFormatting.AQUA), false);
         return Command.SINGLE_SUCCESS;
     }
 
-    public static int switchToTeam(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        var player = ctx.getSource().getPlayerOrThrow();
+    public static int switchToTeam(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var player = ctx.getSource().getPlayerOrException();
         ((HasChatChannel) player).setChatChannel(ChatChannel.TEAM);
-        player.sendMessage(Text.translatable("text.plasmid.chat.switch.team").formatted(Formatting.AQUA), false);
+        player.sendSystemMessage(Component.translatable("text.plasmid.chat.switch.team").withStyle(ChatFormatting.AQUA), false);
         return Command.SINGLE_SUCCESS;
     }
 }

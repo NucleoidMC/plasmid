@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.api.game.event;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.ApiStatus;
 import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
@@ -32,6 +32,6 @@ public final class TeamSelectionLobbyEvents {
     });
 
     public interface Finalize {
-        void onFinalizeTeamSelection(TeamAllocator<GameTeamKey, ServerPlayerEntity> allocator, PlayerIterable players);
+        void onFinalizeTeamSelection(TeamAllocator<GameTeamKey, ServerPlayer> allocator, PlayerIterable players);
     }
 }

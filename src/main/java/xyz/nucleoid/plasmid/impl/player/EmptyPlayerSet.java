@@ -1,7 +1,7 @@
 package xyz.nucleoid.plasmid.impl.player;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.player.MutablePlayerSet;
@@ -24,7 +24,7 @@ public final class EmptyPlayerSet implements PlayerSet {
 
     @Override
     @Nullable
-    public ServerPlayerEntity getEntity(UUID id) {
+    public ServerPlayer getEntity(UUID id) {
         return null;
     }
 
@@ -40,7 +40,7 @@ public final class EmptyPlayerSet implements PlayerSet {
 
     @NotNull
     @Override
-    public Iterator<ServerPlayerEntity> iterator() {
+    public Iterator<ServerPlayer> iterator() {
         return Collections.emptyIterator();
     }
 }

@@ -1,8 +1,8 @@
 package xyz.nucleoid.plasmid.api.game.player;
 
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.TeleportTarget;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.phys.Vec3;
 
 public sealed interface RespawnResult permits RespawnResult.Pass, RespawnResult.Respawn, RespawnResult.Leave {
     Pass PASS = new Pass();
@@ -14,18 +14,20 @@ public sealed interface RespawnResult permits RespawnResult.Pass, RespawnResult.
     }
 
     non-sealed interface Respawn extends RespawnResult {
-        TeleportTarget target();
+        TeleportTransition.PostTeleportTransition MARKER = (entity) -> {};
 
-        static Respawn at(ServerWorld world, Vec3d pos) {
-            return at(world, pos, new Vec3d(0, 0, 0));
+        TeleportTransition target();
+
+        static Respawn at(ServerLevel world, Vec3 pos) {
+            return at(world, pos, new Vec3(0, 0, 0));
         }
-        static Respawn at(ServerWorld world, Vec3d pos, Vec3d velocity) {
+        static Respawn at(ServerLevel world, Vec3 pos, Vec3 velocity) {
             return at(world, pos, velocity, 0, 0);
         }
-        static Respawn at(ServerWorld world, Vec3d pos, Vec3d velocity, float yaw, float pitch) {
-            return at(new TeleportTarget(world, pos, velocity, yaw, pitch, TeleportTarget.NO_OP));
+        static Respawn at(ServerLevel world, Vec3 pos, Vec3 velocity, float yaw, float pitch) {
+            return at(new TeleportTransition(world, pos, velocity, yaw, pitch, MARKER));
         }
-        static Respawn at(TeleportTarget target) {
+        static Respawn at(TeleportTransition target) {
             return () -> target;
         }
     }

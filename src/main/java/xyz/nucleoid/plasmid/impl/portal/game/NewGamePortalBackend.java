@@ -1,9 +1,9 @@
 package xyz.nucleoid.plasmid.impl.portal.game;
 
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
+import net.minecraft.server.level.ServerPlayer;
 import xyz.nucleoid.plasmid.api.game.GameResult;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
@@ -14,10 +14,10 @@ import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
-public record NewGamePortalBackend(RegistryEntry<GameConfig<?>> game) implements GameConfigGamePortalBackend {
+public record NewGamePortalBackend(Holder<GameConfig<?>> game) implements GameConfigGamePortalBackend {
     @Override
-    public void applyTo(ServerPlayerEntity player, boolean alt) {
-        CompletableFuture.supplyAsync(() -> this.openGame(player.server))
+    public void applyTo(ServerPlayer player, boolean alt) {
+        CompletableFuture.supplyAsync(() -> this.openGame(player.level().getServer()))
                 .thenCompose(Function.identity())
                 .handleAsync((gameSpace, throwable) -> {
                     GameResult result;
@@ -28,11 +28,11 @@ public record NewGamePortalBackend(RegistryEntry<GameConfig<?>> game) implements
                     }
 
                     if (result.isError()) {
-                        player.sendMessage(result.errorCopy().formatted(Formatting.RED), false);
+                        player.sendSystemMessage(result.errorCopy().withStyle(ChatFormatting.RED), false);
                     }
 
                     return null;
-                }, player.server);
+                }, player.level().getServer());
     }
 
     private CompletableFuture<GameSpace> openGame(MinecraftServer server) {

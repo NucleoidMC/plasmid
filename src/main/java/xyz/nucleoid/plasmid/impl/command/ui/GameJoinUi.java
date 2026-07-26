@@ -1,18 +1,11 @@
 package xyz.nucleoid.plasmid.impl.command.ui;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
+import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.minecraft.item.Items;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.MathHelper;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
+import xyz.nucleoid.plasmid.api.util.PlayerRef;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.game.manager.ManagedGameSpace;
 import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
@@ -22,30 +15,38 @@ import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Items;
 
 public class GameJoinUi extends SimpleGui {
-    private static final GuiElementInterface EMPTY = new GuiElementBuilder(Items.GRAY_STAINED_GLASS_PANE).hideTooltip().build();
+    private static final GuiElement EMPTY = new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).hideTooltip().build();
 
     private static final int NAVBAR_POS = 81;
-    private final ServerPlayerEntity player;
+    private final ServerPlayer player;
     private final JoinIntent joinIntent;
     private int tick;
     private int page = 0;
     private int pageSize;
 
-    public GameJoinUi(ServerPlayerEntity player, JoinIntent intent) {
-        super(ScreenHandlerType.GENERIC_9X6, player, true);
+    public GameJoinUi(ServerPlayer player, JoinIntent intent) {
+        super(MenuType.GENERIC_9x6, player, true);
         this.joinIntent = intent;
         this.player = player;
-        this.setTitle(Text.translatable("text.plasmid.ui.game_join.title"));
+        this.setTitle(Component.translatable("text.plasmid.ui.game_join.title"));
         this.updateUi();
     }
 
-    private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace, JoinIntent joinIntent) {
-        player.server.execute(() -> {
+    private static void tryJoinGame(ServerPlayer player, GameSpace gameSpace, JoinIntent joinIntent) {
+        player.level().getServer().execute(() -> {
             var result = GamePlayerJoiner.tryJoin(player, gameSpace, joinIntent);
             if (result.isError()) {
-                player.sendMessage(result.errorCopy().formatted(Formatting.RED));
+                player.sendSystemMessage(result.errorCopy().withStyle(ChatFormatting.RED));
             }
         });
     }
@@ -60,10 +61,12 @@ public class GameJoinUi extends SimpleGui {
     }
 
     private void updateUi() {
+        PlayerRef playerRef = PlayerRef.of(this.player);
         int i = 0;
         int gameI = 0;
 
         var games = new ArrayList<>(GameSpaceManagerImpl.get().getOpenGameSpaces());
+        games.removeIf((gameSpace -> !gameSpace.isPlayerAllowed(playerRef)));
         games.sort(Comparator.comparingInt(space -> -space.getPlayers().size()));
 
         int limit = this.size;
@@ -74,7 +77,7 @@ public class GameJoinUi extends SimpleGui {
             this.pageSize = games.size() / NAVBAR_POS;
         }
 
-        this.page = MathHelper.clamp(this.page, 0, this.pageSize);
+        this.page = Mth.clamp(this.page, 0, this.pageSize);
 
         for (var gameSpace : games) {
             if (gameI >= this.page * NAVBAR_POS) {
@@ -96,20 +99,20 @@ public class GameJoinUi extends SimpleGui {
             this.setSlot(NAVBAR_POS, EMPTY);
             this.setSlot(NAVBAR_POS + 1, EMPTY);
 
-            this.setSlot(NAVBAR_POS + 2, new GuiElementBuilder(hasPrevious ? Items.LIME_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE)
-                    .setName(Text.translatable("spectatorMenu.previous_page").formatted(hasPrevious ? Formatting.GOLD : Formatting.DARK_GRAY))
-                    .setCallback((x, y, z) -> this.changePage(-1))
+            this.setSlot(NAVBAR_POS + 2, new GuiElementBuilder(hasPrevious ? Items.STAINED_GLASS_PANE.lime() : Items.STAINED_GLASS_PANE.black())
+                    .setName(Component.translatable("spectatorMenu.previous_page").withStyle(hasPrevious ? ChatFormatting.GOLD : ChatFormatting.DARK_GRAY))
+                    .setCallback(() -> this.changePage(-1))
             );
             int pageValue = this.page + 1;
 
-            var registries = this.player.getRegistryManager();
+            var registries = this.player.registryAccess();
             this.setSlot(NAVBAR_POS + 3, Guis.getNumericBanner(registries, pageValue / 100));
             this.setSlot(NAVBAR_POS + 4, Guis.getNumericBanner(registries, pageValue / 10));
             this.setSlot(NAVBAR_POS + 5, Guis.getNumericBanner(registries, pageValue));
 
-            this.setSlot(NAVBAR_POS + 6, new GuiElementBuilder(hasNext ? Items.LIME_STAINED_GLASS_PANE : Items.BLACK_STAINED_GLASS_PANE)
-                    .setName(Text.translatable("spectatorMenu.next_page").formatted(hasNext ? Formatting.GOLD : Formatting.DARK_GRAY))
-                    .setCallback((x, y, z) -> this.changePage(1))
+            this.setSlot(NAVBAR_POS + 6, new GuiElementBuilder(hasNext ? Items.STAINED_GLASS_PANE.lime() : Items.STAINED_GLASS_PANE.black())
+                    .setName(Component.translatable("spectatorMenu.next_page").withStyle(hasNext ? ChatFormatting.GOLD : ChatFormatting.DARK_GRAY))
+                    .setCallback(() -> this.changePage(1))
             );
 
             this.setSlot(NAVBAR_POS + 7, EMPTY);
@@ -118,7 +121,7 @@ public class GameJoinUi extends SimpleGui {
     }
 
     private void changePage(int change) {
-        this.page = MathHelper.clamp(this.page + change, 0, this.pageSize);
+        this.page = Mth.clamp(this.page + change, 0, this.pageSize);
         this.updateUi();
     }
 
@@ -132,7 +135,7 @@ public class GameJoinUi extends SimpleGui {
             var text = line.copy();
 
             if (line.getStyle().getColor() == null) {
-                text.setStyle(line.getStyle().withColor(Formatting.GRAY));
+                text.setStyle(line.getStyle().withColor(ChatFormatting.GRAY));
             }
 
             element.addLoreLine(text);
@@ -141,42 +144,42 @@ public class GameJoinUi extends SimpleGui {
         boolean allowSpace = true;
 
         if (!state.state().hidden()) {
-            element.addLoreLine(ScreenTexts.EMPTY);
-            element.addLoreLine(Text.literal(" ").append(state.state().display()).formatted(Formatting.WHITE));
+            element.addLoreLine(CommonComponents.EMPTY);
+            element.addLoreLine(Component.literal(" ").append(state.state().display()).withStyle(ChatFormatting.WHITE));
             allowSpace = false;
         }
 
         if (state.players() > -1) {
             if (allowSpace) {
-                element.addLoreLine(ScreenTexts.EMPTY);
+                element.addLoreLine(CommonComponents.EMPTY);
                 allowSpace = false;
             }
-            element.addLoreLine(Text.empty()
-                    .append(Text.literal("» ").formatted(Formatting.DARK_GRAY))
-                    .append(Text.translatable("text.plasmid.ui.game_join.players",
-                            Text.literal(state.players() + (state.maxPlayers() > 0 ? " / " + state.maxPlayers() : "")).formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
+            element.addLoreLine(Component.empty()
+                    .append(Component.literal("» ").withStyle(ChatFormatting.DARK_GRAY))
+                    .append(Component.translatable("text.plasmid.ui.game_join.players",
+                            Component.literal(state.players() + (state.maxPlayers() > 0 ? " / " + state.maxPlayers() : "")).withStyle(ChatFormatting.YELLOW)).withStyle(ChatFormatting.GOLD))
             );
         }
 
         if (state.spectators() > 0) {
             if (allowSpace) {
-                element.addLoreLine(ScreenTexts.EMPTY);
+                element.addLoreLine(CommonComponents.EMPTY);
                 allowSpace = false;
             }
 
-            element.addLoreLine(Text.empty()
-                    .append(Text.literal("» ").formatted(Formatting.DARK_GRAY))
-                    .append(Text.translatable("text.plasmid.ui.game_join.spectators",
-                            Text.literal( state.spectators() + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
+            element.addLoreLine(Component.empty()
+                    .append(Component.literal("» ").withStyle(ChatFormatting.DARK_GRAY))
+                    .append(Component.translatable("text.plasmid.ui.game_join.spectators",
+                            Component.literal( state.spectators() + "").withStyle(ChatFormatting.YELLOW)).withStyle(ChatFormatting.GOLD))
             );
         }
 
         var actionType = this.joinIntent == JoinIntent.PLAY ? GamePortalBackend.ActionType.PLAY : GamePortalBackend.ActionType.SPECTATE;
 
         if (actionType != GamePortalBackend.ActionType.NONE) {
-            element.addLoreLine(Text.empty().append(Text.literal(" [ ").formatted(Formatting.GRAY))
+            element.addLoreLine(Component.empty().append(Component.literal(" [ ").withStyle(ChatFormatting.GRAY))
                     .append(actionType.text())
-                    .append(Text.literal(" ]").formatted(Formatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));
+                    .append(Component.literal(" ]").withStyle(ChatFormatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));
         }
 
         element.hideDefaultTooltip();

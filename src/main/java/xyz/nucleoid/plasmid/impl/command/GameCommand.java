@@ -7,17 +7,20 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.logging.LogUtils;
-import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.NbtCompoundArgumentType;
+import net.fabricmc.fabric.api.permission.v1.PermissionPredicates;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.CompoundTagArgument;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionLevel;
 import org.slf4j.Logger;
+import xyz.nucleoid.plasmid.api.registry.PlasmidRegistryKeys;
+import xyz.nucleoid.plasmid.api.util.PlayerRef;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.impl.command.argument.GameConfigArgument;
 import xyz.nucleoid.plasmid.impl.command.argument.GameSpaceArgument;
@@ -25,9 +28,8 @@ import xyz.nucleoid.plasmid.impl.command.ui.GameJoinUi;
 import xyz.nucleoid.plasmid.api.game.GameCloseReason;
 import xyz.nucleoid.plasmid.api.game.GameOpenException;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
-import xyz.nucleoid.plasmid.api.game.GameTexts;
+import xyz.nucleoid.plasmid.api.game.GameComponents;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.api.game.config.GameConfigs;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
 import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
@@ -36,62 +38,63 @@ import xyz.nucleoid.plasmid.api.util.Scheduler;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
+import static xyz.nucleoid.plasmid.impl.Plasmid.id;
 
 public final class GameCommand {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public static final SimpleCommandExceptionType NO_GAME_OPEN = new SimpleCommandExceptionType(
-            Text.translatable("text.plasmid.game.join.no_game_open")
+            Component.translatable("text.plasmid.game.join.no_game_open")
     );
 
     public static final SimpleCommandExceptionType NOT_IN_GAME = new SimpleCommandExceptionType(
-            Text.translatable("text.plasmid.game.not_in_game")
+            Component.translatable("text.plasmid.game.not_in_game")
     );
 
     public static final DynamicCommandExceptionType MALFORMED_CONFIG = new DynamicCommandExceptionType(error ->
-            Text.stringifiedTranslatable("text.plasmid.game.open.malformed_config", error)
+            Component.translatableEscape("text.plasmid.game.open.malformed_config", error)
     );
 
     public static final DynamicCommandExceptionType PLAYER_NOT_IN_GAME = new DynamicCommandExceptionType(player ->
-            Text.stringifiedTranslatable("text.plasmid.game.locate.player_not_in_game", player)
+            Component.translatableEscape("text.plasmid.game.locate.player_not_in_game", player)
     );
 
     // @formatter:off
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
             literal("game")
                 .then(literal("open")
-                    .requires(Permissions.require("plasmid.command.game.open", 2))
+                    .requires(PermissionPredicates.require(id("command/game/open"), PermissionLevel.GAMEMASTERS))
                     .then(GameConfigArgument.argument("game_config")
                         .executes(GameCommand::openGame)
                     )
-                    .then(argument("game_config_nbt", NbtCompoundArgumentType.nbtCompound())
+                    .then(argument("game_config_nbt", CompoundTagArgument.compoundTag())
                         .executes(GameCommand::openAnonymousGame)
                     )
                 )
                 .then(literal("propose")
-                    .requires(Permissions.require("plasmid.command.game.propose", 2))
+                    .requires(PermissionPredicates.require(id("command/game/propose"), PermissionLevel.GAMEMASTERS))
                     .then(GameSpaceArgument.argument("game_space")
                         .executes(GameCommand::proposeGame)
                     )
                         .executes(GameCommand::proposeCurrentGame)
                 )
                 .then(literal("start")
-                    .requires(Permissions.require("plasmid.command.game.start", 2))
+                    .requires(PermissionPredicates.require(id("command/game/start"), PermissionLevel.GAMEMASTERS))
                     .executes(GameCommand::startGame)
                 )
                 .then(literal("stop")
-                    .requires(Permissions.require("plasmid.command.game.stop", 2))
+                    .requires(PermissionPredicates.require(id("command/game/stop"), PermissionLevel.GAMEMASTERS))
                     .executes(GameCommand::stopGame)
                         .then(literal("confirm")
                             .executes(GameCommand::stopGameConfirmed)
                         )
                 )
                 .then(literal("kick")
-                    .requires(Permissions.require("plasmid.command.game.kick", 2))
-                    .then(argument("targets", EntityArgumentType.players())
+                    .requires(PermissionPredicates.require(id("command/game/kick"), PermissionLevel.GAMEMASTERS))
+                    .then(argument("targets", EntityArgument.players())
                         .executes(GameCommand::kickPlayers)
                     )
                 )
@@ -108,14 +111,14 @@ public final class GameCommand {
                      )
                 )
                 .then(literal("joinall")
-                    .requires(Permissions.require("plasmid.command.game.joinall", 2))
+                    .requires(PermissionPredicates.require(id("command/game.joinall"), PermissionLevel.GAMEMASTERS))
                     .executes(GameCommand::joinAllGame)
                     .then(GameSpaceArgument.argument("game_space")
                         .executes(GameCommand::joinAllQualifiedGame)
                     )
                 )
                 .then(literal("locate")
-                        .then(argument("player", EntityArgumentType.player())
+                        .then(argument("player", EntityArgument.player())
                         .executes(GameCommand::locatePlayer))
                 )
                 .then(literal("leave").executes(GameCommand::leaveGame))
@@ -124,11 +127,11 @@ public final class GameCommand {
     }
     // @formatter:on
 
-    private static int openGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int openGame(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         return openGame(context, false);
     }
 
-    protected static int openGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
+    protected static int openGame(CommandContext<CommandSourceStack> context, boolean test) throws CommandSyntaxException {
         try {
             var game = GameConfigArgument.get(context, "game_config");
             return openGame(context, game, test);
@@ -136,31 +139,31 @@ public final class GameCommand {
             throw e;
         } catch (Exception e) {
             LOGGER.error("An unexpected error occurred while opening a game", e);
-            context.getSource().sendFeedback(() -> Text.translatable("text.plasmid.game.open.error").formatted(Formatting.RED), false);
+            context.getSource().sendSuccess(() -> Component.translatable("text.plasmid.game.open.error").withStyle(ChatFormatting.RED), false);
             return 0;
         }
     }
 
-    private static int openAnonymousGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int openAnonymousGame(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         return openAnonymousGame(context, false);
     }
 
-    protected static int openAnonymousGame(CommandContext<ServerCommandSource> context, boolean test) throws CommandSyntaxException {
+    protected static int openAnonymousGame(CommandContext<CommandSourceStack> context, boolean test) throws CommandSyntaxException {
         try {
-            var configNbt = NbtCompoundArgumentType.getNbtCompound(context, "game_config_nbt");
-            var game = GameConfig.DIRECT_CODEC.parse(context.getSource().getRegistryManager().getOps(NbtOps.INSTANCE), configNbt)
+            var configNbt = CompoundTagArgument.getCompoundTag(context, "game_config_nbt");
+            var game = GameConfig.DIRECT_CODEC.parse(context.getSource().registryAccess().createSerializationContext(NbtOps.INSTANCE), configNbt)
                     .getOrThrow(MALFORMED_CONFIG::create);
-            return openGame(context, RegistryEntry.of(game), test);
+            return openGame(context, Holder.direct(game), test);
         } catch (CommandSyntaxException e) {
             throw e;
         } catch (Exception e) {
             LOGGER.error("An unexpected error occurred while opening a game", e);
-            context.getSource().sendFeedback(() -> Text.translatable("text.plasmid.game.open.error").formatted(Formatting.RED), false);
+            context.getSource().sendSuccess(() -> Component.translatable("text.plasmid.game.open.error").withStyle(ChatFormatting.RED), false);
             return 0;
         }
     }
 
-    private static int openGame(CommandContext<ServerCommandSource> context, RegistryEntry<GameConfig<?>> config, boolean test) {
+    private static int openGame(CommandContext<CommandSourceStack> context, Holder<GameConfig<?>> config, boolean test) {
         var source = context.getSource();
         var server = source.getServer();
         var player = source.getPlayer();
@@ -188,51 +191,54 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void onOpenSuccess(ServerCommandSource source, GameSpace gameSpace, ServerPlayerEntity player, boolean test) {
-        var players = source.getServer().getPlayerManager();
+    private static void onOpenSuccess(CommandSourceStack source, GameSpace gameSpace, ServerPlayer player, boolean test) {
+        var players = source.getServer().getPlayerList();
 
-        var message = test ? GameTexts.Broadcast.gameOpenedTesting(source, gameSpace) : GameTexts.Broadcast.gameOpened(source, gameSpace);
-        players.broadcast(message, false);
-
+        var message = test ? GameComponents.Broadcast.gameOpenedTesting(source, gameSpace) : GameComponents.Broadcast.gameOpened(source, gameSpace);
         if (test) {
+            players.broadcastSystemMessage(message, false);
             joinAllPlayersToGame(source, gameSpace);
 
             var startResult = gameSpace.requestStart();
 
             if (!startResult.isOk()) {
-                var error = startResult.errorCopy().formatted(Formatting.RED);
+                var error = startResult.errorCopy().withStyle(ChatFormatting.RED);
                 gameSpace.getPlayers().sendMessage(error);
             }
         } else if (player != null) {
             tryJoinGame(player, gameSpace, JoinIntent.PLAY);
+            // only send messages to players that are allowed to join
+            players.getPlayers().stream().
+                    filter((plr) -> gameSpace.isPlayerAllowed(PlayerRef.of(plr)))
+                    .forEach((plr -> plr.sendSystemMessage(message, false)));
         }
     }
 
-    private static void onOpenError(ServerCommandSource source, Throwable throwable) {
+    private static void onOpenError(CommandSourceStack source, Throwable throwable) {
         Plasmid.LOGGER.error("Failed to start game", throwable);
 
         var gameOpenException = GameOpenException.unwrap(throwable);
 
-        MutableText message;
+        MutableComponent message;
         if (gameOpenException != null) {
             message = gameOpenException.getReason().copy();
         } else {
-            message = GameTexts.Broadcast.gameOpenError();
+            message = GameComponents.Broadcast.gameOpenError();
         }
 
-        var players = source.getServer().getPlayerManager();
-        players.broadcast(message.formatted(Formatting.RED), false);
+        var players = source.getServer().getPlayerList();
+        players.broadcastSystemMessage(message.withStyle(ChatFormatting.RED), false);
     }
 
-    private static int proposeGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int proposeGame(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var gameSpace = GameSpaceArgument.get(context, "game_space");
         return proposeGame(context.getSource(), gameSpace);
     }
 
-    private static int proposeCurrentGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int proposeCurrentGame(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var source = context.getSource();
 
-        var gameSpace = GameSpaceManagerImpl.get().byPlayer(source.getPlayerOrThrow());
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(source.getPlayerOrException());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
@@ -240,28 +246,28 @@ public final class GameCommand {
         return proposeGame(source, gameSpace);
     }
 
-    private static int proposeGame(ServerCommandSource source, GameSpace gameSpace) {
-        var message = GameTexts.Broadcast.propose(source, gameSpace);
+    private static int proposeGame(CommandSourceStack source, GameSpace gameSpace) {
+        var message = GameComponents.Broadcast.propose(source, gameSpace);
 
-        var playerManager = source.getServer().getPlayerManager();
-        playerManager.broadcast(message, false);
+        var playerManager = source.getServer().getPlayerList();
+        playerManager.broadcastSystemMessage(message, false);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int joinGame(CommandContext<ServerCommandSource> context, JoinIntent intent) throws CommandSyntaxException {
-        new GameJoinUi(context.getSource().getPlayerOrThrow(), intent).open();
+    private static int joinGame(CommandContext<CommandSourceStack> context, JoinIntent intent) throws CommandSyntaxException {
+        new GameJoinUi(context.getSource().getPlayerOrException(), intent).open();
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int joinQualifiedGame(CommandContext<ServerCommandSource> context, JoinIntent intent) throws CommandSyntaxException {
+    private static int joinQualifiedGame(CommandContext<CommandSourceStack> context, JoinIntent intent) throws CommandSyntaxException {
         var gameSpace = GameSpaceArgument.get(context, "game_space");
-        tryJoinGame(context.getSource().getPlayerOrThrow(), gameSpace, intent);
+        tryJoinGame(context.getSource().getPlayerOrException(), gameSpace, intent);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int joinAllGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int joinAllGame(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         GameSpace gameSpace = null;
 
         var player = context.getSource().getPlayer();
@@ -278,31 +284,31 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int joinAllQualifiedGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int joinAllQualifiedGame(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var gameSpace = GameSpaceArgument.get(context, "game_space");
         joinAllPlayersToGame(context.getSource(), gameSpace);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void joinAllPlayersToGame(ServerCommandSource source, GameSpace gameSpace) {
-        var playerManager = source.getServer().getPlayerManager();
+    private static void joinAllPlayersToGame(CommandSourceStack source, GameSpace gameSpace) {
+        var playerManager = source.getServer().getPlayerList();
 
-        var players = playerManager.getPlayerList().stream()
+        var players = playerManager.getPlayers().stream()
                 .filter(player -> !GameSpaceManagerImpl.get().inGame(player))
                 .collect(Collectors.toList());
 
         var intent = JoinIntent.PLAY;
         var result = gameSpace.getPlayers().offer(players, intent);
         if (result.isError()) {
-            source.sendError(result.errorCopy().formatted(Formatting.RED));
+            source.sendFailure(result.errorCopy().withStyle(ChatFormatting.RED));
         }
     }
 
-    private static void tryJoinGame(ServerPlayerEntity player, GameSpace gameSpace, JoinIntent intent) {
+    private static void tryJoinGame(ServerPlayer player, GameSpace gameSpace, JoinIntent intent) {
         var result = GamePlayerJoiner.tryJoin(player, gameSpace, intent);
         if (result.isError()) {
-            player.sendMessage(result.errorCopy().formatted(Formatting.RED));
+            player.sendSystemMessage(result.errorCopy().withStyle(ChatFormatting.RED));
         }
     }
 
@@ -312,22 +318,22 @@ public final class GameCommand {
                 .orElseThrow(NO_GAME_OPEN::create);
     }
 
-    private static int locatePlayer(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        var player = EntityArgumentType.getPlayer(context, "player");
+    private static int locatePlayer(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        var player = EntityArgument.getPlayer(context, "player");
 
         var gameSpace = GameSpaceManagerImpl.get().byPlayer(player);
         if (gameSpace == null) {
             throw PLAYER_NOT_IN_GAME.create(player.getName());
         }
 
-        context.getSource().sendFeedback(() -> GameTexts.Command.located(player, gameSpace), false);
+        context.getSource().sendSuccess(() -> GameComponents.Command.located(player, gameSpace), false);
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int leaveGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int leaveGame(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var source = context.getSource();
-        var player = source.getPlayerOrThrow();
+        var player = source.getPlayerOrException();
 
         var gameSpace = GameSpaceManagerImpl.get().byPlayer(player);
         if (gameSpace == null) {
@@ -341,21 +347,21 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int startGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int startGame(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var source = context.getSource();
 
-        var gameSpace = GameSpaceManagerImpl.get().byPlayer(source.getPlayerOrThrow());
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(source.getPlayerOrException());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
 
         var startResult = gameSpace.requestStart();
 
-        Text message;
+        Component message;
         if (startResult.isOk()) {
-            message = GameTexts.Start.startedBy(source).formatted(Formatting.GRAY);
+            message = GameComponents.Start.startedBy(source).withStyle(ChatFormatting.GRAY);
         } else {
-            message = startResult.errorCopy().formatted(Formatting.RED);
+            message = startResult.errorCopy().withStyle(ChatFormatting.RED);
         }
 
         gameSpace.getPlayers().sendMessage(message);
@@ -363,9 +369,9 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int stopGame(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int stopGame(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var source = context.getSource();
-        var gameSpace = GameSpaceManagerImpl.get().byPlayer(source.getPlayerOrThrow());
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(source.getPlayerOrException());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
@@ -375,8 +381,8 @@ public final class GameCommand {
         if (playerSet.size() <= 1) {
             stopGameConfirmed(context);
         } else {
-            source.sendFeedback(
-                    () -> GameTexts.Stop.confirmStop().formatted(Formatting.GOLD),
+            source.sendSuccess(
+                    () -> GameComponents.Stop.confirmStop().withStyle(ChatFormatting.GOLD),
                     false
             );
         }
@@ -384,9 +390,9 @@ public final class GameCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int stopGameConfirmed(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int stopGameConfirmed(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var source = context.getSource();
-        var gameSpace = GameSpaceManagerImpl.get().byPlayer(source.getPlayerOrThrow());
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(source.getPlayerOrException());
         if (gameSpace == null) {
             throw NOT_IN_GAME.create();
         }
@@ -396,50 +402,50 @@ public final class GameCommand {
         try {
             gameSpace.close(GameCloseReason.CANCELED);
 
-            var message = GameTexts.Stop.stoppedBy(source);
-            playerSet.sendMessage(message.formatted(Formatting.GRAY));
+            var message = GameComponents.Stop.stoppedBy(source);
+            playerSet.sendMessage(message.withStyle(ChatFormatting.GRAY));
         } catch (Throwable throwable) {
             Plasmid.LOGGER.error("Failed to stop game", throwable);
 
-            playerSet.sendMessage(GameTexts.Stop.genericError().formatted(Formatting.RED));
+            playerSet.sendMessage(GameComponents.Stop.genericError().withStyle(ChatFormatting.RED));
         }
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int listGames(CommandContext<ServerCommandSource> context) {
-        var registry = context.getSource().getRegistryManager().getOrThrow(GameConfigs.REGISTRY_KEY);
+    private static int listGames(CommandContext<CommandSourceStack> context) {
+        var registry = context.getSource().registryAccess().lookupOrThrow(PlasmidRegistryKeys.GAME_CONFIG);
         var source = context.getSource();
-        source.sendFeedback(() -> GameTexts.Command.gameList().formatted(Formatting.BOLD), false);
+        source.sendSuccess(() -> GameComponents.Command.gameList().withStyle(ChatFormatting.BOLD), false);
 
-        registry.streamEntries().forEach(game -> {
-            var id = game.registryKey().getValue();
-            source.sendFeedback(() -> {
+        registry.listElements().forEach(game -> {
+            var id = game.key().identifier();
+            source.sendSuccess(() -> {
                 String command = "/game open " + id;
 
                 var link = GameConfig.name(game).copy()
-                        .setStyle(GameTexts.commandLinkStyle(command));
+                        .setStyle(GameComponents.commandLinkStyle(command));
 
-                return GameTexts.Command.listEntry(link);
+                return GameComponents.Command.listEntry(link);
             }, false);
         });
 
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int kickPlayers(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int kickPlayers(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         var source = context.getSource();
-        var playerManager = source.getServer().getPlayerManager();
+        var playerManager = source.getServer().getPlayerList();
 
-        var targets = EntityArgumentType.getPlayers(context, "targets");
+        var targets = EntityArgument.getPlayers(context, "targets");
 
         int successes = 0;
 
         for (var target : targets) {
             var gameSpace = GameSpaceManagerImpl.get().byPlayer(target);
             if (gameSpace != null) {
-                var message = GameTexts.Kick.kick(source, target).formatted(Formatting.GRAY);
-                playerManager.broadcast(message, false);
+                var message = GameComponents.Kick.kick(source, target).withStyle(ChatFormatting.GRAY);
+                playerManager.broadcastSystemMessage(message, false);
 
                 Scheduler.INSTANCE.submit(server -> {
                     gameSpace.getPlayers().kick(target);

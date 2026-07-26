@@ -1,11 +1,11 @@
 package xyz.nucleoid.plasmid.api.game.common.widget;
 
 import eu.pb4.sidebars.api.ScrollableSidebar;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
 
 import java.util.function.Predicate;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * An implementation of {@link GameWidget} which provides a sidebar through the use of the vanilla scoreboard which
@@ -16,7 +16,7 @@ import java.util.function.Predicate;
  * @see GlobalWidgets
  */
 public class ScrollableSidebarWidget extends ScrollableSidebar implements GameWidget {
-    private final Predicate<ServerPlayerEntity> playerChecker;
+    private final Predicate<ServerPlayer> playerChecker;
 
     public ScrollableSidebarWidget(int ticksPerLine) {
         super(Priority.MEDIUM, ticksPerLine);
@@ -24,19 +24,19 @@ public class ScrollableSidebarWidget extends ScrollableSidebar implements GameWi
         this.show();
     }
 
-    public ScrollableSidebarWidget(int ticksPerLine, Predicate<ServerPlayerEntity> playerChecker) {
+    public ScrollableSidebarWidget(int ticksPerLine, Predicate<ServerPlayer> playerChecker) {
         super(Priority.MEDIUM, ticksPerLine);
         this.playerChecker = playerChecker;
         this.show();
     }
 
-    public ScrollableSidebarWidget(Text title, int ticksPerLine) {
+    public ScrollableSidebarWidget(Component title, int ticksPerLine) {
         super(title, Priority.MEDIUM, ticksPerLine);
         this.playerChecker = ScrollableSidebarWidget::alwaysTrue;
         this.show();
     }
 
-    public ScrollableSidebarWidget(Text title, int ticksPerLine, Predicate<ServerPlayerEntity> playerChecker) {
+    public ScrollableSidebarWidget(Component title, int ticksPerLine, Predicate<ServerPlayer> playerChecker) {
         super(title, Priority.MEDIUM, ticksPerLine);
         this.playerChecker = playerChecker;
 
@@ -44,7 +44,7 @@ public class ScrollableSidebarWidget extends ScrollableSidebar implements GameWi
     }
 
     @Override
-    public void addPlayer(ServerPlayerEntity player) {
+    public void addPlayer(ServerPlayer player) {
         if (this.playerChecker.test(player)) {
             super.addPlayer(player);
         }
@@ -56,7 +56,7 @@ public class ScrollableSidebarWidget extends ScrollableSidebar implements GameWi
         this.players.clear();
     }
 
-    private static Boolean alwaysTrue(ServerPlayerEntity player) {
+    private static Boolean alwaysTrue(ServerPlayer player) {
         return true;
     }
 }

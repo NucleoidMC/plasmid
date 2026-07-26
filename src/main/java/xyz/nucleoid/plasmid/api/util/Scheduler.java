@@ -92,7 +92,7 @@ public final class Scheduler {
     }
 
     private void runTasks(MinecraftServer server) {
-        int time = server.getTicks();
+        int time = server.getTickCount();
         this.currentTick = time;
 
         this.taskQueue.removeIf(task -> task.tryRun(server, time));

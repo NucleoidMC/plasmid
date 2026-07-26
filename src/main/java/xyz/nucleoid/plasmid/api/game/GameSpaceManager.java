@@ -1,18 +1,17 @@
 package xyz.nucleoid.plasmid.api.game;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
-import xyz.nucleoid.plasmid.impl.game.manager.ManagedGameSpace;
 
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 @ApiStatus.NonExtendable
 public interface GameSpaceManager {
@@ -20,7 +19,7 @@ public interface GameSpaceManager {
         return GameSpaceManagerImpl.get();
     }
 
-    CompletableFuture<GameSpace> open(RegistryEntry<GameConfig<?>> config);
+    CompletableFuture<GameSpace> open(Holder<GameConfig<?>> config);
 
     Collection<GameSpace> getOpenGameSpaces();
 
@@ -31,12 +30,12 @@ public interface GameSpaceManager {
     GameSpace byUserId(Identifier userId);
 
     @Nullable
-    GameSpace byWorld(World world);
+    GameSpace byLevel(Level level);
 
     @Nullable
-    GameSpace byPlayer(PlayerEntity player);
+    GameSpace byPlayer(Player player);
 
-    boolean hasGame(World world);
+    boolean hasGame(Level level);
 
-    boolean inGame(PlayerEntity player);
+    boolean inGame(Player player);
 }

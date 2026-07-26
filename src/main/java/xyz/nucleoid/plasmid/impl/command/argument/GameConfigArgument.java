@@ -4,42 +4,42 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.api.game.config.GameConfigs;
+import xyz.nucleoid.plasmid.api.registry.PlasmidRegistryKeys;
 
 import java.util.Locale;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 
 public final class GameConfigArgument {
     private static final DynamicCommandExceptionType GAME_NOT_FOUND = new DynamicCommandExceptionType(id ->
-            Text.stringifiedTranslatable("text.plasmid.game_config.game_not_found", id)
+            Component.translatableEscape("text.plasmid.game_config.game_not_found", id)
     );
 
-    public static RequiredArgumentBuilder<ServerCommandSource, Identifier> argument(String name) {
-        return CommandManager.argument(name, IdentifierArgumentType.identifier())
+    public static RequiredArgumentBuilder<CommandSourceStack, Identifier> argument(String name) {
+        return Commands.argument(name, IdentifierArgument.id())
                 .suggests((ctx, builder) -> {
-                    var registry = ctx.getSource().getRegistryManager().getOrThrow(GameConfigs.REGISTRY_KEY);
+                    var registry = ctx.getSource().registryAccess().lookupOrThrow(PlasmidRegistryKeys.GAME_CONFIG);
                     var remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
-                    CommandSource.forEachMatching(registry.getKeys(), remaining, RegistryKey::getValue, key -> {
-                        registry.getOptional(key).ifPresent(entry -> {
-                            builder.suggest(key.getValue().toString(), GameConfig.name(entry));
+                    SharedSuggestionProvider.filterResources(registry.registryKeySet(), remaining, ResourceKey::identifier, key -> {
+                        registry.get(key).ifPresent(entry -> {
+                            builder.suggest(key.identifier().toString(), GameConfig.name(entry));
                         });
                     });
                     return builder.buildFuture();
                 });
     }
 
-    public static RegistryEntry.Reference<GameConfig<?>> get(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
-        var key = RegistryKey.of(GameConfigs.REGISTRY_KEY, IdentifierArgumentType.getIdentifier(context, name));
-        var registry = context.getSource().getRegistryManager().getOrThrow(GameConfigs.REGISTRY_KEY);
-        return registry.getOptional(key).orElseThrow(() -> GAME_NOT_FOUND.create(key.getValue()));
+    public static Holder.Reference<GameConfig<?>> get(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+        var key = ResourceKey.create(PlasmidRegistryKeys.GAME_CONFIG, IdentifierArgument.getId(context, name));
+        var registry = context.getSource().registryAccess().lookupOrThrow(PlasmidRegistryKeys.GAME_CONFIG);
+        return registry.get(key).orElseThrow(() -> GAME_NOT_FOUND.create(key.identifier()));
     }
 }

@@ -4,14 +4,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Util;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.*;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
@@ -38,7 +38,7 @@ public final class GameSpaceManagerImpl implements GameSpaceManager {
 
     private final Map<UUID, ManagedGameSpace> idToGameSpace = new Object2ObjectOpenHashMap<>();
     private final Map<Identifier, ManagedGameSpace> userIdToGameSpace = new Object2ObjectOpenHashMap<>();
-    private final Map<RegistryKey<World>, ManagedGameSpace> dimensionToGameSpace = new Reference2ObjectOpenHashMap<>();
+    private final Map<ResourceKey<Level>, ManagedGameSpace> dimensionToGameSpace = new Reference2ObjectOpenHashMap<>();
     private final Map<UUID, ManagedGameSpace> playerToGameSpace = new Object2ObjectOpenHashMap<>();
 
     private final ListenerSelector listenerSelector = new ListenerSelector();
@@ -79,20 +79,20 @@ public final class GameSpaceManagerImpl implements GameSpaceManager {
     }
 
     @Override
-    public CompletableFuture<GameSpace> open(RegistryEntry<GameConfig<?>> config) {
+    public CompletableFuture<GameSpace> open(Holder<GameConfig<?>> config) {
         if (this.server == null) {
             return CompletableFuture.failedFuture(new RuntimeException("Not initialized yet!"));
         }
         return CompletableFuture.supplyAsync(
                 () -> GameConfig.openProcedure(this.server, config),
-                Util.getMainWorkerExecutor()
+                Util.backgroundExecutor()
         ).thenApplyAsync(
                 procedure -> this.addGameSpace(procedure.configOverride() != null ? procedure.configOverride() : config, config, procedure),
                 this.server
         );
     }
 
-    private ManagedGameSpace addGameSpace(RegistryEntry<GameConfig<?>> config, RegistryEntry<GameConfig<?>> sourceConfig, GameOpenProcedure procedure) {
+    private ManagedGameSpace addGameSpace(Holder<GameConfig<?>> config, Holder<GameConfig<?>> sourceConfig, GameOpenProcedure procedure) {
         if (this.server == null) {
             throw new RuntimeException("Not initialized yet!");
         }
@@ -143,36 +143,36 @@ public final class GameSpaceManagerImpl implements GameSpaceManager {
 
     @Override
     @Nullable
-    public ManagedGameSpace byWorld(World world) {
+    public ManagedGameSpace byLevel(Level level) {
         if (this.server == null) {
             return null;
         }
-        return this.dimensionToGameSpace.get(world.getRegistryKey());
+        return this.dimensionToGameSpace.get(level.dimension());
     }
 
     @Override
     @Nullable
-    public ManagedGameSpace byPlayer(PlayerEntity player) {
+    public ManagedGameSpace byPlayer(Player player) {
         if (this.server == null) {
             return null;
         }
-        return this.playerToGameSpace.get(player.getUuid());
+        return this.playerToGameSpace.get(player.getUUID());
     }
 
     @Override
-    public boolean hasGame(World world) {
+    public boolean hasGame(Level level) {
         if (this.server == null) {
             return false;
         }
-        return this.dimensionToGameSpace.containsKey(world.getRegistryKey());
+        return this.dimensionToGameSpace.containsKey(level.dimension());
     }
 
     @Override
-    public boolean inGame(PlayerEntity player) {
+    public boolean inGame(Player player) {
         if (this.server == null) {
             return false;
         }
-        return this.playerToGameSpace.containsKey(player.getUuid());
+        return this.playerToGameSpace.containsKey(player.getUUID());
     }
 
     void removeGameSpace(ManagedGameSpace gameSpace) {
@@ -183,20 +183,20 @@ public final class GameSpaceManagerImpl implements GameSpaceManager {
         this.userIds.release(metadata.userId());
     }
 
-    void addDimensionToGameSpace(ManagedGameSpace gameSpace, RegistryKey<World> dimension) {
+    void addDimensionToGameSpace(ManagedGameSpace gameSpace, ResourceKey<Level> dimension) {
         this.dimensionToGameSpace.put(dimension, gameSpace);
     }
 
-    void removeDimensionFromGameSpace(ManagedGameSpace gameSpace, RegistryKey<World> dimension) {
+    void removeDimensionFromGameSpace(ManagedGameSpace gameSpace, ResourceKey<Level> dimension) {
         this.dimensionToGameSpace.remove(dimension, gameSpace);
     }
 
-    void addPlayerToGameSpace(ManagedGameSpace gameSpace, ServerPlayerEntity player) {
-        this.playerToGameSpace.put(player.getUuid(), gameSpace);
+    void addPlayerToGameSpace(ManagedGameSpace gameSpace, ServerPlayer player) {
+        this.playerToGameSpace.put(player.getUUID(), gameSpace);
     }
 
-    void removePlayerFromGameSpace(ManagedGameSpace gameSpace, ServerPlayerEntity player) {
-        this.playerToGameSpace.remove(player.getUuid(), gameSpace);
+    void removePlayerFromGameSpace(ManagedGameSpace gameSpace, ServerPlayer player) {
+        this.playerToGameSpace.remove(player.getUUID(), gameSpace);
     }
 
     private void close() {
@@ -229,8 +229,8 @@ public final class GameSpaceManagerImpl implements GameSpaceManager {
         @Nullable
         private ManagedGameSpace getGameSpaceFor(EventSource source) {
             var entity = source.getEntity();
-            if (entity instanceof ServerPlayerEntity) {
-                var gameSpace = GameSpaceManagerImpl.this.playerToGameSpace.get(entity.getUuid());
+            if (entity instanceof ServerPlayer) {
+                var gameSpace = GameSpaceManagerImpl.this.playerToGameSpace.get(entity.getUUID());
                 if (gameSpace != null) {
                     return gameSpace;
                 }

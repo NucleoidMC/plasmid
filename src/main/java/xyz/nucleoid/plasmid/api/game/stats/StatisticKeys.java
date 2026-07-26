@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.api.game.stats;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 
 /**
@@ -28,7 +28,7 @@ public final class StatisticKeys {
     public static final StatisticKey<Integer> LONGEST_TIME = StatisticKey.intKey(id("longest_time"));
 
     private static Identifier id(String path) {
-        return Identifier.of(Plasmid.ID, path);
+        return Plasmid.id(path);
     }
     private StatisticKeys() { }
 }

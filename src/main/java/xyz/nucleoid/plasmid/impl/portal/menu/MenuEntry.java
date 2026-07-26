@@ -2,27 +2,27 @@ package xyz.nucleoid.plasmid.impl.portal.menu;
 
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 public interface MenuEntry {
-    Text name();
+    Component name();
 
-    List<Text> description();
+    List<Component> description();
 
     ItemStack icon();
 
-    void click(ServerPlayerEntity player, boolean alt);
+    void click(ServerPlayer player, boolean alt);
 
     default int getPlayerCount() {
         return -1;
@@ -37,7 +37,7 @@ public interface MenuEntry {
     }
 
     @Nullable
-    default Text getState() {
+    default Component getState() {
         return null;
     }
 
@@ -60,13 +60,13 @@ public interface MenuEntry {
 
     default GuiElement createGuiElement() {
         var element = GuiElementBuilder.from(this.icon().copy()).hideDefaultTooltip()
-                .setName(Text.empty().append(this.name()));
+                .setName(Component.empty().append(this.name()));
 
         for (var line : this.description()) {
             var text = line.copy();
 
             if (line.getStyle().getColor() == null) {
-                text.setStyle(line.getStyle().withFormatting(Formatting.GRAY));
+                text.setStyle(line.getStyle().applyFormat(ChatFormatting.GRAY));
             }
 
             element.addLoreLine(text);
@@ -79,50 +79,50 @@ public interface MenuEntry {
 
         var state = this.getState();
         if (state != null) {
-            element.addLoreLine(ScreenTexts.EMPTY);
-            element.addLoreLine(Text.literal(" ").append(state).formatted(Formatting.WHITE));
+            element.addLoreLine(CommonComponents.EMPTY);
+            element.addLoreLine(Component.literal(" ").append(state).withStyle(ChatFormatting.WHITE));
             allowSpace = false;
         }
 
         if (playerCount > -1) {
             if (allowSpace) {
-                element.addLoreLine(ScreenTexts.EMPTY);
+                element.addLoreLine(CommonComponents.EMPTY);
                 allowSpace = false;
             }
-            element.addLoreLine(Text.empty()
-                    .append(Text.literal("» ").formatted(Formatting.DARK_GRAY))
-                    .append(Text.translatable("text.plasmid.ui.game_join.players",
-                            Text.literal(playerCount + (maxPlayerCount > 0 ? " / " + maxPlayerCount : "")).formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
+            element.addLoreLine(Component.empty()
+                    .append(Component.literal("» ").withStyle(ChatFormatting.DARK_GRAY))
+                    .append(Component.translatable("text.plasmid.ui.game_join.players",
+                            Component.literal(playerCount + (maxPlayerCount > 0 ? " / " + maxPlayerCount : "")).withStyle(ChatFormatting.YELLOW)).withStyle(ChatFormatting.GOLD))
             );
         }
 
         if (spectatorCount > 0) {
             if (allowSpace) {
-                element.addLoreLine(ScreenTexts.EMPTY);
+                element.addLoreLine(CommonComponents.EMPTY);
                 allowSpace = false;
             }
 
-            element.addLoreLine(Text.empty()
-                    .append(Text.literal("» ").formatted(Formatting.DARK_GRAY))
-                    .append(Text.translatable("text.plasmid.ui.game_join.spectators",
-                            Text.literal( spectatorCount + "").formatted(Formatting.YELLOW)).formatted(Formatting.GOLD))
+            element.addLoreLine(Component.empty()
+                    .append(Component.literal("» ").withStyle(ChatFormatting.DARK_GRAY))
+                    .append(Component.translatable("text.plasmid.ui.game_join.spectators",
+                            Component.literal( spectatorCount + "").withStyle(ChatFormatting.YELLOW)).withStyle(ChatFormatting.GOLD))
             );
         }
 
         var actionType = this.getActionType();
 
         if (actionType != GamePortalBackend.ActionType.NONE) {
-            element.addLoreLine(Text.empty().append(Text.literal(" [ ").formatted(Formatting.GRAY))
+            element.addLoreLine(Component.empty().append(Component.literal(" [ ").withStyle(ChatFormatting.GRAY))
                     .append(actionType.text())
-                    .append(Text.literal(" ]").formatted(Formatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));
+                    .append(Component.literal(" ]").withStyle(ChatFormatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));
         }
 
         var altActionType = this.getAltActionType();
 
         if (altActionType != GamePortalBackend.ActionType.NONE) {
-            element.addLoreLine(Text.empty().append(Text.literal(" [ ").formatted(Formatting.GRAY))
+            element.addLoreLine(Component.empty().append(Component.literal(" [ ").withStyle(ChatFormatting.GRAY))
                     .append(actionType.text())
-                    .append(Text.literal(" ]").formatted(Formatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));
+                    .append(Component.literal(" ]").withStyle(ChatFormatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));
         }
 
         element.setCallback((a, b, c, gui) -> {

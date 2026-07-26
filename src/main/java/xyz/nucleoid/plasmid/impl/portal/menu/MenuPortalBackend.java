@@ -1,10 +1,8 @@
 package xyz.nucleoid.plasmid.impl.portal.menu;
 
-import eu.pb4.sgui.api.elements.GuiElementInterface;
+import eu.pb4.sgui.api.elements.GuiElement;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.world.item.ItemStackTemplate;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
@@ -14,14 +12,17 @@ import xyz.nucleoid.plasmid.api.util.Guis;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 public final class MenuPortalBackend implements GamePortalBackend {
-    private final Text name;
+    private final Component name;
     private final List<MenuEntry> games;
-    private final List<Text> description;
+    private final List<Component> description;
     private final ItemStack icon;
 
-    MenuPortalBackend(Text name, List<Text> description, ItemStack icon, List<MenuPortalConfig.Entry> games) {
+    MenuPortalBackend(Component name, List<Component> description, ItemStack icon, List<MenuPortalConfig.Entry> games) {
         this.name = name;
         this.description = description;
         this.icon = icon;
@@ -31,12 +32,12 @@ public final class MenuPortalBackend implements GamePortalBackend {
     }
 
     @Override
-    public Text getName() {
+    public Component getName() {
         return this.name;
     }
 
     @Override
-    public List<Text> getDescription() {
+    public List<Component> getDescription() {
         return this.description;
     }
 
@@ -74,8 +75,8 @@ public final class MenuPortalBackend implements GamePortalBackend {
         }
     }
 
-    private List<GuiElementInterface> getGuiElements() {
-        List<GuiElementInterface> elements = new ArrayList<>();
+    private List<GuiElement> getGuiElements() {
+        List<GuiElement> elements = new ArrayList<>();
 
         for (var game : this.games) {
             var uiEntry = game.createGuiElement();
@@ -94,7 +95,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
                     game,
                     configEntry.name().orElse(GameConfig.name(config)),
                     configEntry.description().orElse(config.value().description()),
-                    configEntry.icon().orElse(config.value().icon())
+                    configEntry.icon().map(ItemStackTemplate::create).orElse(config.value().icon())
             ));
         }
 
@@ -102,7 +103,7 @@ public final class MenuPortalBackend implements GamePortalBackend {
     }
 
     @Override
-    public void applyTo(ServerPlayerEntity player, boolean alt) {
+    public void applyTo(ServerPlayer player, boolean alt) {
         var ui = Guis.createSelectorGui(player, this.name.copy(), true, this.getGuiElements());
         ui.open();
     }

@@ -1,10 +1,10 @@
 package xyz.nucleoid.plasmid.impl.portal.game;
 
 import com.mojang.serialization.MapCodec;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import xyz.nucleoid.plasmid.api.game.config.CustomValuesConfig;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalConfig;
@@ -28,12 +28,12 @@ public record InvalidGamePortalBackend(Identifier identifier) implements GamePor
     };
 
     @Override
-    public Text getName() {
-        return Text.literal("Invalid portal'" + this.identifier + "'");
+    public Component getName() {
+        return Component.literal("Invalid portal'" + this.identifier + "'");
     }
 
     @Override
-    public void applyTo(ServerPlayerEntity player, boolean alt) {
+    public void applyTo(ServerPlayer player, boolean alt) {
 
     }
 }

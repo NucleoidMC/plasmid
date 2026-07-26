@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.api.game.event;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.common.GameWaitingLobby;
@@ -28,6 +28,6 @@ public final class GameWaitingLobbyEvents {
     });
 
     public interface BuildUiLayout {
-        void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayerEntity player);
+        void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayer player);
     }
 }

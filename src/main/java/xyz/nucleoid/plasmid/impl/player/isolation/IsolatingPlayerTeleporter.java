@@ -1,12 +1,16 @@
 package xyz.nucleoid.plasmid.impl.player.isolation;
 
 import eu.pb4.polymer.core.api.block.BlockMapper;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.packet.s2c.play.*;
+import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
+import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
+import net.minecraft.network.protocol.game.CommonPlayerSpawnInfo;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.biome.source.BiomeAccess;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.biome.BiomeManager;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 
 import java.util.function.Function;
@@ -33,7 +37,7 @@ public final class IsolatingPlayerTeleporter {
      * @param player the player to teleport
      * @param recreate a function describing how the new teleported player should be initialized
      */
-    public void teleportIn(ServerPlayerEntity player, Function<ServerPlayerEntity, ServerWorld> recreate) {
+    public void teleportIn(ServerPlayer player, Function<ServerPlayer, ServerLevel> recreate) {
         this.teleport(player, recreate, true);
     }
 
@@ -44,7 +48,7 @@ public final class IsolatingPlayerTeleporter {
      * @param player the player to teleport
      * @param recreate a function describing how the new teleported player should be initialized
      */
-    public void teleportOut(ServerPlayerEntity player, Function<ServerPlayerEntity, ServerWorld> recreate) {
+    public void teleportOut(ServerPlayer player, Function<ServerPlayer, ServerLevel> recreate) {
         this.teleport(player, recreate, false);
     }
 
@@ -55,7 +59,7 @@ public final class IsolatingPlayerTeleporter {
      * @param player the player to teleport
      * @param world the world to teleport to
      */
-    public void teleportOutTo(ServerPlayerEntity player, ServerWorld world) {
+    public void teleportOutTo(ServerPlayer player, ServerLevel world) {
         this.teleportOut(player, newPlayer -> world);
     }
 
@@ -65,25 +69,25 @@ public final class IsolatingPlayerTeleporter {
      *
      * @param player the player to teleport
      */
-    public void teleportOut(ServerPlayerEntity player) {
-        this.teleportOut(player, ServerPlayerEntity::getServerWorld);
+    public void teleportOut(ServerPlayer player) {
+        this.teleportOut(player, ServerPlayer::level);
     }
 
-    private void teleport(ServerPlayerEntity player, Function<ServerPlayerEntity, ServerWorld> recreate, boolean in) {
-        var playerManager = this.server.getPlayerManager();
+    private void teleport(ServerPlayer player, Function<ServerPlayer, ServerLevel> recreate, boolean in) {
+        var playerManager = this.server.getPlayerList();
         var playerManagerAccess = (PlayerManagerAccess) playerManager;
 
-        player.detach();
-        player.setCameraEntity(player);
+        player.unRide();
+        player.setCamera(player);
 
         if (in) {
             playerManagerAccess.plasmid$savePlayerData(player);
         }
 
-        player.getAdvancementTracker().clearCriteria();
-        this.server.getBossBarManager().onPlayerDisconnect(player);
+        player.getAdvancements().clearTriggers();
+        this.server.getCustomBossEvents().onPlayerDisconnect(player);
 
-        player.getServerWorld().removePlayer(player, Entity.RemovalReason.CHANGED_DIMENSION);
+        player.level().removePlayerImmediately(player, Entity.RemovalReason.CHANGED_DIMENSION);
         player.unsetRemoved();
 
         playerManagerAccess.plasmid$getPlayerResetter().apply(player);
@@ -92,44 +96,44 @@ public final class IsolatingPlayerTeleporter {
             playerManagerAccess.plasmid$loadIntoPlayer(player);
         }
 
-        player.server.getPlayerManager().sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_GAME_MODE, player));
+        player.level().getServer().getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, player));
 
         var world = recreate.apply(player);
-        player.setServerWorld(world);
+        player.setServerLevel(world);
 
-        var worldProperties = world.getLevelProperties();
+        var worldProperties = world.getLevelData();
 
         var spawnInfo = new CommonPlayerSpawnInfo(
-            world.getDimensionEntry(), world.getRegistryKey(),
-            BiomeAccess.hashSeed(world.getSeed()),
-            player.interactionManager.getGameMode(), player.interactionManager.getPreviousGameMode(),
-            world.isDebugWorld(), world.isFlat(), player.getLastDeathPos(), player.getPortalCooldown(),
+            world.dimensionTypeRegistration(), world.dimension(),
+            BiomeManager.obfuscateSeed(world.getSeed()),
+            player.gameMode.getGameModeForPlayer(), player.gameMode.getPreviousGameModeForPlayer(),
+            world.isDebug(), world.isFlat(), player.getLastDeathLocation(), player.getPortalCooldown(),
             world.getSeaLevel()
         );
 
-        var networkHandler = player.networkHandler;
-        networkHandler.sendPacket(new PlayerRespawnS2CPacket(spawnInfo, PlayerRespawnS2CPacket.KEEP_ALL));
+        var networkHandler = player.connection;
+        networkHandler.send(new ClientboundRespawnPacket(spawnInfo, ClientboundRespawnPacket.KEEP_ALL_DATA));
 
-        player.closeHandledScreen();
+        player.closeContainer();
 
         BlockMapper.resetMapper(player);
 
-        networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
-        networkHandler.syncWithPlayerPosition();
-        world.onDimensionChanged(player);
-        networkHandler.sendPacket(new DifficultyS2CPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
-        networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(player.getInventory().selectedSlot));
-        player.sendAbilitiesUpdate();
-        playerManager.sendCommandTree(player);
-        player.getRecipeBook().sendInitRecipesPacket(player);
+        networkHandler.teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
+        networkHandler.resetPosition();
+        world.addDuringTeleport(player);
+        networkHandler.send(new ClientboundChangeDifficultyPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
+        networkHandler.send(new ClientboundSetHeldSlotPacket(player.getInventory().getSelectedSlot()));
+        player.onUpdateAbilities();
+        playerManager.sendPlayerPermissionLevel(player);
+        player.getRecipeBook().sendInitialRecipeBook(player);
 
-        this.server.getBossBarManager().onPlayerConnect(player);
+        this.server.getCustomBossEvents().onPlayerConnect(player);
 
-        playerManager.sendWorldInfo(player, world);
-        playerManager.sendPlayerStatus(player);
-        playerManager.sendStatusEffects(player);
+        playerManager.sendLevelInfo(player, world);
+        playerManager.sendAllPlayerInfo(player);
+        playerManager.sendActivePlayerEffects(player);
 
         // we just sent the full inventory, so we can consider the ScreenHandler as up-to-date
-        ((ScreenHandlerAccess) player.playerScreenHandler).plasmid$resetTrackedState();
+        ((ScreenHandlerAccess) player.inventoryMenu).plasmid$resetTrackedState();
     }
 }

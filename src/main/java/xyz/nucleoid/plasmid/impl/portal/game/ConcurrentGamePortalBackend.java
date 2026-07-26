@@ -1,9 +1,9 @@
 package xyz.nucleoid.plasmid.impl.portal.game;
 
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
+import net.minecraft.server.level.ServerPlayer;
 import xyz.nucleoid.plasmid.api.game.GameResult;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
@@ -15,20 +15,20 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBackend {
-    private final RegistryEntry<GameConfig<?>> game;
+    private final Holder<GameConfig<?>> game;
     private CompletableFuture<GameSpace> gameFuture;
 
-    public ConcurrentGamePortalBackend(RegistryEntry<GameConfig<?>> game) {
+    public ConcurrentGamePortalBackend(Holder<GameConfig<?>> game) {
         this.game = game;
     }
 
     @Override
-    public RegistryEntry<GameConfig<?>> game() {
+    public Holder<GameConfig<?>> game() {
         return this.game;
     }
 
     @Override
-    public void applyTo(ServerPlayerEntity player, boolean alt) {
+    public void applyTo(ServerPlayer player, boolean alt) {
         for (var gameSpace : GameSpaceManagerImpl.get().getOpenGameSpaces()) {
             if (gameSpace.getMetadata().sourceConfig().equals(this.game)) {
                 var result = GamePlayerJoiner.tryJoin(player, gameSpace, alt ? JoinIntent.SPECTATE : JoinIntent.PLAY);
@@ -39,7 +39,7 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
             }
         }
 
-        CompletableFuture.supplyAsync(() -> this.getOrOpenNew(player.server))
+        CompletableFuture.supplyAsync(() -> this.getOrOpenNew(player.level().getServer()))
                 .thenCompose(Function.identity())
                 .handleAsync((gameSpace, throwable) -> {
                     this.gameFuture = null;
@@ -51,11 +51,11 @@ public final class ConcurrentGamePortalBackend implements GameConfigGamePortalBa
                     }
 
                     if (result.isError()) {
-                        player.sendMessage(result.errorCopy().formatted(Formatting.RED), false);
+                        player.sendSystemMessage(result.errorCopy().withStyle(ChatFormatting.RED), false);
                     }
 
                     return null;
-                }, player.server);
+                }, player.level().getServer());
     }
 
     public CompletableFuture<GameSpace> getOrOpenNew(MinecraftServer server) {

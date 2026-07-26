@@ -8,7 +8,6 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
-import org.apache.http.HttpStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -49,7 +48,7 @@ public class PlasmidWebServer {
     }
 
     private static InetSocketAddress createBindAddress(MinecraftServer server, Config config) {
-        var serverIp = server.getServerIp();
+        var serverIp = server.getLocalIp();
         if (!Strings.isNullOrEmpty(serverIp)) {
             return new InetSocketAddress(serverIp, config.port());
         } else {
@@ -67,7 +66,7 @@ public class PlasmidWebServer {
         public void handle(HttpExchange exchange) throws IOException {
             try (exchange) {
                 if (!this.tryHandle(exchange)) {
-                    exchange.sendResponseHeaders(HttpStatus.SC_NOT_FOUND, 0);
+                    exchange.sendResponseHeaders(404, 0);
                 }
             }
         }
@@ -90,7 +89,7 @@ public class PlasmidWebServer {
                 ) {
                     exchange.getResponseHeaders().add("Server", "plasmid");
                     exchange.getResponseHeaders().add("Content-Type", "application/zip");
-                    exchange.sendResponseHeaders(HttpStatus.SC_OK, size);
+                    exchange.sendResponseHeaders(201, size);
 
                     input.transferTo(output);
                     output.flush();

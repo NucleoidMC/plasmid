@@ -54,7 +54,7 @@ public final class PlayerLimiter {
 
     private JoinOfferResult offerPlayer(JoinOffer offer) {
         if (offer.intent() == JoinIntent.SPECTATE) {
-            return this.config.allowSpectators() ? offer.pass() : offer.reject(GameTexts.Join.notAllowed());
+            return this.config.allowSpectators() ? offer.pass() : offer.reject(GameComponents.Join.notAllowed());
         }
         var max = this.config.maxPlayers().orElse(-1);
         if (max < 0) {
@@ -64,7 +64,7 @@ public final class PlayerLimiter {
 
         int newPlayerCount = this.gameSpace.getPlayers().participants().size() + offer.players().size();
         if (newPlayerCount > max) {
-            return offer.reject(GameTexts.Join.gameFull());
+            return offer.reject(GameComponents.Join.gameFull());
         }
 
         return offer.pass();

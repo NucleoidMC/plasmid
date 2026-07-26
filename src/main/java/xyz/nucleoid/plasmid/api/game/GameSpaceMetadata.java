@@ -1,10 +1,10 @@
 package xyz.nucleoid.plasmid.api.game;
 
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 
 import java.util.UUID;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
 
 /**
  * Represents the static metadata to a {@link GameSpace} relating to how it should be referenced (by IDs) and which
@@ -13,13 +13,13 @@ import java.util.UUID;
 public record GameSpaceMetadata(
         UUID id,
         Identifier userId,
-        RegistryEntry<GameConfig<?>> sourceConfig,
-        RegistryEntry<GameConfig<?>> originalSourceConfig
+        Holder<GameConfig<?>> sourceConfig,
+        Holder<GameConfig<?>> originalSourceConfig
 ) {
     public GameSpaceMetadata(
             UUID id,
             Identifier userId,
-            RegistryEntry<GameConfig<?>> sourceConfig
+            Holder<GameConfig<?>> sourceConfig
     ) {
         this(id, userId, sourceConfig, sourceConfig);
     }
@@ -46,11 +46,11 @@ public record GameSpaceMetadata(
     /**
      * @return the {@link GameConfig} that was responsible for creating this {@link GameSpace}
      */
-    public RegistryEntry<GameConfig<?>> sourceConfig() {
+    public Holder<GameConfig<?>> sourceConfig() {
         return this.sourceConfig;
     }
 
-    public boolean isSourceConfig(RegistryEntry<GameConfig<?>> gameConfig) {
+    public boolean isSourceConfig(Holder<GameConfig<?>> gameConfig) {
         return this.sourceConfig.equals(gameConfig) || this.originalSourceConfig.equals(gameConfig);
     }
 }

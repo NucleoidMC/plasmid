@@ -3,7 +3,6 @@ package xyz.nucleoid.plasmid.impl.game.manager;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.RandomStringUtils;
 import xyz.nucleoid.plasmid.api.game.config.GameConfig;
 import xyz.nucleoid.plasmid.api.game.GameType;
@@ -11,6 +10,7 @@ import xyz.nucleoid.plasmid.api.game.GameType;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
+import net.minecraft.resources.Identifier;
 
 final class GameSpaceUserIdManager {
     private final Multimap<GameType<?>, Identifier> typeToIds = HashMultimap.create();
@@ -48,7 +48,7 @@ final class GameSpaceUserIdManager {
 
     private Identifier generateRandomId(Identifier typeId) {
         var random = RandomStringUtils.randomAlphabetic(4).toLowerCase(Locale.ROOT);
-        return Identifier.of(typeId.getNamespace(), typeId.getPath() + "/" + random);
+        return Identifier.fromNamespaceAndPath(typeId.getNamespace(), typeId.getPath() + "/" + random);
     }
 
     private Identifier getIdForType(GameType<?> type) {

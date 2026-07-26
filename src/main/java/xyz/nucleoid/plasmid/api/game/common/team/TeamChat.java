@@ -1,9 +1,9 @@
 package xyz.nucleoid.plasmid.api.game.common.team;
 
-import net.minecraft.network.message.MessageType;
-import net.minecraft.network.message.SentMessage;
-import net.minecraft.network.message.SignedMessage;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.OutgoingChatMessage;
+import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.server.level.ServerPlayer;
 import xyz.nucleoid.plasmid.api.chat.ChatChannel;
 import xyz.nucleoid.plasmid.api.chat.HasChatChannel;
 import xyz.nucleoid.plasmid.api.chat.PlasmidMessageTypes;
@@ -22,16 +22,16 @@ public final class TeamChat {
         activity.listen(ReplacePlayerChatEvent.EVENT, teamChat::onSendMessage);
     }
 
-    private boolean onSendMessage(ServerPlayerEntity player, SignedMessage message, MessageType.Parameters messageType) {
+    private boolean onSendMessage(ServerPlayer player, PlayerChatMessage message, ChatType.Bound messageType) {
         var team = this.manager.teamFor(player);
 
         if (team != null && player instanceof HasChatChannel hasChannel && hasChannel.getChatChannel() == ChatChannel.TEAM) {
             var teamName = this.manager.getTeamConfig(team).name();
-            var teamMessageType = MessageType.params(PlasmidMessageTypes.TEAM_CHAT, player).withTargetName(teamName);
+            var teamMessageType = ChatType.bind(PlasmidMessageTypes.TEAM_CHAT, player).withTargetName(teamName);
 
-            var sentMessage = SentMessage.of(message);
+            var sentMessage = OutgoingChatMessage.create(message);
             for (var receiver : this.manager.playersIn(team)) {
-                receiver.sendChatMessage(sentMessage, player.shouldFilterMessagesSentTo(receiver), teamMessageType);
+                receiver.sendChatMessage(sentMessage, player.shouldFilterMessageTo(receiver), teamMessageType);
             }
 
             return true;

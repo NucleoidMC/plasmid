@@ -1,13 +1,16 @@
 package xyz.nucleoid.plasmid.api.game.common;
 
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.item.*;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ToolMaterial;
 
 /**
  * A utility class that allows old-style 1.8 combat to be applied to any given {@link ItemStack}.
@@ -15,11 +18,11 @@ import net.minecraft.util.Identifier;
  * This works by modifying the damage and attack speed attributes to match their 1.8 levels.
  */
 public final class OldCombat {
-    private static final RegistryEntry<EntityAttribute> DAMAGE_ATTRIBUTE = EntityAttributes.ATTACK_DAMAGE;
-    private static final RegistryEntry<EntityAttribute> SPEED_ATTRIBUTE = EntityAttributes.ATTACK_SPEED;
+    private static final Holder<Attribute> DAMAGE_ATTRIBUTE = Attributes.ATTACK_DAMAGE;
+    private static final Holder<Attribute> SPEED_ATTRIBUTE = Attributes.ATTACK_SPEED;
 
-    private static final Identifier DAMAGE_ID = Item.BASE_ATTACK_DAMAGE_MODIFIER_ID;
-    private static final Identifier SPEED_ID = Item.BASE_ATTACK_SPEED_MODIFIER_ID;
+    private static final Identifier DAMAGE_ID = Item.BASE_ATTACK_DAMAGE_ID;
+    private static final Identifier SPEED_ID = Item.BASE_ATTACK_SPEED_ID;
 
     private static final ToolMaterial[] TOOL_MATERIALS = {
             ToolMaterial.WOOD,
@@ -37,7 +40,7 @@ public final class OldCombat {
     private static final int SWORD_BASE_DAMAGE = 3;
 
     public static ItemStack applyTo(ItemStack stack) {
-        if (!stack.contains(DataComponentTypes.TOOL)) {
+        if (!stack.has(DataComponents.TOOL)) {
             return stack;
         }
 
@@ -47,39 +50,39 @@ public final class OldCombat {
             return stack;
         }
 
-        var defaultModifiers = stack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+        var defaultModifiers = stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
 
         {
-            EntityAttributeModifier modifier = createSpeedModifier();
-            defaultModifiers = defaultModifiers.with(SPEED_ATTRIBUTE, modifier, AttributeModifierSlot.MAINHAND);
+            AttributeModifier modifier = createSpeedModifier();
+            defaultModifiers = defaultModifiers.withModifierAdded(SPEED_ATTRIBUTE, modifier, EquipmentSlotGroup.MAINHAND);
         }
 
         {
-            float attackDamageBonus = stack.getItem() instanceof HoeItem ? 0 : getToolMaterial(stack).attackDamageBonus();
+            float attackDamageBonus = stack.is(ItemTags.HOES) ? 0 : getToolMaterial(stack).attackDamageBonus();
             int baseDamage = getBaseDamage(stack);
 
-            EntityAttributeModifier modifier = createDamageModifier(attackDamageBonus + baseDamage);
-            defaultModifiers = defaultModifiers.with(DAMAGE_ATTRIBUTE, modifier, AttributeModifierSlot.MAINHAND);
+            AttributeModifier modifier = createDamageModifier(attackDamageBonus + baseDamage);
+            defaultModifiers = defaultModifiers.withModifierAdded(DAMAGE_ATTRIBUTE, modifier, EquipmentSlotGroup.MAINHAND);
         }
 
-        stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, defaultModifiers);
+        stack.set(DataComponents.ATTRIBUTE_MODIFIERS, defaultModifiers);
         return stack;
     }
 
-    private static EntityAttributeModifier createSpeedModifier() {
-        return new EntityAttributeModifier(SPEED_ID, 10000.0F, EntityAttributeModifier.Operation.ADD_VALUE);
+    private static AttributeModifier createSpeedModifier() {
+        return new AttributeModifier(SPEED_ID, 10000.0F, AttributeModifier.Operation.ADD_VALUE);
     }
 
-    private static EntityAttributeModifier createDamageModifier(double damage) {
-        return new EntityAttributeModifier(DAMAGE_ID, damage, EntityAttributeModifier.Operation.ADD_VALUE);
+    private static AttributeModifier createDamageModifier(double damage) {
+        return new AttributeModifier(DAMAGE_ID, damage, AttributeModifier.Operation.ADD_VALUE);
     }
 
     private static ToolMaterial getToolMaterial(ItemStack item) {
         for (var material : TOOL_MATERIALS) {
-            var repairable = item.get(DataComponentTypes.REPAIRABLE);
+            var repairable = item.get(DataComponents.REPAIRABLE);
 
             if (repairable != null) {
-                var repairItems = repairable.items().getTagKey();
+                var repairItems = repairable.items().unwrapKey();
 
                 if (repairItems.isPresent() && repairItems.get().equals(material.repairItems())) {
                     return material;
@@ -91,16 +94,15 @@ public final class OldCombat {
     }
 
     private static int getBaseDamage(ItemStack stack) {
-        var item = stack.getItem();
-        if (item instanceof SwordItem) {
+        if (stack.is(ItemTags.SWORDS)) {
             return SWORD_BASE_DAMAGE;
-        } else if (item instanceof AxeItem) {
+        } else if (stack.is(ItemTags.AXES)) {
             return AXE_BASE_DAMAGE;
-        } else if (item instanceof PickaxeItem) {
+        } else if (stack.is(ItemTags.PICKAXES)) {
             return PICKAXE_BASE_DAMAGE;
-        } else if (item instanceof ShovelItem) {
+        } else if (stack.is(ItemTags.SHOVELS)) {
             return SHOVEL_BASE_DAMAGE;
-        } else if (item instanceof HoeItem) {
+        } else if (stack.is(ItemTags.HOES)) {
             return HOE_BASE_DAMAGE;
         }
         return 0;

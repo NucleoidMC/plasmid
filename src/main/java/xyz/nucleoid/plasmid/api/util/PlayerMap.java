@@ -1,8 +1,8 @@
 package xyz.nucleoid.plasmid.api.util;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 import xyz.nucleoid.plasmid.impl.player.PlayerMapImpl;
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
- * This is a map that provides extra utility methods allowing you to easily use this map with {@link ServerPlayerEntity}, as with the backing PlayerRef.
+ * This is a map that provides extra utility methods allowing you to easily use this map with {@link ServerPlayer}, as with the backing PlayerRef.
  * @param <T> the type of stored values
  */
 public interface PlayerMap<T> extends Map<PlayerRef, T> {
@@ -27,15 +27,15 @@ public interface PlayerMap<T> extends Map<PlayerRef, T> {
     static <T> PlayerMap<T> createHashMap(int size) {
         return new PlayerMapImpl<>(new HashMap<>(size));
     }
-    boolean containsKey(ServerPlayerEntity key);
-    T get(ServerPlayerEntity key);
+    boolean containsKey(ServerPlayer key);
+    T get(ServerPlayer key);
     @Nullable
-    T put(ServerPlayerEntity key, T value);
-    T remove(ServerPlayerEntity key);
+    T put(ServerPlayer key, T value);
+    T remove(ServerPlayer key);
 
-    void forEachPlayer(GameSpace gameSpace, BiConsumer<ServerPlayerEntity, T> consumer);
-    void forEachPlayer(ServerWorld world, BiConsumer<ServerPlayerEntity, T> consumer);
-    void forEachPlayer(MinecraftServer server, BiConsumer<ServerPlayerEntity, T> consumer);
+    void forEachPlayer(GameSpace gameSpace, BiConsumer<ServerPlayer, T> consumer);
+    void forEachPlayer(ServerLevel world, BiConsumer<ServerPlayer, T> consumer);
+    void forEachPlayer(MinecraftServer server, BiConsumer<ServerPlayer, T> consumer);
 
     Map<PlayerRef, T> getBackingMap();
 }

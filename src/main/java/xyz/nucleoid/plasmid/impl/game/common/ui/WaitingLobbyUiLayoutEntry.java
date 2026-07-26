@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.impl.game.common.ui;
 
-import eu.pb4.sgui.api.elements.GuiElementInterface;
+import eu.pb4.sgui.api.elements.GuiElement;
 import xyz.nucleoid.plasmid.api.game.common.ui.WaitingLobbyUiElement;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.SequencedCollection;
 class WaitingLobbyUiLayoutEntry {
     private final WaitingLobbyUiElement element;
 
-    private SequencedCollection<GuiElementInterface> guiElements;
+    private SequencedCollection<GuiElement> guiElements;
 
     protected WaitingLobbyUiLayoutEntry(WaitingLobbyUiElement element) {
         this.element = element;
@@ -21,7 +21,7 @@ class WaitingLobbyUiLayoutEntry {
         return this.element;
     }
 
-    public SequencedCollection<GuiElementInterface> getGuiElements() {
+    public SequencedCollection<GuiElement> getGuiElements() {
         return this.guiElements;
     }
 

@@ -3,15 +3,16 @@ package xyz.nucleoid.plasmid.mixin.game.portal;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.decoration.Brightness;
-import net.minecraft.entity.decoration.DisplayEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Brightness;
+import net.minecraft.world.entity.Display;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,7 +20,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xyz.nucleoid.plasmid.impl.portal.GamePortal;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalDisplay;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
@@ -28,10 +28,10 @@ import xyz.nucleoid.plasmid.impl.compatibility.DisguiseLibCompatibility;
 @Mixin(Entity.class)
 public abstract class EntityMixin implements GamePortalInterface {
     @Shadow
-    public World world;
+    public Level level;
 
     @Shadow
-    public abstract Vec3d getPos();
+    public abstract Vec3 position();
 
     @Unique
     private TextDisplayElement textDisplayElement;
@@ -43,7 +43,7 @@ public abstract class EntityMixin implements GamePortalInterface {
     private Identifier loadedPortalId;
 
     @Override
-    public boolean interactWithPortal(ServerPlayerEntity player) {
+    public boolean interactWithPortal(ServerPlayer player) {
         if (this.portal != null) {
             this.portal.requestJoin(player, false);
             return true;
@@ -69,14 +69,14 @@ public abstract class EntityMixin implements GamePortalInterface {
     public void setDisplay(GamePortalDisplay display) {
         var hologram = this.getOrCreateTextElement();
 
-        var text = Text.empty();
+        var text = Component.empty();
 
         var name = display.get(GamePortalDisplay.NAME);
         var playerCount = display.get(GamePortalDisplay.PLAYER_COUNT);
         if (name != null && playerCount != null) {
             text.append(name);
             if (playerCount > -1) {
-                text.append("\n").append(Text.translatable("text.plasmid.game.portal.player_count", playerCount));
+                text.append("\n").append(Component.translatable("text.plasmid.game.portal.player_count", playerCount));
             }
         }
         hologram.setText(text);
@@ -93,13 +93,13 @@ public abstract class EntityMixin implements GamePortalInterface {
         }
 
         var entity = (Entity) (Object) this;
-        var offset = new Vec3d(0.0, DisguiseLibCompatibility.getEntityHeight(entity) + 0.2, 0.0);
+        var offset = new Vec3(0.0, DisguiseLibCompatibility.getEntityHeight(entity) + 0.2, 0.0);
 
         this.hologram = new ElementHolder();
         this.textDisplayElement = new TextDisplayElement();
         this.textDisplayElement.setOffset(offset);
         this.textDisplayElement.setBrightness(new Brightness(15, 15));
-        this.textDisplayElement.setBillboardMode(DisplayEntity.BillboardMode.CENTER);
+        this.textDisplayElement.setBillboardMode(Display.BillboardConstraints.CENTER);
         this.textDisplayElement.setDisplayWidth(5);
         this.textDisplayElement.setDisplayHeight(1);
         this.textDisplayElement.setViewRange(0.5f);
@@ -129,18 +129,18 @@ public abstract class EntityMixin implements GamePortalInterface {
         }
     }
 
-    @Inject(method = "writeNbt", at = @At("RETURN"))
-    private void writeNbt(NbtCompound root, CallbackInfoReturnable<NbtCompound> ci) {
+    @Inject(method = "saveWithoutId", at = @At("RETURN"))
+    private void writePortalData(ValueOutput view, CallbackInfo ci) {
         if (this.loadedPortalId == null) {
-            this.serializePortal(root);
+            this.serializePortal(view);
         } else {
-            root.putString(GamePortalInterface.NBT_KEY, this.loadedPortalId.toString());
+            view.putString(GamePortalInterface.NBT_KEY, this.loadedPortalId.toString());
         }
     }
 
-    @Inject(method = "readNbt", at = @At("RETURN"))
-    private void readNbt(NbtCompound root, CallbackInfo ci) {
-        this.loadedPortalId = this.deserializePortalId(root);
+    @Inject(method = "load", at = @At("RETURN"))
+    private void readPortalData(ValueInput view, CallbackInfo ci) {
+        this.loadedPortalId = this.deserializePortalId(view);
     }
 
     @Inject(method = "remove", at = @At("HEAD"))

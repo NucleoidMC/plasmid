@@ -1,6 +1,6 @@
 package xyz.nucleoid.plasmid.api.game;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public interface GameSpaceState {
     int players();
@@ -10,11 +10,11 @@ public interface GameSpaceState {
     boolean canSpectate();
     boolean canPlay();
 
-    record State(Text display, boolean hidden) {
-        public static final State WAITING = new State(Text.translatable("text.plasmid.game_state.waiting"), false);
-        public static final State STARTING = new State(Text.translatable("text.plasmid.game_state.starting"), false);
-        public static final State ACTIVE = new State(Text.translatable("text.plasmid.game_state.active"), false);
-        public static final State CLOSING = new State(Text.translatable("text.plasmid.game_state.closing"), true);
+    record State(Component display, boolean hidden) {
+        public static final State WAITING = new State(Component.translatable("text.plasmid.game_state.waiting"), false);
+        public static final State STARTING = new State(Component.translatable("text.plasmid.game_state.starting"), false);
+        public static final State ACTIVE = new State(Component.translatable("text.plasmid.game_state.active"), false);
+        public static final State CLOSING = new State(Component.translatable("text.plasmid.game_state.closing"), true);
     }
 
 

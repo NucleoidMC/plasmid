@@ -2,8 +2,8 @@ package xyz.nucleoid.plasmid.api.event;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.plasmid.api.game.GameActivity;
@@ -87,7 +87,7 @@ public final class GameEvents {
          * @param game The game and its configuration
          * @param gameSpace The {@link GameSpace} the game is running in.
          */
-        void onGameSpaceOpened(RegistryEntry<GameConfig<?>> game, GameSpace gameSpace);
+        void onGameSpaceOpened(Holder<GameConfig<?>> game, GameSpace gameSpace);
     }
 
     public interface CreateActivity {
@@ -128,14 +128,14 @@ public final class GameEvents {
 
     public interface CollectPlayersForJoin {
         /**
-         * Called when a {@link ServerPlayerEntity} tries to join a {@link GameSpace}. This event is responsible for
+         * Called when a {@link ServerPlayer} tries to join a {@link GameSpace}. This event is responsible for
          * collecting any additional players who should attempt to join along with the initial player.
          *
          * @param gameSpace the {@link GameSpace} being joined
          * @param player the initial player who tried to join a {@link GameSpace}
          * @param additional a set of additional players who should join the game
          */
-        void collectPlayersForJoin(GameSpace gameSpace, ServerPlayerEntity player, Set<ServerPlayerEntity> additional);
+        void collectPlayersForJoin(GameSpace gameSpace, ServerPlayer player, Set<ServerPlayer> additional);
     }
 
 
@@ -144,7 +144,7 @@ public final class GameEvents {
          * @param gameSpace The {@link GameSpace} the game is running in.
          * @param player the initial player who tried to join a {@link GameSpace}
          */
-        void onPlayerJoin(GameSpace gameSpace, ServerPlayerEntity player);
+        void onPlayerJoin(GameSpace gameSpace, ServerPlayer player);
     }
 
     public interface PlayerLeft {
@@ -152,7 +152,7 @@ public final class GameEvents {
          * @param gameSpace The {@link GameSpace} the game is running in.
          * @param player the initial player who tried to leave a {@link GameSpace}
          */
-        void onPlayerLeft(GameSpace gameSpace, ServerPlayerEntity player);
+        void onPlayerLeft(GameSpace gameSpace, ServerPlayer player);
     }
 
     @ApiStatus.Experimental
@@ -162,7 +162,7 @@ public final class GameEvents {
          * @param allocator the allocator that is handling the team selections
          * @param players the players that the allocator is handling
          */
-        void onFinalizeTeamSelection(GameSpace gameSpace, TeamAllocator<GameTeamKey, ServerPlayerEntity> allocator, PlayerIterable players);
+        void onFinalizeTeamSelection(GameSpace gameSpace, TeamAllocator<GameTeamKey, ServerPlayer> allocator, PlayerIterable players);
     }
 
 }

@@ -4,24 +4,23 @@ import eu.pb4.polymer.common.api.PolymerCommonUtils;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
 import eu.pb4.sidebars.api.SidebarUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.decoration.ArmorStandEntity;
-import net.minecraft.entity.player.PlayerPosition;
-import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.network.packet.s2c.play.*;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.EntityTrackerEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.PlayerInput;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameMode;
-import net.minecraft.world.GameRules;
-import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.*;
+import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.PositionMoveRotation;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.phys.Vec3;
+import xyz.nucleoid.fantasy.RuntimeLevelConfig;
 import xyz.nucleoid.map_templates.BlockBounds;
 import xyz.nucleoid.map_templates.MapTemplate;
 import xyz.nucleoid.plasmid.api.game.*;
@@ -34,22 +33,26 @@ import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
 import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
-import xyz.nucleoid.plasmid.api.game.world.generator.TemplateChunkGenerator;
+import xyz.nucleoid.plasmid.api.game.level.generator.TemplateChunkGenerator;
 import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerC2SPacketEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public final class JankGame {
-    private static ArmorStandEntity CAMERA = new ArmorStandEntity(PolymerCommonUtils.getFakeWorld(), 0, 80, 0);
+    private static ArmorStand CAMERA = new ArmorStand(PolymerCommonUtils.getFakeWorld(), 0, 80, 0);
     private volatile static float currentYaw;
     private volatile static float currentPitch;
     private volatile static float currentX;
     private volatile static float currentXOld;
     private volatile static double currentY;
-    private volatile static PlayerInput input = PlayerInput.DEFAULT;
+    private volatile static Input input = Input.EMPTY;
 
     private static double mouseX = 0;
     private static double mouseY = 0;
@@ -57,19 +60,21 @@ public final class JankGame {
     public static GameOpenProcedure open(GameOpenContext<TestConfig> context) {
         var template = JankGame.generateMapTemplate(context.game().config().state());
 
-        var worldConfig = new RuntimeWorldConfig()
+        var worldConfig = new RuntimeLevelConfig()
                 .setGenerator(new TemplateChunkGenerator(context.server(), template))
-                .setTimeOfDay(6000)
+                //.setTimeOfDay(6000)
                 .setGameRule(GameRules.KEEP_INVENTORY, true);
 
-        return context.openWithWorld(worldConfig, (activity, world) -> {
+        return context.openWithLevel(worldConfig, (activity, world) -> {
             activity.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
             activity.listen(GamePlayerEvents.ACCEPT, acceptor ->
-                    acceptor.teleport(world, new Vec3d(0.0, 65.0, 0.0))
+                    acceptor.teleport(world, new Vec3(0.0, 65.0, 0.0))
                             .thenRunForEach(joiningPlayer -> {
-                                joiningPlayer.changeGameMode(GameMode.ADVENTURE);
+                                joiningPlayer.setGameMode(GameType.ADVENTURE);
                             })
             );
+
+            CAMERA.setId(world.getNextEntityId());
 
             GameWaitingLobby.addTo(activity, new WaitingLobbyConfig(1, 99));
 
@@ -96,43 +101,43 @@ public final class JankGame {
             activity.deny(GameRuleType.FALL_DAMAGE).deny(GameRuleType.HUNGER);
             activity.deny(GameRuleType.THROW_ITEMS).deny(GameRuleType.MODIFY_INVENTORY);
             CAMERA.setPos(0, 70, 0);
-            CAMERA.setPitch(90);
-            CAMERA.setYaw(0);
+            CAMERA.setXRot(90);
+            CAMERA.setYRot(0);
             activity.deny(GameRuleType.INTERACTION).allow(GameRuleType.USE_BLOCKS);
 
             var sidebar = GlobalWidgets.addTo(activity)
-                    .addSidebar(Text.translatable("text.test.test"));
+                    .addSidebar(Component.translatable("text.test.test"));
             sidebar.setUpdateRate(99999999);
 
-            Consumer<ServerPlayerEntity> updateSidebar = (player) -> {
-                    var text = Text.empty();
-                    text.append(Text.literal("^").formatted(input.forward() ? Formatting.GREEN : Formatting.DARK_GRAY));
-                    text.append(Text.literal("v").formatted(input.backward() ? Formatting.GREEN : Formatting.DARK_GRAY));
-                    text.append(Text.literal("<").formatted(input.left() ? Formatting.GREEN : Formatting.DARK_GRAY));
-                    text.append(Text.literal(">").formatted(input.right() ? Formatting.GREEN : Formatting.DARK_GRAY));
-                    text.append(Text.literal("-").formatted(input.jump() ? Formatting.GREEN : Formatting.DARK_GRAY));
-                    text.append(Text.literal("_").formatted(input.sneak() ? Formatting.GREEN : Formatting.DARK_GRAY));
-                    text.append(Text.literal("$").formatted(input.sprint() ? Formatting.GREEN : Formatting.DARK_GRAY));
+            Consumer<ServerPlayer> updateSidebar = (player) -> {
+                    var text = Component.empty();
+                    text.append(Component.literal("^").withStyle(input.forward() ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+                    text.append(Component.literal("v").withStyle(input.backward() ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+                    text.append(Component.literal("<").withStyle(input.left() ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+                    text.append(Component.literal(">").withStyle(input.right() ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+                    text.append(Component.literal("-").withStyle(input.jump() ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+                    text.append(Component.literal("_").withStyle(input.shift() ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
+                    text.append(Component.literal("$").withStyle(input.sprint() ? ChatFormatting.GREEN : ChatFormatting.DARK_GRAY));
 
                     sidebar.set(b -> {
-                        b.add(Text.literal("YAW: " + currentYaw));
-                        b.add(Text.literal("PITCH: " + currentPitch));
-                        b.add(Text.literal("Mouse-X: " + currentX));
-                        b.add(Text.literal("Mouse-Y: " + currentY));
+                        b.add(Component.literal("YAW: " + currentYaw));
+                        b.add(Component.literal("PITCH: " + currentPitch));
+                        b.add(Component.literal("Mouse-X: " + currentX));
+                        b.add(Component.literal("Mouse-Y: " + currentY));
                         b.add(text);
                     });
 
-                SidebarUtils.updateTexts(player.networkHandler, sidebar);
+                SidebarUtils.updateTexts(player.connection, sidebar);
             };
 
-            var world = gameSpace.getWorlds().iterator().next();
+            var world = gameSpace.getLevels().iterator().next();
 
             activity.listen(PlayerDeathEvent.EVENT, (player, source) -> {
                 player.setPos(0.0, 65.0, 0.0);
                 return EventResult.DENY;
             });
-            var mover = new ArmorStandEntity(world, 0.0, 65.0, 0.0);
-            world.spawnEntity(mover);
+            var mover = new ArmorStand(world, 0.0, 65.0, 0.0);
+            world.addFreshEntity(mover);
 
             PlayerLimiter.addTo(activity, new PlayerLimiterConfig(24));
 
@@ -142,22 +147,39 @@ public final class JankGame {
             );
 
             activity.listen(GamePlayerEvents.ADD, player -> {
-                player.networkHandler.sendPacket(CAMERA.createSpawnPacket(new EntityTrackerEntry(world, CAMERA, 1, false, player.networkHandler::sendPacket)));
-                player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(CAMERA.getId(), CAMERA.getDataTracker().getChangedEntries()));
-                player.networkHandler.sendPacket(VirtualEntityUtils.createRidePacket(CAMERA.getId(), IntList.of(player.getId())));
-                player.networkHandler.sendPacket(new SetCameraEntityS2CPacket(CAMERA));
+                Consumer<Packet<?>> watchingSender = player.connection::send;
+
+                player.connection.send(CAMERA.getAddEntityPacket(new ServerEntity(world, CAMERA, 1, false, new ServerEntity.Synchronizer() {
+                    @Override
+                    public void sendToTrackingPlayers(Packet<? super ClientGamePacketListener> packet) {
+                        watchingSender.accept(packet);
+                    }
+
+                    @Override
+                    public void sendToTrackingPlayersAndSelf(Packet<? super ClientGamePacketListener> packet) {
+                        watchingSender.accept(packet);
+                    }
+
+                    @Override
+                    public void sendToTrackingPlayersFiltered(Packet<? super ClientGamePacketListener> packet, Predicate<ServerPlayer> predicate) {
+                        watchingSender.accept(packet);
+                    }
+                })));
+                player.connection.send(new ClientboundSetEntityDataPacket(CAMERA.getId(), CAMERA.getEntityData().getNonDefaultValues()));
+                player.connection.send(VirtualEntityUtils.createClientboundSetPassengersPacket(CAMERA.getId(), IntList.of(player.getId())));
+                player.connection.send(new ClientboundSetCameraPacket(CAMERA));
             });
             
             activity.listen(PlayerC2SPacketEvent.EVENT, ((player, packet) -> {
-                if (packet instanceof PlayerMoveC2SPacket rot) {
-                    if (rot.changesLook()) {
-                        currentYaw = rot.getYaw(currentYaw);
-                        currentPitch = rot.getPitch(currentPitch);
+                if (packet instanceof ServerboundMovePlayerPacket rot) {
+                    if (rot.hasRotation()) {
+                        currentYaw = rot.getYRot(currentYaw);
+                        currentPitch = rot.getXRot(currentPitch);
                     }
 
                     updateSidebar.accept(player);
                     return EventResult.DENY;
-                } else if (packet instanceof PlayerInputC2SPacket playerInputC2SPacket) {
+                } else if (packet instanceof ServerboundPlayerInputPacket playerInputC2SPacket) {
                     input = playerInputC2SPacket.input();
                     updateSidebar.accept(player);
                     return EventResult.DENY;
@@ -169,28 +191,28 @@ public final class JankGame {
             var player = gameSpace.getPlayers().iterator().next();
 
             activity.listen(GameActivityEvents.TICK, () -> {
-                mover.move(MovementType.PLAYER, new Vec3d(input.right() ? -1 : input.left() ? 1 : 0,
-                        input.jump() ? 3 : input.sneak() ? -1 : 0,
-                        input.forward() ? 1 : input.backward() ? -1 : 0).multiply(input.sprint() ? 0.4 : 0.2));
-                mover.setYaw(currentYaw);
+                mover.move(MoverType.PLAYER, new Vec3(input.right() ? -1 : input.left() ? 1 : 0,
+                        input.jump() ? 3 : input.shift() ? -1 : 0,
+                        input.forward() ? 1 : input.backward() ? -1 : 0).scale(input.sprint() ? 0.4 : 0.2));
+                mover.setYRot(currentYaw);
 
 
-                JankGame.mouseX = MathHelper.clamp(-currentYaw / 90 * 2, -8, 8) + mover.getX();
-                JankGame.mouseY = MathHelper.clamp(-currentPitch / 90 * 2, -8, 8) + mover.getZ();
+                JankGame.mouseX = Mth.clamp(-currentYaw / 90 * 2, -8, 8) + mover.getX();
+                JankGame.mouseY = Mth.clamp(-currentPitch / 90 * 2, -8, 8) + mover.getZ();
 
-                player.networkHandler.sendPacket(new ParticleS2CPacket(ParticleTypes.FLAME, true, true, JankGame.mouseX, mover.getY(), JankGame.mouseY, 0, 0, 0, 0, 0));
+                player.connection.send(new ClientboundLevelParticlesPacket(ParticleTypes.FLAME, true, true, JankGame.mouseX, mover.getY(), JankGame.mouseY, 0, 0, 0, 0, 0));
 
                 CAMERA.setPos(mover.getX(), mover.getY() + 10, mover.getZ());
-                player.networkHandler.sendPacket(EntityPositionSyncS2CPacket.create(CAMERA));
-                player.networkHandler.sendPacket(PlayerPositionLookS2CPacket.of(0, new PlayerPosition(Vec3d.ZERO, Vec3d.ZERO, 0, 0f), Set.of()));
+                player.connection.send(ClientboundEntityPositionSyncPacket.of(CAMERA));
+                player.connection.send(ClientboundPlayerPositionPacket.of(0, new PositionMoveRotation(Vec3.ZERO, Vec3.ZERO, 0, 0f), Set.of()));
             });
 
 
             activity.listen(GamePlayerEvents.OFFER, JoinOffer::accept);
             activity.listen(GamePlayerEvents.ACCEPT, acceptor ->
-                    acceptor.teleport(gameSpace.getWorlds().iterator().next(), new Vec3d(0.0, 65.0, 0.0))
+                    acceptor.teleport(gameSpace.getLevels().iterator().next(), new Vec3(0.0, 65.0, 0.0))
                             .thenRunForEach(joiningPlayer -> {
-                                joiningPlayer.changeGameMode(GameMode.ADVENTURE);
+                                joiningPlayer.setGameMode(GameType.ADVENTURE);
                             })
             );
         });
@@ -206,6 +228,14 @@ public final class JankGame {
         }
 
         return template;
+    }
+
+    private static BiConsumer<Packet<?>, List<UUID>> getFilteredPacketSender(UUID uuid, Consumer<Packet<?>> sender) {
+        return (packet, except) -> {
+            if (!except.contains(uuid)) {
+                sender.accept(packet);
+            }
+        };
     }
 
     static {

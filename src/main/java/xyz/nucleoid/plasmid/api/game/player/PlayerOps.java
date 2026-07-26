@@ -1,10 +1,10 @@
 package xyz.nucleoid.plasmid.api.game.player;
 
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
 
 /**
  * A utility interface that allows various operations to be applied to a group of players such as sending a message,
@@ -25,7 +25,7 @@ public interface PlayerOps {
      *
      * @param message the chat message to send
      */
-    void sendMessage(Text message);
+    void sendMessage(Component message);
 
     /**
      * Displays a title to all players associated with this {@link PlayerOps}.
@@ -33,7 +33,7 @@ public interface PlayerOps {
      * @param title the title message to display
      * @param lengthTicks the amount of ticks this title should stay on screen for
      */
-    default void showTitle(Text title, int lengthTicks) {
+    default void showTitle(Component title, int lengthTicks) {
         this.showTitle(title, 10, lengthTicks, 10);
     }
 
@@ -45,7 +45,7 @@ public interface PlayerOps {
      * @param stayTicks the amount of ticks this title should remain on screen for
      * @param fadeOutTicks the amount of ticks it should take for this title to fade out
      */
-    void showTitle(Text title, int fadeInTicks, int stayTicks, int fadeOutTicks);
+    void showTitle(Component title, int fadeInTicks, int stayTicks, int fadeOutTicks);
 
     /**
      * Displays a title and subtitle to all players associated with this {@link PlayerOps}.
@@ -56,14 +56,14 @@ public interface PlayerOps {
      * @param stayTicks the amount of ticks this title should remain on screen for
      * @param fadeOutTicks the amount of ticks it should take for this title to fade out
      */
-    void showTitle(Text title, Text subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks);
+    void showTitle(Component title, Component subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks);
 
     /**
      * Sends a message to the action bar of all players associated with this {@link PlayerOps}.
      *
      * @param message the action bar message to send
      */
-    void sendActionBar(Text message);
+    void sendActionBar(Component message);
 
     /**
      * Sends a message to the action bar of all players associated with this {@link PlayerOps}.
@@ -73,7 +73,7 @@ public interface PlayerOps {
      * @param stayTicks the amount of ticks this message should remain on screen for
      * @param fadeOutTicks the amount of ticks it should take for this message to fade out
      */
-    void sendActionBar(Text message, int fadeInTicks, int stayTicks, int fadeOutTicks);
+    void sendActionBar(Component message, int fadeInTicks, int stayTicks, int fadeOutTicks);
 
     /**
      * Plays a sound to all players associated with this {@link PlayerOps}.
@@ -90,12 +90,12 @@ public interface PlayerOps {
      * @param volume the volume of the sound to play (corresponds to how quickly the volume falls off with distance)
      * @param pitch the pitch of the sound being played
      */
-    void playSound(SoundEvent sound, SoundCategory category, float volume, float pitch);
+    void playSound(SoundEvent sound, SoundSource category, float volume, float pitch);
 
     /**
-     * Adds a {@link StatusEffectInstance} to all players associated with this {@link PlayerOps}.
+     * Adds a {@link MobEffectInstance} to all players associated with this {@link PlayerOps}.
      *
      * @param effect the status effect to add
      */
-    void addStatusEffect(StatusEffectInstance effect);
+    void addStatusEffect(MobEffectInstance effect);
 }

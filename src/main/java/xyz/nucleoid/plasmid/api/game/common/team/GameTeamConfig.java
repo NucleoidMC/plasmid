@@ -4,21 +4,22 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.component.type.FireworkExplosionComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.scoreboard.AbstractTeam;
-import net.minecraft.scoreboard.Team;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Formatting;
+import net.minecraft.world.scores.TeamColor;
 import xyz.nucleoid.codecs.MoreCodecs;
 import xyz.nucleoid.plasmid.api.util.ItemStackBuilder;
 import xyz.nucleoid.plasmid.api.util.PlasmidCodecs;
 
 import java.util.Optional;
 import java.util.function.Function;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.FireworkExplosion;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team;
 
 /**
  * A configuration for a {@link GameTeam} containing visual and behavioral settings.
@@ -26,26 +27,26 @@ import java.util.function.Function;
  * @see GameTeam
  */
 public final record GameTeamConfig(
-        Text name,
+        Component name,
         Colors colors,
         boolean friendlyFire,
-        AbstractTeam.CollisionRule collision,
-        AbstractTeam.VisibilityRule nameTagVisibility,
-        Text prefix,
-        Text suffix
+        Team.CollisionRule collision,
+        Team.Visibility nameTagVisibility,
+        Component prefix,
+        Component suffix
 ) {
-    private static final Codec<AbstractTeam.CollisionRule> COLLISION_CODEC = MoreCodecs.stringVariants(AbstractTeam.CollisionRule.values(), rule -> rule.name);
-    private static final Codec<AbstractTeam.VisibilityRule> VISIBILITY_CODEC = MoreCodecs.stringVariants(AbstractTeam.VisibilityRule.values(), rule -> rule.name);
+    private static final Codec<Team.CollisionRule> COLLISION_CODEC = MoreCodecs.stringVariants(Team.CollisionRule.values(), rule -> rule.name);
+    private static final Codec<Team.Visibility> VISIBILITY_CODEC = MoreCodecs.stringVariants(Team.Visibility.values(), rule -> rule.name);
 
     public static final MapCodec<GameTeamConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> {
         return instance.group(
                 PlasmidCodecs.TEXT.optionalFieldOf("name").forGetter(config -> Optional.of(config.name)),
                 Colors.CODEC.optionalFieldOf("color", Colors.NONE).forGetter(GameTeamConfig::colors),
                 Codec.BOOL.optionalFieldOf("friendly_fire", true).forGetter(GameTeamConfig::friendlyFire),
-                COLLISION_CODEC.optionalFieldOf("collision", AbstractTeam.CollisionRule.ALWAYS).forGetter(GameTeamConfig::collision),
-                VISIBILITY_CODEC.optionalFieldOf("name_tag_visibility", AbstractTeam.VisibilityRule.ALWAYS).forGetter(GameTeamConfig::nameTagVisibility),
-                PlasmidCodecs.TEXT.optionalFieldOf("prefix", ScreenTexts.EMPTY).forGetter(GameTeamConfig::prefix),
-                PlasmidCodecs.TEXT.optionalFieldOf("suffix", ScreenTexts.EMPTY).forGetter(GameTeamConfig::suffix)
+                COLLISION_CODEC.optionalFieldOf("collision", Team.CollisionRule.ALWAYS).forGetter(GameTeamConfig::collision),
+                VISIBILITY_CODEC.optionalFieldOf("name_tag_visibility", Team.Visibility.ALWAYS).forGetter(GameTeamConfig::nameTagVisibility),
+                PlasmidCodecs.TEXT.optionalFieldOf("prefix", CommonComponents.EMPTY).forGetter(GameTeamConfig::prefix),
+                PlasmidCodecs.TEXT.optionalFieldOf("suffix", CommonComponents.EMPTY).forGetter(GameTeamConfig::suffix)
         ).apply(instance, GameTeamConfig::of);
     });
 
@@ -53,8 +54,8 @@ public final record GameTeamConfig(
 
     public static final GameTeamConfig DEFAULT = GameTeamConfig.builder().build();
 
-    public GameTeamConfig(Text name, Colors colors, boolean friendlyFire, AbstractTeam.CollisionRule collision, AbstractTeam.VisibilityRule nameTagVisibility, Text prefix, Text suffix) {
-        this.name = name.copy().styled(style -> style.getColor() == null ? style.withColor(colors.chatFormatting()) : style);
+    public GameTeamConfig(Component name, Colors colors, boolean friendlyFire, Team.CollisionRule collision, Team.Visibility nameTagVisibility, Component prefix, Component suffix) {
+        this.name = name.copy().withStyle(style -> style.getColor() == null && colors.teamColor.isPresent() ? style.withColor(colors.teamColor.get().textColor()) : style);
         this.colors = colors;
         this.friendlyFire = friendlyFire;
         this.collision = collision;
@@ -71,19 +72,24 @@ public final record GameTeamConfig(
         return new Builder(config);
     }
 
-    public ItemStack createFirework(int flight, FireworkExplosionComponent.Type type) {
-        var color = this.fireworkColor().getRgb();
+    public ItemStack createFirework(int flight, FireworkExplosion.Shape type) {
+        var color = this.fireworkColor().getValue();
         return ItemStackBuilder.firework(color, flight, type).build();
     }
 
     public ItemStack applyDye(ItemStack stack) {
         return ItemStackBuilder.of(stack)
-                .setDyeColor(this.dyeColor().getRgb())
+                .setDyeColor(this.dyeColor().getValue())
                 .build();
     }
 
-    public Formatting chatFormatting() {
+    @Deprecated
+    public ChatFormatting chatFormatting() {
         return this.colors.chatFormatting();
+    }
+
+    public Optional<TeamColor> teamColor() {
+        return this.colors.teamColor();
     }
 
     public TextColor fireworkColor() {
@@ -98,38 +104,38 @@ public final record GameTeamConfig(
         return this.colors.dyeColor();
     }
 
-    public void applyToScoreboard(Team scoreboardTeam) {
+    public void applyToScoreboard(PlayerTeam scoreboardTeam) {
         scoreboardTeam.setDisplayName(this.name());
-        scoreboardTeam.setColor(this.chatFormatting());
-        scoreboardTeam.setFriendlyFireAllowed(this.friendlyFire());
+        scoreboardTeam.setColor(this.teamColor());
+        scoreboardTeam.setAllowFriendlyFire(this.friendlyFire());
         scoreboardTeam.setCollisionRule(this.collision());
-        scoreboardTeam.setNameTagVisibilityRule(this.nameTagVisibility());
-        scoreboardTeam.setPrefix(this.prefix());
-        scoreboardTeam.setSuffix(this.suffix());
+        scoreboardTeam.setNameTagVisibility(this.nameTagVisibility());
+        scoreboardTeam.setPlayerPrefix(this.prefix());
+        scoreboardTeam.setPlayerSuffix(this.suffix());
     }
 
-    public static GameTeamConfig of(Optional<Text> name, Colors colors, boolean friendlyFire, AbstractTeam.CollisionRule collision, AbstractTeam.VisibilityRule nameTagVisibility, Text prefix, Text suffix) {
+    public static GameTeamConfig of(Optional<Component> name, Colors colors, boolean friendlyFire, Team.CollisionRule collision, Team.Visibility nameTagVisibility, Component prefix, Component suffix) {
         return new GameTeamConfig(getNameWithColorFallback(name, colors), colors, friendlyFire, collision, nameTagVisibility, prefix, suffix);
     }
 
-    private static Text getNameWithColorFallback(Optional<Text> name, Colors colors) {
+    private static Component getNameWithColorFallback(Optional<Component> name, Colors colors) {
         return name.orElseGet(() -> {
             if (colors == Colors.NONE) {
-                return Text.literal("Team");
+                return Component.literal("Team");
             } else {
-                return Text.translatable("color.minecraft." + colors.blockDyeColor().getName());
+                return Component.translatable("color.minecraft." + colors.blockDyeColor().getName());
             }
         });
     }
 
     public static final class Builder {
-        private Optional<Text> name = Optional.empty();
+        private Optional<Component> name = Optional.empty();
         private Colors colors = Colors.NONE;
         private boolean friendlyFire = true;
-        private AbstractTeam.CollisionRule collision = AbstractTeam.CollisionRule.ALWAYS;
-        private AbstractTeam.VisibilityRule nameTagVisibility = AbstractTeam.VisibilityRule.ALWAYS;
-        private Text prefix = ScreenTexts.EMPTY;
-        private Text suffix = ScreenTexts.EMPTY;
+        private Team.CollisionRule collision = Team.CollisionRule.ALWAYS;
+        private Team.Visibility nameTagVisibility = Team.Visibility.ALWAYS;
+        private Component prefix = CommonComponents.EMPTY;
+        private Component suffix = CommonComponents.EMPTY;
 
         Builder() {
         }
@@ -144,7 +150,7 @@ public final record GameTeamConfig(
             this.suffix = config.suffix;
         }
 
-        public Builder setName(Text name) {
+        public Builder setName(Component name) {
             this.name = Optional.of(name);
             return this;
         }
@@ -159,22 +165,22 @@ public final record GameTeamConfig(
             return this;
         }
 
-        public Builder setCollision(AbstractTeam.CollisionRule collision) {
+        public Builder setCollision(Team.CollisionRule collision) {
             this.collision = collision;
             return this;
         }
 
-        public Builder setNameTagVisibility(AbstractTeam.VisibilityRule nameTagVisibility) {
+        public Builder setNameTagVisibility(Team.Visibility nameTagVisibility) {
             this.nameTagVisibility = nameTagVisibility;
             return this;
         }
 
-        public Builder setPrefix(Text prefix) {
+        public Builder setPrefix(Component prefix) {
             this.prefix = prefix;
             return this;
         }
 
-        public Builder setSuffix(Text suffix) {
+        public Builder setSuffix(Component suffix) {
             this.suffix = suffix;
             return this;
         }
@@ -189,14 +195,14 @@ public final record GameTeamConfig(
     }
 
     public final record Colors(
-            Formatting chatFormatting,
+            Optional<TeamColor> teamColor,
             TextColor dyeColor,
             DyeColor blockDyeColor,
             TextColor fireworkColor
     ) {
         private static final Codec<Colors> RECORD_CODEC = RecordCodecBuilder.create(instance -> {
             return instance.group(
-                    Formatting.CODEC.optionalFieldOf("chat", Formatting.RESET).forGetter(Colors::chatFormatting),
+                    TeamColor.CODEC.optionalFieldOf("chat").forGetter(Colors::teamColor),
                     TextColor.CODEC.fieldOf("dye").forGetter(Colors::dyeColor),
                     DyeColor.CODEC.fieldOf("block_dye").forGetter(Colors::blockDyeColor),
                     TextColor.CODEC.fieldOf("firework").forGetter(Colors::fireworkColor)
@@ -209,39 +215,90 @@ public final record GameTeamConfig(
         );
 
         public static final Colors NONE = new Colors(
-                Formatting.RESET,
-                TextColor.fromFormatting(Formatting.WHITE),
+                Optional.empty(),
+                TextColor.fromLegacyFormat(ChatFormatting.WHITE),
                 DyeColor.WHITE,
-                TextColor.fromFormatting(Formatting.WHITE)
+                TextColor.fromLegacyFormat(ChatFormatting.WHITE)
         );
+
+        @Deprecated
+        public Colors(
+                ChatFormatting chatFormatting,
+                TextColor dyeColor,
+                DyeColor blockDyeColor,
+                TextColor fireworkColor
+        ) {
+            this(Optional.ofNullable(switch (chatFormatting) {
+                case WHITE -> TeamColor.WHITE;
+                case GOLD -> TeamColor.GOLD;
+                case LIGHT_PURPLE -> TeamColor.LIGHT_PURPLE;
+                case AQUA -> TeamColor.AQUA;
+                case YELLOW -> TeamColor.YELLOW;
+                case GREEN -> TeamColor.GREEN;
+                case DARK_GRAY -> TeamColor.DARK_GRAY;
+                case GRAY -> TeamColor.GRAY;
+                case DARK_AQUA -> TeamColor.DARK_AQUA;
+                case DARK_PURPLE -> TeamColor.DARK_PURPLE;
+                case BLUE -> TeamColor.BLUE;
+                case DARK_RED -> TeamColor.DARK_RED;
+                case DARK_BLUE -> TeamColor.DARK_BLUE;
+                case DARK_GREEN -> TeamColor.DARK_GREEN;
+                case RED -> TeamColor.RED;
+                case BLACK -> TeamColor.BLACK;
+                default -> null;
+            }), dyeColor, blockDyeColor, fireworkColor);
+        }
 
         public static Colors from(DyeColor dyeColor) {
             var formatting = formatByDye(dyeColor);
             return new Colors(
-                    formatting,
-                    TextColor.fromRgb(dyeColor.getEntityColor()),
+                    Optional.of(formatting),
+                    TextColor.fromRgb(dyeColor.getTextureDiffuseColor()),
                     dyeColor,
                     TextColor.fromRgb(dyeColor.getFireworkColor())
             );
         }
 
-        private static Formatting formatByDye(DyeColor dye) {
+        @Deprecated
+        public ChatFormatting chatFormatting() {
+            return switch (this.teamColor.orElse(null)) {
+                case WHITE -> ChatFormatting.WHITE;
+                case GOLD -> ChatFormatting.GOLD;
+                case LIGHT_PURPLE -> ChatFormatting.LIGHT_PURPLE;
+                case AQUA -> ChatFormatting.AQUA;
+                case YELLOW -> ChatFormatting.YELLOW;
+                case GREEN -> ChatFormatting.GREEN;
+                case DARK_GRAY -> ChatFormatting.DARK_GRAY;
+                case GRAY -> ChatFormatting.GRAY;
+                case DARK_AQUA -> ChatFormatting.DARK_AQUA;
+                case DARK_PURPLE -> ChatFormatting.DARK_PURPLE;
+                case BLUE -> ChatFormatting.BLUE;
+                case DARK_RED -> ChatFormatting.DARK_RED;
+                case DARK_BLUE -> ChatFormatting.DARK_BLUE;
+                case DARK_GREEN -> ChatFormatting.DARK_GREEN;
+                case RED -> ChatFormatting.RED;
+                case BLACK -> ChatFormatting.BLACK;
+                case null -> ChatFormatting.RESET;
+            };
+        }
+
+        private static TeamColor formatByDye(DyeColor dye) {
             return switch (dye) {
-                case WHITE -> Formatting.WHITE;
-                case ORANGE -> Formatting.GOLD;
-                case MAGENTA, PINK -> Formatting.LIGHT_PURPLE;
-                case LIGHT_BLUE -> Formatting.AQUA;
-                case YELLOW -> Formatting.YELLOW;
-                case LIME -> Formatting.GREEN;
-                case GRAY -> Formatting.DARK_GRAY;
-                case LIGHT_GRAY -> Formatting.GRAY;
-                case CYAN -> Formatting.DARK_AQUA;
-                case PURPLE -> Formatting.DARK_PURPLE;
-                case BLUE -> Formatting.BLUE;
-                case BROWN -> Formatting.DARK_RED;
-                case GREEN -> Formatting.DARK_GREEN;
-                case RED -> Formatting.RED;
-                case BLACK -> Formatting.BLACK;
+                case WHITE -> TeamColor.WHITE;
+                case ORANGE -> TeamColor.GOLD;
+                case MAGENTA, PINK -> TeamColor.LIGHT_PURPLE;
+                case LIGHT_BLUE -> TeamColor.AQUA;
+                case YELLOW -> TeamColor.YELLOW;
+                case LIME -> TeamColor.GREEN;
+                case GRAY -> TeamColor.DARK_GRAY;
+                case LIGHT_GRAY -> TeamColor.GRAY;
+                case CYAN -> TeamColor.DARK_AQUA;
+                case PURPLE -> TeamColor.DARK_PURPLE;
+                case BLUE -> TeamColor.BLUE;
+                case BROWN -> TeamColor.DARK_RED;
+                case GREEN -> TeamColor.DARK_GREEN;
+                case RED -> TeamColor.RED;
+                case BLACK -> TeamColor.BLACK;
             };
         }
     }

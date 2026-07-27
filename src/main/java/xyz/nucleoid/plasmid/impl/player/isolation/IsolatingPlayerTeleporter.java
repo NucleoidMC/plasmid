@@ -6,6 +6,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
 import net.minecraft.network.protocol.game.CommonPlayerSpawnInfo;
+import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -74,6 +75,11 @@ public final class IsolatingPlayerTeleporter {
     }
 
     private void teleport(ServerPlayer player, Function<ServerPlayer, ServerLevel> recreate, boolean in) {
+        if (!in && player.isDeadOrDying()) {
+            player.connection.handleClientCommand(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
+            player = player.connection.player;
+        }
+
         var playerManager = this.server.getPlayerList();
         var playerManagerAccess = (PlayerManagerAccess) playerManager;
 

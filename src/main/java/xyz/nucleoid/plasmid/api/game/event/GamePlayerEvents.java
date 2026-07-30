@@ -208,10 +208,10 @@ public final class GamePlayerEvents {
      * Listeners should return {@link RespawnResult.Respawn} with the target world to keep the player in the game.
      * Otherwise, the player will be thrown out of the game.
      */
-    public static final StimulusEvent<RequestRespawn> REQUEST_RESPAWN = StimulusEvent.create(RequestRespawn.class, ctx -> (gameSpace, player) -> {
+    public static final StimulusEvent<RequestRespawn> REQUEST_RESPAWN = StimulusEvent.create(RequestRespawn.class, ctx -> player -> {
         try {
             for (var listener : ctx.getListeners()) {
-                var result = listener.onRequestRespawn(gameSpace, player);
+                var result = listener.onRequestRespawn(player);
                 if (!(result instanceof RespawnResult.Pass)) {
                     return result;
                 }
@@ -268,7 +268,7 @@ public final class GamePlayerEvents {
     }
 
     public interface RequestRespawn {
-        RespawnResult onRequestRespawn(GameSpace gameSpace, ServerPlayer player);
+        RespawnResult onRequestRespawn(ServerPlayer player);
     }
 
     public interface Respawn {

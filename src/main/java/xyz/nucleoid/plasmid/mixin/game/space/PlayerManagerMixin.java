@@ -90,7 +90,7 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
     private TeleportTransition respawnPlayer(ServerPlayer player, boolean consumeSpawnBlock, TeleportTransition.PostTeleportTransition postTeleportTransition) {
         var gameSpace = GameSpaceManagerImpl.get().byPlayer(player);
         if (gameSpace != null) {
-            RespawnResult result = gameSpace.getBehavior().invoker(GamePlayerEvents.REQUEST_RESPAWN).onRequestRespawn(gameSpace, player);
+            RespawnResult result = gameSpace.getBehavior().invoker(GamePlayerEvents.REQUEST_RESPAWN).onRequestRespawn(player);
             if (result instanceof RespawnResult.Respawn respawn) {
                 return respawn.target();
             }
@@ -117,19 +117,31 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         if (gameSpace != null) {
             if (respawnTarget.postTeleportTransition() == RespawnResult.Respawn.MARKER) {
                 gameSpace.getPlayers().respawn(oldPlayer, respawnedPlayer);
-
-                gameSpace.getBehavior().invoker(GamePlayerEvents.RESPAWN).onRespawn(oldPlayer, respawnedPlayer, alive);
             } else {
                 gameSpace.getPlayers().remove(oldPlayer);
 
                 this.plasmid$loadIntoPlayer(respawnedPlayer);
                 respawnedPlayer.setServerLevel(respawnLevel);
             }
+
             // this is later used to apply back to the respawned player, and we want to maintain that
             var interactionManager = respawnedPlayer.gameMode;
             oldPlayer.gameMode.setGameModeForPlayer(interactionManager.getGameModeForPlayer(), interactionManager.getPreviousGameModeForPlayer());
 
             respawnedPlayer.updateOptions(oldPlayer.clientInformation());
+        }
+    }
+
+    @Inject(
+            method = "respawn",
+            at = @At("RETURN")
+    )
+    private void fireRespawnEvent(ServerPlayer oldPlayer, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayer> cir) {
+        ServerPlayer respawnedPlayer = cir.getReturnValue();
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(respawnedPlayer);
+
+        if (gameSpace != null) {
+            gameSpace.getBehavior().invoker(GamePlayerEvents.RESPAWN).onRespawn(oldPlayer, respawnedPlayer, alive);
         }
     }
 

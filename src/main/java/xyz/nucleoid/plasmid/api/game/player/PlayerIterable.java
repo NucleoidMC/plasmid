@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.api.game.player;
 
+import net.minecraft.network.protocol.game.*;
 import xyz.nucleoid.plasmid.api.util.PlayerUtil;
 
 import java.util.Collections;
@@ -8,10 +9,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
-import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -95,6 +92,15 @@ public interface PlayerIterable extends PlayerOps, Iterable<ServerPlayer> {
     default void addStatusEffect(MobEffectInstance effect) {
         for (var player : this) {
             player.addEffect(effect);
+        }
+    }
+
+    @Override
+    default void respawn() {
+        for (var player : this) {
+            if (!player.isDeadOrDying()) continue;
+
+            player.connection.handleClientCommand(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
         }
     }
 }

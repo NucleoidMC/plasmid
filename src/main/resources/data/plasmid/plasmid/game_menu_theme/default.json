@@ -1,0 +1,6 @@
+{
+  "type": "plasmid:simple",
+  "bottom": 1,
+  "padding_x": 1,
+  "filler": "minecraft:gray_stained_glass_pane"
+}

@@ -1,0 +1,6 @@
+{
+  "type": "plasmid:menu",
+  "menu": "testmod:combat",
+  "name": "Combat",
+  "icon": "minecraft:diamond_sword"
+}

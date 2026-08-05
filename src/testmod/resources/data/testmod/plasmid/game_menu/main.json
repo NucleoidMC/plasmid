@@ -1,0 +1,15 @@
+{
+  "_comment": "A fixed layout: coordinates are absolute within the region, so 2:0 is the third column of the first content row whatever chrome the theme wraps around it. The sizing entry is written inline rather than kept in its own file; the other three are referenced because tags and world anchors need them by id.",
+  "title": "Main Menu",
+  "entries": {
+    "2:0": "testmod:combat",
+    "6:0": "testmod:casual",
+    "3:2": "testmod:hybrid",
+    "5:2": {
+      "type": "plasmid:menu",
+      "menu": "testmod:sizes",
+      "name": "Sizing cases",
+      "icon": "minecraft:crafting_table"
+    }
+  }
+}

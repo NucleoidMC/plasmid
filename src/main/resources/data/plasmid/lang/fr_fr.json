@@ -2,12 +2,9 @@
   "gameType.plasmid.random": "Jeu aléatoire",
   "item.plasmid.add_region": "Ajouter une région",
   "item.plasmid.include_entity": "Inclure une entité",
-  "text.plasmid.portal.portal_not_found": "Ce portail n'a pas été trouvé !",
   "text.plasmid.join_link_hover": "Rejoindre %s",
   "text.plasmid.chat.switch.all": "Canal de discussion réglé sur tout le monde",
   "text.plasmid.chat.switch.team": "Canal de discussion réglé sur l'équipe",
-  "text.plasmid.game.portal.connect.block": "'%1$s' connecté au bloc avec pour position (%2$s ; %3$s ; %4$s)",
-  "text.plasmid.game.portal.connect.entity": "'%1$s' connecté à '%2$s''",
   "text.plasmid.game.join": "%s a rejoint le lobby !",
   "text.plasmid.game.join.error": "Une erreur inattendue est survenue lors de la connexion au jeu !",
   "text.plasmid.game.join.no_game_open": "Aucun jeu n'est ouvert !",
@@ -45,7 +42,6 @@
   "text.plasmid.team_selection.suffixed_team": "équipe %s",
   "text.plasmid.map.data.set.at.success": "Données de carte à \"%s\" définies.",
   "text.plasmid.join_result.generic_error": "Vous ne pouvez pas rejoindre ce jeu !",
-  "text.plasmid.game.portal.connect.target_is_not_interface": "La cible sélectionnée n'est pas une interface de portail de jeu valide !",
   "text.plasmid.map.origin.set": "Origine mise à jour pour l'espace de travail",
   "text.plasmid.map.region.add.success": "Région '%s' ajoutée.",
   "text.plasmid.map.region.entity.add.error": "Impossible d'ajouter d'entités à la carte \"%s\".",
@@ -119,9 +115,6 @@
   "text.plasmid.chunk_generator.generator_not_found": "Le générateur de tronçon avec l'id '%s' n'a pas été trouvé !",
   "text.plasmid.dimension_options.dimension_not_found": "La dimension avec l'id '%s' n'a pas été trouvée !",
   "text.plasmid.game_config.game_config_does_not_exist": "La configuration de jeu avec l'id '%s' n'existe pas !",
-  "text.plasmid.game.portal.connect.interface_already_connected": "L'interface sélectionnée est déjà connectée à ce portail !",
-  "text.plasmid.game.portal.disconnect.entity": "'%1$s' déconnecté de tous les portails",
-  "text.plasmid.game.portal.player_count": "%s joueurs",
   "text.plasmid.game.not_found": "Aucun jeu trouvé avec cet id !",
   "text.plasmid.game.start_result.generic_error": "Ce jeu ne peut pas être démarré !",
   "text.plasmid.game.waiting_lobby.sidebar.players": "Joueurs : %s%s%s",
@@ -134,6 +127,5 @@
   "text.plasmid.map.export.success": "Carte '%s' compilée et exportée",
   "text.plasmid.map.export.vertical_bounds_warning.line.2": "Il se peut que vous souhaitiez modifier l'origine de la carte.",
   "text.plasmid.map.export.vertical_bounds_warning.line.3": "(Note : l'origine de la carte correspond à la position que deviendra (0, 0, 0) lors de l'exportation)",
-  "text.plasmid.map.import.no_template_found": "Aucun modèle n'a été trouvé à '%s' !",
-  "text.plasmid.game.portal.disconnect.block": "Tous les portails du bloc à (%1$s ; %2$s ; %3$s) déconnectés"
+  "text.plasmid.map.import.no_template_found": "Aucun modèle n'a été trouvé à '%s' !"
 }

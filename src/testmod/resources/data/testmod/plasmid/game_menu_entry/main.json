@@ -1,0 +1,7 @@
+{
+  "_comment": "The world-visible anchor: a sign or entity binds to this id.",
+  "type": "plasmid:menu",
+  "menu": "testmod:main",
+  "name": "Main Menu",
+  "icon": "minecraft:compass"
+}

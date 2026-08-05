@@ -1,0 +1,4 @@
+{
+  "_comment": "The lightest possible style: no rows or columns kept at all, so a menu is drawn in a container exactly its own size with nothing around it. Nowhere is left for the feature bar, so there is none. Closing with escape is the only way out, which is the honest consequence of a theme keeping no chrome.",
+  "type": "plasmid:simple"
+}

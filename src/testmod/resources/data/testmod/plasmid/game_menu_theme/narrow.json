@@ -1,0 +1,16 @@
+{
+  "_comment": "A JSON-only theme that keeps a border on all four sides, so a menu comes out two rows taller and two columns narrower than it asked for. Its controls are written against the container's edges, so they follow whatever height each menu ends up with.",
+  "type": "plasmid:simple",
+  "top": 1,
+  "bottom": 1,
+  "left": 1,
+  "right": 1,
+  "filler": "minecraft:blue_stained_glass_pane",
+  "features": {
+    "plasmid:close": "0:-1",
+    "plasmid:previous_page": "3:-1",
+    "plasmid:game_filter": "4:-1",
+    "plasmid:next_page": "5:-1",
+    "plasmid:back": "-1:-1"
+  }
+}

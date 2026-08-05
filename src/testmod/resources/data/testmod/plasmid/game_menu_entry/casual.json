@@ -1,0 +1,6 @@
+{
+  "type": "plasmid:menu",
+  "menu": "testmod:casual",
+  "name": "Casual",
+  "icon": "minecraft:wheat"
+}

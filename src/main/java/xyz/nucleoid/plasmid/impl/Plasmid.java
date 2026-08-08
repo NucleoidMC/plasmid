@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.Identifier;
@@ -21,14 +22,19 @@ import xyz.nucleoid.plasmid.api.game.GameTypes;
 import xyz.nucleoid.plasmid.api.game.common.team.provider.TeamListProviderTypes;
 import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.api.map.template.processor.MapTemplateProcessorTypes;
-import xyz.nucleoid.plasmid.api.portal.GamePortalConfigs;
-import xyz.nucleoid.plasmid.api.portal.menu.MenuEntryConfigs;
+import xyz.nucleoid.plasmid.api.menu.GameMenuEntryTypes;
+import xyz.nucleoid.plasmid.api.menu.GameMenuFeatures;
+import xyz.nucleoid.plasmid.api.menu.GameMenuLayoutType;
+import xyz.nucleoid.plasmid.api.menu.GameMenuThemeTypes;
 import xyz.nucleoid.plasmid.api.registry.PlasmidRegistries;
 import xyz.nucleoid.plasmid.impl.command.*;
 import xyz.nucleoid.plasmid.impl.compatibility.TrinketsCompatibility;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalManager;
+import xyz.nucleoid.plasmid.impl.menu.GameMenuContextImpl;
+import xyz.nucleoid.plasmid.impl.menu.GameMenuEntries;
+import xyz.nucleoid.plasmid.impl.menu.GameMenuValidator;
+import xyz.nucleoid.plasmid.impl.menu.anchor.GameMenuAnchor;
+import xyz.nucleoid.plasmid.impl.menu.anchor.GameMenuAnchors;
 
 public final class Plasmid implements ModInitializer {
     public static final String ID = "plasmid";
@@ -39,8 +45,10 @@ public final class Plasmid implements ModInitializer {
     public void onInitialize() {
         PlasmidRegistries.registerDynamicRegistries();
 
-        Reflection.initialize(GamePortalConfigs.class);
-        Reflection.initialize(MenuEntryConfigs.class);
+        Reflection.initialize(GameMenuEntryTypes.class);
+        Reflection.initialize(GameMenuFeatures.class);
+        Reflection.initialize(GameMenuLayoutType.class);
+        Reflection.initialize(GameMenuThemeTypes.class);
         Reflection.initialize(GameTypes.class);
         Reflection.initialize(TeamListProviderTypes.class);
         Reflection.initialize(MapTemplateProcessorTypes.class);
@@ -57,13 +65,15 @@ public final class Plasmid implements ModInitializer {
     }
 
     private void loadData(RegistryAccess registryManager, ResourceManager manager) {
-        GamePortalManager.INSTANCE.reload(registryManager, manager);
+        // Themes first: menus are validated against them as soon as they load.
+        GameMenuEntries.clear();
+        GameMenuValidator.validateLoadedMenus(registryManager);
     }
 
     private void registerCallbacks() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             GameCommand.register(dispatcher);
-            GamePortalCommand.register(dispatcher);
+            GameMenuCommand.register(dispatcher);
             ChatCommand.register(dispatcher);
             ShoutCommand.register(dispatcher);
 
@@ -75,10 +85,10 @@ public final class Plasmid implements ModInitializer {
         UseEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
             if (
                     player instanceof ServerPlayer serverPlayer
-                            && entity instanceof GamePortalInterface portalInterface
+                            && entity instanceof GameMenuAnchor anchor
                             && hand == InteractionHand.MAIN_HAND
             ) {
-                if (portalInterface.interactWithPortal(serverPlayer)) {
+                if (anchor.interactWithAnchor(serverPlayer)) {
                     return InteractionResult.SUCCESS_SERVER;
                 }
             }
@@ -98,21 +108,25 @@ public final class Plasmid implements ModInitializer {
         });
 
         ServerTickEvents.START_SERVER_TICK.register(server -> {
-            GamePortalManager.INSTANCE.tick();
+            GameMenuAnchors.tick(server);
         });
 
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             GameSpaceManagerImpl.openServer(server);
-            GamePortalManager.INSTANCE.setup(server);
             loadData(server.registryAccess(), server.getResourceManager());
             PlasmidConfig.get().webServerConfig().ifPresent(config -> {
                 httpServer = PlasmidWebServer.start(server, config);
             });
         });
 
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            GameMenuContextImpl.forget(handler.getPlayer());
+        });
+
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             GameSpaceManagerImpl.startClosing();
-            GamePortalManager.INSTANCE.close(server);
+            GameMenuAnchors.clear();
+            GameMenuContextImpl.forgetAll();
             if (httpServer != null) {
                 httpServer.stop(0);
             }

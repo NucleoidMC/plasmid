@@ -1,0 +1,8 @@
+{
+  "_comment": "The counterpart to testmod:combat: no size given, so it fits its own two entries and comes out smaller than the menu it was opened from. It also forces its own theme, which is the one place the narrow style shows up without a command.",
+  "title": "Casual",
+  "theme": "testmod:narrow",
+  "entries": [
+    "#testmod:casual"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "_comment": "A tag-driven menu that matches whatever opened it. Its three entries would only need one row, but inheriting keeps it the size of the main menu so walking in and out does not resize the window. Opened on its own it still shrinks to fit.",
+  "title": "Combat",
+  "size": "inherit",
+  "entries": [
+    "#testmod:combat"
+  ]
+}

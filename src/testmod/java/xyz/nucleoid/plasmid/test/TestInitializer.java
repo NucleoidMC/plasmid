@@ -5,6 +5,7 @@ import eu.pb4.polymer.blocks.api.BlockModelType;
 import eu.pb4.polymer.blocks.api.BlockResourceCreator;
 import eu.pb4.polymer.blocks.api.PolymerBlockModel;
 import eu.pb4.polymer.core.api.item.PolymerBlockItem;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.resourcepack.api.ResourcePackCreator;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.Registry;
@@ -20,6 +21,8 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import xyz.nucleoid.plasmid.api.game.GameTypes;
 import xyz.nucleoid.plasmid.api.game.common.GameResourcePack;
+import xyz.nucleoid.plasmid.api.menu.GameMenuEntryTypes;
+import xyz.nucleoid.plasmid.api.menu.GameMenuThemeTypes;
 
 import java.util.Optional;
 
@@ -57,6 +60,17 @@ public class TestInitializer implements ModInitializer {
         Registry.register(BuiltInRegistries.BLOCK, TEST_BLOCK_KEY, TEST_BLOCK);
         Registry.register(BuiltInRegistries.ITEM, TEST_ITEM_KEY, TEST_ITEM);
 
+        GameMenuThemeTypes.register(id("debug"), TestGameMenuTheme.CODEC);
+        GameMenuEntryTypes.register(id("custom"), TestCustomEntry.Config.CODEC);
+
+        if (!PolymerResourcePackUtils.addModAssets("plasmid-test-mod")) {
+            throw new IllegalStateException("Failed to add test mod assets to the resource pack");
+        }
+
+        // Not a build workaround: this is what makes Polymer serve the pack at all. Without it
+        // hasMainPack is false for every player, so themes fall back to their packless rendering, and the
+        // bridged item models never exist client-side because they are generated into that pack.
+        PolymerResourcePackUtils.markAsRequired();
 
         CREATOR.addAssetSource("plasmid-test-mod");
         resourcePack = GameResourcePack.from(Identifier.fromNamespaceAndPath(ID, "test"), CREATOR);

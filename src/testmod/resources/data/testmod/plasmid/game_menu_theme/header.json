@@ -1,0 +1,7 @@
+{
+  "_comment": "Keeps a row above the content and none below. The default feature bar has nowhere to sit underneath, so it moves into the header instead of being dropped.",
+  "type": "plasmid:simple",
+  "top": 1,
+  "padding_x": 1,
+  "filler": "minecraft:green_stained_glass_pane"
+}

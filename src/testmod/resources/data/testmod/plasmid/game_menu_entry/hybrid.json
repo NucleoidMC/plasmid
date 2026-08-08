@@ -1,0 +1,11 @@
+{
+  "_comment": "Left-click joins a game, right-click opens the combat menu.",
+  "type": "plasmid:hybrid",
+  "main": "testmod:direct_game",
+  "alt": {
+    "type": "plasmid:menu",
+    "menu": "testmod:combat"
+  },
+  "name": "Quick Play",
+  "icon": "minecraft:iron_sword"
+}

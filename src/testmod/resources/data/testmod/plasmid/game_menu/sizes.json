@@ -1,0 +1,103 @@
+{
+  "_comment": "Every way a menu can end up a given size, written as one file: nothing outside refers to these entries or the menus behind them, so each is inline rather than a pair of files to cross-reference. Inline menus are validated at load just like named ones, which is why the oversized case still warns. Open the main menu under a theme with /game menu open testmod:main <theme> and walk in. The theme is inherited, so every case is drawn in the style you started with.",
+  "title": "Sizing cases",
+  "size": "inherit",
+  "entries": {
+    "type": "plasmid:rows",
+    "rows": [
+      [
+        {
+          "type": "plasmid:menu",
+          "name": "Tiny (derived)",
+          "icon": "minecraft:cookie",
+          "menu": {
+            "_comment": "No size given and only two entries, so it asks for a single row and the container comes out as short as the theme allows: 2 rows under the default, 3 under testmod:debug, 1 under testmod:plain.",
+            "title": "Tiny",
+            "entries": [
+              "testmod:direct_game",
+              "testmod:second_game"
+            ]
+          }
+        },
+        {
+          "type": "plasmid:menu",
+          "name": "Sized 9:4",
+          "icon": "minecraft:paper",
+          "menu": {
+            "_comment": "The same two entries as Tiny, but asking for a 9:4 region outright. It keeps that shape however few entries it holds, and the theme's chrome is added around it.",
+            "title": "Sized 9:4",
+            "size": "9:4",
+            "entries": [
+              "testmod:direct_game",
+              "testmod:second_game"
+            ]
+          }
+        },
+        {
+          "type": "plasmid:menu",
+          "name": "Rows layout",
+          "icon": "minecraft:bookshelf",
+          "menu": {
+            "_comment": "The game decides what shares a line, the theme spaces and centres them. Three declared rows means a 3-row region.",
+            "title": "Rows",
+            "entries": {
+              "type": "plasmid:rows",
+              "rows": [
+                [
+                  "testmod:direct_game",
+                  "testmod:second_game"
+                ],
+                [
+                  "testmod:hybrid"
+                ],
+                [
+                  "testmod:combat",
+                  "testmod:casual",
+                  "testmod:custom_creator"
+                ]
+              ]
+            }
+          }
+        }
+      ],
+      [
+        {
+          "type": "plasmid:menu",
+          "name": "Paged",
+          "icon": "minecraft:book",
+          "menu": {
+            "_comment": "Asks for a single row it cannot possibly hold, so the page controls appear and the container still comes out as short as the region plus the theme's chrome. Overflow a layout can page is not an error and is not logged.",
+            "title": "Paged",
+            "size": "9:1",
+            "entries": [
+              "testmod:direct_game",
+              "testmod:second_game",
+              "testmod:hybrid",
+              "testmod:combat",
+              "testmod:casual",
+              "testmod:custom_creator",
+              "testmod:direct_game",
+              "testmod:second_game"
+            ]
+          }
+        },
+        {
+          "type": "plasmid:menu",
+          "name": "Oversized 9:6",
+          "icon": "minecraft:tnt",
+          "menu": {
+            "_comment": "Asks for the whole of the tallest vanilla container, leaving no room for chrome. Only testmod:plain can honour it; every other theme cuts it down and says so in the log at datapack load. That warning is the point of this entry. Written as an object rather than \"9:6\" to show the long form of a size.",
+            "title": "Oversized 9:6",
+            "size": {
+              "width": 9,
+              "height": 6
+            },
+            "entries": [
+              "#testmod:combat"
+            ]
+          }
+        }
+      ]
+    ]
+  }
+}

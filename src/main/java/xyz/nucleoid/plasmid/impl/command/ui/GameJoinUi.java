@@ -1,20 +1,8 @@
 package xyz.nucleoid.plasmid.impl.command.ui;
 
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElement;
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import xyz.nucleoid.plasmid.api.game.GameSpace;
-import xyz.nucleoid.plasmid.api.game.config.GameConfig;
-import xyz.nucleoid.plasmid.api.util.PlayerRef;
-import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
-import xyz.nucleoid.plasmid.impl.game.manager.ManagedGameSpace;
-import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
-import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
-import xyz.nucleoid.plasmid.api.util.Guis;
-import xyz.nucleoid.plasmid.impl.portal.GamePortalBackend;
-
-import java.util.ArrayList;
-import java.util.Comparator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -23,6 +11,17 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Items;
+import xyz.nucleoid.plasmid.api.game.GameSpace;
+import xyz.nucleoid.plasmid.api.game.config.GameConfig;
+import xyz.nucleoid.plasmid.api.game.player.GamePlayerJoiner;
+import xyz.nucleoid.plasmid.api.game.player.JoinIntent;
+import xyz.nucleoid.plasmid.api.menu.GameMenuEntry;
+import xyz.nucleoid.plasmid.api.util.Guis;
+import xyz.nucleoid.plasmid.api.util.PlayerRef;
+import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
+
+import java.util.ArrayList;
+import java.util.Comparator;
 
 public class GameJoinUi extends SimpleGui {
     private static final GuiElement EMPTY = new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).hideTooltip().build();
@@ -174,9 +173,9 @@ public class GameJoinUi extends SimpleGui {
             );
         }
 
-        var actionType = this.joinIntent == JoinIntent.PLAY ? GamePortalBackend.ActionType.PLAY : GamePortalBackend.ActionType.SPECTATE;
+        var actionType = this.joinIntent == JoinIntent.PLAY ? GameMenuEntry.Action.PLAY : GameMenuEntry.Action.SPECTATE;
 
-        if (actionType != GamePortalBackend.ActionType.NONE) {
+        if (actionType != GameMenuEntry.Action.NONE) {
             element.addLoreLine(Component.empty().append(Component.literal(" [ ").withStyle(ChatFormatting.GRAY))
                     .append(actionType.text())
                     .append(Component.literal(" ]").withStyle(ChatFormatting.GRAY)).setStyle(Style.EMPTY.withColor(0x76ed6f)));

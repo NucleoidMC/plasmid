@@ -1,0 +1,54 @@
+{
+  "_comment": "One background glyph per container height. \\uE000 pulls the cursor to the window's left edge, the glyph draws, and \\uE002 pulls back to where the title belongs. Generated from menu_background.png: a title strip, one band per row, the last one darker for the navigation bar.",
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        "": -8,
+        "": -168
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "testmod:gui/menu_background_1.png",
+      "ascent": 13,
+      "height": 256,
+      "chars": [""]
+    },
+    {
+      "type": "bitmap",
+      "file": "testmod:gui/menu_background_2.png",
+      "ascent": 13,
+      "height": 256,
+      "chars": [""]
+    },
+    {
+      "type": "bitmap",
+      "file": "testmod:gui/menu_background_3.png",
+      "ascent": 13,
+      "height": 256,
+      "chars": [""]
+    },
+    {
+      "type": "bitmap",
+      "file": "testmod:gui/menu_background_4.png",
+      "ascent": 13,
+      "height": 256,
+      "chars": [""]
+    },
+    {
+      "type": "bitmap",
+      "file": "testmod:gui/menu_background_5.png",
+      "ascent": 13,
+      "height": 256,
+      "chars": [""]
+    },
+    {
+      "type": "bitmap",
+      "file": "testmod:gui/menu_background_6.png",
+      "ascent": 13,
+      "height": 256,
+      "chars": [""]
+    }
+  ]
+}

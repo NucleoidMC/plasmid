@@ -11,6 +11,7 @@ import xyz.nucleoid.plasmid.api.registry.PlasmidRegistries;
 import xyz.nucleoid.plasmid.api.registry.PlasmidRegistryKeys;
 import xyz.nucleoid.plasmid.impl.Plasmid;
 import xyz.nucleoid.plasmid.impl.menu.SimpleGameMenuTheme;
+import xyz.nucleoid.plasmid.impl.menu.StyledGameMenuTheme;
 
 import java.util.Optional;
 
@@ -31,6 +32,11 @@ public final class GameMenuThemeTypes {
      * Configured entirely from JSON: content region, spacing, filler, feature placement.
      */
     public static final MapCodec<? extends GameMenuTheme> SIMPLE = register("simple", SimpleGameMenuTheme.CODEC);
+
+    /**
+     * Everything {@link #SIMPLE} does, plus resource pack artwork, text styling and per-feature icons.
+     */
+    public static final MapCodec<? extends GameMenuTheme> STYLED = register("styled", StyledGameMenuTheme.CODEC);
 
     private GameMenuThemeTypes() {
     }

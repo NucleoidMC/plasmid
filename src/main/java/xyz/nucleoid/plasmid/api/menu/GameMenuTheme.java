@@ -41,8 +41,27 @@ public interface GameMenuTheme {
     Codec<Holder<GameMenuTheme>> ENTRY_CODEC = RegistryFileCodec.create(PlasmidRegistryKeys.GAME_MENU_THEME, DIRECT_CODEC);
 
     /**
+     * The theme to actually draw this player with, chosen once when the menu opens.
+     *
+     * <p>Override to hand the whole look over to another theme, which is how a theme built on resource pack
+     * artwork falls back for players without the pack. Handing over the theme rather than varying each piece
+     * keeps the two looks from being mixed: the replacement supplies its own insets, features and elements,
+     * and everything opened from the menu inherits it.
+     *
+     * <p>Called once per menu, so a chain of themes each handing over resolves a single step.
+     */
+    default GameMenuTheme forPlayer(ServerPlayer player) {
+        return this;
+    }
+
+    /**
      * The rows and columns this keeps for its own chrome, added around whatever region the menu asks for.
      * Independent of any player; menus are validated against this at datapack load.
+     *
+     * <p>A theme that hands over through {@link #forPlayer} should report enough room for both looks, so a
+     * menu that would not fit either is reported at load rather than when the right player opens it. Such a
+     * theme must also override {@link #insets(ServerPlayer)}, which otherwise defaults to this and would
+     * draw the combined chrome rather than its own.
      */
     GameMenuInsets baseInsets();
 

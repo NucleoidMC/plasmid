@@ -4,15 +4,19 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.Holder;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.inventory.MenuType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import xyz.nucleoid.plasmid.api.menu.*;
+import xyz.nucleoid.plasmid.impl.menu.SimpleGameMenuTheme;
+import xyz.nucleoid.plasmid.impl.menu.StyledGameMenuTheme;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -103,6 +107,37 @@ public class GameMenuGeometryTests {
         assertEquals(7, frame.width());
         assertEquals(2, frame.x());
         assertEquals(1, problems.size(), () -> "expected one problem, got " + problems);
+    }
+
+    @Test
+    public void insetsUnionCoversAThemeAndItsFallback() {
+        // A theme that hands over to another for some players reports both, so a menu that would not fit
+        // either look is reported at load rather than when the right player opens it.
+        var artwork = GameMenuInsets.ofRows(0, 1);
+        var fallback = new GameMenuInsets(1, 1, 1, 0, 1, 0);
+
+        var both = artwork.max(fallback);
+
+        assertEquals(new GameMenuInsets(1, 1, 1, 0, 1, 0), both);
+        assertEquals(new GameMenuSize(8, 4), both.available());
+        assertTrue(both.available().fitsIn(artwork.available()), "the union can only be smaller than either");
+        assertTrue(both.available().fitsIn(fallback.available()));
+    }
+
+    @Test
+    public void aThemeWithAFallbackStillDrawsWithItsOwnInsets() {
+        // The union belongs to validation. Letting it reach drawing gave the artwork look a row of chrome
+        // that only the fallback ever asked for, which showed up as a stray line above every menu.
+        var theme = new StyledGameMenuTheme(
+                GameMenuInsets.ofRows(0, 1),
+                Optional.empty(), Optional.empty(), Optional.empty(),
+                GameMenuTextStyle.NONE, GameMenuElementStyle.NONE, GameMenuElementStyle.NONE,
+                Map.of(), Optional.empty(),
+                Optional.of(Holder.direct(new SimpleGameMenuTheme(
+                        GameMenuInsets.ofRows(1, 1), Optional.empty(), Optional.empty()))));
+
+        assertEquals(GameMenuInsets.ofRows(1, 1), theme.baseInsets(), "validation sees both looks");
+        assertEquals(GameMenuInsets.ofRows(0, 1), theme.insets(null), "but this look draws with its own");
     }
 
     @Test

@@ -1,4 +1,85 @@
 {
-  "_comment": "Background drawn by a resource pack texture, through a font glyph in the title.",
-  "type": "testmod:background"
+  "type": "plasmid:styled",
+  "bottom": 1,
+  "padding_x": 1,
+  "background": {
+    "font": "testmod:menu",
+    "prefix": "",
+    "suffix": "",
+    "glyphs": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "title": {
+    "color": "#D65DD6"
+  },
+  "entry": {
+    "name": {
+      "prefix": {
+        "text": "❯ ",
+        "color": "#9A6BA8"
+      },
+      "color": "#D65DD6",
+      "bold": true
+    },
+    "lore": {
+      "prefix": "  ",
+      "color": "#9A6BA8",
+      "italic": false
+    },
+    "tooltip_style": "testmod:panel"
+  },
+  "chrome": {
+    "name": {
+      "prefix": {
+        "text": "❯ ",
+        "color": "#9A6BA8"
+      },
+      "color": "#D65DD6",
+      "bold": true
+    },
+    "tooltip_style": "testmod:panel"
+  },
+  "icons": {
+    "plasmid:back": {
+      "id": "minecraft:music_disc_5",
+      "components": {
+        "minecraft:item_model": "testmod:menu_back"
+      }
+    },
+    "plasmid:game_filter": {
+      "idle": {
+        "id": "minecraft:music_disc_5",
+        "components": {
+          "minecraft:item_model": "testmod:menu_filter"
+        }
+      },
+      "active": {
+        "id": "minecraft:music_disc_5",
+        "components": {
+          "minecraft:item_model": "testmod:menu_filter_active"
+        }
+      }
+    }
+  },
+  "empty": {
+    "icon": "minecraft:light_gray_stained_glass_pane",
+    "text": {
+      "text": "Nothing to show",
+      "color": "#9A6BA8"
+    }
+  },
+  "fallback": {
+    "_comment": "Deliberately a row taller than the artwork look: with no picture to frame the title, a header strip does it instead. Menus are validated against both looks at once, which is why testmod:background reports only 9:4 free even though the artwork alone would leave 9:5.",
+    "type": "plasmid:simple",
+    "top": 1,
+    "bottom": 1,
+    "padding_x": 1,
+    "filler": "minecraft:magenta_stained_glass_pane"
+  }
 }

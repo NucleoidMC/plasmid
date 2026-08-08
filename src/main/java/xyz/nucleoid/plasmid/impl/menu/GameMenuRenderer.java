@@ -61,7 +61,7 @@ public final class GameMenuRenderer {
                 ? forced
                 : GameMenuThemeTypes.resolve(player.registryAccess(), menu.themeOverride(), parent == null ? null : parent.theme());
 
-        new GameMenuContextImpl(player, menu, theme, parent).open();
+        new GameMenuContextImpl(player, menu, theme.forPlayer(player), parent).open();
     }
 
     /**

@@ -62,7 +62,6 @@ public class TestInitializer implements ModInitializer {
 
         GameMenuThemeTypes.register(id("debug"), TestGameMenuTheme.CODEC);
         GameMenuEntryTypes.register(id("custom"), TestCustomEntry.Config.CODEC);
-        GameMenuThemeTypes.register(id("background"), TestBackgroundTheme.CODEC);
 
         if (!PolymerResourcePackUtils.addModAssets("plasmid-test-mod")) {
             throw new IllegalStateException("Failed to add test mod assets to the resource pack");

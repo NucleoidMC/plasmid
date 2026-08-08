@@ -60,6 +60,16 @@ public record GameMenuInsets(int top, int bottom, int left, int right, int paddi
         return new GameMenuInsets(top, bottom, 0, 0, 0, 0);
     }
 
+    public GameMenuInsets max(GameMenuInsets other) {
+        return new GameMenuInsets(
+                Math.max(this.top, other.top),
+                Math.max(this.bottom, other.bottom),
+                Math.max(this.left, other.left),
+                Math.max(this.right, other.right),
+                Math.max(this.paddingX, other.paddingX),
+                Math.max(this.paddingY, other.paddingY));
+    }
+
     public int horizontal() {
         return this.left + this.right;
     }

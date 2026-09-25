@@ -2,10 +2,12 @@ package xyz.nucleoid.plasmid.test;
 
 import net.minecraft.SharedConstants;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.tags.ItemTags;
@@ -30,6 +32,7 @@ import xyz.nucleoid.plasmid.mixin.DataComponentInitializersAccessor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,41 +42,43 @@ public class OldCombatTests {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
 
+        var access = VanillaRegistries.createReloadableLookup(VanillaRegistries.createWorldLookup());
+
         // Work around tags not being bound
-        bindTag(Items.WOODEN_SWORD, ItemTags.SWORDS);
-        bindTag(Items.GOLDEN_SWORD, ItemTags.SWORDS);
-        bindTag(Items.STONE_SWORD, ItemTags.SWORDS);
-        bindTag(Items.IRON_SWORD, ItemTags.SWORDS);
-        bindTag(Items.DIAMOND_SWORD, ItemTags.SWORDS);
-        //bindTag(Items.NETHERITE_SWORD, ItemTags.SWORDS);
+        bindTag(access, Items.WOODEN_SWORD, ItemTags.SWORDS);
+        bindTag(access, Items.GOLDEN_SWORD, ItemTags.SWORDS);
+        bindTag(access, Items.STONE_SWORD, ItemTags.SWORDS);
+        bindTag(access, Items.IRON_SWORD, ItemTags.SWORDS);
+        bindTag(access, Items.DIAMOND_SWORD, ItemTags.SWORDS);
+        //bindTag(access, Items.NETHERITE_SWORD, ItemTags.SWORDS);
 
-        bindTag(Items.WOODEN_PICKAXE, ItemTags.PICKAXES);
-        bindTag(Items.GOLDEN_PICKAXE, ItemTags.PICKAXES);
-        bindTag(Items.STONE_PICKAXE, ItemTags.PICKAXES);
-        bindTag(Items.IRON_PICKAXE, ItemTags.PICKAXES);
-        bindTag(Items.DIAMOND_PICKAXE, ItemTags.PICKAXES);
-        //bindTag(Items.NETHERITE_PICKAXE, ItemTags.PICKAXES);
+        bindTag(access, Items.WOODEN_PICKAXE, ItemTags.PICKAXES);
+        bindTag(access, Items.GOLDEN_PICKAXE, ItemTags.PICKAXES);
+        bindTag(access, Items.STONE_PICKAXE, ItemTags.PICKAXES);
+        bindTag(access, Items.IRON_PICKAXE, ItemTags.PICKAXES);
+        bindTag(access, Items.DIAMOND_PICKAXE, ItemTags.PICKAXES);
+        //bindTag(access, Items.NETHERITE_PICKAXE, ItemTags.PICKAXES);
 
-        bindTag(Items.WOODEN_AXE, ItemTags.AXES);
-        bindTag(Items.GOLDEN_AXE, ItemTags.AXES);
-        bindTag(Items.STONE_AXE, ItemTags.AXES);
-        bindTag(Items.IRON_AXE, ItemTags.AXES);
-        bindTag(Items.DIAMOND_AXE, ItemTags.AXES);
-        //bindTag(Items.NETHERITE_AXE, ItemTags.AXES);
+        bindTag(access, Items.WOODEN_AXE, ItemTags.AXES);
+        bindTag(access, Items.GOLDEN_AXE, ItemTags.AXES);
+        bindTag(access, Items.STONE_AXE, ItemTags.AXES);
+        bindTag(access, Items.IRON_AXE, ItemTags.AXES);
+        bindTag(access, Items.DIAMOND_AXE, ItemTags.AXES);
+        //bindTag(access, Items.NETHERITE_AXE, ItemTags.AXES);
 
-        bindTag(Items.WOODEN_SHOVEL, ItemTags.SHOVELS);
-        bindTag(Items.GOLDEN_SHOVEL, ItemTags.SHOVELS);
-        bindTag(Items.STONE_SHOVEL, ItemTags.SHOVELS);
-        bindTag(Items.IRON_SHOVEL, ItemTags.SHOVELS);
-        bindTag(Items.DIAMOND_SHOVEL, ItemTags.SHOVELS);
-        //bindTag(Items.NETHERITE_SHOVEL, ItemTags.SHOVELS);
+        bindTag(access, Items.WOODEN_SHOVEL, ItemTags.SHOVELS);
+        bindTag(access, Items.GOLDEN_SHOVEL, ItemTags.SHOVELS);
+        bindTag(access, Items.STONE_SHOVEL, ItemTags.SHOVELS);
+        bindTag(access, Items.IRON_SHOVEL, ItemTags.SHOVELS);
+        bindTag(access, Items.DIAMOND_SHOVEL, ItemTags.SHOVELS);
+        //bindTag(access, Items.NETHERITE_SHOVEL, ItemTags.SHOVELS);
 
-        bindTag(Items.WOODEN_HOE, ItemTags.HOES);
-        bindTag(Items.GOLDEN_HOE, ItemTags.HOES);
-        bindTag(Items.STONE_HOE, ItemTags.HOES);
-        bindTag(Items.IRON_HOE, ItemTags.HOES);
-        bindTag(Items.DIAMOND_HOE, ItemTags.HOES);
-        //bindTag(Items.NETHERITE_HOE, ItemTags.HOES);
+        bindTag(access, Items.WOODEN_HOE, ItemTags.HOES);
+        bindTag(access, Items.GOLDEN_HOE, ItemTags.HOES);
+        bindTag(access, Items.STONE_HOE, ItemTags.HOES);
+        bindTag(access, Items.IRON_HOE, ItemTags.HOES);
+        bindTag(access, Items.DIAMOND_HOE, ItemTags.HOES);
+        //bindTag(access, Items.NETHERITE_HOE, ItemTags.HOES);
     }
 
     @Test
@@ -120,17 +125,16 @@ public class OldCombatTests {
     }
 
     @SuppressWarnings("deprecation")
-    private static void bindTag(Item item, TagKey<Item> tag) {
+    private static void bindTag(HolderLookup.Provider provider, Item item, TagKey<Item> tag) {
         var entry = item.builtInRegistryHolder();
         var id = entry.key();
         entry.bindTags(Set.of(tag));
         var builder = DataComponentMap.builder();
-
+        
         //noinspection unchecked
         ((DataComponentInitializersAccessor) BuiltInRegistries.DATA_COMPONENT_INITIALIZERS)
                 .getInitializers().stream().filter(x -> x.key().identifier().equals(id.identifier()))
-                        .findAny().orElseThrow().initializer().run(builder,
-                        RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY), (ResourceKey) id);
+                        .findAny().orElseThrow().initializer().run(builder, provider, (ResourceKey) id);
 
         entry.bindComponents(builder.build());
     }

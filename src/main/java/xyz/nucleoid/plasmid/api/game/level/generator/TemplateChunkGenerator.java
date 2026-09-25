@@ -1,12 +1,15 @@
 package xyz.nucleoid.plasmid.api.game.level.generator;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.*;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -17,10 +20,12 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import org.jspecify.annotations.Nullable;
 import xyz.nucleoid.map_templates.BlockBounds;
 import xyz.nucleoid.map_templates.MapChunk;
 import xyz.nucleoid.map_templates.MapTemplate;
 
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class TemplateChunkGenerator extends GameChunkGenerator {
@@ -43,7 +48,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
     }
 
     @Override
-    public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState noiseConfig, StructureManager structureAccessor, ChunkAccess chunk) {
+    public CompletableFuture<ChunkAccess> buildTerrain(ChunkAccess chunk, Blender blender, RandomState randomState, StructureManager structureManager, BiomeManager biomeManager, @Nullable WorldGenRegion carverBiomeRegion, Set<Holder<Biome>> possibleBiomes) {
         var chunkPos = chunk.getPos();
 
         var chunkBounds = BlockBounds.ofChunk(chunk);
@@ -109,7 +114,7 @@ public class TemplateChunkGenerator extends GameChunkGenerator {
                         if (blockEntityTag != null) {
                             chunk.setBlockEntityNbt(blockEntityTag);
                         } else {
-                            var be = entityBlock.newBlockEntity(new BlockPos(templatePos), state);
+                            var be = entityBlock.newBlockEntity(templatePos.immutable(), state);
                             if (be != null) {
                                 chunk.setBlockEntity(be);
                             }

@@ -39,9 +39,9 @@ public record TeamColorMapTemplateProcessor(List<DyeColor> baseColors) implement
     }
 
     @Override
-    public void processTemplate(MapTemplate template, ContextMap.Builder parameters) {
-        parameters.create(CONTEXT_TYPE);
-        var teamList = parameters.getParameter(MapLoadContexts.TEAM_LIST).list();
+    public void processTemplate(MapTemplate template, ContextMap.Builder parameterBuilder) {
+        var parameters = parameterBuilder.buildAndValidate(CONTEXT_TYPE);
+        var teamList = parameters.getOrThrow(MapLoadContexts.TEAM_LIST).list();
 
         if (teamList.size() > this.baseColors.size()) {
             throw new GameOpenException(Component.literal("Not enough base colors provided for the number of teams."));
@@ -69,11 +69,11 @@ public record TeamColorMapTemplateProcessor(List<DyeColor> baseColors) implement
             blockEntityReplace.put(BuiltInRegistries.ITEM.getKey(ColoredItems.harness(baseColor)).toString(), BuiltInRegistries.ITEM.getKey(ColoredItems.harness(teamColor)).toString());
         }
 
-        new ReplaceBlocksTemplateProcessor(blockMap).processTemplate(template, parameters);
+        new ReplaceBlocksTemplateProcessor(blockMap).processTemplate(template, parameterBuilder);
 
         for (var entry : blockMap.entrySet()) {
             blockEntityReplace.put(BuiltInRegistries.BLOCK.getKey(entry.getKey()).toString(), BuiltInRegistries.BLOCK.getKey(entry.getValue()).toString());
         }
-        new ReplaceBlockEntitiesTemplateProcessor(blockEntityReplace).processTemplate(template, parameters);
+        new ReplaceBlockEntitiesTemplateProcessor(blockEntityReplace).processTemplate(template, parameterBuilder);
     }
 }

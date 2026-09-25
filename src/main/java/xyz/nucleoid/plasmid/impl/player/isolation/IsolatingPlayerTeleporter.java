@@ -13,6 +13,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.biome.BiomeManager;
 import xyz.nucleoid.plasmid.api.game.GameSpace;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -106,7 +107,7 @@ public final class IsolatingPlayerTeleporter {
         var spawnInfo = new CommonPlayerSpawnInfo(
             world.dimensionTypeRegistration(), world.dimension(),
             BiomeManager.obfuscateSeed(world.getSeed()),
-            player.gameMode.getGameModeForPlayer(), player.gameMode.getPreviousGameModeForPlayer(),
+            player.gameMode.getGameModeForPlayer(), Optional.ofNullable(player.gameMode.getPreviousGameModeForPlayer()),
             world.isDebug(), world.isFlat(), player.getLastDeathLocation(), player.getPortalCooldown(),
             world.getSeaLevel()
         );

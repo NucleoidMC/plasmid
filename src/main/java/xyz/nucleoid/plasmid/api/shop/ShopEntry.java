@@ -3,6 +3,7 @@ package xyz.nucleoid.plasmid.api.shop;
 import eu.pb4.sgui.api.SguiUtils;
 import eu.pb4.sgui.api.elements.GuiElement;
 import eu.pb4.sgui.api.gui.GuiLike;
+import net.minecraft.util.Prediction;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -80,7 +81,7 @@ public final class ShopEntry implements GuiElement {
         var name = icon.getHoverName().copy().withStyle(ChatFormatting.BOLD);
         icon.set(DataComponents.CUSTOM_NAME, count.append(name).withStyle(SguiUtils.STYLE_CLEARER));
 
-        return new ShopEntry(icon).onBuy((player) -> player.getInventory().placeItemBackInInventory(stack.copy()));
+        return new ShopEntry(icon).onBuy((player) -> player.getInventory().placeItemBackInInventory(stack.copy(), Prediction.SERVER_ONLY));
     }
 
     public static ShopEntry buyItem(ItemStack stack, Cost cost) {
@@ -90,7 +91,7 @@ public final class ShopEntry implements GuiElement {
         var name = icon.getHoverName().copy().withStyle(ChatFormatting.BOLD);
         icon.set(DataComponents.CUSTOM_NAME, count.append(name).withStyle(SguiUtils.STYLE_CLEARER));
 
-        return new ShopEntry(icon).onBuy((player) -> player.getInventory().placeItemBackInInventory(stack.copy())).withCost(cost);
+        return new ShopEntry(icon).onBuy((player) -> player.getInventory().placeItemBackInInventory(stack.copy(), Prediction.SERVER_ONLY)).withCost(cost);
     }
 
     public ShopEntry onBuy(Consumer<ServerPlayer> action) {

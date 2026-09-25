@@ -82,7 +82,7 @@ public final class TestGame {
 
             if (teamList != null) {
                 new TeamColorMapTemplateProcessor(List.of(DyeColor.values()))
-                        .processTemplate(template, new ContextMap.Builder().withOptionalParameter(MapLoadContexts.TEAM_LIST, teamList));
+                        .processTemplate(template, ContextMap.builder().set(MapLoadContexts.TEAM_LIST, teamList));
             }
 
             var worldConfig = new RuntimeLevelConfig()

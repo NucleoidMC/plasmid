@@ -3,12 +3,12 @@ package xyz.nucleoid.plasmid.test;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import xyz.nucleoid.plasmid.api.game.common.config.WaitingLobbyConfig;
 import xyz.nucleoid.plasmid.api.game.common.team.provider.TeamListProvider;
 
 import java.util.Optional;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Blocks;
@@ -19,7 +19,7 @@ public record TestConfig(int integer, WaitingLobbyConfig players, BlockState sta
             Codec.INT.optionalFieldOf("integer", 0).forGetter(TestConfig::integer),
             WaitingLobbyConfig.CODEC.optionalFieldOf("players", new WaitingLobbyConfig(1, 99)).forGetter(TestConfig::players),
             BlockState.CODEC.optionalFieldOf("state", Blocks.STAINED_GLASS.blue().defaultBlockState()).forGetter(TestConfig::state),
-            RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("items").forGetter(TestConfig::items),
+            RegistryCodecs.holderSet(Registries.ITEM).optionalFieldOf("items").forGetter(TestConfig::items),
             TeamListProvider.CODEC.optionalFieldOf("teams").forGetter(TestConfig::teams)
     ).apply(i, TestConfig::new));
 }

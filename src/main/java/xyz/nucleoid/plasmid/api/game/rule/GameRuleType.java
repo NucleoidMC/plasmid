@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.api.game.rule;
 
+import net.minecraft.world.item.ItemStack;
 import xyz.nucleoid.stimuli.event.DroppedItemsResult;
 import xyz.nucleoid.stimuli.event.EventRegistrar;
 import xyz.nucleoid.stimuli.event.EventResult;
@@ -96,7 +97,7 @@ public final class GameRuleType {
     public static final GameRuleType UNSTABLE_TNT = GameRuleType.create()
             .enforces(BlockPlaceEvent.AFTER, result -> (player, world, pos, state) -> {
                 if (result != EventResult.DENY && state.getBlock() == Blocks.TNT) {
-                    TntBlock.prime(player.level(), pos, player);
+                    TntBlock.prime(player.level(), pos, player, ItemStack.EMPTY);
                     player.level().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
                 }
             });

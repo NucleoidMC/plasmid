@@ -14,6 +14,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PositionMoveRotation;
+import net.minecraft.world.entity.UpdateInterval;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.level.GameType;
@@ -149,7 +150,7 @@ public final class JankGame {
             activity.listen(GamePlayerEvents.ADD, player -> {
                 Consumer<Packet<?>> watchingSender = player.connection::send;
 
-                player.connection.send(CAMERA.getAddEntityPacket(new ServerEntity(world, CAMERA, 1, false, new ServerEntity.Synchronizer() {
+                player.connection.send(CAMERA.getAddEntityPacket(new ServerEntity(world, CAMERA, UpdateInterval.periodic(1), false, new ServerEntity.Synchronizer() {
                     @Override
                     public void sendToTrackingPlayers(Packet<? super ClientGamePacketListener> packet) {
                         watchingSender.accept(packet);

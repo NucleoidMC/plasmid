@@ -22,7 +22,7 @@ public class LootTableMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/loot/LootTable;shuffleAndSplitItems(Lit/unimi/dsi/fastutil/objects/ObjectArrayList;ILnet/minecraft/util/RandomSource;)V")
     )
     public boolean preventContainerLootShuffling(LootTable lootTable, ObjectArrayList<ItemStack> stacks, int freeSlots, RandomSource random, @Local LootContext context) {
-        var entity = context.getOptionalParameter(LootContextParams.THIS_ENTITY);
+        var entity = context.getOptional(LootContextParams.THIS_ENTITY);
         var gameSpace = entity instanceof ServerPlayer player ? GameSpaceManagerImpl.get().byPlayer(player) : GameSpaceManagerImpl.get().byLevel(context.getLevel());
 
         if (gameSpace != null && gameSpace.getBehavior().testRule(GameRuleType.SPREAD_CONTAINER_LOOT) == EventResult.DENY) {

@@ -9,10 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.SignBlockEntity;
-import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -29,19 +26,21 @@ import xyz.nucleoid.plasmid.impl.portal.GamePortal;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalDisplay;
 import xyz.nucleoid.plasmid.impl.portal.GamePortalInterface;
 
+import java.util.ArrayList;
+
 @Mixin(SignBlockEntity.class)
 public abstract class SignBlockEntityMixin extends BlockEntity implements GamePortalInterface {
-    @Shadow
-    public abstract SignText getText(boolean front);
-
-    @Shadow
-    public abstract boolean setText(SignText text, boolean front);
-
     @Shadow
     public abstract boolean isWaxed();
 
     @Shadow
     public abstract boolean setWaxed(boolean waxed);
+
+    @Shadow
+    public abstract SignText getText(SignTextSlot slot);
+
+    @Shadow
+    public abstract void setText(SignText text, SignTextSlot slot);
 
     private SignBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -65,13 +64,13 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
 
     @Override
     public void setDisplay(GamePortalDisplay display) {
-        var lines = new Component[SignText.LINES];
+        var lines = new ArrayList<Component>();
         for (int i = 0; i < SignText.LINES; i++) {
-            lines[i] = this.getDisplayLine(display, i);
+            lines.add(this.getDisplayLine(display, i));
         }
 
-        var oldText = this.getText(true);
-        this.setText(new SignText(lines, lines, oldText.getColor(), oldText.hasGlowingText()), true);
+        var oldText = this.getText(SignTextSlot.FRONT);
+        this.setText(new SignText(lines, lines, oldText.getColor(), oldText.hasGlowingText()), SignTextSlot.FRONT);
 
         this.setWaxed(true);
 
@@ -105,10 +104,10 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     }
 
     @Inject(method = "executeClickCommandsIfPresent", at = @At("HEAD"), cancellable = true)
-    private void runCommandClickEvent(ServerLevel world, Player player, BlockPos pos, boolean front, CallbackInfoReturnable<Boolean> ci) {
+    private void runCommandClickEvent(ServerLevel level, Player player, BlockPos pos, SignTextSlot slot, CallbackInfoReturnable<Boolean> cir) {
         if (this.portal != null && player instanceof ServerPlayer serverPlayer) {
             this.portal.requestJoin(serverPlayer, false);
-            ci.setReturnValue(true);
+            cir.setReturnValue(true);
         }
     }
 

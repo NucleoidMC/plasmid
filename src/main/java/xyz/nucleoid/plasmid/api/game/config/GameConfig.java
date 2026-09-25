@@ -5,9 +5,9 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.codec.RegistryCodecs;
+import net.minecraft.core.registries.codec.RegistryFileCodec;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
@@ -57,8 +57,8 @@ public record GameConfig<C>(
                 ""
         )));
     });
-    public static final Codec<Holder<GameConfig<?>>> ENTRY_CODEC = RegistryFileCodec.create(PlasmidRegistryKeys.GAME_CONFIG, DIRECT_CODEC);
-    public static final Codec<HolderSet<GameConfig<?>>> ENTRY_LIST_CODEC = RegistryCodecs.homogeneousList(PlasmidRegistryKeys.GAME_CONFIG);
+    public static final Codec<Holder<GameConfig<?>>> ENTRY_CODEC = RegistryFileCodec.create(PlasmidRegistryKeys.GAME_CONFIG, DIRECT_CODEC, true);
+    public static final Codec<HolderSet<GameConfig<?>>> ENTRY_LIST_CODEC = RegistryCodecs.holderSet(PlasmidRegistryKeys.GAME_CONFIG);
 
     public static GameOpenProcedure openProcedure(MinecraftServer server, Holder<GameConfig<?>> config) {
         //noinspection unchecked,rawtypes

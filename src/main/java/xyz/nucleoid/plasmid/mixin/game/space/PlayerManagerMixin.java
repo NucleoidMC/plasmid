@@ -31,9 +31,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.api.game.player.RespawnResult;
 import xyz.nucleoid.plasmid.impl.game.manager.GameSpaceManagerImpl;
 import xyz.nucleoid.plasmid.impl.player.isolation.PlayerManagerAccess;
 import xyz.nucleoid.plasmid.impl.player.isolation.PlayerResetter;
@@ -77,6 +80,25 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         }
     }
 
+    @Redirect(
+            method = "respawn",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/level/ServerPlayer;findRespawnPositionAndUseSpawnBlock(ZLnet/minecraft/world/level/portal/TeleportTransition$PostTeleportTransition;)Lnet/minecraft/world/level/portal/TeleportTransition;"
+            )
+    )
+    private TeleportTransition respawnPlayer(ServerPlayer player, boolean consumeSpawnBlock, TeleportTransition.PostTeleportTransition postTeleportTransition) {
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(player);
+        if (gameSpace != null) {
+            RespawnResult result = gameSpace.getBehavior().invoker(GamePlayerEvents.REQUEST_RESPAWN).onRequestRespawn(player);
+            if (result instanceof RespawnResult.Respawn respawn) {
+                return respawn.target();
+            }
+        }
+
+        return player.findRespawnPositionAndUseSpawnBlock(consumeSpawnBlock, postTeleportTransition);
+    }
+
     @Inject(
             method = "respawn",
             at = @At(
@@ -93,16 +115,33 @@ public abstract class PlayerManagerMixin implements PlayerManagerAccess {
         var gameSpace = GameSpaceManagerImpl.get().byPlayer(oldPlayer);
 
         if (gameSpace != null) {
-            gameSpace.getPlayers().remove(oldPlayer);
+            if (respawnTarget.postTeleportTransition() == RespawnResult.Respawn.MARKER) {
+                gameSpace.getPlayers().respawn(oldPlayer, respawnedPlayer);
+            } else {
+                gameSpace.getPlayers().remove(oldPlayer);
 
-            this.plasmid$loadIntoPlayer(respawnedPlayer);
-            respawnedPlayer.setServerLevel(respawnLevel);
+                this.plasmid$loadIntoPlayer(respawnedPlayer);
+                respawnedPlayer.setServerLevel(respawnLevel);
+            }
 
             // this is later used to apply back to the respawned player, and we want to maintain that
             var interactionManager = respawnedPlayer.gameMode;
             oldPlayer.gameMode.setGameModeForPlayer(interactionManager.getGameModeForPlayer(), interactionManager.getPreviousGameModeForPlayer());
 
             respawnedPlayer.updateOptions(oldPlayer.clientInformation());
+        }
+    }
+
+    @Inject(
+            method = "respawn",
+            at = @At("RETURN")
+    )
+    private void fireRespawnEvent(ServerPlayer oldPlayer, boolean alive, Entity.RemovalReason removalReason, CallbackInfoReturnable<ServerPlayer> cir) {
+        ServerPlayer respawnedPlayer = cir.getReturnValue();
+        var gameSpace = GameSpaceManagerImpl.get().byPlayer(respawnedPlayer);
+
+        if (gameSpace != null) {
+            gameSpace.getBehavior().invoker(GamePlayerEvents.RESPAWN).onRespawn(oldPlayer, respawnedPlayer, alive);
         }
     }
 

@@ -231,6 +231,11 @@ public final class ManagedGameSpace implements GameSpace {
         return this.state;
     }
 
+    @Override
+    public String toString() {
+        return this.metadata.toString();
+    }
+
     JoinOfferResult offerPlayers(LocalJoinOffer offer) {
         if (this.closed) {
             return offer.reject(GameComponents.Join.gameClosed());

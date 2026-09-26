@@ -7,6 +7,8 @@ import xyz.nucleoid.plasmid.api.game.common.ui.WaitingLobbyUiElement;
 import xyz.nucleoid.plasmid.api.game.common.ui.WaitingLobbyUiLayout;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
 
@@ -14,19 +16,18 @@ public class ReadyGameWaitingLobbyUiElement implements WaitingLobbyUiElement {
     private final WaitingLobbyUiLayout layout;
     private final Consumer<Boolean> callback;
     private final GameSpace gameSpace;
-    private final int minPlayers;
+    private final Supplier<Boolean> canStart;
     public boolean hasVoted = false;
-    public ReadyGameWaitingLobbyUiElement(WaitingLobbyUiLayout layout, GameSpace gameSpace, int minPlayers, Consumer<Boolean> callback) {
+    public ReadyGameWaitingLobbyUiElement(WaitingLobbyUiLayout layout, GameSpace gameSpace, Supplier<Boolean> canStart, Consumer<Boolean> callback) {
         this.layout = layout;
         this.gameSpace = gameSpace;
-        this.minPlayers = minPlayers;
+        this.canStart = canStart;
         this.callback = callback;
     }
 
     @Override
     public GuiElement createMainElement() {
-        if (this.gameSpace.getPlayers().participants().size() < this.minPlayers) {
-
+        if (!this.canStart.get()) {
             return new GuiElementBuilder(Items.AIR).build();
         }
         return new GuiElementBuilder(!this.hasVoted ? Items.WOOL.green() : Items.WOOL.red() )

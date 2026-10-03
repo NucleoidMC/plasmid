@@ -308,7 +308,21 @@ public final class GameCommand {
     private static void tryJoinGame(ServerPlayer player, GameSpace gameSpace, JoinIntent intent) {
         var result = GamePlayerJoiner.tryJoin(player, gameSpace, intent);
         if (result.isError()) {
-            player.sendSystemMessage(result.errorCopy().withStyle(ChatFormatting.RED));
+            JoinIntent newIntent;
+            if (intent.equals(JoinIntent.SPECTATE)) {
+                newIntent = JoinIntent.PLAY;
+            } else {
+                newIntent = JoinIntent.SPECTATE;
+            }
+            var result2 = GamePlayerJoiner.tryJoin(player, gameSpace, newIntent);
+            if (result2.isError()) {
+                player.sendSystemMessage(result2.errorCopy().withStyle(ChatFormatting.RED));
+            } else {
+                player.sendSystemMessage(Component.translatable("text.plasmid.join_result.switched_intent",
+                        (newIntent.equals(JoinIntent.SPECTATE) ? "player" : "spectator"),
+                        (newIntent.equals(JoinIntent.SPECTATE) ? "spectator" : "player")
+                ));
+            }
         }
     }
 

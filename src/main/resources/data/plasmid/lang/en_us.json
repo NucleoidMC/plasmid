@@ -78,6 +78,7 @@
   "text.plasmid.join_result.not_allowed": "You are not allowed to join this game!",
   "text.plasmid.join_result.spectators_only": "You are not allowed to participate in this game!",
   "text.plasmid.join_result.participants_only": "You are not allowed to spectate this game!",
+  "text.plasmid.join_result.switched_intent": "You were not able to join as a %s and joined as a %s",
   "text.plasmid.map_workspace.workspace_not_found": "Map with id '%s' was not found!",
   "text.plasmid.map.bounds.get": "The bounds for the workspace are %s to %s",
   "text.plasmid.map.bounds.set": "Updated bounds for workspace",

@@ -89,7 +89,7 @@ Most things here you can ignore: you only really need to worry about what's in t
 - `Codec.STRING.fieldOf(...).forGetter(...)`
     - This adds a field with a given name and type that will be read from the JSON.
     - You will notice that `Codec.STRING` is itself a `Codec<String>`! Every field you declare will require a Codec to describe how that field should be handled. In this case, we're indicating that the greeting field should be loaded using `Codec.STRING`. In the same way, we could reference any other codec we create to add it as a field! This is very useful in allowing combinations of codecs to create complex structures!
-        - Codec tip: most serializable Minecraft types will hold a static `CODEC` field for use (e.g. `BlockPos.CODEC` or `Identifier.CODEC`). If not, we bundle a `MoreCodecs` type which provides some common ones that are not included in the vanilla codebase (e.g. `MoreCodecs.TEXT`).
+        - Codec tip: most serializable Minecraft types will hold a static `CODEC` field for use (e.g. `BlockPos.CODEC` or `Identifier.CODEC`). If not, we bundle a `MoreCodecs` type which provides some common ones that are not included in the vanilla codebase (e.g. `MoreCodecs.ITEM_STACK`).
     - The parameter to `.fieldOf()` specifies the name of the field (in JSON) that this value will be read from.
     - `.forGetter()` specifies how the value of a field should be read back from our config object. This is useful since codecs allow for both serialization and deserialization, and the getter is required to turn the object back into data. We can use a method reference here since we're using a record.
 - `ExampleGameConfig::new`

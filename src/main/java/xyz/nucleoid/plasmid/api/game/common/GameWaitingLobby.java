@@ -126,7 +126,14 @@ public final class GameWaitingLobby {
 
         return lobby;
     }
-
+    private void updateLayout() {
+        for (ServerPlayer plr : this.gameSpace.getPlayers().participants()) {
+            WaitingLobbyUiLayout layout = this.playerToLayout.get(plr);
+            if (layout != null) {
+                layout.refresh();
+            }
+        }
+    }
     @Nullable
     private Component onJoinMessage(ServerPlayer player, Component currentText, Component defaultText) {
         if (currentText == null || (this.playerConfig.thresholdPlayers() == 1 && this.playerConfig.minPlayers() == 1) || this.playerConfig.playerConfig().maxPlayers().isEmpty() || this.gameSpace.getPlayers().spectators().contains(player)) {
@@ -145,14 +152,8 @@ public final class GameWaitingLobby {
 
         if (count >= this.playerConfig.minPlayers()) {
             this.showVoteReminder();
-            for (ServerPlayer plr : this.gameSpace.getPlayers().participants()) {
-                WaitingLobbyUiLayout layout = this.playerToLayout.get(plr);
-                if (layout != null) {
-                    layout.refresh();
-                }
-            }
         }
-
+        this.updateLayout();
         return Component.empty()
                 .append(currentText)
                 .append(" ")
@@ -176,7 +177,7 @@ public final class GameWaitingLobby {
         var required = Math.max(Math.min(this.playerConfig.thresholdPlayers(),
                 this.gameSpace.getServer().getPlayerCount()
         ), this.playerConfig.minPlayers()) - count;
-
+        this.updateLayout();
         return Component.empty()
                 .append(currentText)
                 .append(" ")
@@ -224,6 +225,7 @@ public final class GameWaitingLobby {
             this.tickCountdownBar();
             this.updateSidebar();
             this.tickCountdownSound();
+            this.updateLayout();
         }
 
         if (this.countdownStart != -1 && time >= this.countdownStart + this.countdownDuration) {
@@ -287,19 +289,21 @@ public final class GameWaitingLobby {
 
     private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayer player) {
         layout.addTrailing(new LeaveGameWaitingLobbyUiElement(this.gameSpace, player));
-        layout.addTrailing(new ReadyGameWaitingLobbyUiElement(layout, this.gameSpace, this.playerConfig.minPlayers(), (hasVoted) -> {
-            if (hasVoted) {
-                this.playerVotes.add(player);
-            } else {
-                this.playerVotes.remove(player);
-            }
-            if (this.gameSpace.getPlayers().participants().size() >= this.playerConfig.minPlayers()) {
-                double playersNeededToStart = Math.ceil((double) this.gameSpace.getPlayers().participants().size() / 2);
-                if (playersNeededToStart <= this.playerVotes.size()) {
-                    this.updateCountdown();
-                }
-                this.showVoteReminder();
-            }
+        layout.addTrailing(new ReadyGameWaitingLobbyUiElement(layout, this.gameSpace,
+                () -> this.gameSpace.getPlayers().participants().size() >= this.playerConfig.minPlayers() && (this.isActiveFull(this.gameSpace.getPlayers().size() - 1) || this.isReady(this.gameSpace.getPlayers().participants().size())),
+                (hasVoted) -> {
+                    if (hasVoted) {
+                        this.playerVotes.add(player);
+                    } else {
+                        this.playerVotes.remove(player);
+                    }
+                    if (this.gameSpace.getPlayers().participants().size() >= this.playerConfig.minPlayers()) {
+                        double playersNeededToStart = Math.ceil((double) this.gameSpace.getPlayers().participants().size() / 2);
+                        if (playersNeededToStart <= this.playerVotes.size()) {
+                            this.updateCountdown();
+                        }
+                        this.showVoteReminder();
+                    }
         }));
         this.playerToLayout.put(player, layout);
     }

@@ -70,7 +70,7 @@ public final class GamePortal {
     }
 
     public boolean addInterface(GamePortalInterface itf) {
-        if (itf.getPortal() == null && this.interfaces.add(itf)) {
+        if ((itf.getPortal() == null || itf.getPortal().left().isEmpty()) && this.interfaces.add(itf)) {
             itf.setPortal(this);
             if (itf.updatePortalImmediately()) {
                 itf.setDisplay(this.currentDisplay);

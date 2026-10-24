@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.mixin.game.portal;
 
+import com.mojang.datafixers.util.Either;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -56,10 +57,9 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
         this.portal = portal;
     }
 
-    @Nullable
     @Override
-    public GamePortal getPortal() {
-        return this.portal;
+    public @Nullable Either<GamePortal, Identifier> getPortal() {
+        return this.portal != null ? Either.left(this.portal) : this.loadedPortalId != null ? Either.right(this.loadedPortalId) : null;
     }
 
     @Override
@@ -96,6 +96,11 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
         return CommonComponents.EMPTY;
     }
 
+    @Override
+    public void setPortal(Identifier portal) {
+        this.loadedPortalId = portal;
+    }
+
     @Inject(method = "canExecuteClickCommands", at = @At("HEAD"), cancellable = true)
     private void canRunCommandClickEvent(CallbackInfoReturnable<Boolean> ci) {
         if (this.isWaxed() && this.portal != null) {
@@ -127,8 +132,9 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
 
         var server = world.getServer();
         if (server != null && this.loadedPortalId != null) {
-            this.tryConnectTo(this.loadedPortalId);
-            this.loadedPortalId = null;
+            if (this.tryConnectTo(this.loadedPortalId)) {
+                this.loadedPortalId = null;
+            }
         }
     }
 

@@ -59,19 +59,34 @@ public final class GamePortalCommand {
     }
 
     private static int connectEntity(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        var portal = GamePortalArgument.get(context, "portal");
+        var either = GamePortalArgument.getOrId(context, "portal");
 
         var entity = EntityArgument.getEntity(context, "entity");
 
         if (entity instanceof GamePortalInterface portalInterface) {
-            if (!portal.addInterface(portalInterface)) {
-                throw INTERFACE_ALREADY_CONNECTED.create();
-            }
+            if (either.left().isPresent()) {
+                var portal = either.left().get();
+                if (!portal.addInterface(portalInterface)) {
+                    throw INTERFACE_ALREADY_CONNECTED.create();
+                }
 
-            context.getSource().sendSuccess(() -> {
-                var message = Component.translatable("text.plasmid.game.portal.connect.entity", Component.translationArg(portal.getId()), entity.getName());
-                return message.withStyle(ChatFormatting.GRAY);
-            }, false);
+                context.getSource().sendSuccess(() -> {
+                    var message = Component.translatable("text.plasmid.game.portal.connect.entity", Component.translationArg(portal.getId()), entity.getName());
+                    return message.withStyle(ChatFormatting.GRAY);
+                }, false);
+            } else {
+                var portal = either.right().orElseThrow();
+                if (portalInterface.getPortal() != null) {
+                    throw INTERFACE_ALREADY_CONNECTED.create();
+                }
+
+                portalInterface.setPortal(portal);
+
+                context.getSource().sendSuccess(() -> {
+                    var message = Component.translatable("text.plasmid.game.portal.connect.entity", Component.translationArg(portal), entity.getName());
+                    return message.withStyle(ChatFormatting.GRAY);
+                }, false);
+            }
 
             return Command.SINGLE_SUCCESS;
         } else {
@@ -83,19 +98,34 @@ public final class GamePortalCommand {
         var source = context.getSource();
         var world = source.getLevel();
 
-        var portal = GamePortalArgument.get(context, "portal");
+        var either = GamePortalArgument.getOrId(context, "portal");
         var pos = BlockPosArgument.getLoadedBlockPos(context, "pos");
 
         var blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof GamePortalInterface portalInterface) {
-            if (!portal.addInterface(portalInterface)) {
-                throw INTERFACE_ALREADY_CONNECTED.create();
-            }
+            if (either.left().isPresent()) {
+                var portal = either.left().orElseThrow();
+                if (!portal.addInterface(portalInterface)) {
+                    throw INTERFACE_ALREADY_CONNECTED.create();
+                }
 
-            source.sendSuccess(() -> {
-                var message = Component.translatable("text.plasmid.game.portal.connect.block", Component.translationArg(portal.getId()), pos.getX(), pos.getY(), pos.getZ());
-                return message.withStyle(ChatFormatting.GRAY);
-            }, false);
+                source.sendSuccess(() -> {
+                    var message = Component.translatable("text.plasmid.game.portal.connect.block", Component.translationArg(portal.getId()), pos.getX(), pos.getY(), pos.getZ());
+                    return message.withStyle(ChatFormatting.GRAY);
+                }, false);
+            } else {
+                var portal = either.right().orElseThrow();
+                if (portalInterface.getPortal() != null) {
+                    throw INTERFACE_ALREADY_CONNECTED.create();
+                }
+
+                portalInterface.setPortal(portal);
+
+                context.getSource().sendSuccess(() -> {
+                    var message = Component.translatable("text.plasmid.game.portal.connect.block", Component.translationArg(portal), pos.getX(), pos.getY(), pos.getZ());
+                    return message.withStyle(ChatFormatting.GRAY);
+                }, false);
+            }
 
             return Command.SINGLE_SUCCESS;
         } else {

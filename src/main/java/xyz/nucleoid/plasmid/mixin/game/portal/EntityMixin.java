@@ -1,9 +1,11 @@
 package xyz.nucleoid.plasmid.mixin.game.portal;
 
+import com.mojang.datafixers.util.Either;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.EntityAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.TextDisplayElement;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Brightness;
@@ -59,10 +61,17 @@ public abstract class EntityMixin implements GamePortalInterface {
         }
     }
 
-    @Nullable
     @Override
-    public GamePortal getPortal() {
-        return this.portal;
+    public void setPortal(Identifier portal) {
+        this.loadedPortalId = portal;
+        if (portal == null) {
+            this.removeHologram();
+        }
+    }
+
+    @Override
+    public @Nullable Either<GamePortal, Identifier> getPortal() {
+        return this.portal != null ? Either.left(this.portal) : this.loadedPortalId != null ? Either.right(this.loadedPortalId) : null;
     }
 
     @Override
@@ -125,17 +134,17 @@ public abstract class EntityMixin implements GamePortalInterface {
         if (this.loadedPortalId != null) {
             if (this.tryConnectTo(this.loadedPortalId)) {
                 this.loadedPortalId = null;
+            } else if (this.hologram == null) {
+                var hol = this.getOrCreateTextElement();
+                hol.setText(Component.literal(this.loadedPortalId.toString()).withColor(TextColor.RED));
+                hol.tick();
             }
         }
     }
 
     @Inject(method = "saveWithoutId", at = @At("RETURN"))
     private void writePortalData(ValueOutput view, CallbackInfo ci) {
-        if (this.loadedPortalId == null) {
-            this.serializePortal(view);
-        } else {
-            view.putString(GamePortalInterface.NBT_KEY, this.loadedPortalId.toString());
-        }
+        this.serializePortal(view);
     }
 
     @Inject(method = "load", at = @At("RETURN"))

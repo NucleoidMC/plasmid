@@ -1,5 +1,6 @@
 package xyz.nucleoid.plasmid.impl.portal;
 
+import com.mojang.datafixers.util.Either;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.ValueInput;
@@ -14,16 +15,25 @@ public interface GamePortalInterface {
 
     void setPortal(GamePortal portal);
 
+    void setPortal(Identifier portal);
+
     @Nullable
-    GamePortal getPortal();
+    Either<GamePortal, Identifier> getPortal();
 
     void setDisplay(GamePortalDisplay display);
 
     default void serializePortal(ValueOutput root) {
         var connection = this.getPortal();
-        if (connection != null) {
-            root.putString(NBT_KEY, connection.getId().toString());
+        if (connection == null) {
+            return;
         }
+
+        connection.ifLeft(conn -> {
+            root.putString(NBT_KEY, conn.getId().toString());
+        });
+        connection.ifRight(conn -> {
+            root.putString(NBT_KEY, conn.toString());
+        });
     }
 
     @Nullable
@@ -45,8 +55,8 @@ public interface GamePortalInterface {
     default void invalidatePortal() {
         var portal = this.getPortal();
         if (portal != null) {
-            portal.removeInterface(this);
-            this.setPortal(null);
+            portal.ifLeft(x -> x.removeInterface(this));
+            this.setPortal((GamePortal) null);
         }
     }
 

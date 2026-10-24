@@ -4,6 +4,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.datafixers.util.Either;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -26,6 +27,17 @@ public final class GamePortalArgument {
                             builder
                     );
                 });
+    }
+
+    public static Either<GamePortal, Identifier> getOrId(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+        var identifier = IdentifierArgument.getId(context, name);
+
+        var portal = GamePortalManager.INSTANCE.byId(identifier);
+        if (portal == null) {
+            return Either.right(identifier);
+        }
+
+        return Either.left(portal);
     }
 
     public static GamePortal get(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {

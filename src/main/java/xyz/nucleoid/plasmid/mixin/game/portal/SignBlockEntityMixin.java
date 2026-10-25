@@ -75,7 +75,7 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
 
         this.setWaxed(true);
 
-        if (this.hasLevel()) {
+        if (this.hasLevel() && this.level.isLoaded(this.getBlockPos())) {
             BlockState cachedState = this.getBlockState();
             this.level.sendBlockUpdated(this.worldPosition, cachedState, cachedState, Block.UPDATE_ALL);
         }

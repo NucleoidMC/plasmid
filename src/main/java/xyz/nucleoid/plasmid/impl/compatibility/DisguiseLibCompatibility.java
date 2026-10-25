@@ -1,11 +1,12 @@
 package xyz.nucleoid.plasmid.impl.compatibility;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.disguiselib.api.EntityDisguise;
 
 public final class DisguiseLibCompatibility {
-    private static final boolean ENABLED = false;// FabricLoader.getInstance().isModLoaded("disguiselib");
+    private static final boolean ENABLED = FabricLoader.getInstance().isModLoaded("disguiselib");
 
     public static double getEntityHeight(Entity entity) {
         if (ENABLED) {

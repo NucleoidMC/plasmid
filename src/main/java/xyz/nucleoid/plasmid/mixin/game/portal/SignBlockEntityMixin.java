@@ -130,14 +130,13 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
 
     @Override
     public void setLevel(Level world) {
-        super.setLevel(world);
-
         var server = world.getServer();
         if (server != null && this.loadedPortalId != null) {
             if (this.tryConnectTo(this.loadedPortalId)) {
                 this.loadedPortalId = null;
             }
         }
+        super.setLevel(world);
     }
 
     @Override

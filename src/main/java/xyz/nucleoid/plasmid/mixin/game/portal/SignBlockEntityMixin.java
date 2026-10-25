@@ -43,6 +43,15 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     @Shadow
     public abstract void setText(SignText text, SignTextSlot slot);
 
+    @Shadow
+    private boolean isWaxed;
+
+    @Shadow
+    private SignText frontText;
+
+    @Shadow
+    protected abstract void markUpdated();
+
     private SignBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -71,13 +80,11 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
         }
 
         var oldText = this.getText(SignTextSlot.FRONT);
-        this.setText(new SignText(lines, lines, oldText.getColor(), oldText.hasGlowingText()), SignTextSlot.FRONT);
-
-        this.setWaxed(true);
+        this.isWaxed = true;
+        this.frontText = new SignText(lines, lines, oldText.getColor(), oldText.hasGlowingText());
 
         if (this.hasLevel() && this.level.isLoaded(this.getBlockPos())) {
-            BlockState cachedState = this.getBlockState();
-            this.level.sendBlockUpdated(this.worldPosition, cachedState, cachedState, Block.UPDATE_ALL);
+            this.markUpdated();
         }
     }
 

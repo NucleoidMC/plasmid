@@ -56,6 +56,7 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Override
     public void setPortal(GamePortal portal) {
         this.portal = portal;
+        this.loadedPortalId = null;
         if (portal == null) {
             this.removeHologram();
         }
@@ -64,6 +65,7 @@ public abstract class EntityMixin implements GamePortalInterface {
     @Override
     public void setPortal(Identifier portal) {
         this.loadedPortalId = portal;
+        this.portal = null;
         if (portal == null) {
             this.removeHologram();
         }

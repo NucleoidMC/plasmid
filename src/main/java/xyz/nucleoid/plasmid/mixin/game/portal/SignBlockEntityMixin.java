@@ -55,6 +55,7 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     @Override
     public void setPortal(GamePortal portal) {
         this.portal = portal;
+        this.loadedPortalId = null;
     }
 
     @Override
@@ -99,6 +100,7 @@ public abstract class SignBlockEntityMixin extends BlockEntity implements GamePo
     @Override
     public void setPortal(Identifier portal) {
         this.loadedPortalId = portal;
+        this.portal = null;
     }
 
     @Inject(method = "canExecuteClickCommands", at = @At("HEAD"), cancellable = true)

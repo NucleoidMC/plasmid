@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.impl.compatibility;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 import xyz.nucleoid.disguiselib.api.EntityDisguise;
 
@@ -18,7 +19,7 @@ public final class DisguiseLibCompatibility {
 
     private static double getDisguisedHeight(Entity entity) {
         var disguise = getDisguiseFor(entity);
-        return disguise != null ? disguise.getBbHeight() : entity.getBbHeight();
+        return disguise != null ? disguise.getBbHeight() * (entity instanceof LivingEntity livingEntity ? livingEntity.getScale() : 1) : entity.getBbHeight();
     }
 
     @Nullable

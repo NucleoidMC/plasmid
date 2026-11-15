@@ -2,6 +2,7 @@ package xyz.nucleoid.plasmid.api.game.player;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -98,4 +99,15 @@ public interface PlayerOps {
      * @param effect the status effect to add
      */
     void addStatusEffect(MobEffectInstance effect);
+
+    /**
+     * Respawns all dead players associated with this {@link PlayerOps} who are dead.
+     *
+     * @implNote Make sure this method is not called the same tick a player dies. To defer execution of a method by some number of ticks, you can use the {@link MinecraftServer#schedule(Runnable)} method:
+     * <pre> {@code
+     * MinecraftServer server = gameSpace.getServer();
+     * server.schedule(new TickTask(server.getTickCount() + 1, () -> gameSpace.getPlayers().respawn()));
+     * }</pre>
+     */
+    void respawn();
 }

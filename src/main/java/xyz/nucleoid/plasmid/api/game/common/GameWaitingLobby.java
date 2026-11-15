@@ -290,7 +290,7 @@ public final class GameWaitingLobby {
     private void onBuildUiLayout(WaitingLobbyUiLayout layout, ServerPlayer player) {
         layout.addTrailing(new LeaveGameWaitingLobbyUiElement(this.gameSpace, player));
         layout.addTrailing(new ReadyGameWaitingLobbyUiElement(layout, this.gameSpace,
-                () -> this.gameSpace.getPlayers().participants().size() >= this.playerConfig.minPlayers() && (this.isActiveFull(this.gameSpace.getPlayers().size() - 1) || this.isReady(this.gameSpace.getPlayers().participants().size())),
+                () -> this.gameSpace.getPlayers().participants().size() >= this.playerConfig.minPlayers(),
                 (hasVoted) -> {
                     if (hasVoted) {
                         this.playerVotes.add(player);
